@@ -1,0 +1,10 @@
+prefix=@prefix@ 
+exec_prefix=@exec_prefix@ 
+libdir=@libdir@ 
+includedir=@includedir@ 
+
+Name: libAXL
+Description: LibAXL: Another XML library
+Version: @AXL_VERSION@ 
+Libs: -L${libdir} -laxl
+Cflags: -I${includedir}/axl
