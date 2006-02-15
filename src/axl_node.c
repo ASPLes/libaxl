@@ -35,8 +35,8 @@
  *      Email address:
  *         info@aspl.es - http://fact.aspl.es
  */
-#include <string.h>
-#include <axl_decl.h>
+
+#include <axl.h>
 
 struct _axlAttribute {
 	char * name;
@@ -48,6 +48,8 @@ struct _axlNode {
 	axlAttribute ** attributes;
 	int             attributes_count;
 };
+
+
 
 /** 
  * @brief Creates a new \ref AxlNode with the provided name.

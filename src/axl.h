@@ -38,20 +38,11 @@
 #ifndef __AXL_H__
 #define __AXL_H__
 
-
 #include <axl_decl.h>
 #include <axl_doc.h>
+#include <axl_node.h>
+#include <axl_error.h>
 
-/* c++ header declaration */
-#ifdef __cplusplus
-extern	"C" {
-#endif
-
-extern int axl_init ();
-
-/* c++ header declaration end */
-#ifdef __cplusplus
-}
-#endif
+int axl_init ();
 
 #endif

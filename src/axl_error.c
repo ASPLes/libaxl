@@ -35,12 +35,9 @@
  *      Email address:
  *         info@aspl.es - http://fact.aspl.es
  */
-#ifndef __AXL_ERROR_H__
-#define __AXL_ERROR_H__
-
 #include <axl_decl.h>
 
-struct __axlError {
+struct _axlError {
 	int    code;
 	char * error;
 };
@@ -52,13 +49,89 @@ struct __axlError {
  * error code and a error string.
  * 
  * @param code The error code to set and the error code string.
- * @param error 
+ *
+ * @param error The error string to be used to initialize the received
+ * \ref axlError.
  * 
- * @return 
+ * @param _error The \ref axlError to initialize.
  */
-_axlError * axl_error_new (int code, char * error)
+void axl_error_new (int code, char * error_code, axlError ** _error)
 {
+	axlError * error;
+
+	/* get a reference to the error to be created */
+	if (_error == NULL)
+		return;
+
+	/* create the error to be reported */
+	error             = axl_new (axlError, 1); 
+	error->code       = code;
+	error->error      = axl_strdup (error_code);
 	
+	/* set the error into the recevied reference */
+	(* _error )       = error;
+	return;
+}
+
+/** 
+ * @brief Allows to get current error code from the given \ref axlError value.
+ *
+ * If the provided \ref axlError doesn't not contain a valid error
+ * information, -1 is returned. Otherwise the specific error code is
+ * returned.
+ * 
+ * @param _error The \ref axlError to use, while getting error code
+ * inside.
+ * 
+ * @return The error code inside or -1 if fails.
+ */
+int axl_error_get_code (axlError * _error)
+{
+	/* check received reference */
+	if (_error == NULL)
+		return -1;
+	return _error->code;
+}
+
+/** 
+ * @brief Allows to get current textual error string inside the given
+ * \ref axlError value.
+ * 
+ * @param _error The \ref axlError where the error string value will
+ * be retrieved.
+ * 
+ * @return The error code or the string "no string error defined" if
+ * the given error doesn't contain any string information. You must
+ * not deallocate memory returned by this function because it is an
+ * internal copy.
+ */
+char * axl_error_get      (axlError * _error)
+{
+	/* check received reference */
+	if (_error == NULL)
+		return "no string error defined";
+
+	return _error->error;
+}
+
+/** 
+ * @brief Allows to release memory allocated by the given \ref
+ * axlError variable.
+ * 
+ * @param _error The axlError to deallocate.
+ */
+void   axl_error_free     (axlError * _error)
+{
+
+	/* check for null reference received */
+	if (_error == NULL)
+		return;
+	
+	/* release man with no mercy */
+	axl_free (_error->error);
+	axl_free (_error);
+	
+	return;
 }
 
 

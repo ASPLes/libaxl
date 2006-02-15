@@ -38,8 +38,9 @@
 #ifndef __AXL_DECL_H__
 #define __AXL_DECL_H__
 
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
+
 
 
 /**
@@ -57,16 +58,17 @@ typedef struct _axlNode axlNode;
  */
 typedef struct _axlAttribute axlAttribute;
 
-
-typedef struct __axlError    _axlError;
+/** 
+ * @brief Axl error reporting variable.
+ */
+typedef struct _axlError  axlError;
 
 /** 
- * @brief AxlError declaration.
- *
- * This variable is used to report errors found while interfacing with
- * the library.
+ * @internal
+ * @brief Axl XML stream representation.
  */
-typedef struct _axlError **   axlError;
+typedef struct _axlStream axlStream;
+
 
 /** 
  * @internal
@@ -80,6 +82,16 @@ typedef struct _axlError **   axlError;
  * @return A newly allocated pointer.
  */
 #define axl_new(type, count) (type *) calloc (count, sizeof (type))
+
+/** 
+ * @internal
+ *
+ * @brief Allows to deallocate memory referenced by <i>ref</i> but
+ * checking before that the reference is different from null.
+ * 
+ * @param ref The reference to clear.
+ */
+#define axl_free(ref) if (ref != NULL) free (ref)
 
 /** 
  * @internal
@@ -115,5 +127,6 @@ if (!(expr)) return val;
  * @return A newly allocated value or NULL.
  */
 #define axl_strdup(string) (string != NULL) ? (char *) strdup ((const char *) string) : NULL;
+
 
 #endif
