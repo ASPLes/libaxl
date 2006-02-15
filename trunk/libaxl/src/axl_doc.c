@@ -167,6 +167,8 @@ struct _axlDoc {
 axlDoc * axl_doc_parse (char * entity, int entity_size, axlError ** error)
 {
 	axlStream * stream;
+	char      * string_aux;
+		
 	
 	/* check for environmental parameters */
 	if (entity == NULL) {
@@ -222,6 +224,8 @@ axlDoc * axl_doc_parse (char * entity, int entity_size, axlError ** error)
 			axl_stream_accept (stream);
 
 			/* found encoding instruction */
+			
+			
 			
 		}
 
