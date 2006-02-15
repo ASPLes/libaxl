@@ -35,8 +35,6 @@
  *      Email address:
  *         info@aspl.es - http://fact.aspl.es
  */
-#ifndef __AXL_DOC_H__
-#define __AXL_DOC_H__
 
 /**
  * @internal
@@ -132,6 +130,9 @@
  */
 
 #include <axl_decl.h>
+#include <axl_doc.h>
+#include <axl_error.h>
+#include <axl_stream.h>
 
 struct _axlDoc {
 	axlNode * rootNode;
@@ -157,11 +158,84 @@ struct _axlDoc {
  * @return A newly allocated Axl Document, that must be deallocated
  * using \ref axl_doc_free, when no longer needed. The function could
  * return NULL if the document is not loaded properly.
+ *
+ * In the case an error is found while procesing the document, error
+ * variable will be filled, if defined. -1 will be returned is
+ * received parameter are wrong. -2 will be returned if there some
+ * error is found while processing the document.
  */
-axlDoc * axl_doc_parse (char * entity, int entity_size, axlError error)
+axlDoc * axl_doc_parse (char * entity, int entity_size, axlError ** error)
 {
+	axlStream * stream;
 	
+	/* check for environmental parameters */
+	if (entity == NULL) {
+		axl_error_new (-1, "Received and empty xml stream.", error);
+		return NULL;
+	}
+
+	if (entity_size <= 0) {
+		axl_error_new (-1, "Received an entity size that is less or equal to 0.", error);
+		return NULL;
+	}
+
+	/* create the xml stream using provided data */
+	stream = axl_stream_new (entity, entity_size);
+		
+	/* check for initial XMLDec (production 23) */
+	if (axl_stream_inspect (stream, "<?")) {
+		
+		/* accept previous inspection */
+		axl_stream_accept (stream);
+
+		if (! axl_stream_inspect (stream, "xml")) {
+			axl_error_new (-2, "expected initial <?xml declaration, not found", error);
+			axl_stream_free (stream);
+			return NULL;
+		}
+		
+		/* accept previous read */
+		axl_stream_accept (stream);
+
+		if (! axl_stream_inspect (stream, " version=")) {
+			axl_error_new (-2, "expected to find 'version=' declaration, not found", error);
+			axl_stream_free (stream);
+			return NULL;
+		}
+
+		/* accept previous read */
+		axl_stream_accept (stream);
+
+		/* check for " or ' */
+		if (! axl_stream_inspect_several (stream, 2, "\"1.0\"", "'1.0'")) {
+			axl_error_new (-2, "expected to find either \" or ' while procesing version number, not found", error);
+			axl_stream_free (stream);
+			return NULL;
+		}
+
+		/* accept previous read */
+		axl_stream_accept (stream);
+
+		/* now check for encoding */
+		if (axl_stream_inspect_several (stream, 2, " encoding=", " encoding='")) {
+			/* accept encoding instruction */
+			axl_stream_accept (stream);
+
+			/* found encoding instruction */
+			
+		}
+
+		
+		
+		
+		
+		
+	}
+	
+	   
+	
+	return NULL;
 }
 
 
-#endif
+

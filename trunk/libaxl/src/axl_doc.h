@@ -38,16 +38,8 @@
 #ifndef __AXL_DOC_H__
 #define __AXL_DOC_H__
 
-/* c++ header declaration */
-#ifdef __cplusplus
-extern	"C" {
-#endif
+#include <axl_decl.h>
 
-external axlDoc * axl_doc_parse (char * entity, int entity_size);
-
-/* c++ header declaration end */
-#ifdef __cplusplus
-}
-#endif
+axlDoc * axl_doc_parse (char * entity, int entity_size, axlError ** error);
 
 #endif

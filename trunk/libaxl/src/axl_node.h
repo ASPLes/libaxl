@@ -40,16 +40,6 @@
 
 #include <axl_decl.h>
 
-/* c++ header declaration */
-#ifdef __cplusplus
-extern	"C" {
-#endif
-
-extern axlNode * axl_node_create (char * name);
-
-/* c++ header declaration end */
-#ifdef __cplusplus
-}
-#endif
+axlNode * axl_node_create (char * name);
 
 #endif

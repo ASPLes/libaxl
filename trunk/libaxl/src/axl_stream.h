@@ -35,17 +35,20 @@
  *      Email address:
  *         info@aspl.es - http://fact.aspl.es
  */
-#ifndef __AXL_ERROR_H__
-#define __AXL_ERROR_H__
+#ifndef __AXL_STREAM_H__
+#define __AXL_STREAM_H__
 
 #include <axl_decl.h>
 
-void   axl_error_new      (int code, char * error, axlError ** _error);
+axlStream * axl_stream_new             (char * stream_source, 
+					int stream_size);
 
-int    axl_error_get_code (axlError * _error);
+int         axl_stream_inspect         (axlStream * stream, char * chunk);
 
-char * axl_error_get      (axlError * _error);
+int         axl_stream_inspect_several (axlStream * stream, int chunk_num, ...);
 
-void   axl_error_free     (axlError * _error);
+void        axl_stream_accept          (axlStream * stream);
+
+void        axl_stream_free            (axlStream * stream);
 
 #endif
