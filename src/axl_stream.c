@@ -205,6 +205,48 @@ void axl_stream_accept (axlStream * stream)
 
 /** 
  * @internal
+ * @brief Returns the next chunk available on the stream.
+ *
+ * This function allows to get next available chunk, validating it
+ * with provided valid_chars variable, until the chunk provided are
+ * found.
+ *
+ * Currently, valid_chars is not used, so, the chunk returned is not
+ * validated against the value provided.
+ * 
+ * As an example if it is required to get the encoding content, you
+ * could do the next call:
+ * 
+ * \code
+ * char * result;
+ * 
+ * // get the next chunk until a " or ' is found
+ * result = axl_stream_get_until (stream, NULL, 2, "\"", "'");
+ * 
+ * \endcode
+ *
+ * Value returned from this function mustn't be deallocated.
+ * 
+ * 
+ * @param stream The stream were the chunk will be extracted.
+ *
+ * @param valid_chars The valid set of characters, to validate content
+ * to be returned. Currently this is not implemented.
+ *
+ * @param chunk_num 
+ * 
+ * @return 
+ */
+char      * axl_stream_get_until       (axlStream * stream, 
+					char      * valid_chars, 
+					int         chunk_num, ...)
+{
+	
+}
+
+
+/** 
+ * @internal
  *
  * @brief Allows to deallocate memory used by the \ref axlStream
  * received.
