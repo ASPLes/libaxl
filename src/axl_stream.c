@@ -37,6 +37,7 @@
  */
 #include <axl_stream.h>
 #include <stdarg.h>
+#include <string.h>
 
 struct _axlStream {
 	/* current stream content */
@@ -50,6 +51,9 @@ struct _axlStream {
 	
 	/* previous inspected stream size */
 	int    previous_inspect;
+
+	/* last chunk get from the stream */
+	char * last_chunk;
 };
 
 
@@ -113,6 +117,11 @@ int         axl_stream_inspect (axlStream * stream, char * chunk)
 	axl_return_val_if_fail (stream, -2);
 	axl_return_val_if_fail (chunk, -1);
 
+	/* accept previous inspection if a call to axl_stream_accept
+	 * weren't done */
+	if (stream->previous_inspect != 0)
+		axl_stream_accept (stream);
+
 	/* get current size to inspect */
 	inspected_size = strlen (chunk);
        
@@ -123,6 +132,7 @@ int         axl_stream_inspect (axlStream * stream, char * chunk)
 	
 	/* check that the chunk to be search is found */
 	if (! memcmp (chunk, stream->stream + stream->stream_index, inspected_size)) {
+
 		/* chunk found!, remember that the previous inspect
 		 * size so we can make the stream to roll on using
 		 * this value */
@@ -199,7 +209,29 @@ void axl_stream_accept (axlStream * stream)
 
 	stream->stream_index     += stream->previous_inspect;
 	stream->previous_inspect  = 0;
+	if (stream->last_chunk != NULL)
+		axl_free (stream->last_chunk);
+	stream->last_chunk = NULL;
 
+	return;
+}
+
+/** 
+ * @internal
+ *
+ * @brief Allows to move internal stream index status the amount
+ * provided by <b>count</b>.
+ *
+ * 
+ * @param stream The stream where the operation will be performed.
+ *
+ * @param count Count to move internal stream index.
+ */
+void        axl_stream_move            (axlStream * stream, int count)
+{
+	axl_return_if_fail (stream);
+	stream->stream_index += count;
+	
 	return;
 }
 
@@ -241,7 +273,73 @@ char      * axl_stream_get_until       (axlStream * stream,
 					char      * valid_chars, 
 					int         chunk_num, ...)
 {
+	char      ** chunks;
+	va_list      args;
+	int          iterator = 0;
+	int          index    = 0;
 	
+	/* perform some environmental checks */
+	axl_return_val_if_fail (stream, NULL);
+	/* axl_return_val_if_fail (valid_chars, NULL); */
+	axl_return_val_if_fail (chunk_num > 0, NULL);
+
+	/* get chunks to lookup */
+	chunks = axl_new (char *, chunk_num);
+	
+	/* begin std args  */
+	va_start (args, chunk_num);
+	
+	/* iterate over the chunk list */
+	while (iterator < chunk_num) {
+		/* get the chunk */
+		chunks[iterator] = va_arg (args, char *);
+		iterator ++;
+	}
+
+	/* end std arg */
+	va_end (args);
+
+	/* now we have chunks to lookup, stream until get the stream
+	 * limited by the chunks received. */
+	while ((index + stream->stream_index) < stream->stream_size) {
+
+		/* compare chunks received for each index increased
+		 * one step */
+		iterator = 0;
+		while (iterator < chunk_num) {
+
+			/* check if we have found the chunk we were looking */
+			if (!memcmp (chunks[iterator], stream->stream + index + stream->stream_index, 
+				     strlen (chunks [iterator]))) {
+
+				/* chunk found */
+				axl_free (chunks);
+				
+				/* result is found from last stream
+				 * index read up to index */
+				if (stream->last_chunk != NULL)
+					axl_free (stream->last_chunk);
+
+				/* get a copy to the chunk to be returned */
+				stream->last_chunk = axl_new (char, index + 1);
+				memcpy (stream->last_chunk, stream->stream + stream->stream_index, index);
+
+				/* update internal indexes */
+				stream->stream_index     += index + strlen (chunks[iterator]);
+				stream->previous_inspect  = 0;
+
+				return stream->last_chunk;
+			}
+			/* update iterator */
+			iterator ++;
+		} /* end while */
+
+		/* it seems that the chunk wasn't found */
+		index++;
+	}
+
+	/* return a NULL chunk. */
+	return NULL;
 }
 
 
