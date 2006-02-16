@@ -69,6 +69,23 @@ typedef struct _axlError  axlError;
  */
 typedef struct _axlStream axlStream;
 
+#define AXL_TRUE  1
+#define AXL_FALSE 0
+
+/** 
+ * @brief Alias declaration to bind the <i>int</i> to the <b>bool</b>
+ * keyword.
+ *
+ * This is mainly used to emphasize that some integer values that
+ * returns some function must be considred to be \ref AXL_TRUE or \ref
+ * AXL_FALSE, that represents the boolean TRUE and FALSE values.
+ *
+ * This allows to perform boolean comparations using structure
+ * controls like if, while, but also making a differenciation about
+ * the boolean values and integer values.
+ */
+typedef int bool;
+
 
 /** 
  * @internal

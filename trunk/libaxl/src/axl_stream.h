@@ -55,6 +55,11 @@ char      * axl_stream_get_until       (axlStream * stream,
 					char      * valid_chars, 
 					int         chunk_num, ...);
 
+void        axl_stream_link            (axlStream * stream,
+					axlDoc    * doc);
+
+void        axl_stream_unlink          (axlStream * stream);
+
 void        axl_stream_free            (axlStream * stream);
 
 #endif
