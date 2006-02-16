@@ -135,9 +135,143 @@
 #include <axl_stream.h>
 
 struct _axlDoc {
-	char    * encoding;
+	/** 
+	 * @internal
+	 * @brief A reference to the very first axlNode this axlDoc
+	 * has. 
+	 */
 	axlNode * rootNode;
+	/** 
+	 * @internal
+	 * @brief Current xml encoding document.
+	 */
+	char    * encoding;
+	
+	/** 
+	 * @internal
+	 * @brief Current standalone configuration of the given \ref
+	 * axlDoc object.
+	 */
+	bool      standalone;
 };
+
+/** 
+ * @internal
+ * 
+ * @brief Support for parsing the xml entity header 
+ * 
+ * @param stream The axlStream where is expected to receive the xml
+ * header
+ *
+ * @param doc The axlDoc where the header configuration will be
+ * placed.
+ *
+ * @param error An optional error that will be filled in the case an
+ * error is found.
+ *
+ * @return It is supposed that the function return \ref AXL_TRUE, an
+ * not deallocation is performed, and all elements were parsed
+ * properly. In the case \ref AXL_FALSE is returned, memory associated
+ * with the given stream will be released. If the document is
+ * associated, it will also be released.
+ */
+bool __axl_doc_parse_xml_header (axlStream * stream, axlDoc * doc, axlError ** error)
+{
+	char      * string_aux;
+
+	/* consume spaces */
+	AXL_CONSUME_SPACES (stream);
+	
+	/* check for initial XMLDec (production 23) */
+	if (axl_stream_inspect (stream, "<?")) {
+		
+		/* consume spaces */
+		AXL_CONSUME_SPACES (stream);
+		
+		if (! axl_stream_inspect (stream, "xml")) {
+			axl_error_new (-2, "expected initial <?xml declaration, not found", error);
+			axl_stream_free (stream);
+			return AXL_FALSE;
+		}
+		
+		/* consume spaces */
+		AXL_CONSUME_SPACES (stream);
+
+		if (! axl_stream_inspect (stream, "version=")) {
+			axl_error_new (-2, "expected to find 'version=' declaration, not found", error);
+			axl_stream_free (stream);
+			return AXL_FALSE;
+		}
+
+		/* consume spaces */
+		AXL_CONSUME_SPACES (stream);
+
+		/* check for " or ' */
+		if (! axl_stream_inspect_several (stream, 2, "\"1.0\"", "'1.0'")) {
+			axl_error_new (-2, "expected to find either \" or ' while procesing version number, not found", error);
+			axl_stream_free (stream);
+			return AXL_FALSE;
+		}
+
+		/* check for an space */
+		AXL_CONSUME_SPACES(stream);
+
+		/* now check for encoding */
+		if (axl_stream_inspect_several (stream, 2, "encoding=\"", "encoding='")) {
+			/* accept encoding instruction */
+			axl_stream_accept (stream);
+
+			/* found encoding instruction */
+			string_aux = axl_stream_get_until (stream, NULL, 2, "'", "\"");
+			if (string_aux) {
+				axl_error_new (-2, "expected encoding value, not found", error);
+				axl_stream_free (stream);
+				return AXL_FALSE;
+			}
+
+			/* set document encoding */
+			doc->encoding = axl_strdup (string_aux);
+		}
+
+		/* check for an space */
+		AXL_CONSUME_SPACES(stream);
+
+		/* get standalone configuration */
+		if ((axl_stream_inspect_several (stream, 2, "standalone=\"", "standalone='") > 0)) {
+			
+			/* found standalone instruction */
+			string_aux = axl_stream_get_until (stream, NULL, 2, "'", "\"");
+			if (string_aux) {
+				axl_error_new (-2, "expected to receive standalone value, not found", error);
+				axl_stream_free (stream);
+				return AXL_FALSE;
+			}
+
+			/* set standalone configuration */
+			if (memcmp ("yes", string_aux, 3))
+				doc->standalone = AXL_FALSE;
+			else
+				doc->standalone = AXL_TRUE;
+		}
+		
+		/* check for an space */
+		AXL_CONSUME_SPACES(stream);
+
+		/* get the trailing header */
+		if (!axl_stream_inspect (stream, "?>")) {
+			axl_error_new (-2, "expected to receive the xml trailing header ?>, not found", error);
+			axl_stream_free (stream);
+			return AXL_FALSE;
+		}
+		
+		/* accept last element consumed */
+		axl_stream_accept (stream);
+	}
+	
+	/* return TRUE value */
+	return AXL_TRUE;
+}
+
 
 /** 
  * @brief Parse an XML entity that is hold inside the memory pointed
@@ -168,7 +302,6 @@ struct _axlDoc {
 axlDoc * axl_doc_parse (char * entity, int entity_size, axlError ** error)
 {
 	axlStream * stream;
-	char      * string_aux;
 	axlDoc    * doc;
 		
 	
@@ -186,71 +319,14 @@ axlDoc * axl_doc_parse (char * entity, int entity_size, axlError ** error)
 	/* create the xml stream using provided data */
 	stream = axl_stream_new (entity, entity_size);
 	doc    = axl_new (axlDoc, 1);
+	axl_stream_link (stream, doc);
 
-	/* consume spaces */
-	AXL_CONSUME_SPACES (stream);
-		
-	/* check for initial XMLDec (production 23) */
-	if (axl_stream_inspect (stream, "<?")) {
-		
-		/* consume spaces */
-		AXL_CONSUME_SPACES (stream);
+	/* parse initial xml header */
+	if (!__axl_doc_parse_xml_header (stream, doc, error))
+		return NULL;
 
-		if (! axl_stream_inspect (stream, "xml")) {
-			axl_error_new (-2, "expected initial <?xml declaration, not found", error);
-			axl_stream_free (stream);
-			return NULL;
-		}
-		
-		/* consume spaces */
-		AXL_CONSUME_SPACES (stream);
-
-		if (! axl_stream_inspect (stream, "version=")) {
-			axl_error_new (-2, "expected to find 'version=' declaration, not found", error);
-			axl_stream_free (stream);
-			return NULL;
-		}
-
-		/* consume spaces */
-		AXL_CONSUME_SPACES (stream);
-
-		/* check for " or ' */
-		if (! axl_stream_inspect_several (stream, 2, "\"1.0\"", "'1.0'")) {
-			axl_error_new (-2, "expected to find either \" or ' while procesing version number, not found", error);
-			axl_stream_free (stream);
-			return NULL;
-		}
-
-		/* check for an space */
-		AXL_CONSUME_SPACES(stream);
-
-		/* now check for encoding */
-		if (axl_stream_inspect_several (stream, 2, "encoding=\"", "encoding='")) {
-			/* accept encoding instruction */
-			axl_stream_accept (stream);
-
-			/* found encoding instruction */
-			string_aux = axl_stream_get_until (stream, NULL, 2, "'", "\"");
-			if (string_aux) {
-				axl_error_new (-2, "expected encoding value, not found", error);
-				axl_stream_free (stream);
-				return NULL;
-			}
-
-			/* set document encoding */
-			doc->encoding = axl_strdup (string_aux);
-		}
-
-		/* check for an space */
-		AXL_CONSUME_SPACES(stream);
-
-		if (axl_stream_inspect_several, (stream, 2, "standalone=\"", "standalone='")) {
-			
-		}
-		
-	}
-
-	return NULL;
+	/* parse complete */
+	return doc;
 }
 
 /** 
@@ -270,5 +346,23 @@ char   * axl_doc_get_encoding (axlDoc * doc)
 	return (doc->encoding != NULL) ? doc->encoding : "";
 }
 
+/** 
+ * @brief Releases memory allocated by the \ref axlDoc object.
+ * 
+ * @param doc The \ref axlDoc object to unref.
+ */
+void     axl_doc_free         (axlDoc * doc)
+{
+	/* do not complain if an axlDoc reference is received */
+	if (doc == NULL)
+		return;
 
+	/* free enconding allocated */
+	axl_free (doc->encoding);
+
+	/* free document allocated */
+	axl_free (doc);
+
+	return;
+}
 

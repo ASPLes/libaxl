@@ -3,10 +3,10 @@ EXTRA_DIST = $(wildcard *.c)
 all: $(patsubst %.c, %.exe, $(EXTRA_DIST))
 
 %.o:
-	$(CC) $(patsubst %.o, %.c, $@) -c -o $@ -I../src/
+	libtool --mode=compile $(CC) $(patsubst %.o, %.c, $@) -c -o $@ -I../src/
 
 %.exe: %.o
-	$(CC) $? -o $@ -L../src/ 
+	libtool --mode=link  $(CC) $? -o $@ ../src/libaxl.la
 
 .PHONY: clean
 clean: 

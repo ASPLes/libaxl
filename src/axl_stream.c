@@ -36,6 +36,7 @@
  *         info@aspl.es - http://fact.aspl.es
  */
 #include <axl_stream.h>
+#include <axl_doc.h>
 #include <stdarg.h>
 #include <string.h>
 
@@ -53,7 +54,10 @@ struct _axlStream {
 	int    previous_inspect;
 
 	/* last chunk get from the stream */
-	char * last_chunk;
+	char   * last_chunk;
+
+	/* a reference to the associated document to this stream */
+	axlDoc * doc;
 };
 
 
@@ -346,6 +350,55 @@ char      * axl_stream_get_until       (axlStream * stream,
 /** 
  * @internal
  *
+ * @brief Associates the given axlDoc with the given stream to be
+ * life-time dependant.
+ *
+ * While performing the XML parsing, errors will be produced. This
+ * function ensures that the axlDoc document will be released if the
+ * stream is also released.
+ *
+ * This not only reduces the possibility to produce a memory leak also
+ * allows to write less code.
+ *
+ * Once the stream is not useful and it is required to be released,
+ * but not doing so with the \ref axlDoc instance, a call to \ref
+ * axl_stream_unlink is also required.
+ * 
+ * @param stream The axlStream where the document will be linked to.
+ *
+ * @param doc The axlDoc where the document will be linked to.
+ */
+void axl_stream_link (axlStream * stream, axlDoc * doc) 
+{
+	axl_return_if_fail (stream);
+	axl_return_if_fail (doc);
+	
+	/* that's all */
+	stream->doc = doc;
+
+	return;
+}
+
+/** 
+ * @internal
+ *
+ * @brief Unlinks the associated \ref axlDoc instance.
+ * 
+ * @param stream The stream where the operation will be performed.
+ */
+void axl_stream_unlink (axlStream * stream)
+{
+	axl_return_if_fail (stream);
+	
+	/* clear document association */
+	stream->doc = NULL;
+	
+	return;
+}
+
+/** 
+ * @internal
+ *
  * @brief Allows to deallocate memory used by the \ref axlStream
  * received.
  * 
@@ -357,6 +410,12 @@ void axl_stream_free (axlStream * stream)
 
 	/* release memory */
 	axl_free (stream->stream);
+
+	/* release associated document is defined. */
+	if (stream->doc) 
+		axl_doc_free (stream->doc);
+
+	/* release memory allocated by the stream received. */
 	axl_free (stream);
 
 	return;

@@ -40,6 +40,7 @@ AC_OUTPUT([
 Makefile
 src/Makefile
 doc/Makefile
+test/Makefile
 axl.pc])
 
 echo "------------------------------------------"

@@ -46,4 +46,6 @@ axlDoc * axl_doc_parse        (char * entity,
 
 char   * axl_doc_get_encoding (axlDoc * doc);
 
+void     axl_doc_free         (axlDoc * doc);
+
 #endif
