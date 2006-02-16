@@ -40,6 +40,10 @@
 
 #include <axl_decl.h>
 
+BEGIN_C_DECLS
+
 axlNode * axl_node_create (char * name);
+
+END_C_DECLS
 
 #endif
