@@ -1,4 +1,5 @@
 #include <axl.h>
+#include <stdio.h>
 
 /** 
  * Test01: Initial xml header checking.

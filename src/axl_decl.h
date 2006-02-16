@@ -158,4 +158,24 @@ if (!(expr)) return val;
 while (axl_stream_inspect_several (stream, 4, " ", "\t", "\r", "\n")) \
 	axl_stream_accept (stream); 
 
+/** 
+ * @internal
+ *
+ * C++ support declarations borrowed from the libtool webpage. Thanks
+ * you guys for this information. 
+ *
+ * BEGIN_C_DECLS should be used at the beginning of your declarations,
+ * so that C++ compilers don't mangle their names.  Use END_C_DECLS at
+ * the end of C declarations.
+ */
+#undef BEGIN_C_DECLS
+#undef END_C_DECLS
+#ifdef __cplusplus
+# define BEGIN_C_DECLS extern "C" {
+# define END_C_DECLS }
+#else
+# define BEGIN_C_DECLS /* empty */
+# define END_C_DECLS /* empty */
+#endif
+
 #endif

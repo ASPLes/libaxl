@@ -43,6 +43,10 @@
 #include <axl_node.h>
 #include <axl_error.h>
 
+BEGIN_C_DECLS
+
 int axl_init ();
+
+END_C_DECLS
 
 #endif
