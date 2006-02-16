@@ -129,4 +129,16 @@ if (!(expr)) return val;
 #define axl_strdup(string) (string != NULL) ? (char *) strdup ((const char *) string) : NULL;
 
 
+/** 
+ * @internal
+ * 
+ * @brief Consumes all spaces found and tabulars on the given stream
+ * until a different char is found.
+ * 
+ * @param stream The stream where the operation will be performed.
+ */
+#define AXL_CONSUME_SPACES(stream) \
+while (axl_stream_inspect_several (stream, 4, " ", "\t", "\r", "\n")) \
+	axl_stream_accept (stream); 
+
 #endif

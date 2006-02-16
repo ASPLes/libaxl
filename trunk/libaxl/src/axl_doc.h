@@ -40,6 +40,10 @@
 
 #include <axl_decl.h>
 
-axlDoc * axl_doc_parse (char * entity, int entity_size, axlError ** error);
+axlDoc * axl_doc_parse        (char * entity, 
+			       int entity_size, 
+			       axlError ** error);
+
+char   * axl_doc_get_encoding (axlDoc * doc);
 
 #endif

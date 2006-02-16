@@ -49,6 +49,8 @@ int         axl_stream_inspect_several (axlStream * stream, int chunk_num, ...);
 
 void        axl_stream_accept          (axlStream * stream);
 
+void        axl_stream_move            (axlStream * stream, int count);
+
 char      * axl_stream_get_until       (axlStream * stream, 
 					char      * valid_chars, 
 					int         chunk_num, ...);

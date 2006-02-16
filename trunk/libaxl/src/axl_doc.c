@@ -73,7 +73,7 @@
  * [29] markupdecl     ::=   elementdecl | AttlistDecl | EntityDecl | NotationDecl | PI | Comment
  * [30] extSubset      ::=   TextDecl? extSubsetDecl
  * [31] extSubsetDecl  ::=   ( markupdecl | conditionalSect | DeclSep) *
- * [32] SDecl          ::=   S 'standalone' Eq (("'" ('yes' | 'no') "'") | ('"'" ('yes' | 'no') '"'))
+ * [32] SDDecl          ::=   S 'standalone' Eq (("'" ('yes' | 'no') "'") | ('"'" ('yes' | 'no') '"'))
  * 
  * ** productions 33 through 39 have been removed. It seems that this
  * ** productions were supporting xml:lang stuff that is easily
@@ -135,6 +135,7 @@
 #include <axl_stream.h>
 
 struct _axlDoc {
+	char    * encoding;
 	axlNode * rootNode;
 };
 
@@ -168,6 +169,7 @@ axlDoc * axl_doc_parse (char * entity, int entity_size, axlError ** error)
 {
 	axlStream * stream;
 	char      * string_aux;
+	axlDoc    * doc;
 		
 	
 	/* check for environmental parameters */
@@ -183,12 +185,16 @@ axlDoc * axl_doc_parse (char * entity, int entity_size, axlError ** error)
 
 	/* create the xml stream using provided data */
 	stream = axl_stream_new (entity, entity_size);
+	doc    = axl_new (axlDoc, 1);
+
+	/* consume spaces */
+	AXL_CONSUME_SPACES (stream);
 		
 	/* check for initial XMLDec (production 23) */
 	if (axl_stream_inspect (stream, "<?")) {
 		
-		/* accept previous inspection */
-		axl_stream_accept (stream);
+		/* consume spaces */
+		AXL_CONSUME_SPACES (stream);
 
 		if (! axl_stream_inspect (stream, "xml")) {
 			axl_error_new (-2, "expected initial <?xml declaration, not found", error);
@@ -196,17 +202,17 @@ axlDoc * axl_doc_parse (char * entity, int entity_size, axlError ** error)
 			return NULL;
 		}
 		
-		/* accept previous read */
-		axl_stream_accept (stream);
+		/* consume spaces */
+		AXL_CONSUME_SPACES (stream);
 
-		if (! axl_stream_inspect (stream, " version=")) {
+		if (! axl_stream_inspect (stream, "version=")) {
 			axl_error_new (-2, "expected to find 'version=' declaration, not found", error);
 			axl_stream_free (stream);
 			return NULL;
 		}
 
-		/* accept previous read */
-		axl_stream_accept (stream);
+		/* consume spaces */
+		AXL_CONSUME_SPACES (stream);
 
 		/* check for " or ' */
 		if (! axl_stream_inspect_several (stream, 2, "\"1.0\"", "'1.0'")) {
@@ -215,30 +221,53 @@ axlDoc * axl_doc_parse (char * entity, int entity_size, axlError ** error)
 			return NULL;
 		}
 
-		/* accept previous read */
-		axl_stream_accept (stream);
+		/* check for an space */
+		AXL_CONSUME_SPACES(stream);
 
 		/* now check for encoding */
-		if (axl_stream_inspect_several (stream, 2, " encoding=", " encoding='")) {
+		if (axl_stream_inspect_several (stream, 2, "encoding=\"", "encoding='")) {
 			/* accept encoding instruction */
 			axl_stream_accept (stream);
 
 			/* found encoding instruction */
-			
-			
-			
+			string_aux = axl_stream_get_until (stream, NULL, 2, "'", "\"");
+			if (string_aux) {
+				axl_error_new (-2, "expected encoding value, not found", error);
+				axl_stream_free (stream);
+				return NULL;
+			}
+
+			/* set document encoding */
+			doc->encoding = axl_strdup (string_aux);
 		}
 
-		
-		
-		
-		
+		/* check for an space */
+		AXL_CONSUME_SPACES(stream);
+
+		if (axl_stream_inspect_several, (stream, 2, "standalone=\"", "standalone='")) {
+			
+		}
 		
 	}
-	
-	   
-	
+
 	return NULL;
+}
+
+/** 
+ * @brief Gets current axl Document encoding.
+ * 
+ * @param doc The document where the encoding will be retrieved.
+ * 
+ * @return A valid \ref axlDoc reference. NULL is returned in the case
+ * a NULL \ref axlDoc reference is received. The value returned by
+ * this function must not be deallocated.
+ */
+char   * axl_doc_get_encoding (axlDoc * doc)
+{
+	/* check parameter received */
+	axl_return_val_if_fail (doc, NULL);
+	
+	return (doc->encoding != NULL) ? doc->encoding : "";
 }
 
 
