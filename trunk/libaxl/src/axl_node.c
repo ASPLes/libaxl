@@ -44,9 +44,33 @@ struct _axlAttribute {
 };
 
 struct _axlNode {
+	/** 
+	 * @internal
+	 *
+	 * Node name that is the value found at the very begining of
+	 * the node definition <name.../>
+	 */
 	char          * name;
+
+	/** 
+	 * @internal
+	 * @brief The attributes this node has.
+	 */
 	axlAttribute ** attributes;
+
+	/** 
+	 * @internal
+	 *
+	 * @brief How many attributes this node has.
+	 */
 	int             attributes_count;
+
+	/** 
+	 * @internal
+	 * 
+	 * Current configuration for a node to be considered empty.
+	 */
+	bool            is_empty;
 };
 
 
@@ -69,6 +93,49 @@ axlNode * axl_node_create (char * name)
 	node->name     = axl_strdup (name);
 
 	return node;
+}
+
+/** 
+ * @brief Allows to configure the given node to be empty.
+ *
+ * A \ref axlNode is empty when it is known that the node doesn't have
+ * any content inside it as a child element.
+ *
+ * @param node The node to configure as empty.
+ *
+ * @param empty The value for emptyness to be used. AXL_FALSE will
+ * mean that the node is not empty.
+ */
+void      axl_node_is_empty (axlNode * node, bool empty)
+{
+	axl_return_if_fail (node);
+	
+	/* set value received */
+	node->is_empty = empty;
+
+	return;
+}
+
+/** 
+ * @brief Destroy the given node provided by the reference.
+ *
+ * The function will check for nodes that are null references.
+ * 
+ * @param node The node to destroy. 
+ */
+void axl_node_free (axlNode * node) 
+{
+	axl_return_if_fail (node);
+
+	/* free current node */
+	if (node->name != NULL)
+		axl_free (node->name);
+
+	/* free attributes */
+	axl_free (node);
+	
+	/* the node to release */
+	return;
 }
 
 

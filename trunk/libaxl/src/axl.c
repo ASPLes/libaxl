@@ -36,15 +36,39 @@
  *         info@aspl.es - http://fact.aspl.es
  */
 #include <axl.h>
+#include <stdarg.h>
+#include <stdio.h>
 
 /** 
  * @brief Initializes Axl library.
+ *
+ * Currently this function is not required to be executed because
+ * libaxl implementation don't use it. The implementation will try to
+ * make no used for internal variable initialization.
+ *
+ * However the API is provided for future usage.
  * 
- * @return The function returns 0 if it was properly initialized or -1
- * if fails.
+ * @return The function returns AXL_TRUE if it was properly
+ * initialized or AXL_FALSE if something fails.  if fails.
  */
-int axl_init ()
+bool axl_init ()
 {
-	return 0;
+	/* nothing to initialize dude */
+	return AXL_TRUE;
 }
+
+/** 
+ *
+ * @brief Allows to terminate libaxl library function.
+ *
+ * Currently this function is not required becasue nothing is done to
+ * stop libaxl function. The implementation will try to keep this,
+ * however, if the future this could be required.
+ */
+void axl_end ()
+{
+	/* nothing to do jack */
+	return;
+}
+
 

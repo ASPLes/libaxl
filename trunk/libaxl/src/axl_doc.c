@@ -41,39 +41,107 @@
  * @brief XML 1.0 Third edition grammar
  *
  * [1]  document       ::=   prolog element Misc*
+ * [1]  status: partially
+ *
  * [2]  Char           ::=   \x9 | \xA | \xD | \x20-\xD7FF | \xE000-\xFFFD | \x10000-\10FFFF
+ * [2]  status: not implemented 
+ *
  * [3]  S              ::= ( \x20 | \x9 | \xD | \xA)
+ * [3]  status: ok
+ *
  * [4]  NameChar       ::=   Letter | Digit | '.' | '-' | '_' | ':' | CombiningChar | Extender
+ * [4]  status: not implemented
+ *
  * [5]  Name           ::= ( Letter | '_' | ':' |) ( NameChar )*
+ * [5]  status: not implemented
+ *
  * [6]  Names          ::=   Name ( \x20 Name )*
+ * [6]  status: not implemented
+ *
  * [7]  Nmtoken        ::= ( NameChar ) +
+ * [7]  status: not implemented
+ *
  * [8]  Nmtokens       ::=   Nmtoken (\x20 Nmtoken)*
+ * [8]  status: not implemented
+ *
  * [9]  EntityValue    ::=   '"' ( [^%&"] | PEReference | Reference )* '"' | "'" ( [^%&'] ! PEReference | Reference )* "'"
+ * [9]  status: not implemented
+ *
  * [10] AttValue       ::=   '"' ( [^<&"] | Reference)*  '"' | "'" ( [^<&'] | Reference )* "'"
+ * [10]  status: not implemented
+ *
  * [11] SystemLiteral  ::= ( '"' [^"]* '"') | ("'" [^']* "'")
+ * [11]  status: not implemented
+ *
  * [12] PubidLiteral   ::=   '"' PubidChar* '"' | "'" (PubidChar - "'") * "'"
+ * [12]  status: not implemented
+ *
  * [13] PubidChar      ::=   \x20 | \xD | \xA | [a-zA-Z0-9] | [-'()+,./:=?;!*#@$_%]
+ * [13]  status: not implemented
+ *
  * [14] CharData       ::=   [^<&]* - ([^<&]* ']]>' [^<&]*)
+ * [14]  status: not implemented
+ *
  * [15] Comments       ::=   '<!--' ((Char - '-') | ('-' (Char - '-')))* '-->'
+ * [15]  status: not implemented
+ *
  * [16] PI             ::=   '<?' PITarget (S (Char* - (Char* '?<' Char*)))? '?>'
+ * [16]  status: not implemented
+ *
  * [17] PITarget       ::=   Name - (('X' | 'x') ('M' | 'm') | ('L' | 'l'))
+ * [17]  status: not implemented
+ *
  * [18] CDsect         ::=   CDStart CData CDend
+ * [18]  status: not implemented
+ *
  * [19] CDStart        ::=   '<![CDATA['
+ * [19]  status: not implemented
+ *
  * [20] CData          ::=   (Char* - (Char* ']]>' Char*))
+ * [20]  status: not implemented
+ *
  * [21] CDEnd          ::=   ']]>'
+ * [21]  status: not implemented
+ *
  * [22] prolog         ::=   XMLDecl? Misc* (doctypedecl Misc*)?
+ * [22]  status: partially
+ *
  * [23] XMLDecl        ::=   '<?xml' VersionInfo EncodingDecl? SDDecl? S? '?>'
+ * [23]  status: ok
+ *
  * [24] VersionInfo    ::=   S 'version' Eq ("'" VersionNum "'" | '"' VersionNum '"')
+ * [24]  status: ok
+ *
  * [25] Eq             ::=   S? '=' S?
+ * [25]  status: ok
+ *
  * [26] VersionNum     ::=   '1.0'
+ * [26]  status: ok
+ *
  * [27] Misc           ::=   Comment | PI | S
+ * [27]  status: not implemented
+ *
  * [28] doctypedecl    ::=   '<!DOCTYPE' S Name (S ExternalID)? S? ('[' intSubsect ']' S?)? '>'
+ * [28]  status: not implemented
+ *
  * [28a] DeclSep       ::=   PEReference | S
+ * [28a]  status: not implemented
+ *
  * [28b] intSubset     ::=   (markupdecl | DeclSep)*
+ * [28b]  status: not implemented
+ *
  * [29] markupdecl     ::=   elementdecl | AttlistDecl | EntityDecl | NotationDecl | PI | Comment
+ * [29]  status: not implemented
+ *
  * [30] extSubset      ::=   TextDecl? extSubsetDecl
+ * [30]  status: not implemented
+ *
  * [31] extSubsetDecl  ::=   ( markupdecl | conditionalSect | DeclSep) *
+ * [31]  status: not implemented
+ *
  * [32] SDDecl          ::=   S 'standalone' Eq (("'" ('yes' | 'no') "'") | ('"'" ('yes' | 'no') '"'))
+ * [32]  status: ok
+ *
  * 
  * ** productions 33 through 39 have been removed. It seems that this
  * ** productions were supporting xml:lang stuff that is easily
@@ -81,58 +149,145 @@
  * ** mention it as an special production inside the language.
  *  
  * [39] element        ::=   EmptyElemTag | Stag content ETag
+ * [39]  status: not implemented
+ *
  * [40] Stag           ::=   '<' Name (S Attribute)* S? '>'
+ * [40]  status: not implemented
+ *
  * [41] Attribute      ::=   Name Eq AttValue
+ * [41]  status: not implemented
+ *
  * [42] ETag           ::=   '</' Name S? '>'
+ * [42]  status: not implemented
+ *
  * [43] content        ::=   CharData? ((element | Reference | CDSect | PI | Comment) CharData?)*
+ * [43]  status: not implemented
+ *
  * [44] EmptyElemTag   ::=   '<' Name (S Attribute)* S? '/>'
+ * [44]  status: not implemented
+ *
  * [45] elementdecl    ::=   '<!ELEMENT' S Name S contentspec S? '>' 
+ * [45]  status: not implemented
+ *
  * [46] contentspec    ::=   'EMPTY' | 'ANY' | Mixed | children
+ * [46]  status: not implemented
+ *
  * [47] children       ::=   (choice | seq) ('?' | '*' | '+')? 
+ * [47]  status: not implemented
+ *
  * [48] cp             ::=   (Name | choice | seq) ('?' | '*' | '+')? 
+ * [48]  status: not implemented
+ *
  * [49] choice         ::=   '(' S? cp ( S? '|' S? cp)+ S? ')'
+ * [49]  status: not implemented
+ *
  * [50] seq            ::=   '(' S? cp ( S? ',' S? cp )* S? ')'
+ * [50]  status: not implemented
+ *
  * [51] Mixed          ::=   '(' '#PCDATA' (S? '|' S? Name)* S? ')*' | '(' S? '#PCDATA' S? ')'
+ * [51]  status: not implemented
+ *
  * [52] AttlistDecl    ::=   '<!ATTLIST' S Name AttDef* S? '>'
+ * [52]  status: not implemented
+ *
  * [53] AttDef         ::=   S Name S AttType S DefaultDecl
+ * [53]  status: not implemented
+ *
  * [54] AttType        ::=   Stringtype | TokenizedType | Enumeratedtype
+ * [54]  status: not implemented
+ *
  * [55] StringType     ::=   'CDATA'
+ * [55]  status: not implemented
+ *
  * [56] tokenized      ::=   'ID' | 'IDREF' | 'IDREFS' | 'ENTITY' | 'ENTITIES' | 'NMTOKEN' | 'NMTOKENS'
+ * [56]  status: not implemented
+ *
  * [57] EnumeratedType ::=   NotationType | Enumeration
+ * [57]  status: not implemented
+ *
  * [58] NotationType   ::=   'NOTATION' S '(' S? Name (S? Name (S? '|' S? Name)* S? ')'
+ * [58]  status: not implemented
+ *
  * [59] Enumeration    ::=   '(' S? Nmtoken (S? '|' S? Nmtoken)* S? ')'
+ * [59]  status: not implemented
+ *
  * [60] DefaultDecl    ::=   '#REQUIRED' | '#IMPLIED' | (('#FIXED' S)? AttValue)
+ * [60]  status: not implemented
+ *
  * [61] conditionalSect  ::= includeSect | ignoreSect
+ * [61]  status: not implemented
+ *
  * [62] includeSect    ::= '<![' S? 'INCLUDE S? '[' extSubsetDecl ']]>'
+ * [62]  status: not implemented
+ *
  * [63] ignoreSect     ::=  <![' S? 'IGNORE' S? '[' ignoreSectContents* ']]>'
+ * [63]  status: not implemented
+ *
  * [64] ignoreSectContents ::=  Ignore ('<![' ignoreSectContents ']]>' Ignore) *
+ * [64]  status: not implemented
+ *
  * [65] Ignore         ::=  Char * - (Char * ('<!' | ']]>') Char *)
+ * [65]  status: not implemented
+ *
  * [66] CharRef        ::=  '&#' [0-9]+ ';' | '&#x' [0-9a-FA-F]+ ';'
+ * [66]  status: not implemented
+ *
  * [67] Reference      ::=  EntityRef | CharRef
+ * [67]  status: not implemented
+ *
  * [68] EntityRef      ::=  '&' Name ';'
+ * [68]  status: not implemented
+ *
  * [69] PEReference    ::=  '%' Name ';'
+ * [69]  status: not implemented
+ *
  * [70] EntityDecl     ::=  GEDecl | PEDecl
+ * [70]  status: not implemented
+ *
  * [71] GEDecl         ::=  '<!ENTITY' S Name S EntityDef S? '>'
+ * [71]  status: not implemented
+ *
  * [72] PEDecl         ::=  '<!ENTITY' S '%' S Name S PEDef S? '>'
+ * [72]  status: not implemented
+ *
  * [73] EntityDef      ::=  EntityValue | (ExternalID NDataDecl?)
+ * [73]  status: not implemented
+ *
  * [74] PEDef          ::=  EntityValue | ExternalID
+ * [74]  status: not implemented
+ *
  * [75] ExternalID     ::=  'SYSTEM' S SystemLiteral | 'PUBLIC' S PubidLiteral S SystemLiteral
+ * [75]  status: not implemented
+ *
  * [76] NDataDecl      ::=  S 'NData' S Name
+ * [76]  status: not implemented
+ *
  * [77] TextDecl       ::=  '<?xml' VersionInfo? EncodingDecl S? '?>'
+ * [77]  status: not implemented
+ *
  * [78] extParseEnt    ::=  TextDecl? content
+ * [78]  status: not implemented
+ *
  * [80] EncodingDecl   ::=  S 'encoding' Eq ( '"' EncName '"' | "'" EncName "'" )
+ * [80]  status: ok
+ *
  * [81] EncName        ::=  [A-Za-z] ([A-Za-z0-9._] | '-')*
+ * [81]  status: ok
+ *
  * [82] NotationalDecl ::=  '<!NOTATION' S Name S (ExternalID | PublicID) S? '>' 
+ * [82]  status: not implemented
+ *
  * [83] PublicID       ::=  'PUBLIC' S PubidLiteral
+ * [83]  status: not implemented
+ *
  * 
  * 
  * 
  */
 
-#include <axl_decl.h>
-#include <axl_doc.h>
-#include <axl_error.h>
-#include <axl_stream.h>
+#include <axl.h>
+
+#define LOG_DOMAIN "axl-doc"
 
 struct _axlDoc {
 	/** 
@@ -182,8 +337,12 @@ bool __axl_doc_parse_xml_header (axlStream * stream, axlDoc * doc, axlError ** e
 	/* consume spaces */
 	AXL_CONSUME_SPACES (stream);
 	
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "looking for an xml header declaration");
+
 	/* check for initial XMLDec (production 23) */
 	if (axl_stream_inspect (stream, "<?")) {
+		
+		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found xml declaration");
 		
 		/* consume spaces */
 		AXL_CONSUME_SPACES (stream);
@@ -217,17 +376,19 @@ bool __axl_doc_parse_xml_header (axlStream * stream, axlDoc * doc, axlError ** e
 		AXL_CONSUME_SPACES(stream);
 
 		/* now check for encoding */
-		if (axl_stream_inspect_several (stream, 2, "encoding=\"", "encoding='")) {
-			/* accept encoding instruction */
-			axl_stream_accept (stream);
+		if (axl_stream_inspect_several (stream, 2, "encoding=\"", "encoding='") > 0) {
+
+			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found encoding declaration");
 
 			/* found encoding instruction */
 			string_aux = axl_stream_get_until (stream, NULL, 2, "'", "\"");
-			if (string_aux) {
+			if (string_aux == NULL) {
 				axl_error_new (-2, "expected encoding value, not found", error);
 				axl_stream_free (stream);
 				return AXL_FALSE;
 			}
+			
+			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "encoding found=%s", string_aux);
 
 			/* set document encoding */
 			doc->encoding = axl_strdup (string_aux);
@@ -241,7 +402,7 @@ bool __axl_doc_parse_xml_header (axlStream * stream, axlDoc * doc, axlError ** e
 			
 			/* found standalone instruction */
 			string_aux = axl_stream_get_until (stream, NULL, 2, "'", "\"");
-			if (string_aux) {
+			if (string_aux == NULL) {
 				axl_error_new (-2, "expected to receive standalone value, not found", error);
 				axl_stream_free (stream);
 				return AXL_FALSE;
@@ -263,12 +424,105 @@ bool __axl_doc_parse_xml_header (axlStream * stream, axlDoc * doc, axlError ** e
 			axl_stream_free (stream);
 			return AXL_FALSE;
 		}
-		
-		/* accept last element consumed */
-		axl_stream_accept (stream);
 	}
 	
 	/* return TRUE value */
+	return AXL_TRUE;
+}
+
+/** 
+ * @internal
+ *
+ * @brief Tries to parse the first (and compulsory) node that the xml
+ * document must have.
+ *
+ * The very minimal expresion of an xml document is the one defined by
+ * only one node, with no content and no attributes. This minimal xml
+ * could be defined as:
+ *
+ * \code
+ *   <hello/>
+ * \endcode
+ *
+ * Or the other form accepted:
+ *
+ * \code
+ *   <hello />
+ * \endcode
+ *
+ * 
+ * 
+ * 
+ * @param stream The \ref axlStream object where is expected to find
+ * the xml node content.
+ *
+ * @param doc The \ref axlDoc object where node read will be placed
+ * inside.
+ *
+ * @param error An optional error reporting variable to used to report
+ * upper level the error found.
+ * 
+ * @return AXL_TRUE if the first node was successfully parsed or
+ * AXL_FALSE if not. If the function find something wrong the document
+ * is unrefered.
+ */
+bool __axl_doc_parse_first_node (axlStream * stream, axlDoc * doc, axlError ** error)
+{
+	char    * string_aux;
+	axlNode * root;
+	
+	axl_return_val_if_fail (stream, AXL_FALSE);
+	axl_return_val_if_fail (doc, AXL_FALSE);
+	
+
+	/* get rid from spaces */
+	AXL_CONSUME_SPACES(stream);
+
+	/* check for initial < definition */
+	if (! axl_stream_inspect (stream, "<")) {
+		axl_error_new (-2, "expected initial < for a node definition, not found", error);
+		axl_stream_free (stream);
+		return AXL_FALSE;
+	}
+	
+	/* get node name */
+	string_aux = axl_stream_get_until (stream, NULL, 1, " ");
+	if (AXL_IS_STR_EMPTY (string_aux)) {
+		axl_error_new (-2, "expected an non empty content for the node name not found", error);
+		axl_stream_free (stream);
+		return AXL_FALSE;
+	}
+
+	/* create the root node and associate it */
+	root           = axl_node_create (string_aux);
+	doc->rootNode  = root;
+
+
+	/* know, until the node ends, we have to find the node
+	 * attributes or the node defintion end */
+	while (axl_stream_remains (stream)) {
+		/* get rid from spaces */
+		AXL_CONSUME_SPACES (stream);
+		
+		/* check if we have an attribute for the node, or the node
+		 * definition have ended or the node definition is an empty
+		 * one */
+		if (axl_stream_inspect (stream, "/>")) {
+			axl_node_is_empty (root, AXL_TRUE);
+			/* empty node configuration found */
+			break;
+		}
+		
+		/* found node definition termination */
+		if (axl_stream_inspect (stream, ">")) {
+			/* this node is ended */
+			break;
+		}
+		
+		/* found attribute declaration, try to read it */
+	}
+
+	/* document properly parsed */
 	return AXL_TRUE;
 }
 
@@ -324,8 +578,14 @@ axlDoc * axl_doc_parse (char * entity, int entity_size, axlError ** error)
 	/* parse initial xml header */
 	if (!__axl_doc_parse_xml_header (stream, doc, error))
 		return NULL;
+	
+	/* parse the rest of the document */
+	if (!__axl_doc_parse_first_node (stream, doc, error))
+		return NULL;
 
 	/* parse complete */
+	axl_stream_unlink (stream);
+	axl_stream_free (stream);
 	return doc;
 }
 
@@ -347,6 +607,26 @@ char   * axl_doc_get_encoding (axlDoc * doc)
 }
 
 /** 
+ * @brief Allows to get current standalone configuration for the given
+ * axlDoc document.
+ * 
+ * @param doc The \ref axlDoc document where the standalone value will
+ * be retreived.
+ * 
+ * @return \ref AXL_TRUE if the standalone configuration, found inside
+ * the xml header is set to TRUE. Otherwise \ref AXL_FALSE is
+ * returned. Keep in mind that the function will return an \ref
+ * AXL_FALSE value if a null reference is received.
+ */
+bool     axl_doc_get_standalone (axlDoc * doc)
+{
+	axl_return_val_if_fail (doc, AXL_FALSE);
+
+	/* return current configuration */
+	return doc->standalone;
+}
+
+/** 
  * @brief Releases memory allocated by the \ref axlDoc object.
  * 
  * @param doc The \ref axlDoc object to unref.
@@ -356,6 +636,10 @@ void     axl_doc_free         (axlDoc * doc)
 	/* do not complain if an axlDoc reference is received */
 	if (doc == NULL)
 		return;
+
+	/* free first root node */
+	if (doc->rootNode != NULL)
+		axl_node_free (doc->rootNode);
 
 	/* free enconding allocated */
 	axl_free (doc->encoding);

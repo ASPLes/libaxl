@@ -1,14 +1,11 @@
-EXTRA_DIST = $(wildcard *.c)
+EXTRA_DIST      = $(wildcard *.c)
 
-all: $(patsubst %.c, %.exe, $(EXTRA_DIST))
+INCLUDES = -I$(top_srcdir)/src/ -g -Wall
 
-%.o: %.c
-	libtool --mode=compile $(CC) -g -Wall $(patsubst %.o, %.c, $@) -c -o $@ -I../src/
+bin_PROGRAMS    = test_01 test_02
 
-%.exe: %.o
-	libtool --mode=link $(CC) $< -g -Wall -o $@ ../src/libaxl.la
+test_01_SOURCES = test_01.c
+test_01_LDADD   = $(top_srcdir)/src/libaxl.la
 
-clean:
-	rm -rf *.o *.exe
-
-
+test_02_SOURCES = test_02.c
+test_02_LDADD   = $(top_srcdir)/src/libaxl.la

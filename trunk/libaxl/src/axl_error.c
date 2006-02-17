@@ -35,7 +35,7 @@
  *      Email address:
  *         info@aspl.es - http://fact.aspl.es
  */
-#include <axl_decl.h>
+#include <axl.h>
 
 struct _axlError {
 	int    code;
@@ -67,6 +67,8 @@ void axl_error_new (int code, char * error_code, axlError ** _error)
 	error             = axl_new (axlError, 1); 
 	error->code       = code;
 	error->error      = axl_strdup (error_code);
+	
+	axl_log (NULL, AXL_LEVEL_CRITICAL, "(code: %d) %s", code, error_code);
 	
 	/* set the error into the recevied reference */
 	(* _error )       = error;

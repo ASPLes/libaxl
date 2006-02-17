@@ -86,6 +86,34 @@ typedef struct _axlStream axlStream;
  */
 typedef int bool;
 
+/** 
+ * @brief Axl debug levels.
+ * 
+ * While reporting log to the console, these levels are used to report
+ * the severity for such log.
+ */
+typedef enum {
+	/** 
+	 * @brief Debug level. Only used to report common
+	 * circumstances that represent the proper functionality.
+	 */
+	AXL_LEVEL_DEBUG, 
+	/** 
+	 * @brief Warning level. Only used to report that an internal
+	 * issue have happend that could be interesting while
+	 * reporting error, but it could also mean common situations.
+	 */
+	AXL_LEVEL_WARNING, 
+	/** 
+	 * @brief Critical level. Only used to report critical
+	 * situations where some that have happened shouldn't. 
+	 *
+	 * This level should only be used while reporting critical
+	 * situations.
+	 */
+	AXL_LEVEL_CRITICAL}  
+AxlDebugLevel;
+
 
 /** 
  * @internal
@@ -155,8 +183,21 @@ if (!(expr)) return val;
  * @param stream The stream where the operation will be performed.
  */
 #define AXL_CONSUME_SPACES(stream) \
-while (axl_stream_inspect_several (stream, 4, " ", "\t", "\r", "\n")) \
+while ((axl_stream_inspect_several (stream, 4, " ", "\t", "\r", "\n") > 0)) \
 	axl_stream_accept (stream); 
+
+/** 
+ * @internal
+ *
+ * @brief Allows to check if the provided string is empty either
+ * because it is NULL of because the string contains no data.
+ * 
+ * @param str The string to check for emptyness.
+ * 
+ * @return Returns AXL_TRUE if the string is empty and AXL_FALSE if
+ * not.
+ */
+#define AXL_IS_STR_EMPTY(str) (((str == NULL) || strlen (str) == 0) ? AXL_TRUE : AXL_FALSE)
 
 /** 
  * @internal

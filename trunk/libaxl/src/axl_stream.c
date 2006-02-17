@@ -35,12 +35,14 @@
  *      Email address:
  *         info@aspl.es - http://fact.aspl.es
  */
-#include <axl_stream.h>
-#include <axl_doc.h>
 #include <stdarg.h>
 #include <string.h>
+#include <axl.h>
+
+#define LOG_DOMAIN "axl-stream"
 
 struct _axlStream {
+
 	/* current stream content */
 	char * stream;
 
@@ -109,9 +111,16 @@ axlStream * axl_stream_new (char * stream_source, int stream_size)
  * @param stream 
  * @param chunk 
  * 
- * @return 1 if the chunk is found inside the given stream, othersize
- * 0 is returned.  -1 means that no more stream is left to satify the
- * operation. -2 means that the parameters received are wrong either
+ * @return The function returns the following values according to the result: 
+ *
+ * - <b>0</b> if the chunk wasn't found inside the stream but no error was
+ * found.
+ *
+ * - <b>1</b> if the chunk is found inside the given stream.
+ *
+ * - <b>-1</b> means that no more stream is left to satify the operation.
+ *
+ * - <b>-2</b> means that the parameters received are wrong either
  * because stream is a NULL reference or because chunk is the same.
  */
 int         axl_stream_inspect (axlStream * stream, char * chunk)
@@ -121,29 +130,51 @@ int         axl_stream_inspect (axlStream * stream, char * chunk)
 	axl_return_val_if_fail (stream, -2);
 	axl_return_val_if_fail (chunk, -1);
 
-	/* accept previous inspection if a call to axl_stream_accept
-	 * weren't done */
-	if (stream->previous_inspect != 0)
-		axl_stream_accept (stream);
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "inspecting the xml stream");
+
 
 	/* get current size to inspect */
 	inspected_size = strlen (chunk);
+
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "current stream status: size=%d, index=%d, size-to-inspect=%d, chunk=[%s]",
+		 stream->stream_size, stream->stream_index, inspected_size, 
+		 axl_stream_is_white_space (chunk) ? "(S)" : chunk);
        
 	/* check that chunk to inspect doesn't fall outside the stream
 	 * boundaries */
-	if ((inspected_size + stream->stream_index) > stream->stream_size)
+	if ((inspected_size + stream->stream_index) > stream->stream_size) {
+		axl_log (LOG_DOMAIN, AXL_LEVEL_WARNING, "requested to inspect a chunk that falls outside the stream size");
 		return -1; /* no more stream is left to satisfy current petition */
+	}
 	
 	/* check that the chunk to be search is found */
 	if (! memcmp (chunk, stream->stream + stream->stream_index, inspected_size)) {
+
+		/* drop a log */
+		if (axl_log_is_enabled ()) {
+			if (axl_stream_is_white_space (chunk)) 
+				axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "chunk [(S)] found inside the stream, saving inspected size=%d", inspected_size);
+			else
+				axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "chunk [%s] found inside the stream, saving inspected size=%d", chunk, inspected_size);
+		}
 
 		/* chunk found!, remember that the previous inspect
 		 * size so we can make the stream to roll on using
 		 * this value */
 		stream->previous_inspect = inspected_size;
+
+		/* accept the chunk readed */
+		axl_stream_accept (stream);
 		return 1;
 	}
-	
+
+	/* drop a log */
+	if (axl_log_is_enabled ()) {
+		if (axl_stream_is_white_space (chunk)) 
+			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "chunk [(S)] doesn't found inside the stream");
+		else
+			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "chunk [%s] doesn't found inside the stream", chunk);
+	}
 	/* return that the stream chunk wasn't found */
 	return 0;
 }
@@ -158,11 +189,17 @@ int         axl_stream_inspect (axlStream * stream, char * chunk)
  *
  * @param chunk_num The chunk number to inspect.
  * 
- * @return The function returns 0 if no chunk is found inside the
- * given stream. Otherwise, N is returned to denote that the the Nth
- * chunk was found. -1 is returned if no more stream is left to
- * satisfy the operation. -2 means that the parameters received are
- * wrong either because stream is NULL or any other parameter.
+ * @return The function returns the following values: 
+ * 
+ * - <b>0</b>: if no chunk is found inside the given stream, according to the
+ * provided chunks.
+ *
+ * - <b>N</b>: is returned to denote that the Nth chunk was found.
+ *
+ * - <b>-1</b>: is returned if no more stream is left to satisfy the operation.
+ * 
+ * - <b>-2</b>: means that the parameters received are wrong either because
+ * stream is NULL or any other parameter.
  */
 int         axl_stream_inspect_several (axlStream * stream, int chunk_num, ...)
 {
@@ -173,6 +210,8 @@ int         axl_stream_inspect_several (axlStream * stream, int chunk_num, ...)
 	axl_return_val_if_fail (stream,        -1);
 	axl_return_val_if_fail (chunk_num > 0, -1);
 
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "entering inside inspect several");
+
 	va_start (args, chunk_num);
 	
 	/* check each chunk */
@@ -182,7 +221,23 @@ int         axl_stream_inspect_several (axlStream * stream, int chunk_num, ...)
 		chunk = va_arg (args, char *);
 
 		/* check the chunk read */
-		if (axl_stream_inspect (stream, chunk)) {
+		switch (axl_stream_inspect (stream, chunk)) {
+		case -2:
+			/* wrong parameter received */
+			va_end (args);
+			return -2;
+		case -1:
+			/* there is no more stream left */
+			va_end (args);
+			return -1;
+		case 0:
+			/* the chunk wasn't found, break and
+			 * continue. */
+			break;
+		default:
+			/* the chunk was found */
+			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found chunk (size: %d) [%s]", strlen (chunk), chunk);
+			
 			va_end (args);
 			return (iterator + 1);
 		}
@@ -281,14 +336,17 @@ char      * axl_stream_get_until       (axlStream * stream,
 	va_list      args;
 	int          iterator = 0;
 	int          index    = 0;
+	int          length   = 0;
 	
 	/* perform some environmental checks */
 	axl_return_val_if_fail (stream, NULL);
 	/* axl_return_val_if_fail (valid_chars, NULL); */
 	axl_return_val_if_fail (chunk_num > 0, NULL);
 
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "inside get-until, chunk-num=%d", chunk_num);
+
 	/* get chunks to lookup */
-	chunks = axl_new (char *, chunk_num);
+	chunks = axl_new (char *, chunk_num + 1);
 	
 	/* begin std args  */
 	va_start (args, chunk_num);
@@ -297,6 +355,7 @@ char      * axl_stream_get_until       (axlStream * stream,
 	while (iterator < chunk_num) {
 		/* get the chunk */
 		chunks[iterator] = va_arg (args, char *);
+		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "get-until chunk to compare read (%d)=%s", iterator, chunks[iterator]);
 		iterator ++;
 	}
 
@@ -306,32 +365,41 @@ char      * axl_stream_get_until       (axlStream * stream,
 	/* now we have chunks to lookup, stream until get the stream
 	 * limited by the chunks received. */
 	while ((index + stream->stream_index) < stream->stream_size) {
-
+		
 		/* compare chunks received for each index increased
 		 * one step */
 		iterator = 0;
 		while (iterator < chunk_num) {
+			
+			/* get current length for the chunk to check */
+			length = (chunks [iterator] != NULL) ?  strlen (chunks [iterator]) : 0;
 
 			/* check if we have found the chunk we were looking */
-			if (!memcmp (chunks[iterator], stream->stream + index + stream->stream_index, 
-				     strlen (chunks [iterator]))) {
+			if (!memcmp (chunks[iterator], stream->stream + index + stream->stream_index, length)) {
+				
+				axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "chunk %s found at index %d, starting from %d",
+					 chunks[iterator], index, stream->stream_index);
 
 				/* chunk found */
-				axl_free (chunks);
+				axl_free (chunks); 
 				
 				/* result is found from last stream
 				 * index read up to index */
-				if (stream->last_chunk != NULL)
+				if (stream->last_chunk != NULL) {
+					axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "releasing previous chunk stored");
 					axl_free (stream->last_chunk);
+				}
 
 				/* get a copy to the chunk to be returned */
 				stream->last_chunk = axl_new (char, index + 1);
 				memcpy (stream->last_chunk, stream->stream + stream->stream_index, index);
 
 				/* update internal indexes */
-				stream->stream_index     += index + strlen (chunks[iterator]);
+				stream->stream_index     += index + length;
 				stream->previous_inspect  = 0;
 
+				axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "returning chunk found: [%s]", stream->last_chunk);
+				
 				return stream->last_chunk;
 			}
 			/* update iterator */
@@ -422,3 +490,91 @@ void axl_stream_free (axlStream * stream)
 }
 
 
+/** 
+ * @internal
+ *
+ * @brief Allows to check if the given chunk is a white space in the
+ * same of the XML 1.0 Third edition.
+ *
+ * The XML standard understand the "white space", also reffered as S,
+ * as the following characters: \x20 (the white space itself), \n, \r
+ * and \t.
+ *
+ * This function allows to check if the given chunk contains a white
+ * space, in the previous sense.
+ * 
+ * @param chunk The chunk to check
+ * 
+ * @return AXL_TRUE if the chunk contains a white space or AXL_FALSE
+ * if not.
+ */
+bool        axl_stream_is_white_space  (char * chunk)
+{
+	/* do not complain about receive a null refernce chunk */
+	if (chunk == NULL)
+		return AXL_FALSE;
+	
+	if (! memcmp (chunk, " ", 1)) 
+		return AXL_TRUE;
+	if (! memcmp (chunk, "\n", 1)) 
+		return AXL_TRUE;
+	if (! memcmp (chunk, "\t", 1)) 
+		return AXL_TRUE;
+	if (! memcmp (chunk, "\r", 1)) 
+		return AXL_TRUE;
+
+	/* no white space was found */
+	return AXL_FALSE;
+}
+
+/** 
+ * @internal
+ * @brief Allows to compare two strings pointed by 
+ * 
+ * @param chunk1 The string to be compared.
+ *
+ * @param chunk2 The second string to be compared.
+ *
+ * @param size The amount of bytes to be compared for the two incoming
+ * values.
+ * 
+ * @return AXL_TRUE if both string are equal, AXL_FALSE if not. If
+ * some value provided is NULL or the size to compare is not greater
+ * than 0 the function will return AXL_FALSE directly.
+ */
+bool        axl_stream_cmp             (char * chunk1, char * chunk2, int size)
+{
+	/* perform some environmental condition checking */
+	if (chunk1 == NULL)
+		return AXL_FALSE;
+	if (chunk2 == NULL)
+		return AXL_FALSE;
+	if (size <= 0)
+		return AXL_FALSE;
+	
+	/* report current comparation status */
+	if (!memcmp (chunk1, chunk2, size))
+		return AXL_TRUE;
+	return AXL_FALSE;
+}
+
+
+/** 
+ * @internal
+ *
+ * @brief Allows to get current status of the stream. 
+ *
+ * If the is exhausted and have no more data to be read.
+ * 
+ * @param stream 
+ * 
+ * @return AXL_TRUE if the stream is exhausted or AXL_FALSE if not.
+ */
+bool        axl_stream_remains         (axlStream * stream)
+{
+	axl_return_val_if_fail (stream, AXL_FALSE);
+	
+	if (stream->stream_index == stream->stream_size)
+		return AXL_TRUE;
+	return AXL_FALSE;
+}
