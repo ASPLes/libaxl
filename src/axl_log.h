@@ -1,5 +1,5 @@
 /**
- *  LibAxl:  Another XML library
+ *  LibAxl:  Another XML library 
  *  Copyright (C) 2006 Advanced Software Production Line, S.L.
  *
  *  This program is free software; you can redistribute it and/or
@@ -35,37 +35,19 @@
  *      Email address:
  *         info@aspl.es - http://fact.aspl.es
  */
-#ifndef __AXL_STREAM_H__
-#define __AXL_STREAM_H__
+#ifndef __AXL_LOG_H__
+#define __AXL_LOG_H__
 
 #include <axl_decl.h>
 
-axlStream * axl_stream_new             (char * stream_source, 
-					int stream_size);
+BEGIN_C_DECLS
 
-int         axl_stream_inspect         (axlStream * stream, char * chunk);
+bool axl_log_is_enabled ();
 
-int         axl_stream_inspect_several (axlStream * stream, int chunk_num, ...);
+bool axl_log_color_is_enabled ();
 
-void        axl_stream_accept          (axlStream * stream);
+void axl_log (char * domain, AxlDebugLevel level, char * message, ...);
 
-void        axl_stream_move            (axlStream * stream, int count);
-
-char      * axl_stream_get_until       (axlStream * stream, 
-					char      * valid_chars, 
-					int         chunk_num, ...);
-
-void        axl_stream_link            (axlStream * stream,
-					axlDoc    * doc);
-
-void        axl_stream_unlink          (axlStream * stream);
-
-void        axl_stream_free            (axlStream * stream);
-
-bool        axl_stream_is_white_space  (char * chunk);
-
-bool        axl_stream_cmp             (char * chunk1, char * chunk2, int size);
-
-bool        axl_stream_remains         (axlStream * stream);
+END_C_DECLS
 
 #endif

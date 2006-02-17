@@ -8,7 +8,7 @@ libaxlincludedir = $(includedir)/axl
 
 lib_LTLIBRARIES = libaxl.la
 
-libaxl_la_SOURCES     = axl.c  axl_node.c axl_doc.c axl_error.c axl_stream.c
-libaxlinclude_HEADERS = axl.h axl_decl.h axl_node.h axl_doc.h axl_error.h axl_stream.h
+libaxl_la_SOURCES     = axl.c  axl_node.c axl_doc.c axl_error.c axl_stream.c axl_log.c
+libaxlinclude_HEADERS = axl.h axl_decl.h axl_node.h axl_doc.h axl_error.h axl_stream.h axl_log.h
 
 

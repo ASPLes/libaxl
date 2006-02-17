@@ -42,7 +42,11 @@
 
 BEGIN_C_DECLS
 
-axlNode * axl_node_create (char * name);
+axlNode * axl_node_create   (char * name);
+
+void      axl_node_is_empty (axlNode * node, bool empty);
+
+void      axl_node_free (axlNode * node);
 
 END_C_DECLS
 
