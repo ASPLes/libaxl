@@ -343,12 +343,10 @@ bool __axl_doc_parse_xml_header (axlStream * stream, axlDoc * doc, axlError ** e
 	if (axl_stream_inspect (stream, "<?")) {
 		
 		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found xml declaration");
-		
-		/* consume spaces */
-		AXL_CONSUME_SPACES (stream);
-		
-		if (! axl_stream_inspect (stream, "xml")) {
-			axl_error_new (-2, "expected initial <?xml declaration, not found", error);
+
+		/* check initial <?xml xml header */
+		if (! (axl_stream_inspect (stream, "xml") > 0)) {
+			axl_error_new (-2, "expected initial <?xml declaration, not found.", stream, error);
 			axl_stream_free (stream);
 			return AXL_FALSE;
 		}
@@ -357,7 +355,7 @@ bool __axl_doc_parse_xml_header (axlStream * stream, axlDoc * doc, axlError ** e
 		AXL_CONSUME_SPACES (stream);
 
 		if (! axl_stream_inspect (stream, "version=")) {
-			axl_error_new (-2, "expected to find 'version=' declaration, not found", error);
+			axl_error_new (-2, "expected to find 'version=' declaration, not found.", stream, error);
 			axl_stream_free (stream);
 			return AXL_FALSE;
 		}
@@ -367,7 +365,7 @@ bool __axl_doc_parse_xml_header (axlStream * stream, axlDoc * doc, axlError ** e
 
 		/* check for " or ' */
 		if (! axl_stream_inspect_several (stream, 2, "\"1.0\"", "'1.0'")) {
-			axl_error_new (-2, "expected to find either \" or ' while procesing version number, not found", error);
+			axl_error_new (-2, "expected to find either \" or ' while procesing version number, not found.", stream, error);
 			axl_stream_free (stream);
 			return AXL_FALSE;
 		}
@@ -383,7 +381,7 @@ bool __axl_doc_parse_xml_header (axlStream * stream, axlDoc * doc, axlError ** e
 			/* found encoding instruction */
 			string_aux = axl_stream_get_until (stream, NULL, 2, "'", "\"");
 			if (string_aux == NULL) {
-				axl_error_new (-2, "expected encoding value, not found", error);
+				axl_error_new (-2, "expected encoding value, not found.", stream, error);
 				axl_stream_free (stream);
 				return AXL_FALSE;
 			}
@@ -403,7 +401,7 @@ bool __axl_doc_parse_xml_header (axlStream * stream, axlDoc * doc, axlError ** e
 			/* found standalone instruction */
 			string_aux = axl_stream_get_until (stream, NULL, 2, "'", "\"");
 			if (string_aux == NULL) {
-				axl_error_new (-2, "expected to receive standalone value, not found", error);
+				axl_error_new (-2, "expected to receive standalone value, not found.", stream, error);
 				axl_stream_free (stream);
 				return AXL_FALSE;
 			}
@@ -419,8 +417,8 @@ bool __axl_doc_parse_xml_header (axlStream * stream, axlDoc * doc, axlError ** e
 		AXL_CONSUME_SPACES(stream);
 
 		/* get the trailing header */
-		if (!axl_stream_inspect (stream, "?>")) {
-			axl_error_new (-2, "expected to receive the xml trailing header ?>, not found", error);
+		if (! (axl_stream_inspect (stream, "?>") > 0)) {
+			axl_error_new (-2, "expected to receive the xml trailing header ?>, not found.", stream, error);
 			axl_stream_free (stream);
 			return AXL_FALSE;
 		}
@@ -479,16 +477,16 @@ bool __axl_doc_parse_first_node (axlStream * stream, axlDoc * doc, axlError ** e
 	AXL_CONSUME_SPACES(stream);
 
 	/* check for initial < definition */
-	if (! axl_stream_inspect (stream, "<")) {
-		axl_error_new (-2, "expected initial < for a node definition, not found", error);
+	if (! (axl_stream_inspect (stream, "<") > 0) && ! axl_stream_remains (stream)) {
+		axl_error_new (-2, "expected initial < for a root node definition, not found. An xml document must have, at least, one node definition.", stream, error);
 		axl_stream_free (stream);
 		return AXL_FALSE;
 	}
-	
+
 	/* get node name */
-	string_aux = axl_stream_get_until (stream, NULL, 1, " ");
+	string_aux = axl_stream_get_until (stream, NULL, 3, " ", "/", ">");
 	if (AXL_IS_STR_EMPTY (string_aux)) {
-		axl_error_new (-2, "expected an non empty content for the node name not found", error);
+		axl_error_new (-2, "expected an non empty content for the node name not found.", stream, error);
 		axl_stream_free (stream);
 		return AXL_FALSE;
 	}
@@ -555,18 +553,18 @@ bool __axl_doc_parse_first_node (axlStream * stream, axlDoc * doc, axlError ** e
  */
 axlDoc * axl_doc_parse (char * entity, int entity_size, axlError ** error)
 {
-	axlStream * stream;
-	axlDoc    * doc;
+	axlStream * stream = NULL;
+	axlDoc    * doc    = NULL;
 		
 	
 	/* check for environmental parameters */
 	if (entity == NULL) {
-		axl_error_new (-1, "Received and empty xml stream.", error);
+		axl_error_new (-1, "Received and empty xml stream.", stream, error);
 		return NULL;
 	}
 
 	if (entity_size <= 0) {
-		axl_error_new (-1, "Received an entity size that is less or equal to 0.", error);
+		axl_error_new (-1, "Received an entity size that is less or equal to 0.", stream, error);
 		return NULL;
 	}
 

@@ -55,6 +55,12 @@ char      * axl_stream_get_until       (axlStream * stream,
 					char      * valid_chars, 
 					int         chunk_num, ...);
 
+int         axl_stream_get_index       (axlStream * stream);
+
+int         axl_stream_get_size        (axlStream * stream);
+
+char      * axl_stream_get_near_to     (axlStream * stream, int count);
+
 void        axl_stream_link            (axlStream * stream,
 					axlDoc    * doc);
 
@@ -67,5 +73,11 @@ bool        axl_stream_is_white_space  (char * chunk);
 bool        axl_stream_cmp             (char * chunk1, char * chunk2, int size);
 
 bool        axl_stream_remains         (axlStream * stream);
+
+char      * axl_stream_strdup          (char * chunk);
+
+char      * axl_stream_strdup_n        (char * chunk, int n);
+
+char      * axl_stream_strdup_printf   (char * chunk, ...);
 
 #endif
