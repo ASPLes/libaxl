@@ -171,7 +171,7 @@ if (!(expr)) return val;
  * 
  * @return A newly allocated value or NULL.
  */
-#define axl_strdup(string) (string != NULL) ? (char *) strdup ((const char *) string) : NULL;
+#define axl_strdup(string) (string != NULL) ? (char *) axl_stream_strdup ((char *) string) : NULL;
 
 
 /** 

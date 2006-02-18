@@ -50,12 +50,17 @@ struct _axlError {
  * 
  * @param code The error code to set and the error code string.
  *
+ * @param stream If provided, the error will try to get current stream
+ * position to add more information to the place where the error was
+ * found.
+ *
  * @param error The error string to be used to initialize the received
  * \ref axlError.
+ *
  * 
  * @param _error The \ref axlError to initialize.
  */
-void axl_error_new (int code, char * error_code, axlError ** _error)
+void axl_error_new (int code, char * error_code, axlStream * stream, axlError ** _error)
 {
 	axlError * error;
 
@@ -66,7 +71,14 @@ void axl_error_new (int code, char * error_code, axlError ** _error)
 	/* create the error to be reported */
 	error             = axl_new (axlError, 1); 
 	error->code       = code;
-	error->error      = axl_strdup (error_code);
+	if (stream == NULL)
+		error->error      = axl_stream_strdup_printf ("Error found: %s\n", error_code);
+	else
+		error->error      = axl_stream_strdup_printf ("Error found (stream size: %d, at byte %d, near to ...%s...): %s\n", 
+							      axl_stream_get_size (stream),
+							      axl_stream_get_index (stream),
+							      axl_stream_get_near_to (stream, 10),
+							      error_code);
 	
 	axl_log (NULL, AXL_LEVEL_CRITICAL, "(code: %d) %s", code, error_code);
 	

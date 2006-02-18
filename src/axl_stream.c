@@ -37,6 +37,7 @@
  */
 #include <stdarg.h>
 #include <string.h>
+#include <stdio.h>
 #include <axl.h>
 
 #define LOG_DOMAIN "axl-stream"
@@ -57,6 +58,9 @@ struct _axlStream {
 
 	/* last chunk get from the stream */
 	char   * last_chunk;
+
+	/* last near to operation performed */
+	char   * last_near_to;
 
 	/* a reference to the associated document to this stream */
 	axlDoc * doc;
@@ -410,8 +414,97 @@ char      * axl_stream_get_until       (axlStream * stream,
 		index++;
 	}
 
+	/* chunk found */
+	axl_free (chunks); 
+
 	/* return a NULL chunk. */
 	return NULL;
+}
+
+/** 
+ * @internal
+ * @brief Returns current index status for the given stream.
+ *
+ * This function could be used to get current index being read for the
+ * stream received.
+ * 
+ * @param stream The stream where the index will be reported.
+ * 
+ * @return The index or -1 if fails.
+ */
+int         axl_stream_get_index       (axlStream * stream)
+{
+	axl_return_val_if_fail (stream, -1);
+
+	return stream->stream_index;
+}
+
+/** 
+ * @internal
+ * @brief Allows to get current stream size.
+ * 
+ * @param stream The stream where the stream size will be returned.
+ * 
+ * @return The stream size or -1 if fails. 
+ */
+int         axl_stream_get_size        (axlStream * stream)
+{
+	axl_return_val_if_fail (stream, -1);
+
+	return stream->stream_size;
+}
+
+/** 
+ * @internal
+ *
+ * @brief Allows to get current status of the given stream, taking the
+ * current index, getting an amount of <b>count</b> bytes before
+ * and after the given index.
+ *
+ * This function is mainly used to get a piece of the stream at the
+ * given position while reporting errors. This allows to show the
+ * piece of xml that is failing.
+ *
+ * The string return must not be deallocated. Value returned is
+ * actually managed by the stream object associated.
+ * 
+ * @param stream The stream where the near to operation will be performed.
+ * @param count The amount of bytes to take.
+ * 
+ * @return A string that is taken counting bytes with provided
+ * <b>count</b> value starting from the index. Stream provided must be
+ * not NULL and count value must be greater than 0.
+ */
+char      * axl_stream_get_near_to     (axlStream * stream, int count)
+{
+	int first_index;
+	int last_index;
+
+	axl_return_val_if_fail (stream, NULL);
+	axl_return_val_if_fail (count > 0, NULL);
+	
+	/* get first index */
+	if ((stream->stream_index - count) <= 0)
+		first_index = 0;
+	else
+		first_index = stream->stream_index - count;
+
+	/* get last index */
+	if ((stream->stream_index + count) >= (stream->stream_size - 1) )
+		last_index  = (stream->stream_size) - first_index;
+	else
+		last_index  = (stream->stream_index + count) - first_index;
+
+	/* release previous near to chunk */
+	if (stream->last_near_to != NULL)
+		axl_free (stream->last_near_to);
+
+	stream->last_near_to = axl_new (char, last_index + 1);
+	memcpy (stream->last_near_to, stream->stream + first_index, last_index);
+
+	/* return current near to operation */
+	return stream->last_near_to;
+	
 }
 
 
@@ -482,6 +575,14 @@ void axl_stream_free (axlStream * stream)
 	/* release associated document is defined. */
 	if (stream->doc) 
 		axl_doc_free (stream->doc);
+
+	/* release last near to */
+	if (stream->last_near_to)
+		axl_free (stream->last_near_to);
+
+	/* releaset last chunk */
+	if (stream->last_chunk != NULL)
+		axl_free (stream->last_chunk);
 
 	/* release memory allocated by the stream received. */
 	axl_free (stream);
@@ -574,7 +675,92 @@ bool        axl_stream_remains         (axlStream * stream)
 {
 	axl_return_val_if_fail (stream, AXL_FALSE);
 	
-	if (stream->stream_index == stream->stream_size)
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "checking for stream status with stream index=%d and stream size=%d",
+		 stream->stream_index, stream->stream_size);
+		 
+	
+	if (stream->stream_index == (stream->stream_size - 1))
 		return AXL_TRUE;
 	return AXL_FALSE;
+}
+
+/** 
+ * @internal
+ *
+ * @brief Allows to copy the given chunk, supposing that is a properly
+ * format C string that ends with a \0 value.
+ *
+ * This function allows to perform a copy for the given string. If a
+ * copy limited by a size is required, use \ref axl_stream_strdup_n.
+ * 
+ * @param chunk The chunk to copy
+ * 
+ * @return A newly allocated string or NULL if fails.
+ */
+char      * axl_stream_strdup          (char * chunk)
+{
+	char * result;
+	int    length;
+
+	axl_return_val_if_fail (chunk, NULL);
+	
+	length = strlen (chunk);
+	result = axl_new (char, length + 1);
+	
+	memcpy (result, chunk, length);
+
+	return result;
+}
+
+/** 
+ * @brief Allows to perform a copy for the <b>n</b> first bytes from
+ * the <b>chunk</b> received.
+ * 
+ * @param chunk The chunk to copy
+ *
+ * @param n How many bytes to copy from the given chunk.
+ * 
+ * @return A newly allocated chunk, copied from the given chunk with a
+ * size of <b>n</b> bytes. The function will check that the
+ * <b>chunk</b> and the <b>n</b> values are not null and non-zero.
+ */
+char      * axl_stream_strdup_n (char * chunk, int n)
+{
+	char * result;
+
+	axl_return_val_if_fail (chunk, NULL);
+	axl_return_val_if_fail (n, NULL);
+	
+	result = axl_new (char, n + 1);
+	memcpy (result, chunk, n);
+	
+	return result;
+}
+
+/** 
+ * @brief Allows to produce an newly allocated string produced by the
+ * chunk received plus arguments, using the printf-like format.
+ * 
+ * @param chunk The chunk to copy.
+ * 
+ * @return A newly allocated chunk.
+ */
+char      * axl_stream_strdup_printf   (char * chunk, ...)
+{
+	int       size;
+	int       new_size;
+	char    * result;
+	va_list   args;
+	
+	axl_return_val_if_fail (chunk, NULL);
+
+	va_start (args, chunk);
+
+	size     = vsnprintf (NULL, 0, chunk, args);
+	result   = axl_new (char, size + 1);
+	new_size = vsnprintf (result, size, chunk, args);
+
+	va_end (args);
+	
+	return result;
 }
