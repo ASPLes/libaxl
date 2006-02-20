@@ -87,6 +87,48 @@ typedef struct _axlStream axlStream;
 typedef int bool;
 
 /** 
+ * @brief Pointer to any structure definition. It should be required
+ * to use this definition, however, some platforms doesn't support the
+ * <b>void *</b> making it necessary to use the <b>char *</b>
+ * definition as a general way to represent references.
+ */
+typedef void * axlPointer;
+
+/** 
+ * @brief axlList definition, a list implementation.
+ */
+typedef struct _axlList axlList;
+
+/** 
+ * @brief axlStack definitino, a stack implementation on top of \ref
+ * axlList.
+ */
+typedef struct _axlStack axlStack;
+
+/** 
+ * @brief Handler definition used to compare two elements.
+ * 
+ * In the case they are equal, 0 is returned. In the case a should be
+ * before b the -1 is returned. In the case a should be after b then 1
+ * should be returned. A properly configured handler should help
+ * collections and other function to order elements.
+ *
+ * @param a The element to compare
+ * @param b The other element to compare
+ * 
+ * @return A value selected from {-1,0,1} according to previous
+ * description.
+ */
+typedef int (*axlEqualFunc) (axlPointer a, axlPointer b);
+
+/** 
+ * @brief Handler definition which represent deallocation functions.
+ *
+ * @param ptr The pointer to the memory to be released.
+ */
+typedef void (*axlDestroyFunc) (axlPointer ptr);
+
+/** 
  * @brief Axl debug levels.
  * 
  * While reporting log to the console, these levels are used to report

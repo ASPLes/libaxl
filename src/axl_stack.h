@@ -35,30 +35,26 @@
  *      Email address:
  *         info@aspl.es - http://fact.aspl.es
  */
-#ifndef __AXL_NODE_H__
-#define __AXL_NODE_H__
+#ifndef __AXL_STACK_H__
+#define __AXL_STACK_H__
 
 #include <axl_decl.h>
 
 BEGIN_C_DECLS
 
-axlNode * axl_node_create             (char * name);
+axlStack * axl_stack_new (axlDestroyFunc destroy_data);
 
-void      axl_node_set_child          (axlNode * parent, axlNode * child);
+void       axl_stack_push (axlStack * stack, axlPointer data);
 
-void      axl_node_set_is_empty       (axlNode * node, bool empty);
+axlPointer axl_stack_pop  (axlStack * stack);
 
-bool      axl_node_is_empty           (axlNode * node);
+axlPointer axl_stack_peek (axlStack * stack);
 
-char    * axl_node_get_content        (axlNode * node, int * content_size);
+int        axl_stack_size (axlStack * stack);
 
-char    * axl_node_get_content_copy   (axlNode * node, int * content_size);
+bool       axl_stack_is_empty (axlStack * stack);
 
-void      axl_node_set_have_childs    (axlNode * node, bool childs);
-
-bool      axl_node_have_childs        (axlNode * node);
-
-void      axl_node_free            (axlNode * node);
+void       axl_stack_destroy (axlStack * stack);
 
 END_C_DECLS
 

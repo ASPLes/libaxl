@@ -45,6 +45,8 @@ axlStream * axl_stream_new             (char * stream_source,
 
 int         axl_stream_inspect         (axlStream * stream, char * chunk);
 
+int         axl_stream_peek            (axlStream * stream, char * chunk);
+
 int         axl_stream_inspect_several (axlStream * stream, int chunk_num, ...);
 
 void        axl_stream_accept          (axlStream * stream);

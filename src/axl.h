@@ -39,11 +39,14 @@
 #define __AXL_H__
 
 #include <axl_decl.h>
+#include <axl_list.h>
+#include <axl_stack.h>
 #include <axl_stream.h>
 #include <axl_doc.h>
 #include <axl_node.h>
 #include <axl_error.h>
 #include <axl_log.h>
+
 
 BEGIN_C_DECLS
 

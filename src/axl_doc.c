@@ -308,6 +308,16 @@ struct _axlDoc {
 	 * axlDoc object.
 	 */
 	bool      standalone;
+
+	/** 
+	 * @internal
+	 *
+	 * @brief Parent node stack. This stack is used to control how
+	 * are nested nodes while creating/parsing xml files. This
+	 * nesting allows to not only properly contruct the xml but
+	 * also to check if it is well balanced.
+	 */
+	axlStack  * parentNode;
 };
 
 /** 
@@ -456,6 +466,9 @@ bool __axl_doc_parse_xml_header (axlStream * stream, axlDoc * doc, axlError ** e
  *
  * @param doc The \ref axlDoc object where node read will be placed
  * inside.
+ * 
+ * @param node The node that has been added due to calling to this
+ * function.
  *
  * @param error An optional error reporting variable to used to report
  * upper level the error found.
@@ -464,21 +477,24 @@ bool __axl_doc_parse_xml_header (axlStream * stream, axlDoc * doc, axlError ** e
  * AXL_FALSE if not. If the function find something wrong the document
  * is unrefered.
  */
-bool __axl_doc_parse_first_node (axlStream * stream, axlDoc * doc, axlError ** error)
+bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_node, axlError ** error)
 {
 	char    * string_aux;
-	axlNode * root;
+	axlNode * node;
 	
 	axl_return_val_if_fail (stream, AXL_FALSE);
 	axl_return_val_if_fail (doc, AXL_FALSE);
 	
-
 	/* get rid from spaces */
 	AXL_CONSUME_SPACES(stream);
 
 	/* check for initial < definition */
 	if (! (axl_stream_inspect (stream, "<") > 0) && ! axl_stream_remains (stream)) {
-		axl_error_new (-2, "expected initial < for a root node definition, not found. An xml document must have, at least, one node definition.", stream, error);
+		/* check if we are reading the first node node */
+		if (doc->rootNode == NULL)
+			axl_error_new (-2, "expected initial < for a root node definition, not found. An xml document must have, at least, one node definition.", stream, error);
+		else
+			axl_error_new (-2, "expected initial < for a node definition, not found.", stream, error);
 		axl_stream_free (stream);
 		return AXL_FALSE;
 	}
@@ -491,10 +507,19 @@ bool __axl_doc_parse_first_node (axlStream * stream, axlDoc * doc, axlError ** e
 		return AXL_FALSE;
 	}
 
-	/* create the root node and associate it */
-	root           = axl_node_create (string_aux);
-	doc->rootNode  = root;
+	/* create the node and associate it */
+	node           = axl_node_create (string_aux);
+	if (doc->rootNode == NULL)
+		doc->rootNode  = node;
+	else {
+		/* or set the node as a child of the current parent */
+		axl_doc_set_child_current_parent (doc, node);
+	}
 
+	/* set the node created to the calling node, so the caller
+	 * could get a reference */
+	if (calling_node != NULL)
+		*calling_node = node;
 
 	/* know, until the node ends, we have to find the node
 	 * attributes or the node defintion end */
@@ -506,13 +531,18 @@ bool __axl_doc_parse_first_node (axlStream * stream, axlDoc * doc, axlError ** e
 		 * definition have ended or the node definition is an empty
 		 * one */
 		if (axl_stream_inspect (stream, "/>")) {
-			axl_node_is_empty (root, AXL_TRUE);
 			/* empty node configuration found */
+			axl_node_set_is_empty (node, AXL_TRUE);
+			axl_node_set_have_childs (node, AXL_FALSE);
+
+			/* make this node to be complated and no child could be set. */
+			axl_doc_pop_current_parent (doc);
 			break;
 		}
 		
 		/* found node definition termination */
 		if (axl_stream_inspect (stream, ">")) {
+			axl_node_set_have_childs (node, AXL_TRUE);
 			/* this node is ended */
 			break;
 		}
@@ -523,6 +553,17 @@ bool __axl_doc_parse_first_node (axlStream * stream, axlDoc * doc, axlError ** e
 	/* document properly parsed */
 	return AXL_TRUE;
 }
+
+/** 
+ * @internal
+ * @brief Perform the close node operation.
+ *
+ */
+bool __axl_doc_parse_close_node (axlStream * stream, axlDoc * doc, axlNode ** node, axlError ** error)
+{
+
+}
+
 
 
 /** 
@@ -553,8 +594,10 @@ bool __axl_doc_parse_first_node (axlStream * stream, axlDoc * doc, axlError ** e
  */
 axlDoc * axl_doc_parse (char * entity, int entity_size, axlError ** error)
 {
+	char      * string;
 	axlStream * stream = NULL;
 	axlDoc    * doc    = NULL;
+	axlNode   * node   = NULL;
 		
 	
 	/* check for environmental parameters */
@@ -578,8 +621,35 @@ axlDoc * axl_doc_parse (char * entity, int entity_size, axlError ** error)
 		return NULL;
 	
 	/* parse the rest of the document */
-	if (!__axl_doc_parse_first_node (stream, doc, error))
+	if (!__axl_doc_parse_node (stream, doc, &node, error))
 		return NULL;
+
+	/* if the node returned is not empty */
+	if (! axl_node_is_empty (node)) {
+
+		/* while the stream have data */
+		while (axl_stream_remains (stream)) {
+			
+			/* consume white spaces */
+			AXL_CONSUME_SPACES (stream);
+
+			if (axl_stream_peek (stream, "</") > 0) {
+				/* seems that a node is being closed */
+				if (! __axl_doc_parse_close_node (stream, doc, &node, error))
+					return NULL;
+				continue;
+			}
+
+			if (axl_stream_peek (stream, "<") > 0) {
+				/* seems that another node is being opened */
+				if (!__axl_doc_parse_node (stream, doc, &node, error))
+					return NULL;
+				continue;
+			}
+			
+
+		}
+	}
 
 	/* parse complete */
 	axl_stream_unlink (stream);
@@ -623,6 +693,54 @@ bool     axl_doc_get_standalone (axlDoc * doc)
 	/* return current configuration */
 	return doc->standalone;
 }
+
+/** 
+ * @brief Allows to set the given axlNode to be child of the current
+ * parent.
+ *
+ * @param doc The \ref axlDoc reference where the \ref axlNode will be
+ * configured.
+ *
+ * @param node The \ref axlNode reference to set as a child for the
+ * parent node.
+ */
+void     axl_doc_set_child_current_parent (axlDoc * doc, axlNode * node)
+{
+	axlNode * parent;
+
+	/* perform some environment checks */
+	axl_return_if_fail (doc);
+	axl_return_if_fail (node);
+	
+	parent = axl_stack_peek (doc->parentNode);
+	axl_return_if_fail (parent);
+
+	/* set the child for the current parent */
+	axl_node_set_child (parent, node);
+
+	/* set the new parent */
+	axl_stack_push (doc->parentNode, node);
+
+	return;
+}
+
+/** 
+ * @brief Allows to make current axlDocument to pop current parent
+ * node, making the new parent node the previously opened.
+ * 
+ * @param doc The \ref axlDoc where the pop operation will be
+ * performed.
+ */
+void     axl_doc_pop_current_parent       (axlDoc * doc)
+{
+	axl_return_if_fail (doc);
+
+	/* pop current parent */
+	axl_stack_pop (doc->parentNode);
+
+	return;
+}
+
 
 /** 
  * @brief Releases memory allocated by the \ref axlDoc object.
