@@ -35,30 +35,44 @@
  *      Email address:
  *         info@aspl.es - http://fact.aspl.es
  */
-#ifndef __AXL_NODE_H__
-#define __AXL_NODE_H__
+#ifndef __AXL_LIST_H__
+#define __AXL_LIST_H__
 
 #include <axl_decl.h>
 
 BEGIN_C_DECLS
 
-axlNode * axl_node_create             (char * name);
+axlList  * axl_list_new    (axlEqualFunc are_equal, axlDestroyFunc destroy_data);
+ 
+int        axl_list_equal_string (axlPointer a, axlPointer b);
 
-void      axl_node_set_child          (axlNode * parent, axlNode * child);
+void       axl_list_add    (axlList * list, axlPointer pointer);
 
-void      axl_node_set_is_empty       (axlNode * node, bool empty);
+void       axl_list_remove (axlList * list, axlPointer pointer);
 
-bool      axl_node_is_empty           (axlNode * node);
+void       axl_list_unlink (axlList * list, axlPointer pointer);
 
-char    * axl_node_get_content        (axlNode * node, int * content_size);
+void       axl_list_remove_first (axlList * list);
 
-char    * axl_node_get_content_copy   (axlNode * node, int * content_size);
+void       axl_list_unlink_first (axlList * list);
 
-void      axl_node_set_have_childs    (axlNode * node, bool childs);
+void       axl_list_remove_last (axlList * list);
 
-bool      axl_node_have_childs        (axlNode * node);
+void       axl_list_unlink_last (axlList * list);
 
-void      axl_node_free            (axlNode * node);
+bool       axl_list_exists (axlList * list, axlPointer pointer);
+
+bool       axl_list_exists_at (axlList * list, axlPointer pointer, int position);
+
+axlPointer axl_list_get_first (axlList * list);
+
+axlPointer axl_list_get_last  (axlList * list);
+
+axlPointer axl_list_get_nth   (axlList * list, int position);
+
+int        axl_list_length (axlList * list);
+
+void       axl_list_destroy (axlList * list);
 
 END_C_DECLS
 

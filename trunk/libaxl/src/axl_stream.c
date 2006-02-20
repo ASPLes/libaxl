@@ -106,28 +106,22 @@ axlStream * axl_stream_new (char * stream_source, int stream_size)
 
 /** 
  * @internal
- * @brief Allows to perform an inspection of the given chunk on the given stream.
  *
- * The <i>chunk</i> will be checked to apper inside the stream. This
- * means that, having the stream as its state, the chunk should be
- * found the very begining of the stream.
+ * Internal implementation to support axl_stream_inspect and
+ * axl_stream_peek.
  * 
- * @param stream 
- * @param chunk 
+ * @param stream The stream where the inspect operation will be
+ * performed.
+ *
+ * @param chunk The chunk to be used while performing the inspect
+ * operation.
+ *
+ * @param alsoAccept AXL_TRUE to make the function to accept stream
+ * that is properly inspected, AXL_FALSE if not.
  * 
- * @return The function returns the following values according to the result: 
- *
- * - <b>0</b> if the chunk wasn't found inside the stream but no error was
- * found.
- *
- * - <b>1</b> if the chunk is found inside the given stream.
- *
- * - <b>-1</b> means that no more stream is left to satify the operation.
- *
- * - <b>-2</b> means that the parameters received are wrong either
- * because stream is a NULL reference or because chunk is the same.
+ * @return See \ref axl_stream_inspect.
  */
-int         axl_stream_inspect (axlStream * stream, char * chunk)
+int         axl_stream_common_inspect (axlStream * stream, char * chunk, bool alsoAccept)
 {
 	int inspected_size;
 
@@ -167,8 +161,10 @@ int         axl_stream_inspect (axlStream * stream, char * chunk)
 		 * this value */
 		stream->previous_inspect = inspected_size;
 
-		/* accept the chunk readed */
-		axl_stream_accept (stream);
+		if (alsoAccept) {
+			/* accept the chunk readed */
+			axl_stream_accept (stream);
+		}
 		return 1;
 	}
 
@@ -181,6 +177,55 @@ int         axl_stream_inspect (axlStream * stream, char * chunk)
 	}
 	/* return that the stream chunk wasn't found */
 	return 0;
+
+}
+
+/** 
+ * @internal
+ * @brief Allows to perform an inspection of the given chunk on the given stream.
+ *
+ * The <i>chunk</i> will be checked to apper inside the stream. This
+ * means that, having the stream as its state, the chunk should be
+ * found the very begining of the stream.
+ * 
+ * @param stream 
+ * @param chunk 
+ * 
+ * @return The function returns the following values according to the result: 
+ *
+ * - <b>0</b> if the chunk wasn't found inside the stream but no error was
+ * found.
+ *
+ * - <b>1</b> if the chunk is found inside the given stream.
+ *
+ * - <b>-1</b> means that no more stream is left to satify the operation.
+ *
+ * - <b>-2</b> means that the parameters received are wrong either
+ * because stream is a NULL reference or because chunk is the same.
+ */
+int         axl_stream_inspect (axlStream * stream, char * chunk)
+{
+	/* call to common implementation */
+	return axl_stream_common_inspect (stream, chunk, AXL_TRUE);
+}
+
+/** 
+ * @internal
+ *
+ * @brief Allows to perform a stream inspection without automatically
+ * accept content properly inspected.
+ * 
+ * @param stream The stream where the peek operation will be
+ * performed.
+ *
+ * @param chunk The chunk to lookup.
+ * 
+ * @return See \ref axl_stream_inspect.
+ */
+int         axl_stream_peek            (axlStream * stream, char * chunk)
+{
+	/* call to common implementation */
+	return axl_stream_common_inspect (stream, chunk, AXL_FALSE);
 }
 
 /** 
