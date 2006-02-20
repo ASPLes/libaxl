@@ -55,6 +55,7 @@ void        axl_stream_move            (axlStream * stream, int count);
 
 char      * axl_stream_get_until       (axlStream * stream, 
 					char      * valid_chars, 
+					int       * chunk_matched,
 					int         chunk_num, ...);
 
 int         axl_stream_get_index       (axlStream * stream);
@@ -62,6 +63,8 @@ int         axl_stream_get_index       (axlStream * stream);
 int         axl_stream_get_size        (axlStream * stream);
 
 char      * axl_stream_get_near_to     (axlStream * stream, int count);
+
+char      * axl_stream_get_following   (axlStream * stream, int count);
 
 void        axl_stream_link            (axlStream * stream,
 					axlDoc    * doc);

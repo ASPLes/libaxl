@@ -4,6 +4,30 @@
 
 
 /** 
+ * @brief Checks a more extended and complex xml documents
+ * 
+ * @param error The axlError where failures will be reported.
+ * 
+ * @return \ref AXL_TRUE if test is passed, AXL_FALSE if not.
+ */
+bool test_03 (axlError ** error)
+{
+
+	axlDoc * doc;
+
+	doc = axl_doc_parse ("<?xml version='1.0' ?>\n\
+<complex>\n\
+  <data>\n\
+    <row>10</row><row>20</row><row>30</row>\n\
+  </data>\n\
+</complex>", -1, error);
+	if (doc == NULL)
+		return AXL_FALSE;
+
+	return AXL_TRUE;
+}
+
+/** 
  * @brief Checks xml document error for basic parsing.
  * 
  * @param error The axlError where failures are returned.
@@ -141,6 +165,15 @@ int main (int argc, char ** argv)
 			axl_error_get_code (error), axl_error_get (error));
 		axl_error_free (error);
 	}	
+
+	if (test_03 (&error))
+		printf ("Test 03: complex xml error detection [   OK   ]\n");
+	else {
+		printf ("Test 03: complex xml error detection [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+	}	
+
 	/* cleanup axl library */
 	axl_end ();
 	return 0;

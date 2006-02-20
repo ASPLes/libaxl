@@ -58,9 +58,12 @@ struct _axlStream {
 
 	/* last chunk get from the stream */
 	char   * last_chunk;
-
-	/* last near to operation performed */
+	
+	/* last near to reference. */
 	char   * last_near_to;
+
+	/* last get following reference */
+	char   * last_get_following;
 
 	/* a reference to the associated document to this stream */
 	axlDoc * doc;
@@ -128,15 +131,14 @@ int         axl_stream_common_inspect (axlStream * stream, char * chunk, bool al
 	axl_return_val_if_fail (stream, -2);
 	axl_return_val_if_fail (chunk, -1);
 
-	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "inspecting the xml stream");
-
-
 	/* get current size to inspect */
 	inspected_size = strlen (chunk);
 
-	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "current stream status: size=%d, index=%d, size-to-inspect=%d, chunk=[%s]",
-		 stream->stream_size, stream->stream_index, inspected_size, 
-		 axl_stream_is_white_space (chunk) ? "(S)" : chunk);
+	if (!axl_stream_is_white_space (chunk)) {
+		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "current stream status: size=%d, index=%d, size-to-inspect=%d, chunk=[%s]",
+			 stream->stream_size, stream->stream_index, inspected_size, 
+			 chunk);
+	}
        
 	/* check that chunk to inspect doesn't fall outside the stream
 	 * boundaries */
@@ -148,13 +150,8 @@ int         axl_stream_common_inspect (axlStream * stream, char * chunk, bool al
 	/* check that the chunk to be search is found */
 	if (! memcmp (chunk, stream->stream + stream->stream_index, inspected_size)) {
 
-		/* drop a log */
-		if (axl_log_is_enabled ()) {
-			if (axl_stream_is_white_space (chunk)) 
-				axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "chunk [(S)] found inside the stream, saving inspected size=%d", inspected_size);
-			else
-				axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "chunk [%s] found inside the stream, saving inspected size=%d", chunk, inspected_size);
-		}
+		if (! axl_stream_is_white_space (chunk)) 
+			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "chunk [%s] found inside the stream, saving inspected size=%d", chunk, inspected_size);
 
 		/* chunk found!, remember that the previous inspect
 		 * size so we can make the stream to roll on using
@@ -169,12 +166,8 @@ int         axl_stream_common_inspect (axlStream * stream, char * chunk, bool al
 	}
 
 	/* drop a log */
-	if (axl_log_is_enabled ()) {
-		if (axl_stream_is_white_space (chunk)) 
-			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "chunk [(S)] doesn't found inside the stream");
-		else
-			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "chunk [%s] doesn't found inside the stream", chunk);
-	}
+	if (! axl_stream_is_white_space (chunk)) 
+		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "chunk [%s] doesn't found inside the stream", chunk);
 	/* return that the stream chunk wasn't found */
 	return 0;
 
@@ -379,6 +372,7 @@ void        axl_stream_move            (axlStream * stream, int count)
  */
 char      * axl_stream_get_until       (axlStream * stream, 
 					char      * valid_chars, 
+					int       * chunk_matched,
 					int         chunk_num, ...)
 {
 	char      ** chunks;
@@ -431,7 +425,12 @@ char      * axl_stream_get_until       (axlStream * stream,
 
 				/* chunk found */
 				axl_free (chunks); 
-				
+
+				/* report which is the chunk being
+				 * matched by the expresion */
+				if (chunk_matched != NULL)
+					*chunk_matched = (iterator);
+
 				/* result is found from last stream
 				 * index read up to index */
 				if (stream->last_chunk != NULL) {
@@ -447,7 +446,8 @@ char      * axl_stream_get_until       (axlStream * stream,
 				stream->stream_index     += index + length;
 				stream->previous_inspect  = 0;
 
-				axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "returning chunk found: [%s]", stream->last_chunk);
+				axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "returning chunk found: [%s] (matched chunk: %d)", stream->last_chunk,
+					 iterator);
 				
 				return stream->last_chunk;
 			}
@@ -461,6 +461,9 @@ char      * axl_stream_get_until       (axlStream * stream,
 
 	/* chunk found */
 	axl_free (chunks); 
+
+	if (chunk_matched != NULL)
+		*chunk_matched = -1;
 
 	/* return a NULL chunk. */
 	return NULL;
@@ -552,6 +555,36 @@ char      * axl_stream_get_near_to     (axlStream * stream, int count)
 	
 }
 
+/** 
+ * @internal
+ * @brief Allows to get the following <b>count</b> bytes read from the stream.
+ * 
+ * @param stream The stream where the operation will be performed.
+ * @param count How many bytes to get from the stream.
+ * 
+ * @return A string referece, containing the first <b>count</b> bytes
+ * or NULL if fails. Reference returned shouldn't be deallocated.
+ */
+char      * axl_stream_get_following   (axlStream * stream, int count)
+{
+	axl_return_val_if_fail (stream, NULL);
+
+	if ((count + stream->stream_index) > stream->stream_size) {
+		count = stream->stream_size - stream->stream_index;
+	}
+
+	/* free previously allocated memory */
+	if (stream->last_get_following != NULL)
+		axl_free (stream->last_get_following);
+
+	/* copy stream content */
+	stream->last_get_following = axl_new (char, count);
+	memcpy (stream->last_get_following, stream->stream + stream->stream_index, count);
+
+	/* return reference created */
+	return stream->last_get_following;
+}
+
 
 /** 
  * @internal
@@ -621,13 +654,17 @@ void axl_stream_free (axlStream * stream)
 	if (stream->doc) 
 		axl_doc_free (stream->doc);
 
-	/* release last near to */
-	if (stream->last_near_to)
-		axl_free (stream->last_near_to);
-
 	/* releaset last chunk */
 	if (stream->last_chunk != NULL)
 		axl_free (stream->last_chunk);
+
+	/* releaset last near to */
+	if (stream->last_near_to != NULL)
+		axl_free (stream->last_near_to);
+
+	/* releaset last get following */
+	if (stream->last_get_following != NULL)
+		axl_free (stream->last_get_following);
 
 	/* release memory allocated by the stream received. */
 	axl_free (stream);
@@ -724,9 +761,9 @@ bool        axl_stream_remains         (axlStream * stream)
 		 stream->stream_index, stream->stream_size);
 		 
 	
-	if (stream->stream_index == (stream->stream_size - 1))
-		return AXL_TRUE;
-	return AXL_FALSE;
+	if (stream->stream_index >= (stream->stream_size - 1))
+		return AXL_FALSE;
+	return AXL_TRUE;
 }
 
 /** 
