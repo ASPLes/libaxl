@@ -95,6 +95,20 @@ struct _axlNode {
 	 * @brief A list of childs the current node has.
 	 */
 	axlList       * childs;
+
+	/** 
+	 * @internal
+	 *
+	 * @brief Pointer which holds current content inside the xml
+	 * node.
+	 */
+	char          * content;
+	/** 
+	 * @internal
+	 *
+	 * @brief Current content size stored on the given axlNode.
+	 */
+	int             content_size;
 };
 
 /** 
@@ -174,6 +188,43 @@ void      axl_node_set_is_empty (axlNode * node, bool empty)
 }
 
 /** 
+ * @brief Allows to get current xml node name (represented the xml node by \ref axlNode).
+ *
+ * The name of a node is the label that identifies it at the start and
+ * close tag. On the following example, the xml node name is
+ * considered to be <b>"data"</b>.
+ *
+ * \code
+ * <data>...</data>
+ * \endcode
+ *
+ * If it is required to check if the given \ref axlNode have a
+ * particular name you can use the macro \ref NODE_CMP_NAME.
+ *
+ * Here is an example:
+ * \code
+ * void check_name (axlNode * node) {
+ *     if (NODE_CMP_NAME (node, "data")) {
+ *         // we got a xml node called "data" 
+ *     }
+ *   // the node doesn't have that name
+ * }
+ * \endcode
+ *
+ * @param node The \ref axlNode where the name will be returned.
+ * 
+ * @return A string reference containing the name. Returned value must
+ * not deallocated. If a copy is required use \ref axl_strdup
+ * function.
+ */
+char    * axl_node_get_name           (axlNode * node)
+{
+	axl_return_val_if_fail (node, NULL);
+
+	return node->name;
+}
+
+/** 
  * @brief Allows to get current emptyness configuration for the given \ref axlNode.
  *
  * A \ref axlNode, which is a representation if an xml node, is
@@ -235,6 +286,46 @@ bool      axl_node_is_empty        (axlNode * node)
 char    * axl_node_get_content     (axlNode * node, int * content_size)
 {
 	return NULL;
+}
+
+/** 
+ * @brief Allows to set content to the given \ref axlNode instance.
+ *
+ * The xml node content is that part defined inside two xml starts,
+ * using the same label, that are balanced. Here is an example:
+ * \code
+ * <data>
+ *   Content inside the xml node.
+ * </data>
+ * \endcode
+ * 
+ * @param node The xml node, represented by an already initialized
+ * \ref axlNode, where the node content will be set.
+ *
+ * @param content The content to set to the \ref axlNode. The function
+ * will perform a local copy. Provided value could be unreferenced
+ * once the function finish.
+ *
+ * @param content_size The content size that is being provided. If -1
+ * is used, the function will use strlen function to get current
+ * content size.
+ */
+void      axl_node_set_content        (axlNode * node, char * content, int content_size)
+{
+	axl_return_if_fail (node);
+	axl_return_if_fail (content);
+
+	/* get current content in the case a -1 is provided */
+	if (content_size == -1)
+		content_size = strlen (content);
+	node->content_size = content_size;
+
+	/* set current content */
+	node->content = axl_new (char, node->content_size + 1);
+	memcpy (node->content, content, node->content_size);
+
+	/* job done */
+	return;
 }
 
 /** 
@@ -317,6 +408,44 @@ bool      axl_node_have_childs        (axlNode * node)
 }
 
 /** 
+ * @brief Allows to get a particular child node for the given node
+ * (\ref axlNode).
+ * 
+ * @param node The parent node where the child will be looked up.
+ *
+ * @param name The name for the child to search.
+ * 
+ * @return A refernce to a \ref axlNode or NULL if no child exists
+ * called by the name provided, inside the node provided.
+ */
+axlNode * axl_node_get_child_called   (axlNode * parent, char * name)
+{
+	axlNode * node;
+	int       iterator = 0;
+	int       length   = 0;
+	
+	axl_return_val_if_fail (parent, NULL);
+	axl_return_val_if_fail (name, NULL);
+	
+	/* if no childs, no result */
+	length = axl_list_length (parent->childs);
+	if (length == 0)
+		return NULL;
+
+	/* iterate over the childs until get the one called
+	 * <b>name</b> */
+	while (iterator < length) {
+		node = axl_list_get_nth (parent->childs, iterator);
+		if (NODE_CMP_NAME (node, name))
+			return node;
+		iterator++;
+	}
+
+	/* no child was found */
+	return NULL;
+}
+
+/** 
  * @brief Destroy the given node provided by the reference.
  *
  * The function will check for nodes that are null references.
@@ -331,11 +460,15 @@ void axl_node_free (axlNode * node)
 	if (node->name != NULL)
 		axl_free (node->name);
 
+	/* free node content */
+	if (node->content != NULL)
+		axl_free (node->content);
+
 	/* release memory hold by attributes */
-	axl_list_destroy (node->attributes);
+	axl_list_free (node->attributes);
 
 	/* release memory hold by childs */
-	axl_list_destroy (node->childs);
+	axl_list_free (node->childs);
 
 	/* free attributes */
 	axl_free (node);

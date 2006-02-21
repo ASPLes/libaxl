@@ -13,16 +13,55 @@
 bool test_03 (axlError ** error)
 {
 
-	axlDoc * doc;
+	axlDoc  * doc;
+	axlNode * node;
 
+	/* parse the xml document provided */
 	doc = axl_doc_parse ("<?xml version='1.0' ?>\n\
 <complex>\n\
   <data>\n\
-    <row>10</row><row>20</row><row>30</row>\n\
+    <row>10</row><row>20</row><row>30</row><row>40</row>\n\
   </data>\n\
+  <data2>\n\
+    <td>23</td>\n\
+  </data2>\n\
 </complex>", -1, error);
 	if (doc == NULL)
 		return AXL_FALSE;
+
+	/* get the root node */
+	node = axl_doc_get_root (doc);
+	if (! NODE_CMP_NAME (node, "complex")) {
+		axl_error_new (-2, "Root node returned from the document is not the one excepted", NULL, error);
+		axl_doc_free (doc);
+		return AXL_FALSE;
+	}
+
+	/* test get node function */
+	node = axl_doc_get (doc, "/complex/data2/td");
+	if (node == NULL) {
+		axl_error_new (-2, "Unable to find a node due to a path selection", NULL, error);
+		axl_doc_free (doc);
+		return AXL_FALSE;
+	}
+
+	/* check the node returned */
+	if (! NODE_CMP_NAME (node, "td")) {
+		axl_error_new (-2, "The node for the node looked up doesn't match ", NULL, error);
+		axl_doc_free (doc);
+		return AXL_FALSE;
+	}
+
+	/* check for returning bad nodes */
+	node = axl_doc_get (doc, "/complex/data3/td");
+	if (node != NULL) {
+		axl_error_new (-2, "Returned a node that should be NULL", NULL, error);
+		axl_doc_free (doc);
+		return AXL_FALSE;
+	}
+
+	/* release memory allocated by the document */
+	axl_doc_free (doc);
 
 	return AXL_TRUE;
 }

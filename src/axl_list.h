@@ -72,7 +72,7 @@ axlPointer axl_list_get_nth   (axlList * list, int position);
 
 int        axl_list_length (axlList * list);
 
-void       axl_list_destroy (axlList * list);
+void       axl_list_free (axlList * list);
 
 END_C_DECLS
 

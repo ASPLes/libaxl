@@ -364,19 +364,77 @@ void        axl_stream_move            (axlStream * stream, int count)
  * @param stream The stream were the chunk will be extracted.
  *
  * @param valid_chars The valid set of characters, to validate content
- * to be returned. Currently this is not implemented.
+ * to be returned. Currently this is not implemented, so, you can
+ * provide a NULL value.
  *
- * @param chunk_num 
+ * @param chunk_num The number of chunks to be checked as a valid terminators.
  * 
- * @return 
+ * @param accept_terminator While calling to this function, the
+ * terminator detected to stop the operation could also be accepted by
+ * the stream, making it not necessary to accept the terminator once
+ * the function have ended. However, this could be a problem while
+ * performing peeking code. You can provide a FALSE value to make the
+ * function to not accept the terminator found as to be consumed.
+ * 
+ * @return The chunk recognizied, not including the terminator that
+ * have made this operation to stop. 
  */
 char      * axl_stream_get_until       (axlStream * stream, 
 					char      * valid_chars, 
 					int       * chunk_matched,
+					bool        accept_terminator,
 					int         chunk_num, ...)
 {
+	char * result;
+	va_list args;
+	
+	/* open the standard argument */
+	va_start (args, chunk_num);
+
+	/* call to get next chunk separated by the provided values */
+	result = axl_stream_get_untilv (stream, valid_chars, chunk_matched, accept_terminator, chunk_num, args);
+
+	/* close the standard argument */
+	va_end (args);
+
+	/* return value read */
+	return result;
+}
+
+/** 
+ * @internal
+ *
+ * @brief Allows to perform the same operation like \ref
+ * axl_stream_get_untilv but providing an already initialized and
+ * opened std arg.
+ *
+ * This function is in fact, used by \ref axl_stream_get_untilv.
+ * 
+ * @param stream The stream where the operation will be peformed.
+ * 
+ * @param valid_chars The valid chars set to be used while reading
+ * data.
+ *
+ * @param chunk_matched An optional value where the matched chunk will
+ * be reported.
+ *
+ * @param accept_terminator Configure if terminator read should be
+ * accepted or only the chunk read.
+ *
+ * @param chunk_num How many terminators are configured.
+ *
+ * @param args The list of terminators.
+ * 
+ * @return The chunk read or NULL if fails.
+ */
+char      * axl_stream_get_untilv      (axlStream * stream, 
+					char      * valid_chars, 
+					int       * chunk_matched,
+					bool        accept_terminator,
+					int         chunk_num, 
+					va_list args)
+{
 	char      ** chunks;
-	va_list      args;
 	int          iterator = 0;
 	int          index    = 0;
 	int          length   = 0;
@@ -391,9 +449,6 @@ char      * axl_stream_get_until       (axlStream * stream,
 	/* get chunks to lookup */
 	chunks = axl_new (char *, chunk_num + 1);
 	
-	/* begin std args  */
-	va_start (args, chunk_num);
-	
 	/* iterate over the chunk list */
 	while (iterator < chunk_num) {
 		/* get the chunk */
@@ -401,9 +456,6 @@ char      * axl_stream_get_until       (axlStream * stream,
 		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "get-until chunk to compare read (%d)=%s", iterator, chunks[iterator]);
 		iterator ++;
 	}
-
-	/* end std arg */
-	va_end (args);
 
 	/* now we have chunks to lookup, stream until get the stream
 	 * limited by the chunks received. */
@@ -443,8 +495,10 @@ char      * axl_stream_get_until       (axlStream * stream,
 				memcpy (stream->last_chunk, stream->stream + stream->stream_index, index);
 
 				/* update internal indexes */
-				stream->stream_index     += index + length;
-				stream->previous_inspect  = 0;
+				if (accept_terminator)
+					stream->stream_index += length;
+				stream->stream_index         += index;
+				stream->previous_inspect      = 0;
 
 				axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "returning chunk found: [%s] (matched chunk: %d)", stream->last_chunk,
 					 iterator);
@@ -466,8 +520,9 @@ char      * axl_stream_get_until       (axlStream * stream,
 		*chunk_matched = -1;
 
 	/* return a NULL chunk. */
-	return NULL;
+	return NULL;	
 }
+
 
 /** 
  * @internal
@@ -578,7 +633,7 @@ char      * axl_stream_get_following   (axlStream * stream, int count)
 		axl_free (stream->last_get_following);
 
 	/* copy stream content */
-	stream->last_get_following = axl_new (char, count);
+	stream->last_get_following = axl_new (char, count + 1);
 	memcpy (stream->last_get_following, stream->stream + stream->stream_index, count);
 
 	/* return reference created */
@@ -732,7 +787,7 @@ bool        axl_stream_cmp             (char * chunk1, char * chunk2, int size)
 		return AXL_FALSE;
 	if (chunk2 == NULL)
 		return AXL_FALSE;
-	if (size <= 0)
+	if (size < 0)
 		return AXL_FALSE;
 	
 	/* report current comparation status */
@@ -838,11 +893,217 @@ char      * axl_stream_strdup_printf   (char * chunk, ...)
 
 	va_start (args, chunk);
 
+	/* get current buffer size to copy */
 	size     = vsnprintf (NULL, 0, chunk, args);
+
+	/* allocate memory */
 	result   = axl_new (char, size + 1);
+
+	/* copy current size */
 	new_size = vsnprintf (result, size, chunk, args);
 
 	va_end (args);
 	
 	return result;
+}
+
+/** 
+ * @internal
+ *
+ * @brief Allows to split the provided chunk, into several pieces that
+ * are separated by the separator (or separators) provided.
+ *
+ * The function will try to split the chunk provide using the
+ * separator provided, and optionally, all separators provided.
+ *
+ * @param chunk The chunk to split.
+ *
+ * @param separator_num The number os separators to be used while
+ * spliting the chunk.
+ * 
+ * @return A newly allocated string, that must be deallocated by using
+ * \ref axl_stream_freev. The function will return a NULL if the chunk
+ * or the separators provided are NULL.
+ */
+char     ** axl_stream_split           (char * chunk, int separator_num, ...)
+{
+	va_list      args;
+	char      ** separators;
+	char      ** result;
+	int          iterator;
+	int          index;
+	int          previous_index;
+	int          count      = 0;
+	int          length     = 0;
+
+	/* check received values */
+	axl_return_val_if_fail (chunk, NULL);
+	axl_return_val_if_fail (separator_num > 0, NULL);
+
+	separators = axl_new (char *, separator_num + 1);
+	iterator   = 0;
+	va_start (args, separator_num);
+
+	/* get all separators to be used */
+	while (iterator < separator_num) {
+		separators[iterator] = va_arg (args, char *);
+		iterator++;
+	}
+	
+	va_end (args);
+
+	/* now, count the number of strings that we will get by
+	 * separating the string into several pieces */
+	index    = 0;
+	while (*(chunk + index) != 0) {
+
+		/* reset the iterator */
+		iterator = 0;
+		while (iterator < separator_num) { 
+
+			/* compare the current index with the current
+			 * separator */
+			length = strlen (separators[iterator]);
+			if (! memcmp (chunk + index, separators[iterator], length)) {
+
+				/* update items found */
+				count++;
+
+				/* axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found item at the index: %d (count %d)", index, count); */
+
+				/* update index to skip the item found */
+				index += length - 1; /* make the last index to be captured the the -1 */
+
+				/* axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "starting to look at index: %d", index); */
+
+				/* break the loop */
+				break;
+			}
+			iterator++;
+		}
+
+		/* update the index to the next item */
+		index++;
+	}
+	
+	/* create the result that will hold items separated */
+	result = axl_new (char *, count + 2);
+	/* axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found %d items to split", count); */
+
+	/* now copy items found */
+	count          = 0;
+	index          = 0;
+
+	/* remember previous_index */
+	previous_index = index;
+	while (*(chunk + index) != 0) {
+
+		/* reset the iterator */
+		iterator = 0;
+		while (iterator < separator_num) { 
+
+			/* compare the current index with the current
+			 * separator */
+			length = strlen (separators[iterator]);
+			if (! memcmp (chunk + index, separators[iterator], length)) {
+
+				/* copy the chunk found */
+				result[count] = axl_new (char, index - previous_index + 1);
+				memcpy (result[count], chunk + previous_index, index - previous_index);
+
+				/* axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "item found (last) '%s' (index=%d != previous=%d", result[count],  index, previous_index); */
+
+				/* update items found */
+				count++;
+
+				/* update index to skip the item found */
+				if (*(chunk + index + length) == 0) {
+					/* in the case no more elements to read will be found */
+					/* put an empty space at the end */
+					result [count]    = axl_new (char, 1);
+					
+					axl_free (separators);
+					return result;
+				}
+
+				/* remember previous_index */
+				index += length; 
+				previous_index = index;
+				index--; /* make the last index to be captured the the -1 */
+				break;
+			}
+			iterator++;
+		}
+
+		/* update the index to the next item */
+		index++;
+	}
+
+	/* check for a last chunk */
+	if (index != previous_index) {
+		/* copy the chunk found */
+		result[count] = axl_new (char, index - previous_index + 1);
+		memcpy (result[count], chunk + previous_index, index - previous_index);
+
+		/* axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "item found (last) '%s' (index=%d != previous=%d", result[count], index, previous_index); */
+	}
+
+	
+	/* release memory */
+	axl_free (separators);
+	
+	return result;
+}
+
+/** 
+ * @brief Returns current number of items inside the chunks reference
+ * provided.
+ * 
+ * @param chunks The chunks reference, which contains a list of
+ * chunks.
+ * 
+ * @return The number of chunks that the reference has or -1 if it
+ * fails.
+ */
+int         axl_stream_strv_num        (char ** chunks)
+{
+	int iterator = 0;
+
+	axl_return_val_if_fail (chunks, -1);
+	/* release memory used by all elements inside the chunk */
+	while (chunks[iterator] != 0) {
+		iterator++;
+	}
+
+	/* return current number of chunks */
+	return iterator;
+	
+}
+
+/** 
+ * @internal
+ *
+ * @brief Allows to release memory used by elements returned by \ref
+ * axl_stream_split and other function that return a pointer to a char
+ * **.
+ * 
+ * @param chunks The chunk to release.
+ */
+void        axl_stream_freev           (char ** chunks)
+{
+	int iterator = 0;
+
+	axl_return_if_fail (chunks);
+	 
+	/* release memory used by all elements inside the chunk */
+	while (chunks[iterator] != 0) {
+		axl_free (chunks[iterator]);
+		iterator++;
+	}
+	
+	/* now release the chunk inside */
+	axl_free (chunks);
+	
+	/* nothing more to do */
+	return;
 }

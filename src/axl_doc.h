@@ -42,19 +42,25 @@
 
 BEGIN_C_DECLS
 
-axlDoc * axl_doc_parse                    (char * entity, 
-					   int entity_size, 
-					   axlError ** error);
+axlDoc  * axl_doc_parse                    (char * entity, 
+					    int entity_size, 
+					    axlError ** error);
 
-char   * axl_doc_get_encoding             (axlDoc * doc);
+axlNode * axl_doc_get_root                 (axlDoc * doc);
 
-bool     axl_doc_get_standalone           (axlDoc * doc);
+axlList * axl_doc_get_list                 (axlDoc * doc, char * path_to);
 
-void     axl_doc_free                     (axlDoc * doc);
+axlNode * axl_doc_get                      (axlDoc * doc, char * path_to);
 
-void     axl_doc_set_child_current_parent (axlDoc * doc, axlNode * node);
+char    * axl_doc_get_encoding             (axlDoc * doc);
 
-void     axl_doc_pop_current_parent       (axlDoc * doc);
+bool      axl_doc_get_standalone           (axlDoc * doc);
+
+void      axl_doc_free                     (axlDoc * doc);
+
+void      axl_doc_set_child_current_parent (axlDoc * doc, axlNode * node);
+
+void      axl_doc_pop_current_parent       (axlDoc * doc);
 
 END_C_DECLS
 

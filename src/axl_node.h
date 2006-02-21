@@ -44,19 +44,42 @@ BEGIN_C_DECLS
 
 axlNode * axl_node_create             (char * name);
 
+/** 
+ * @brief Allows to easily check that the given xml node (\ref
+ * axlNode) have the provided name.
+ *
+ * This macro is provided as a convenience to check that a particular
+ * node have a particular name. Check the documentation that this
+ * macro is wrapping to get examples: \ref axl_node_get_name.
+ * 
+ * @param node The \ref axlNode where the name will be compared with
+ * the provided value.
+ *
+ * @param name The name to compare.
+ * 
+ * @return AXL_TRUE if names are equal or AXL_FALSE if not.
+ */
+#define NODE_CMP_NAME(node,name) (axl_stream_cmp ((node != NULL) ? axl_node_get_name(node) : "><", (name != NULL) ? name : "<>", (name != NULL) ? strlen (name) : 2))
+
+char    * axl_node_get_name           (axlNode * node);
+
 void      axl_node_set_child          (axlNode * parent, axlNode * child);
 
 void      axl_node_set_is_empty       (axlNode * node, bool empty);
 
 bool      axl_node_is_empty           (axlNode * node);
 
-char    * axl_node_get_content        (axlNode * node, int * content_size);
+char    * axl_node_get_content        (axlNode * node, int  * content_size);
 
-char    * axl_node_get_content_copy   (axlNode * node, int * content_size);
+void      axl_node_set_content        (axlNode * node, char * content, int content_size);
+
+char    * axl_node_get_content_copy   (axlNode * node, int  * content_size);
 
 void      axl_node_set_have_childs    (axlNode * node, bool childs);
 
 bool      axl_node_have_childs        (axlNode * node);
+
+axlNode * axl_node_get_child_called   (axlNode * parent, char * name);
 
 void      axl_node_free            (axlNode * node);
 
