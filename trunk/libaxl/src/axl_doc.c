@@ -320,6 +320,22 @@ struct _axlDoc {
 	axlStack  * parentNode;
 };
 
+
+/** 
+ * @internal
+ * @brief Creates a new empty \ref axlDoc reference.
+ * 
+ * @return A newly allocated \ref axlDoc reference.
+ */
+axlDoc * __axl_doc_new () 
+{
+	axlDoc    * result = axl_new (axlDoc, 1);
+
+	result->parentNode = axl_stack_new (NULL);
+
+	return result;
+}
+
 /** 
  * @internal
  * 
@@ -389,7 +405,7 @@ bool __axl_doc_parse_xml_header (axlStream * stream, axlDoc * doc, axlError ** e
 			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found encoding declaration");
 
 			/* found encoding instruction */
-			string_aux = axl_stream_get_until (stream, NULL, NULL, 2, "'", "\"");
+			string_aux = axl_stream_get_until (stream, NULL, NULL, AXL_TRUE, 2, "'", "\"");
 			if (string_aux == NULL) {
 				axl_error_new (-2, "expected encoding value, not found.", stream, error);
 				axl_stream_free (stream);
@@ -409,7 +425,7 @@ bool __axl_doc_parse_xml_header (axlStream * stream, axlDoc * doc, axlError ** e
 		if ((axl_stream_inspect_several (stream, 2, "standalone=\"", "standalone='") > 0)) {
 			
 			/* found standalone instruction */
-			string_aux = axl_stream_get_until (stream, NULL, NULL, 2, "'", "\"");
+			string_aux = axl_stream_get_until (stream, NULL, NULL, AXL_TRUE, 2, "'", "\"");
 			if (string_aux == NULL) {
 				axl_error_new (-2, "expected to receive standalone value, not found.", stream, error);
 				axl_stream_free (stream);
@@ -502,7 +518,7 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 	}
 
 	/* get node name */
-	string_aux = axl_stream_get_until (stream, NULL, &matched_chunk, 5, " />", "/>", ">", " >", " ");
+	string_aux = axl_stream_get_until (stream, NULL, &matched_chunk, AXL_TRUE, 5, " />", "/>", ">", " >", " ");
 	if (AXL_IS_STR_EMPTY (string_aux)) {
 		axl_error_new (-2, "expected an non empty content for the node name not found.", stream, error);
 		axl_stream_free (stream);
@@ -514,7 +530,6 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 	if (doc->rootNode == NULL) {
 		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "setting as first node found, the root node: <%s>", string_aux);
 		doc->rootNode  = node;
-		axl_stack_push (doc->parentNode, node);
 	} else {
 		/* or set the node as a child of the current parent */
 		axl_doc_set_child_current_parent (doc, node);
@@ -544,7 +559,7 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 		 * are on "/>" case */
 		if ((matched_chunk == 0) ||
 		    (matched_chunk == 1) ||
-		    axl_stream_inspect_several (stream, 2, "/>", " />") > 0) {
+		    axl_stream_inspect_several (stream, 2, " />", "/>") > 0) {
 			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found end xml node definition '/>'");
 			/* empty node configuration found */
 			axl_node_set_is_empty (node, AXL_TRUE);
@@ -565,7 +580,7 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 		 * are on ">" case */
 		if ((matched_chunk == 2) ||
 		    (matched_chunk == 3) ||
-		    axl_stream_inspect_several (stream, 2, ">", " >") > 0) {
+		    axl_stream_inspect_several (stream, 2, " >", ">") > 0) {
 			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found end xml node definition '>'");
 			axl_node_set_have_childs (node, AXL_TRUE);
 			/* this node is ended */
@@ -584,8 +599,47 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
  * @brief Perform the close node operation.
  *
  */
-bool __axl_doc_parse_close_node (axlStream * stream, axlDoc * doc, axlNode ** node, axlError ** error)
+bool __axl_doc_parse_close_node (axlStream * stream, axlDoc * doc, axlNode ** _node, axlError ** error)
 {
+	char    * string;
+	axlNode * node;
+
+	/* get the node being closed to check to the current parent */
+	string = axl_stream_get_until (stream, NULL, NULL, AXL_TRUE, 2, " >", ">");
+	if (string == NULL) {
+		axl_error_new (-1, "An error was found while closing the xml node", stream, error);
+		axl_stream_free (stream);
+		return AXL_FALSE;
+	}
+
+	/* get current parent node */
+	node   = axl_stack_peek (doc->parentNode);
+	if (node == NULL) {
+		axl_error_new (-1, "Found that the stack doesn't have any node opened, this means either an libaxl error or the xml being read is closing a node not opened",
+			       stream, error);
+		axl_stream_free (stream);
+		return AXL_FALSE;
+	}
+
+	if (NODE_CMP_NAME (node, string)) {
+		/* ok, axl node to be closed is the one expected */
+		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "closing xml node, that matched with parent opened");
+		return AXL_TRUE;
+	}
+
+	/* seems that the node being closed doesn't match */
+	axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "xml node names to be closed doesn't matched (%s != %s), current node stack status:",
+		 axl_node_get_name (node), string);
+
+	node = axl_stack_pop (doc->parentNode);
+	while (node != NULL) {
+		axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "<%s>", axl_node_get_name (node));
+		node = axl_stack_pop (doc->parentNode);
+	}
+
+	axl_error_new (-1, "An error was found while closing the opened xml node, parent opened and xml node being closed doesn't match",
+		       stream, error);
+	axl_stream_free (stream);
 	return AXL_FALSE;
 }
 
@@ -623,10 +677,11 @@ bool __axl_doc_parse_close_node (axlStream * stream, axlDoc * doc, axlNode ** no
  */
 axlDoc * axl_doc_parse (char * entity, int entity_size, axlError ** error)
 {
-	axlStream * stream    = NULL;
-	axlDoc    * doc       = NULL;
-	axlNode   * node      = NULL;
-	int         iterator  = 0;
+	axlStream * stream        = NULL;
+	axlDoc    * doc           = NULL;
+	axlNode   * node          = NULL;
+	char      * string        = NULL;
+	int         chunk_matched = 0;
 		
 	
 	/* check for environmental parameters */
@@ -645,7 +700,8 @@ axlDoc * axl_doc_parse (char * entity, int entity_size, axlError ** error)
 		stream = axl_stream_new (entity, strlen (entity));
 	else
 		stream = axl_stream_new (entity, entity_size);
-	doc            = axl_new (axlDoc, 1);
+
+	doc            = __axl_doc_new ();
 	axl_stream_link (stream, doc);
 
 	/* parse initial xml header */
@@ -655,6 +711,9 @@ axlDoc * axl_doc_parse (char * entity, int entity_size, axlError ** error)
 	/* parse the rest of the document */
 	if (!__axl_doc_parse_node (stream, doc, &node, error))
 		return NULL;
+
+	/* set the node read, the root one, to be the parent */
+	axl_stack_push (doc->parentNode, node);
 
 	/* if the node returned is not empty */
 	if (! axl_node_is_empty (node)) {
@@ -667,31 +726,63 @@ axlDoc * axl_doc_parse (char * entity, int entity_size, axlError ** error)
 			/* consume white spaces */
 			AXL_CONSUME_SPACES (stream);
 
-			if (axl_stream_peek (stream, "</") > 0) {
+			if ((axl_stream_peek (stream, "</") > 0)) {
+				/* accept previous peek */
+				axl_stream_accept (stream);
+
 				axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found a node termination signal");
 				/* seems that a node is being closed */
 				if (! __axl_doc_parse_close_node (stream, doc, &node, error))
 					return NULL;
+
+				/* because the xml node have been
+				 * closed, make the parent to be the
+				 * previous one */
+				axl_stack_pop (doc->parentNode);
 				continue;
 			}
 
-			if (axl_stream_peek (stream, "<") > 0) {
+			if ((axl_stream_peek (stream, "<") > 0)) {
+				/* accept previous peek */
+				axl_stream_accept (stream);
+
 				axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found a new node being opened");
 				/* seems that another node is being opened */
 				if (!__axl_doc_parse_node (stream, doc, &node, error))
 					return NULL;
+
 				continue;
 			}
-
+			
+			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "seems that xml node content was found, while reading -->'%s'",
+				 axl_stream_get_following (stream, 20));
 			/* found node content */
-			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found a node content");
-			if (iterator == 3) {
-				axl_error_new (-1, "not implemented xml node content parsing..", stream, error);
+			chunk_matched = 0;
+			string = axl_stream_get_until (stream, NULL, &chunk_matched, AXL_FALSE, 3, "</", "<", ">");
+			/* check for a null content found */
+			if (string == NULL) {
+				axl_error_new (-1, "an error was found while reading the xml node content", stream, error);
+				axl_stream_free (stream);
 				return NULL;
 			}
-			iterator++;
+
+			/* check for a not properly formed xml document */
+			if (chunk_matched == 2) {
+				axl_error_new (-1, "found a closing node definition '>' were expected '<' or '</'", stream, error);
+				axl_stream_free (stream);
+				return NULL;
+			}
+
+
+			/* store content inside the xml node */
+			axl_node_set_content (node, string, -1);
+
+			/* keep on looping */
 		}
 	}
+
+	/* pop axl parent */
+	axl_stack_pop (doc->parentNode);
 
 	/* parse complete */
 	axl_stream_unlink (stream);
@@ -700,6 +791,229 @@ axlDoc * axl_doc_parse (char * entity, int entity_size, axlError ** error)
 }
 
 
+/** 
+ * @brief Allows to get current root node for the given xml document,
+ * represented by the \ref axlDoc instance.
+ *
+ * Every XML document has a very first node, which enclose all childs
+ * found inside the document, that is called the root node. This xml
+ * node, 
+ *
+ * This function couldn't return NULL because every well opened xml
+ * document, always have a root node. However, the function could
+ * return a NULL value if the document received is a null reference.
+ * 
+ * @param doc The xml document (\ref axlDoc) where the root node will
+ * be returned. 
+ * 
+ * @return The root node (\ref axlNode) or NULL if fails.
+ */
+axlNode * axl_doc_get_root                 (axlDoc * doc)
+{
+	axl_return_val_if_fail (doc, NULL);
+	
+	/* return current root node */
+	return doc->rootNode;
+}
+
+/** 
+ * @internal
+ *
+ * @brief An always return 1 to make the list to store elements append
+ * at the end.
+ */
+int __axl_doc_get_are_equal (axlPointer a, axlPointer b)
+{
+	return 1;
+}
+
+/** 
+ * @brief Allows to get a particular node (or list of nodes) that are
+ * located at a selected path.
+ *
+ * Providing a path, the function lookups for nodes stored on the
+ * selected location inside the provided document. The path provided
+ * doesn't follow the XPath extension. 
+ *
+ * Taking as a reference for the xml to be explained on the following
+ * rules:
+ * \code
+ * <complex>
+ *     <data>
+ *       <node>
+ *          <row>10</row>
+ *       </node>
+ *     </data>
+ * </complex>
+ * \endcode
+ *
+ *
+ * Here is how the path works:
+ * 
+ * - If provided a "/", the root node is returned. This is same than
+ * provided the root node name, like "/complex", when it is expected
+ * to find as root node <complex>. However, providing a particular
+ * node to search allows to get ensure that the root node is the one
+ * looked up.
+ *
+ * - To select nodes inside the first root node, in a generic way,
+ * without providing details about the root node name, you could use
+ * "//\*". This will provide all nodes that are found inside the root
+ * node, whatever it is called. If it is required to get all nodes,
+ * inside the root node, ensuring that the root one is called
+ * "complex" you should use: "/complex/\*"
+ *
+ * - If it is required to get a selected node inside the root node,
+ * that is called in a particular way you can use: //data. Again, if
+ * it is required to ensure that a particular node exists, from the
+ * top level down the leaf node, it will required to write something
+ * like: "/complex/data". 
+ *
+ * - Remember that is totally different to query for "/complex/data"
+ * than "/complex/data/\*". The first one, returns the node, or nodes,
+ * called <b>data</b> that are inside the root node called
+ * <b>complex</b>, while the second one says: return all nodes inside
+ * the node <b>data</b> that is inside the root node called
+ * <b>complex</b>
+ *
+ * Finally, keep in mind that this function only returns nodes. To get
+ * node content, attributes or anything else, you'll have to get the
+ * node first and then operate with it.
+ *
+ *
+ *
+ * @param doc The \ref axlDoc reference where the lookup will be
+ * performed.
+ *
+ * @param path_to A path to the node (nodes) that are inside the path
+ * especifyied.
+ * 
+ * @return A list of nodes (\ref axlNode) if the case something is
+ * found or NULL if fails to find something at the given path. If the
+ * path is right but no node match with it or there is no node, the
+ * function will return NULL reference rather a list with no
+ * nodes. Returned value must be deallocated by using \ref
+ * axl_list_free.
+ */
+axlList * axl_doc_get_list                  (axlDoc * doc, char * path_to)
+{
+	axlList  * nodes;
+	axlNode  * node     = NULL;
+	int        iterator = 0;
+	char    ** paths    = 0;
+	
+
+	axl_return_val_if_fail (doc, NULL);
+	axl_return_val_if_fail (path_to, NULL);
+	axl_return_val_if_fail (path_to[0] == '/', NULL);
+
+	/* create the axl list */
+	nodes = axl_list_new (__axl_doc_get_are_equal, NULL);
+	
+	/* split paths */
+	paths = axl_stream_split (path_to, 1, "/");
+	axl_return_val_if_fail (paths, nodes);
+
+	/* get a reference to the root node */
+	node = doc->rootNode;
+
+	/* basic case, check for the root node */
+	if (strlen (paths[1]) != 0) {
+		/* check the node is the one requested */
+		if (! NODE_CMP_NAME (node, paths[1])) {
+			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "requested root node = %s wasn't found", paths[1]);
+			axl_list_free (nodes);
+			axl_stream_freev (paths);
+			return NULL;
+		}
+	}
+
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found node: %s", paths[1]);
+
+	/* now the general case */
+	iterator = 2;
+	while ((paths[iterator] != NULL) && (strlen (paths[iterator]) > 0)) {
+		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "checking path item %s", paths[iterator]);
+		
+		/* check that the last path is used */
+		if (axl_cmp (paths[iterator], "*") && 
+		    (axl_stream_strv_num (paths) != iterator + 1)) {
+			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "using the '*' at that path different from the last one.", paths[iterator]);
+			axl_list_free (nodes);
+			axl_stream_freev (paths);
+			return NULL;
+		}
+
+		/* get a reference to the node searched */
+		node = axl_node_get_child_called (node, paths[iterator]);
+		if (node == NULL) {
+			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "the node located at %s wasn't found.", path_to);
+			axl_list_free (nodes);
+			axl_stream_freev (paths);
+			return NULL;
+		}
+		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found node: %s", paths[iterator]);
+
+		/* update iterator value */
+		iterator++;
+	}
+
+	/* add the node found */
+	axl_list_add (nodes, node);
+
+	/* free paths */
+	axl_stream_freev (paths);
+
+	/* return the node found */
+	return nodes;
+}
+
+/** 
+ * @brief Allows to return only one node for the selected path.
+ *
+ * This function works the same way like \ref axl_doc_get_list but
+ * extracting the first node reference found inside the list returned
+ * by the previous function, and returning it.
+ *
+ * Many times, a path is selected because it is know that under that
+ * location couldn't be more than one element. However, using \ref
+ * axl_list_get_list function makes this task really anoying because
+ * you have to get the list, extract the node, from the list, and
+ * releasing the list reference to actually get access to the node
+ * looked up.
+ *
+ * This function allows you to get access to the node stored on the
+ * selected location, and, if a path that provides several nodes is
+ * returned, only the first node found on that list is returned.
+ * 
+ * @param doc The \ref axlDoc document where the node will be returned.
+ * @param path_to A path to the node to get.
+ * 
+ * @return A reference to a \ref axlNode instace, or NULL if
+ * fails. Returned reference must not be deallocated.
+ */
+axlNode * axl_doc_get                      (axlDoc * doc, char * path_to)
+{
+	axlList * list = NULL;
+	axlNode * node = NULL;
+	
+	axl_return_val_if_fail (doc, NULL);
+	axl_return_val_if_fail (path_to, NULL);
+
+	/* get the list of nodes */
+	list = axl_doc_get_list (doc, path_to);
+	if (list == NULL)
+		return NULL;
+	
+	/* get the node requested */
+	if (axl_list_length (list) > 0)
+		node = axl_list_get_nth (list, 0);
+
+	axl_list_free (list);
+	return node;
+	
+	
+}
 
 /** 
  * @brief Gets current axl Document encoding.
@@ -800,6 +1114,9 @@ void     axl_doc_free         (axlDoc * doc)
 	/* free first root node */
 	if (doc->rootNode != NULL)
 		axl_node_free (doc->rootNode);
+
+	if (doc->parentNode != NULL)
+		axl_stack_destroy (doc->parentNode);
 
 	/* free enconding allocated */
 	axl_free (doc->encoding);

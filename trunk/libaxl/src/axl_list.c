@@ -634,7 +634,7 @@ int       axl_list_length (axlList * list)
  * 
  * @param list The list to destroy
  */
-void      axl_list_destroy (axlList * list)
+void      axl_list_free (axlList * list)
 {
 	axlListNode * node;
 	axlListNode * node2;

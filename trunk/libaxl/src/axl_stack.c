@@ -39,6 +39,8 @@
 #include <axl_decl.h>
 #include <axl_stack.h>
 #include <axl_list.h>
+#include <axl_log.h>
+#define LOG_DOMAIN "axl-stack"
 
 struct _axlStack {
 	axlList * list;
@@ -140,9 +142,13 @@ axlPointer axl_stack_peek (axlStack * stack)
 {
 	axl_return_val_if_fail (stack, NULL);
 
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "peeking the stack with current size=%d", axl_list_length (stack->list));
+
 	/* do not perform any operation if the stack is empty */
-	if (axl_stack_is_empty (stack))
+	if (axl_stack_is_empty (stack)) {
+		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "peek operation over a empty stack was detected, returning NULL");
 		return NULL;
+	}
 
 	/* return the very first element */
 	return axl_list_get_first (stack->list);
@@ -191,7 +197,7 @@ void       axl_stack_destroy (axlStack * stack)
 	axl_return_if_fail (stack);
 
 	/* destroy the list inside */
-	axl_list_destroy (stack->list);
+	axl_list_free (stack->list);
 	
 	/* destroy the stack */
 	axl_free (stack);

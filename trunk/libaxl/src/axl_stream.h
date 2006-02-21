@@ -39,6 +39,7 @@
 #define __AXL_STREAM_H__
 
 #include <axl_decl.h>
+#include <stdarg.h>
 
 axlStream * axl_stream_new             (char * stream_source, 
 					int stream_size);
@@ -56,7 +57,15 @@ void        axl_stream_move            (axlStream * stream, int count);
 char      * axl_stream_get_until       (axlStream * stream, 
 					char      * valid_chars, 
 					int       * chunk_matched,
+					bool        accept_terminator,
 					int         chunk_num, ...);
+
+char      * axl_stream_get_untilv      (axlStream * stream, 
+					char      * valid_chars, 
+					int       * chunk_matched,
+					bool        accept_terminator,
+					int         chunk_num,
+					va_list args);
 
 int         axl_stream_get_index       (axlStream * stream);
 
@@ -84,5 +93,11 @@ char      * axl_stream_strdup          (char * chunk);
 char      * axl_stream_strdup_n        (char * chunk, int n);
 
 char      * axl_stream_strdup_printf   (char * chunk, ...);
+
+char     ** axl_stream_split           (char * chunk, int separator_num, ...);
+
+int         axl_stream_strv_num        (char ** chunks);
+
+void        axl_stream_freev           (char ** chunks);
 
 #endif

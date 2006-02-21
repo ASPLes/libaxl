@@ -201,7 +201,7 @@ if (!(expr)) return;
  * @param val The value to return if the expression is not meet.
  */
 #define axl_return_val_if_fail(expr, val) \
-if (!(expr)) return val;
+if (!(expr)) { axl_log ("axl-check", AXL_LEVEL_CRITICAL, "Expresion '%s' have failed", #expr); return val;}
 
 /** 
  * @internal
@@ -214,6 +214,7 @@ if (!(expr)) return val;
  * @return A newly allocated value or NULL.
  */
 #define axl_strdup(string) (string != NULL) ? (char *) axl_stream_strdup ((char *) string) : NULL;
+
 
 
 /** 
@@ -260,5 +261,8 @@ while ((axl_stream_inspect_several (stream, 4, " ", "\t", "\r", "\n") > 0)) \
 # define BEGIN_C_DECLS /* empty */
 # define END_C_DECLS /* empty */
 #endif
+
+
+bool axl_cmp (char * string, char * string2);
 
 #endif
