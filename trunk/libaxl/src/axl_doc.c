@@ -285,6 +285,15 @@
  * 
  */
 
+/**
+ * \defgroup axl_doc_module Axl XML Document: XML Documents related functions, loading XML documents and using them.
+ */
+
+/** 
+ * \addtogroup axl_doc_module
+ * @{
+ */
+
 #include <axl.h>
 
 #define LOG_DOMAIN "axl-doc"
@@ -1127,3 +1136,4 @@ void     axl_doc_free         (axlDoc * doc)
 	return;
 }
 
+/* @} */

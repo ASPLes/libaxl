@@ -40,6 +40,7 @@ AC_OUTPUT([
 Makefile
 src/Makefile
 doc/Makefile
+doc/axl-doc.doxygen
 test/Makefile
 axl.pc])
 
