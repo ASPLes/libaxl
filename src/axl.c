@@ -40,6 +40,53 @@
 #include <stdio.h>
 
 /** 
+ * \mainpage AXL: Another Library implementation (XML 1.0 standard)
+ * 
+ * \section intro Introduction
+ *
+ * AXL is an small library which aims to implement the XML 1.0
+ * standard, as defined at this time, inside the XML 1.0 third edition
+ * recomendation found at: http://www.w3.org/TR/REC-xml/
+ * 
+ * It was implemented for the Af-Arch project to avoid the LibXML2
+ * dependency (http://www.xmlsoft.org).
+ *
+ * Main objectives for this library is to provide:
+ * 
+ * - A clean implementation, that only includes, those elements
+ * defined, and only those, inside the XML 1.0 standard. As of this
+ * writing, that standard is the third edition.
+ *
+ * - Ensure that the library is implemented using abstract data types,
+ * commonly known as opaque types, to avoid exposing details to the
+ * user space code that is consuming the API.
+ *
+ * - To be small and efficient, ensuring on every stable release that
+ * the library do not leak, not only while using the library in a
+ * proper manner but also when errors were found. This point is really
+ * important for us because Af-Arch server applications needs to be
+ * working for a long time. The other issue is that the Af-Arch client
+ * platform should be easily embeded, so, footprint is a requirement.
+ *
+ * 
+ *
+ * 
+ *
+ * 
+ *
+ */
+
+
+/**
+ * \defgroup axl_module Axl main: Init functions for the library
+ */
+
+/** 
+ * \addtogroup axl_module
+ * @{
+ */
+
+/** 
  * @brief Initializes Axl library.
  *
  * Currently this function is not required to be executed because
@@ -72,3 +119,4 @@ void axl_end ()
 }
 
 
+/* @} */
