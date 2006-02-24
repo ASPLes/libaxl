@@ -38,7 +38,7 @@
 #include <axl_decl.h>
 #include <axl_stream.h>
 #include <axl_log.h>
-
+#define LOG_DOMAIN "axl-decl"
 /** 
  * @internal
  *

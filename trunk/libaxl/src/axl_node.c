@@ -37,6 +37,7 @@
  */
 
 #include <axl.h>
+#define LOG_DOMAIN "axl-node"
 
 struct _axlAttribute {
 	/** 
@@ -167,6 +168,132 @@ axlNode * axl_node_create (char * name)
 }
 
 /** 
+ * @brief Allows to configure an xml attribute to the given node.
+ *
+ * Attributes are that piece of the xml node definition that is
+ * defined the by pair attr=value. Here is an example of an xml node
+ * with an attribute:
+ * 
+ * \code
+ * <complex attr1='value'>
+ *   ..
+ * </complex>
+ * \endcode
+ *
+ * It is not permited to store the same attributes several times
+ * inside the same node. If the function detects that a node is being
+ * set to have the same attribute name several times, the attribute
+ * will not be added.
+ *
+ * Values for the attribute name (<b>attribute</b>) and its value can
+ * be deallocated once the function finish. This function will perform
+ * a local copy.
+ * 
+ * @param node The \ref axlNode where the attribute will be installed
+ *
+ * @param attribute The attribute name to configure. This value can't
+ * be NULL.
+ *
+ * @param value The value associated to the attribute to be
+ * configured. This value can't be NULL.
+ */
+void      axl_node_set_attribute      (axlNode * node, char * attribute, char * value)
+{
+	axlAttribute * _attribute;
+
+	/* checks values received */
+	axl_return_if_fail (node);
+	axl_return_if_fail (attribute);
+	axl_return_if_fail (value);
+
+	/* attribute could be added twice */
+	axl_return_if_fail (! axl_node_has_attribute (node, attribute));
+	
+
+	/* create the attribute */
+	_attribute        = axl_new (axlAttribute, 1);
+	_attribute->name  = axl_strdup (attribute);
+	_attribute->value = axl_strdup (value);
+
+	/* add the attribute */
+	axl_list_add (node->attributes, _attribute);
+
+	return;
+}
+
+/** 
+ * @internal
+ *
+ * @brief Allows to get the attribute inside the node, that has as
+ * name the value provided.
+ */
+axlAttribute * __axl_node_common_attr_get (axlNode * node, char * attribute)
+{
+	axlAttribute * attr;
+	int            iterator = 0;
+
+	axl_return_val_if_fail (node, AXL_FALSE);
+	axl_return_val_if_fail (attribute, AXL_FALSE);
+
+	/* get the first */
+	while (iterator < axl_list_length (node->attributes)) {
+		attr = axl_list_get_nth (node->attributes, iterator);
+		if (axl_cmp (attr->name, attribute))
+			return attr;
+
+		iterator++;
+	}
+
+	/* attribute not found */
+	return NULL;
+}
+
+/** 
+ * @brief Allows to check if a particular attribute is installed on
+ * the given node.
+ *
+ * @param node The node where the attribute will be checked to be
+ * configured.
+ *
+ * @param attribute The attribute to check.
+ * 
+ * @return A \ref AXL_TRUE if the attribute value is set, otherwise
+ * \ref AXL_FALSE is returned.
+ */
+bool      axl_node_has_attribute      (axlNode * node, char * attribute)
+{
+	/* attribute not found */
+	return (__axl_node_common_attr_get (node, attribute) != NULL);
+}
+
+/** 
+ * @brief Allows to get current content of the provided attribute
+ * inside the given node.
+ *
+ * It is recomended to call first to \ref axl_node_has_attribute to
+ * ensure that the attribute to be reported its value already exists.
+ *
+ * @param node The \ref axlNode the the attribute value associated
+ * will be returned.
+ *
+ * @param attribute The attribute that is being required its value.
+ * 
+ * @return A string containing the attribute value or NULL if
+ * fails. Returned value must not be deallocated, it is a reference to
+ * a local copy. Use \ref axl_strdup function to get a persistent
+ * copy.
+ */
+char    * axl_node_get_attribute_value (axlNode * node, char * attribute)
+{
+	axlAttribute * attr;
+
+	attr = __axl_node_common_attr_get (node, attribute);
+	if (attr == NULL)
+		return NULL;
+	return attr->value;
+}
+
+/** 
  * @brief Allows to configure the given node to be empty.
  *
  * A \ref axlNode is empty when it is known that the node doesn't have
@@ -285,7 +412,12 @@ bool      axl_node_is_empty        (axlNode * node)
  */
 char    * axl_node_get_content     (axlNode * node, int * content_size)
 {
-	return NULL;
+	axl_return_val_if_fail (node, NULL);
+
+	if (content_size != NULL)
+		*content_size = node->content_size;
+
+	return node->content;
 }
 
 /** 
@@ -323,6 +455,9 @@ void      axl_node_set_content        (axlNode * node, char * content, int conte
 	/* set current content */
 	node->content = axl_new (char, node->content_size + 1);
 	memcpy (node->content, content, node->content_size);
+
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "setting xml node (name: %s) content (size: %d) %s",
+		 node->name, node->content_size, node->content);
 
 	/* job done */
 	return;

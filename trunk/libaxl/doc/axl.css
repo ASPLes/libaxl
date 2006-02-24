@@ -130,6 +130,6 @@ div.navtab a:hover {
 h2 a.anchor { 
   padding: 5px;
   background: #fff url("body_back.gif") repeat-x;
-  border-bottom: 1px solid #b0b0b0; 
+  border: 1px solid #b0b0b0; 
 
 }

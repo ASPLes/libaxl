@@ -49,7 +49,8 @@
  * recomendation found at: http://www.w3.org/TR/REC-xml/
  * 
  * It was implemented for the Af-Arch project to avoid the LibXML2
- * dependency (http://www.xmlsoft.org).
+ * dependency (http://www.xmlsoft.org). Although we think LibXML2 is a
+ * great work, it doesn't fit our needs.
  *
  * Main objectives for this library is to provide:
  * 
@@ -66,7 +67,8 @@
  * proper manner but also when errors were found. This point is really
  * important for us because Af-Arch server applications needs to be
  * working for a long time. The other issue is that the Af-Arch client
- * platform should be easily embeded, so, footprint is a requirement.
+ * platform should be easily embeded, so, a small footprint is a
+ * requirement.
  *
  * 
  *

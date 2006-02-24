@@ -59,6 +59,15 @@ struct _axlListNode {
 	axlPointer    data;
 };
 
+/**
+ * \defgroup axl_list_module Axl List: A configurable double-linked list used across the library.
+ */
+
+/** 
+ * \addtogroup axl_list_module
+ * @{
+ */
+
 /** 
  * @internal
  * 
@@ -76,7 +85,7 @@ int __axl_list_always_true (axlPointer a, axlPointer b)
  *
  * An \ref axlList is a double linked list, with the hability to
  * recognize elements inside its list by providing the \ref
- * axlListEqualFunc "are_equal" function and the ability to release
+ * axlEqualFunc "are_equal" function and the ability to release
  * memory allocated by the data stored by providing a \ref
  * axlDestroyFunc "destroy_data" handler. 
  *
@@ -103,7 +112,7 @@ int __axl_list_always_true (axlPointer a, axlPointer b)
  * case the list is unrefered.
  * 
  * @return A newly allocated list, that must be destroy by calling to
- * \ref axl_list_destroy.
+ * \ref axl_list_free.
  */
 axlList * axl_list_new    (axlEqualFunc are_equal, axlDestroyFunc destroy_data)
 {
@@ -653,3 +662,4 @@ void      axl_list_free (axlList * list)
 	return;
 }
 
+/* @} */

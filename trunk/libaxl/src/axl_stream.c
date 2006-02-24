@@ -320,18 +320,19 @@ void axl_stream_accept (axlStream * stream)
 /** 
  * @internal
  *
- * @brief Allows to move internal stream index status the amount
- * provided by <b>count</b>.
- *
+ * @brief Allows to configure current index to be accepted by the
+ * stream. 
  * 
  * @param stream The stream where the operation will be performed.
  *
  * @param count Count to move internal stream index.
  */
-void        axl_stream_move            (axlStream * stream, int count)
+void        axl_stream_move            (axlStream * stream, int index)
 {
 	axl_return_if_fail (stream);
-	stream->stream_index += count;
+
+	axl_stream_accept (stream);
+	stream->stream_index     = index;
 	
 	return;
 }
@@ -840,7 +841,7 @@ char      * axl_stream_strdup          (char * chunk)
 	int    length;
 
 	axl_return_val_if_fail (chunk, NULL);
-	
+
 	length = strlen (chunk);
 	result = axl_new (char, length + 1);
 	
@@ -897,10 +898,10 @@ char      * axl_stream_strdup_printf   (char * chunk, ...)
 	size     = vsnprintf (NULL, 0, chunk, args);
 
 	/* allocate memory */
-	result   = axl_new (char, size + 1);
+	result   = axl_new (char, size + 2);
 
 	/* copy current size */
-	new_size = vsnprintf (result, size, chunk, args);
+	new_size = vsnprintf (result, size + 1, chunk, args);
 
 	va_end (args);
 	
@@ -1054,6 +1055,58 @@ char     ** axl_stream_split           (char * chunk, int separator_num, ...)
 	
 	return result;
 }
+
+/** 
+ * @brief Allows to concatenate the two given strings into a single
+ * one.
+ *
+ * The function will concatenate both string into a newly allocated
+ * string that is the result of taking chunk1 followed by chunk2. 
+ * 
+ * If the function receive a NULL value for one of the string
+ * received, the result from this function will be the other
+ * string. This is done to support a common basic case where the
+ * string provided for one of the arguments is the one being used two
+ * hold an iterative result. This variable usually is NULL.
+ *
+ * Once the string returned is no longer needed, \ref axl_free must be
+ * used to deallocate the result. 
+ *
+ * The function will use the strlen function to calculate current
+ * chunk sizes to provide the result.
+ *
+ * 
+ * @param chunk1 The first chunk to be placed on the result.
+ *
+ * @param chunk2 The second chunk to be placed on the result.
+ * 
+ * @return A newly allocated string, containing both strings, or NULL
+ * if fails. The only way for this function to fail is to provide two
+ * NULL references as incoming strings.
+ */
+char      * axl_stream_concat          (char * chunk1, char * chunk2)
+{
+	axl_return_val_if_fail ((chunk2 != NULL) || (chunk1 != NULL), NULL);
+
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "concat called..");
+
+	if (chunk1 == NULL) {
+		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "concat called.., returning %s", chunk2);
+		/* return the result */
+		return axl_strdup (chunk2);
+	}
+
+	if (chunk2 == NULL) {
+		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "concat called.., returning %s", chunk1);
+		/* return the result */
+		return axl_strdup (chunk1);
+	}
+
+	/* return the concatenation */
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "concat called.., returning %s%s", chunk1, chunk2);
+	return axl_stream_strdup_printf ("%s%s", chunk1, chunk2);
+}
+
 
 /** 
  * @brief Returns current number of items inside the chunks reference
