@@ -84,9 +84,11 @@ void        axl_stream_free            (axlStream * stream);
 
 bool        axl_stream_is_white_space  (char * chunk);
 
-bool        axl_stream_cmp             (char * chunk1, char * chunk2, int size);
-
 bool        axl_stream_remains         (axlStream * stream);
+
+/* string handling interface */
+
+bool        axl_stream_cmp             (char * chunk1, char * chunk2, int size);
 
 char      * axl_stream_strdup          (char * chunk);
 
@@ -95,6 +97,8 @@ char      * axl_stream_strdup_n        (char * chunk, int n);
 char      * axl_stream_strdup_printf   (char * chunk, ...);
 
 char     ** axl_stream_split           (char * chunk, int separator_num, ...);
+
+char      * axl_stream_concat          (char * chunk1, char * chunk2);
 
 int         axl_stream_strv_num        (char ** chunks);
 

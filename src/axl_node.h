@@ -44,6 +44,12 @@ BEGIN_C_DECLS
 
 axlNode * axl_node_create             (char * name);
 
+void      axl_node_set_attribute      (axlNode * node, char * attribute, char * value);
+
+bool      axl_node_has_attribute      (axlNode * node, char * attribute);
+
+char    * axl_node_get_attribute_value (axlNode * node, char * attribute);
+
 /** 
  * @brief Allows to easily check that the given xml node (\ref
  * axlNode) have the provided name.

@@ -46,6 +46,9 @@ axlDoc  * axl_doc_parse                    (char * entity,
 					    int entity_size, 
 					    axlError ** error);
 
+axlDoc  * axl_doc_parse_strings            (axlError ** error,
+					    ...);
+
 axlNode * axl_doc_get_root                 (axlDoc * doc);
 
 axlList * axl_doc_get_list                 (axlDoc * doc, char * path_to);
@@ -61,6 +64,20 @@ void      axl_doc_free                     (axlDoc * doc);
 void      axl_doc_set_child_current_parent (axlDoc * doc, axlNode * node);
 
 void      axl_doc_pop_current_parent       (axlDoc * doc);
+
+bool      axl_doc_has_pi_target            (axlDoc * doc, char * pi_target);
+
+char    * axl_doc_get_pi_target_content    (axlDoc * doc, char * pi_target);
+
+axlList * axl_doc_get_pi_target_list       (axlDoc * doc);
+
+/* private API starts from here, do not use this API */
+
+bool      axl_doc_consume_comments         (axlStream * stream, axlError ** error);
+
+bool      axl_doc_consume_pi               (axlDoc     * doc, 
+					    axlStream  * stream, 
+					    axlError  ** error);
 
 END_C_DECLS
 

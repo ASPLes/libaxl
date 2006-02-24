@@ -41,22 +41,35 @@
 #include <stdlib.h>
 #include <string.h>
 
+/**
+ * \defgroup axl_decl_module Axl Declarations: Common Axl declarations, Types, macros, and support functions.
+ */
+
+/** 
+ * \addtogroup axl_decl_module
+ * @{
+ */
 
 
 /**
- * @brief Axl XML document.
+ * @brief Axl XML document type definition.
  */
 typedef struct _axlDoc axlDoc;
 
 /**
- * @brief Axl XML Node.
+ * @brief Axl XML Node type definition.
  */
 typedef struct _axlNode axlNode;
 
 /**
- * @brief Axl XML Attribute.
+ * @brief Axl XML Attribute type definition.
  */
 typedef struct _axlAttribute axlAttribute;
+
+/** 
+ * @brief Axl Processing instruction type definition.
+ */
+typedef struct _axlPI        axlPI;
 
 /** 
  * @brief Axl error reporting variable.
@@ -69,7 +82,16 @@ typedef struct _axlError  axlError;
  */
 typedef struct _axlStream axlStream;
 
+/** 
+ * @brief Type definition to represent a boolean true value, that is
+ * equal to 1.
+ */
 #define AXL_TRUE  1
+
+/** 
+ * @brief Type definition to represent a boolean false value, that is
+ * equal to 0.
+ */
 #define AXL_FALSE 0
 
 /** 
@@ -201,7 +223,7 @@ if (!(expr)) return;
  * @param val The value to return if the expression is not meet.
  */
 #define axl_return_val_if_fail(expr, val) \
-if (!(expr)) { axl_log ("axl-check", AXL_LEVEL_CRITICAL, "Expresion '%s' have failed", #expr); return val;}
+if (!(expr)) { axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "Expresion '%s' have failed, returning: %s", #expr, #val); return val;}
 
 /** 
  * @internal
@@ -222,6 +244,8 @@ if (!(expr)) { axl_log ("axl-check", AXL_LEVEL_CRITICAL, "Expresion '%s' have fa
  * 
  * @brief Consumes all spaces found and tabulars on the given stream
  * until a different char is found.
+ *
+ * This internal function also consumes coments inside the xml read.
  * 
  * @param stream The stream where the operation will be performed.
  */
@@ -266,3 +290,5 @@ while ((axl_stream_inspect_several (stream, 4, " ", "\t", "\r", "\n") > 0)) \
 bool axl_cmp (char * string, char * string2);
 
 #endif
+
+/* @} */

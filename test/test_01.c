@@ -1,7 +1,88 @@
 #include <axl.h>
 #include <stdio.h>
 
+/** 
+ * @brief Perform some additional checks for a more extended xml
+ * documents, that includes attributes inside node definitions.
+ *
+ * @param error The axlError where failures will be reported 
+ *
+ * @return The \ref AXL_TRUE if test is passed, AXL_FALSE if not.
+ */
+bool test_04 (axlError ** error)
+{
+	axlDoc  * doc;
+	axlNode * node;
 
+	/* parse the document */
+	doc = axl_doc_parse_strings (error, 
+				     "<!-- Coment example -->",
+				     "<?xml version='1.0' ?>",
+				     "  <complex>",
+				     "    <data>",
+				     "       <row>",
+				     "         <!-- A comment inside the middle of the document ",
+				     " more comments ... ",
+				     " more comments \n \r <td>..</td> -->",
+				     "          <td>10</td>",
+				     "          <test />",
+				     "          <more>",
+				     "              <test2 attr='2.0' />",
+				     "          </more>",
+				     "       </row>",
+				     "       <test2 />",
+				     "    </data>",
+				     " <!--   <data>",
+				     "       <row>",
+				     "         A comment inside the middle of the document ",
+				     " more comments ... ",
+				     " more comments \n \r <td>..</td> ",
+				     "          <td>10</td>",
+				     "          <test />",
+				     "          <more>",
+				     "              <test2 attr='2.0' attr2='3.0' attr4='4.0'/>",
+				     "          </more>",
+				     "       </row>",
+				     "       <test2 />",
+				     "    </data> -->",
+				     "  </complex>",
+				     NULL);
+	/* check the result returned */
+	if (doc == NULL)
+		return AXL_FALSE;
+
+	/* get the node <td> value */
+	node = axl_doc_get (doc, "/complex/data/row/td");
+	if (! axl_cmp (axl_node_get_content (node, NULL), "10")) {
+		axl_error_new (-1, "Expected to receive a 10 value, but not found", NULL, error);
+		return AXL_FALSE;
+	}
+
+	/* get a reference to the test2 node */
+	node = axl_doc_get (doc, "/complex/data/row/more/test2");
+	if (node == NULL) {
+		axl_error_new (-1, "Expected to find a test2 node at the given location", NULL, error);
+		return AXL_FALSE;
+	}
+
+	/* check the attribute */
+	if (! axl_node_has_attribute (node, "attr")) {
+		axl_error_new (-1, "Expected to find an attribute called 'attr' inside test2 node at the given location", NULL, error);
+		return AXL_FALSE;
+	}
+
+	/* check the attribute value */
+	if (! axl_cmp (axl_node_get_attribute_value (node, "attr"), "2.0")) {
+		axl_error_new (-1, "Expected to find an attribute value equal '2.0' inside test2 node at the given location", NULL, error);
+		return AXL_FALSE;
+	}
+
+				     
+	/* free the memory */
+	axl_doc_free (doc);
+	
+	return AXL_TRUE;
+}
 
 /** 
  * @brief Checks a more extended and complex xml documents
@@ -23,7 +104,7 @@ bool test_03 (axlError ** error)
     <row>10</row><row>20</row><row>30</row><row>40</row>\n\
   </data>\n\
   <data2>\n\
-    <td>23</td>\n\
+    <td> 23  </td>\n\
   </data2>\n\
 </complex>", -1, error);
 	if (doc == NULL)
@@ -60,6 +141,18 @@ bool test_03 (axlError ** error)
 		return AXL_FALSE;
 	}
 
+	node = axl_doc_get (doc, "/complex/data2/td");
+	if (!axl_cmp (axl_node_get_content (node, NULL), " 23  ")) {
+		axl_error_new (-2, "Node content have failed, expected a different value", NULL, error);
+		return AXL_FALSE;
+	}
+
+	node = axl_doc_get (doc, "complex/data3/td");
+	if (node != NULL) {
+		axl_error_new (-2, "Parsed a path that is invalid", NULL, error);
+		return AXL_FALSE;
+	}
+	
 	/* release memory allocated by the document */
 	axl_doc_free (doc);
 
@@ -209,6 +302,14 @@ int main (int argc, char ** argv)
 		printf ("Test 03: complex xml error detection [   OK   ]\n");
 	else {
 		printf ("Test 03: complex xml error detection [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+	}	
+
+	if (test_04 (&error))
+		printf ("Test 04: complex xml parsing [   OK   ]\n");
+	else {
+		printf ("Test 04: complex xml parsing [ FAILED ]\n  (CODE: %d) %s\n",
 			axl_error_get_code (error), axl_error_get (error));
 		axl_error_free (error);
 	}	
