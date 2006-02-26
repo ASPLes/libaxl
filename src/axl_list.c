@@ -154,6 +154,26 @@ int      axl_list_equal_string (axlPointer a, axlPointer b)
 }
 
 /** 
+ * @brief An equal function that could be used to make elements to be
+ * stored inside an \ref axlList at the end as the are added, without
+ * replacing any previously added item.
+ * 
+ *
+ * If it is needed to create a list that stores elements at the end as
+ * they are added, this function could be used as the \ref
+ * axlEqualFunc, while calling to axl_list_new.
+ * 
+ * @param a First item.
+ * @param b Second item.
+ * 
+ * @return The function always return 1.
+ */
+int        axl_list_always_return_1 (axlPointer a, axlPointer b)
+{
+	return 1;
+}
+
+/** 
  * @brief Allows to store a new element inside the list, using the
  * provided data.
  *

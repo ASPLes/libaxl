@@ -40,7 +40,14 @@
 
 #include <axl_decl.h>
 
+
+
 BEGIN_C_DECLS
+
+/** 
+ * \addtogroup axl_stack_module
+ * @{
+ */
 
 axlStack * axl_stack_new (axlDestroyFunc destroy_data);
 
@@ -55,6 +62,8 @@ int        axl_stack_size (axlStack * stack);
 bool       axl_stack_is_empty (axlStack * stack);
 
 void       axl_stack_destroy (axlStack * stack);
+
+/* @} */
 
 END_C_DECLS
 

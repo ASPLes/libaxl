@@ -46,6 +46,15 @@ struct _axlStack {
 	axlList * list;
 };
 
+/**
+ * \defgroup axl_stack_module Axl Stack: An stack built on top of axlList, used across AXL library
+ */
+
+/** 
+ * \addtogroup axl_stack_module
+ * @{
+ */
+
 /** 
  * @internal
  *
@@ -59,6 +68,9 @@ int __axl_stack_compare_func (axlPointer a, axlPointer b)
 
 /** 
  * @brief Creates a new stack.
+ *
+ * Creates a new \ref axlStack object, which will accept to store a
+ * retrieve objects in a FIFO manner.
  * 
  * @param destroy_data A function to be used to destroy data stored on
  * the stack is the stack is deallocated containing data. This
@@ -204,3 +216,5 @@ void       axl_stack_destroy (axlStack * stack)
 
 	return;
 }
+
+/* @} */

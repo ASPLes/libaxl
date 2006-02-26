@@ -67,6 +67,78 @@ typedef struct _axlNode axlNode;
 typedef struct _axlAttribute axlAttribute;
 
 /** 
+ * @brief Axl DTD entity representation.
+ */
+typedef struct _axlDtd        axlDtd;
+
+/** 
+ * @brief Axl DTD entity element declaration.
+ */
+typedef struct _axlDtdElement axlDtdElement;
+
+/** 
+ * @brief DTD element type enumeration.
+ *
+ * While using DTD declaration, <b>ELEMENT</b> used to define how your
+ * xml document is structured and constrained, are clasified using the
+ * following values.
+ */
+typedef enum {
+	/** 
+	 * @internal
+	 *
+	 * Internal value to avoid confusing EMPTY declaration with a
+	 * non-defined value.
+	 */
+	ELEMENT_TYPE_UNKNOWN = 0,
+	/** 
+	 * @brief Used to represent that the element declaration have
+	 * no content inside it. This includes not only PCDATA (data
+	 * stored between xml tags) but also any child declaration.
+	 */
+	ELEMENT_TYPE_EMPTY = 1,
+	/** 
+	 * @brief Used to represent that the element used in your xml
+	 * document could contain anthing without any contraint. 
+	 */
+	ELEMENT_TYPE_ANY = 2,
+	/** 
+	 * @brief Used to represent that the following xml node have
+	 * content not only defined by a set of allowed xml nodes but
+	 * also PCDATA.
+	 */
+	ELEMENT_TYPE_MIXED = 3,
+	/** 
+	 * @brief Used to represent that the folowing xml node have
+	 * only xml nodes as content, in the form of xml childs,
+	 * without inlucing PCDATA.
+	 */
+	ELEMENT_TYPE_CHILDREN = 4
+} AxlDtdElementType;
+
+/** 
+ * @brief Current configuration for elements definied inside a ELEMENT
+ * DTD declaration.
+ */
+typedef enum {
+	DTD_TIMES_UNKNOWN = 0,
+	ONE_AND_ONLY_ONE  = 1,
+	ZERO_OF_ONE       = 2,
+	ZERO_OR_MANY      = 3,
+	ONE_OR_MANY       = 4
+}AxlDtdTimes;
+
+/** 
+ * @brief Simple alias for the AxlDtdElementType.
+ */
+typedef AxlDtdElementType ElementType;
+
+/** 
+ * @brief Axl DTD entity attribute element declaration.
+ */
+typedef struct _axtDtdAttr    axlDtdAttr;
+
+/** 
  * @brief Axl Processing instruction type definition.
  */
 typedef struct _axlPI        axlPI;
@@ -117,12 +189,12 @@ typedef int bool;
 typedef void * axlPointer;
 
 /** 
- * @brief axlList definition, a list implementation.
+ * @brief \ref axlList definition, a list implementation.
  */
 typedef struct _axlList axlList;
 
 /** 
- * @brief axlStack definitino, a stack implementation on top of \ref
+ * @brief \ref axlStack definitinon, a stack implementation on top of \ref
  * axlList.
  */
 typedef struct _axlStack axlStack;
@@ -180,8 +252,6 @@ AxlDebugLevel;
 
 
 /** 
- * @internal
- *
  * @brief Support macro to allocate memory using the calloc function,
  * making a casting and using the sizeof keyword.
  *
@@ -193,8 +263,6 @@ AxlDebugLevel;
 #define axl_new(type, count) (type *) calloc (count, sizeof (type))
 
 /** 
- * @internal
- *
  * @brief Allows to deallocate memory referenced by <i>ref</i> but
  * checking before that the reference is different from null.
  * 
@@ -226,7 +294,6 @@ if (!(expr)) return;
 if (!(expr)) { axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "Expresion '%s' have failed, returning: %s", #expr, #val); return val;}
 
 /** 
- * @internal
  *
  * @brief Call to strdup function check if received is a NULL
  * reference

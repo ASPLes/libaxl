@@ -44,15 +44,22 @@
 #include <axl_stream.h>
 #include <axl_doc.h>
 #include <axl_node.h>
+#include <axl_dtd.h>
 #include <axl_error.h>
 #include <axl_log.h>
 
-
 BEGIN_C_DECLS
+
+/** 
+ * \addtogroup axl_module
+ * @{
+ */
 
 bool  axl_init ();
 
 void  axl_end ();
+
+/* @} */
 
 END_C_DECLS
 

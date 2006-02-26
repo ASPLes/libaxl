@@ -42,6 +42,11 @@
 
 BEGIN_C_DECLS
 
+/** 
+ * \addtogroup axl_node_module
+ * @{
+ */
+
 axlNode * axl_node_create             (char * name);
 
 void      axl_node_set_attribute      (axlNode * node, char * attribute, char * value);
@@ -87,8 +92,24 @@ bool      axl_node_have_childs        (axlNode * node);
 
 axlNode * axl_node_get_child_called   (axlNode * parent, char * name);
 
+void      axl_node_add_pi_target            (axlNode * node, 
+					     char * target, 
+					     char * content);
+
+bool      axl_node_has_pi_target            (axlNode * node, 
+					     char * pi_target);
+
+char    * axl_node_get_pi_target_content    (axlNode * node, 
+					     char * pi_target);
+
+axlList * axl_node_get_pi_target_list       (axlNode * node);
+
 void      axl_node_free            (axlNode * node);
+
+/* @} */
 
 END_C_DECLS
 
 #endif
+
+

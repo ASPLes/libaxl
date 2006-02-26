@@ -1,4 +1,6 @@
 /**
+ *  @internal
+ * 
  *  LibAxl:  Another XML library 
  *  Copyright (C) 2006 Advanced Software Production Line, S.L.
  *
@@ -7,7 +9,7 @@
  *  as published by the Free Software Foundation; either version 2.1 of
  *  the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
+ *  This program is distributed in the hope that it will be usneful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of 
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the  
  *  GNU Lesser General Public License for more details.
@@ -40,7 +42,7 @@
 #include <stdio.h>
 
 /** 
- * \mainpage AXL: Another Library implementation (XML 1.0 standard)
+ * \mainpage AXL: Another XML Library implementation (XML 1.0 standard)
  * 
  * \section intro Introduction
  *
@@ -69,6 +71,32 @@
  * working for a long time. The other issue is that the Af-Arch client
  * platform should be easily embeded, so, a small footprint is a
  * requirement.
+ *
+ * \section documentation Library Documentation
+ * 
+ * Here is the API for the modules defined inside the library:
+ * 
+ * <ul>
+ *  <li><b>Basic API to interact with XML documents: </b></li>
+ * 
+ *    - \ref axl_module
+ *    - \ref axl_doc_module
+ *    - \ref axl_node_module
+ *    - \ref axl_dtd_module
+ *    - \ref axl_decl_module
+ *  </li>
+ *  <li><b>Error reporting and debuging functions: </b></li>
+ * 
+ *    - \ref axl_error_module
+ *    - \ref axl_log_module
+ *  <li><b>Auxiliar modules, supporting data types, string handling, etc:</b></li>
+ *
+ * - \ref axl_stream_module
+ * - \ref axl_list_module
+ * - \ref axl_stack_module
+ *  </li>
+ * </ul>
+ * 
  *
  * 
  *
@@ -107,7 +135,6 @@ bool axl_init ()
 }
 
 /** 
- *
  * @brief Allows to terminate libaxl library function.
  *
  * Currently this function is not required becasue nothing is done to

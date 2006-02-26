@@ -41,6 +41,13 @@
 #include <axl_decl.h>
 #include <stdarg.h>
 
+BEGIN_C_DECLS
+
+/** 
+ * \addtogroup axl_stream_module
+ * @{
+ */
+
 axlStream * axl_stream_new             (char * stream_source, 
 					int stream_size);
 
@@ -103,5 +110,13 @@ char      * axl_stream_concat          (char * chunk1, char * chunk2);
 int         axl_stream_strv_num        (char ** chunks);
 
 void        axl_stream_freev           (char ** chunks);
+
+char      * axl_stream_to_upper        (char  * chunk);
+
+char      * axl_stream_to_lower        (char  * chunk);
+
+/* @} */
+
+END_C_DECLS
 
 #endif

@@ -169,6 +169,7 @@ bool test_02 ()
  */
 bool test_03 () 
 {
+	char  * string;
 	char ** result;
 
 	/* check that axl_stream_split works */
@@ -259,6 +260,24 @@ bool test_03 ()
 
 	/* release memory used */
 	axl_stream_freev (result);
+
+	string = axl_strdup ("AxBcA");
+	if (! axl_cmp (axl_stream_to_upper (string), "AXBCA")) {
+		/* report error found */
+		printf ("failed to upper case letters\n");
+		return AXL_FALSE;
+	}
+	axl_free (string);
+
+	string = axl_strdup ("AxBcA");
+	if (! axl_cmp (axl_stream_to_lower (string), "axbca")) {
+		/* report error found */
+		printf ("failed to lower case letters, result found: %s != %s\n", string, "axbca");
+		return AXL_FALSE;
+	}
+	axl_free (string);
+
+
 	
 	return AXL_TRUE;
 }

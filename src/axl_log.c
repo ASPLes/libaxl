@@ -40,6 +40,15 @@
 #include <stdarg.h>
 #include <unistd.h>
 
+/**
+ * \defgroup axl_log_module Axl Log: Console log reporting for AXL library
+ */
+
+/** 
+ * \addtogroup axl_log_module
+ * @{
+ */
+
 /** 
  * @brief Allows to check if the log reporting inside the system is
  * enabled.
@@ -148,3 +157,5 @@ void axl_log (char * domain, AxlDebugLevel level, char * message, ...)
 	/* return */
 	return;
 }
+
+/* @} */

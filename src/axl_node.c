@@ -39,6 +39,15 @@
 #include <axl.h>
 #define LOG_DOMAIN "axl-node"
 
+/**
+ * \defgroup axl_node_module Axl XML Node interface: Functions to use and manipulate xml nodes inside documents.
+ */
+
+/** 
+ * \addtogroup axl_node_module
+ * @{
+ */
+
 struct _axlAttribute {
 	/** 
 	 * @internal
@@ -110,6 +119,12 @@ struct _axlNode {
 	 * @brief Current content size stored on the given axlNode.
 	 */
 	int             content_size;
+
+	/** 
+	 * @internal
+	 * Pi targets storing.
+	 */
+	axlList       * piTargets;
 };
 
 /** 
@@ -142,7 +157,7 @@ void __axl_node_destroy_attr (axlAttribute * attr)
 }
 
 /** 
- * @brief Creates a new \ref AxlNode with the provided name.
+ * @brief Creates a new \ref axlNode with the provided name.
  *
  * @param name The name to be used for the node be created.
  * 
@@ -163,6 +178,9 @@ axlNode * axl_node_create (char * name)
 
 	/* create attribute list */
 	node->attributes = axl_list_new (__axl_node_equal, (axlDestroyFunc) __axl_node_destroy_attr);
+
+	/* create PI list */
+	node->piTargets  = axl_list_new (axl_list_always_return_1, (axlDestroyFunc) axl_pi_free);
 
 	return node;
 }
@@ -543,10 +561,9 @@ bool      axl_node_have_childs        (axlNode * node)
 }
 
 /** 
- * @brief Allows to get a particular child node for the given node
- * (\ref axlNode).
+ * @brief Allows to get a particular child node for the given node (\ref axlNode).
  * 
- * @param node The parent node where the child will be looked up.
+ * @param parent The parent node where the child will be looked up.
  *
  * @param name The name for the child to search.
  * 
@@ -581,6 +598,179 @@ axlNode * axl_node_get_child_called   (axlNode * parent, char * name)
 }
 
 /** 
+ * @brief Allows to associate a PI element, including its content to
+ * the provided node.
+ *
+ * See the following function for more information: \ref
+ * axl_doc_add_pi_target.
+ *
+ * @param node The \ref axlNode where the PI element (\ref axlPI) will
+ * be added.
+ *
+ * @param target The PI target name to add.
+ *
+ * @param content Optional PI content.
+ */
+void      axl_node_add_pi_target            (axlNode * node, 
+					     char * target, 
+					     char * content)
+{
+	axlPI * pi;
+
+	/* perform some environmental checks */
+	axl_return_if_fail (node);
+	axl_return_if_fail (target);
+
+	/* create the PI element */
+	pi = axl_pi_create (target, content);
+
+	/* add the PI */
+	axl_list_add (node->piTargets, pi);
+
+	return;
+}
+
+
+/** 
+ * @brief Allows to check if the provided Processing instruction
+ * target is defined on the given xml node document (\ref axlNode).
+ *
+ * Processing instruction are a way to configure the xml node document
+ * with processing information to instruct the application level that
+ * is going to consume the XML information.
+ *
+ * @param node The \ref axlNode where the processing instruction will
+ * be read.
+ *
+ * @param pi_target The process instruction name.
+ * 
+ * @return AXL_TRUE is the processing instruction is defined,
+ * otherwise AXL_FALSE is returned.
+ */
+bool      axl_node_has_pi_target            (axlNode * node, 
+					     char * pi_target)
+{
+	axlPI * pi;
+	int     iterator = 0;
+	int     length   = 0;
+
+	
+	axl_return_val_if_fail (node,      AXL_FALSE);
+	axl_return_val_if_fail (pi_target, AXL_FALSE);
+
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "checking it target element: %s is defined on the node", pi_target);
+
+	/* get the length for the items inserted */
+	length = axl_list_length (node->piTargets);
+	while (iterator < length) {
+		/* for each item inserted */
+		pi = axl_list_get_nth (node->piTargets, iterator);
+		/* only check the first ocurrency */
+		if (axl_cmp (axl_pi_get_name (pi), pi_target)) {
+			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "element %s found, %s", pi_target, axl_pi_get_name (pi));
+			return AXL_TRUE;
+		}
+
+		iterator++;
+	}
+	
+	return AXL_FALSE;
+}
+
+/** 
+ * @brief Allows to get current processing instruction content.
+ * 
+ * @param node The document where the processing instruction is placed.
+ *
+ * @param pi_target The processing instruction target to get current
+ * content.
+ * 
+ * @return An internal reference to the process instruction target
+ * content. Value returned mustn't be deallocated
+ */
+char    * axl_node_get_pi_target_content    (axlNode * node, 
+					    char * pi_target)
+{
+	axlPI * pi;
+	int     iterator = 0;
+	int     length   = 0;
+
+	axl_return_val_if_fail (node,       NULL);
+	axl_return_val_if_fail (pi_target, NULL);
+
+	/* get the length for the items inserted */
+	length = axl_list_length (node->piTargets);
+	while (iterator < length) {
+		/* for each item inserted */
+		pi = axl_list_get_nth (node->piTargets, iterator);
+		/* only check the first ocurrency */
+		if (axl_cmp (axl_pi_get_name (pi), pi_target))
+			return axl_pi_get_name (pi);
+
+		iterator++;
+	}
+
+	return NULL;
+}
+
+/** 
+ * @brief Allows to get a list which contains \ref axlPI nodes,
+ * representing all process instruction that the \ref axlNode (xml
+ * document node) has.
+ *
+ * While using PI, you can use the following functions to get PI
+ * information:
+ * 
+ *  - \ref axl_node_has_pi_target
+ *  - \ref axl_node_get_pi_target_content
+ *
+ * However, this function will return first ocurrency for PI found
+ * inside the xml document. If you don't use repeated PI elements, you
+ * won't find problems, but, if you need to iterate ever all PI found
+ * or you are using repeated PI, you can use this function as follows
+ * to get current pi elements:
+ *
+ * \code
+ * void show_all_pi (axlNode * node) 
+ * {
+ *      int       iterator;
+ *      axlPI   * pi;
+ *      axlList * PIs;
+ *
+ *      // get all PI target that the node has
+ *      PIs      = axl_node_get_pi_target_list (node);
+ *      iterator = 0;
+ *
+ *      while (iterator < axl_list_length (PIs)) {
+ *            // get next pi stored 
+ *            pi = axl_list_get_nth (PIs, iterator);
+ *
+ *            // do some stuff 
+ *            printf ("PI found target name=%s, content=%s\n",
+ *                    axl_pi_get_name (pi),
+ *                    axl_pi_get_content (pi));
+ *            
+ *            // update the iterator
+ *            iterator++;
+ *      }
+ *      return;
+ * }
+ * \endcode
+ * 
+ * @param node The xml node (\ref axlNode) where the process
+ * instruction will be returned.
+ * 
+ * @return A reference to the list of processing instruction that the
+ * xml node (\ref axlNode) has.
+ */
+axlList * axl_node_get_pi_target_list       (axlNode * node)
+{
+	axl_return_val_if_fail (node,       NULL);
+
+	return node->piTargets;
+}
+
+/** 
  * @brief Destroy the given node provided by the reference.
  *
  * The function will check for nodes that are null references.
@@ -599,6 +789,9 @@ void axl_node_free (axlNode * node)
 	if (node->content != NULL)
 		axl_free (node->content);
 
+	if (node->piTargets != NULL)
+		axl_list_free (node->piTargets);
+
 	/* release memory hold by attributes */
 	axl_list_free (node->attributes);
 
@@ -613,3 +806,4 @@ void axl_node_free (axlNode * node)
 }
 
 
+/* @} */
