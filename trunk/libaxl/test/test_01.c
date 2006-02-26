@@ -18,6 +18,7 @@ bool test_04 (axlError ** error)
 	doc = axl_doc_parse_strings (error, 
 				     "<!-- Coment example -->",
 				     "<?xml version='1.0' ?>",
+				     "  <?test \"my content\" ?>",
 				     "  <complex>",
 				     "    <data>",
 				     "       <row>",
@@ -26,11 +27,18 @@ bool test_04 (axlError ** error)
 				     " more comments \n \r <td>..</td> -->",
 				     "          <td>10</td>",
 				     "          <test />",
+				     " \n \n \r     <?test \"my content\" ?>     \n    \n",
+				     "  <?test \"my content\" ?>",
 				     "          <more>",
 				     "              <test2 attr='2.0' />",
 				     "          </more>",
 				     "       </row>",
 				     "       <test2 />",
+				     "       <non-xml-document>",
+				     "                             \n \r \n \t",
+				     "         <![CDATA[<xml><<<<<<>>>>>><<<>>>><<<<<<>>>]]>"
+				     "          \r \n \r \t",
+				     "       </non-xml-document>",
 				     "    </data>",
 				     " <!--   <data>",
 				     "       <row>",
@@ -74,6 +82,42 @@ bool test_04 (axlError ** error)
 	/* check the attribute value */
 	if (! axl_cmp (axl_node_get_attribute_value (node, "attr"), "2.0")) {
 		axl_error_new (-1, "Expected to find an attribute value equal '2.0' inside test2 node at the given location", NULL, error);
+		return AXL_FALSE;
+	}
+
+	/* add here Pi instruction checking */
+	if (! axl_doc_has_pi_target (doc, "test")) {
+		axl_error_new (-1, "failed to get expected PI target 'test'", NULL, error);
+		return AXL_FALSE;
+	}
+
+	if (! axl_cmp (axl_doc_get_pi_target_content (doc, "test"), "\"my content\"")) {
+		axl_error_new (-1, "expected to receive a PI content not found", NULL, error);
+		return AXL_FALSE;
+	}
+
+	node = axl_doc_get (doc, "/complex/data/row");
+	if (node == NULL) {
+		axl_error_new (-1, "unable to get expected node to check node PI support", NULL, error);
+		return AXL_FALSE;
+	}
+
+	if (! axl_node_has_pi_target (node, "test")) {
+		axl_error_new (-1, "failed to get expected PI target 'test' for the node", NULL, error);
+		return AXL_FALSE;
+	}
+
+	
+	node = axl_doc_get (doc, "/complex/data/non-xml-document");
+	if (node == NULL) {
+		axl_error_new (-1, "Expected to receive the CDATA node, not found", NULL, error);
+		return AXL_FALSE;
+	}
+
+	if (! axl_cmp (axl_node_get_content (node, NULL), "<xml><<<<<<>>>>>><<<>>>><<<<<<>>>")) {
+		printf ("Content doesn't match: %s != %s\n", 
+			axl_node_get_content (node, NULL), "<xml><<<<<<>>>>>><<<>>>><<<<<<>>>");
+		axl_error_new (-1, "Expected to recevie CDATA content, not found or not match", NULL, error);
 		return AXL_FALSE;
 	}
 
@@ -288,6 +332,7 @@ int main (int argc, char ** argv)
 		printf ("Test 01: basic xml parsing [ FAILED ]\n  (code: %d) %s\n",
 			axl_error_get_code (error), axl_error_get (error));
 		axl_error_free (error);
+		return -1;
 	}
 
 	if (test_02 (&error))
@@ -296,6 +341,7 @@ int main (int argc, char ** argv)
 		printf ("Test 02: basic xml error detection [ FAILED ]\n  (CODE: %d) %s\n",
 			axl_error_get_code (error), axl_error_get (error));
 		axl_error_free (error);
+		return -1;
 	}	
 
 	if (test_03 (&error))
@@ -304,6 +350,7 @@ int main (int argc, char ** argv)
 		printf ("Test 03: complex xml error detection [ FAILED ]\n  (CODE: %d) %s\n",
 			axl_error_get_code (error), axl_error_get (error));
 		axl_error_free (error);
+		return -1;
 	}	
 
 	if (test_04 (&error))
@@ -312,6 +359,7 @@ int main (int argc, char ** argv)
 		printf ("Test 04: complex xml parsing [ FAILED ]\n  (CODE: %d) %s\n",
 			axl_error_get_code (error), axl_error_get (error));
 		axl_error_free (error);
+		return -1;
 	}	
 
 	/* cleanup axl library */

@@ -39,6 +39,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <axl.h>
+#include <ctype.h>
 
 #define LOG_DOMAIN "axl-stream"
 
@@ -69,6 +70,15 @@ struct _axlStream {
 	axlDoc * doc;
 };
 
+
+/**
+ * \defgroup axl_stream_module Axl Stream Document: Internal functions used to implement a abstract stream where a xml document is expected.
+ */
+
+/** 
+ * \addtogroup axl_stream_module
+ * @{
+ */
 
 /** 
  * @internal
@@ -1160,3 +1170,72 @@ void        axl_stream_freev           (char ** chunks)
 	/* nothing more to do */
 	return;
 }
+
+/** 
+ * @internal 
+ *
+ * @brief Internal function to support \ref axl_stream_to_upper and
+ * \ref axl_stream_to_lower
+ * 
+ * @param chunk The chunk to modify
+ * @param desp Bits to increase.
+ */
+void __axl_stream_common_to (char * chunk, bool to_upper)
+{
+	int iterator = 0;
+
+	axl_return_if_fail (chunk);
+
+	while (chunk[iterator] != 0) {
+		/* change first ascii level */
+		if (to_upper)
+			chunk[iterator] = toupper (chunk[iterator]);
+		else
+			chunk[iterator] = tolower (chunk[iterator]);
+		
+		/* update iterators */
+		iterator++;
+	} 	
+
+	return;
+}
+
+/** 
+ * @brief Makes the provided string to be converted to upper case
+ * letters.
+ *
+ * The function will modify the address provided. If you want to get a
+ * upper case copy for a particular string, copy it first, by using
+ * \ref axl_strdup, and then use this function.
+ *
+ * The function, for convenience, will also return the string
+ * reference received, already modified. This could be used while
+ * using this function to convert parameters that are expected by
+ * other functions.
+ * 
+ * @param chunk The chunk to upper case.
+ */
+char *    axl_stream_to_upper        (char  * chunk)
+{
+	__axl_stream_common_to (chunk, AXL_TRUE);
+	return chunk;
+}
+
+/** 
+ * @brief Allows to convert the provided string into lower cases
+ * letter.
+ *
+ * The function, for convenience, will also return the string
+ * reference received, already modified. This could be used while
+ * using this function to convert parameters that are expected by
+ * other functions.
+ * 
+ * @param chunk The chunk to lower case.
+ */
+char *     axl_stream_to_lower        (char  * chunk)
+{
+	__axl_stream_common_to (chunk, AXL_FALSE);
+	return chunk;
+}
+
+/* @} */

@@ -35,46 +35,26 @@
  *      Email address:
  *         info@aspl.es - http://fact.aspl.es
  */
-#ifndef __AXL_LIST_H__
-#define __AXL_LIST_H__
+#ifndef __AXL_DTD_H__
+#define __AXL_DTD_H__
 
 #include <axl_decl.h>
 
 BEGIN_C_DECLS
 
-axlList  * axl_list_new    (axlEqualFunc are_equal, axlDestroyFunc destroy_data);
- 
-int        axl_list_equal_string (axlPointer a, axlPointer b);
+/** 
+ * \addtogroup axl_dtd_module
+ * @{
+ */
 
-int        axl_list_always_return_1 (axlPointer a, axlPointer b);
+axlDtd   * axl_dtd_parse (char      * entity, 
+			  int         entity_size,
+			  axlError ** error);
 
-void       axl_list_add    (axlList * list, axlPointer pointer);
+void       axl_dtd_free  (axlDtd * dtd);
 
-void       axl_list_remove (axlList * list, axlPointer pointer);
 
-void       axl_list_unlink (axlList * list, axlPointer pointer);
-
-void       axl_list_remove_first (axlList * list);
-
-void       axl_list_unlink_first (axlList * list);
-
-void       axl_list_remove_last (axlList * list);
-
-void       axl_list_unlink_last (axlList * list);
-
-bool       axl_list_exists (axlList * list, axlPointer pointer);
-
-bool       axl_list_exists_at (axlList * list, axlPointer pointer, int position);
-
-axlPointer axl_list_get_first (axlList * list);
-
-axlPointer axl_list_get_last  (axlList * list);
-
-axlPointer axl_list_get_nth   (axlList * list, int position);
-
-int        axl_list_length (axlList * list);
-
-void       axl_list_free (axlList * list);
+/* @} */
 
 END_C_DECLS
 

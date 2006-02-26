@@ -327,6 +327,38 @@ struct _axlDoc {
 	 * also to check if it is well balanced.
 	 */
 	axlStack  * parentNode;
+
+	/** 
+	 * @internal
+	 * 
+	 * @brief Internal list to hold all PI targets readed.
+	 */
+	axlList   * piTargets;
+
+	/** 
+	 * @internal
+	 *
+	 * @brief Instruct the \ref axlDoc instance to notify that the
+	 * xml header have been defined. This helps to allow define PI
+	 * instruction that are only found inside the root document,
+	 * or after the xml header definition.
+	 */
+	bool       headerProcess;
+};
+
+struct _axlPI {
+	/** 
+	 * @internal
+	 * 
+	 * @brief PI Target name.
+	 */
+	char * name;
+	/** 
+	 * @internal
+	 * 
+	 * @brief PI target content.
+	 */
+	char * content;
 };
 
 
@@ -341,6 +373,7 @@ axlDoc * __axl_doc_new ()
 	axlDoc    * result = axl_new (axlDoc, 1);
 
 	result->parentNode = axl_stack_new (NULL);
+	result->piTargets  = axl_list_new (axl_list_always_return_1, (axlDestroyFunc) axl_pi_free);
 
 	return result;
 }
@@ -369,11 +402,15 @@ bool __axl_doc_parse_xml_header (axlStream * stream, axlDoc * doc, axlError ** e
 {
 	char      * string_aux;
 
-	/* consume spaces */
-	AXL_CONSUME_SPACES (stream);
+	/* check if the user is defining the header many times */
+	if (doc->headerProcess) {
+		axl_error_new (-1, "Found a new xml header expecification. Only one header is allowed for each xml document.", stream, error);
+		axl_stream_free (stream);
+		return AXL_FALSE;
+	}
 
 	/* consume comments found */
-	if (! axl_doc_consume_comments (stream, error))
+	if (! axl_doc_consume_comments (doc, stream, error))
 		return AXL_FALSE;
 	
 	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "looking for an xml header declaration");
@@ -462,14 +499,11 @@ bool __axl_doc_parse_xml_header (axlStream * stream, axlDoc * doc, axlError ** e
 			return AXL_FALSE;
 		}
 
-		/* consume a space */
-		AXL_CONSUME_SPACES(stream);
-
 		/* consume a possible comment */
-		if (! axl_doc_consume_comments (stream, error))
+		if (! axl_doc_consume_comments (doc, stream, error))
 			return AXL_FALSE;
 	}
-	
+
 	/* return TRUE value */
 	return AXL_TRUE;
 }
@@ -524,8 +558,9 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 	axl_return_val_if_fail (stream, AXL_FALSE);
 	axl_return_val_if_fail (doc, AXL_FALSE);
 	
-	/* consume a space */
-	AXL_CONSUME_SPACES(stream);
+	/* consume a possible comment */
+	if (! axl_doc_consume_comments (doc, stream, error))
+		return AXL_FALSE;
 
 	/* check for initial < definition */
 	if (! (axl_stream_inspect (stream, "<") > 0) && ! axl_stream_remains (stream)) {
@@ -766,6 +801,9 @@ axlDoc * axl_doc_parse (char * entity, int entity_size, axlError ** error)
 	/* parse initial xml header */
 	if (!__axl_doc_parse_xml_header (stream, doc, error))
 		return NULL;
+
+	/* signal that this document have processed its header */
+	doc->headerProcess = AXL_TRUE;
 	
 	/* parse the rest of the document */
 	if (!__axl_doc_parse_node (stream, doc, &node, error))
@@ -786,16 +824,10 @@ axlDoc * axl_doc_parse (char * entity, int entity_size, axlError ** error)
 			index = axl_stream_get_index (stream);
 			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "current index: %d", index);
 
-			/* get rid from spaces */
-			AXL_CONSUME_SPACES(stream);
-
 			/* consume a possible comment */
-			if (! axl_doc_consume_comments (stream, error))
+			if (! axl_doc_consume_comments (doc, stream, error))
 				return AXL_FALSE;
 			
-			/* consume white spaces */
-			AXL_CONSUME_SPACES (stream);
-
 			if ((axl_stream_peek (stream, "</") > 0)) {
 				/* accept previous peek */
 				axl_stream_accept (stream);
@@ -811,6 +843,28 @@ axlDoc * axl_doc_parse (char * entity, int entity_size, axlError ** error)
 				axl_stack_pop (doc->parentNode);
 				continue;
 			}
+
+			/* check here for CDATA section. This is done
+			 * here because the following checking could
+			 * be mixed because they starts with the same:
+			 * < */
+			if ((axl_stream_peek (stream, "<![CDATA[") > 0)) {
+				/* accet previous peek */
+				axl_stream_accept (stream);
+
+				/* found CDATA section, get current content */
+				string = axl_stream_get_until (stream, NULL, NULL, AXL_TRUE, 1, "]]>");
+				if (string == NULL) {
+					axl_error_new (-1, "Unable to get CDATA content. There was an error.", stream, error);
+					axl_stream_free (stream);
+					return NULL;
+				}
+
+				/* set current data */
+				axl_node_set_content (node, string, -1);
+				continue;
+			}
+
 
 			if ((axl_stream_peek (stream, "<") > 0)) {
 				/* accept previous peek */
@@ -858,8 +912,14 @@ axlDoc * axl_doc_parse (char * entity, int entity_size, axlError ** error)
 
 	/* pop axl parent */
 	axl_stack_pop (doc->parentNode);
+	if (! axl_stack_is_empty (doc->parentNode)) {
+		axl_error_new (-1, "XML document is not balanced, still remains xml nodes", stream, error);
+		axl_stream_free (stream);
+		return NULL;
+	}
 
 	/* parse complete */
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "xml document parse COMPLETED"); 
 	axl_stream_unlink (stream);
 	axl_stream_free (stream);
 	return doc;
@@ -1081,7 +1141,8 @@ axlList * axl_doc_get_list                  (axlDoc * doc, char * path_to)
 	if (strlen (paths[1]) != 0) {
 		/* check the node is the one requested */
 		if (! NODE_CMP_NAME (node, paths[1])) {
-			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "requested root node = %s wasn't found", paths[1]);
+			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "requested root node = %s wasn't found, current root %s", paths[1],
+				 axl_node_get_name (doc->rootNode));
 			axl_list_free (nodes);
 			axl_stream_freev (paths);
 			return NULL;
@@ -1260,6 +1321,63 @@ void     axl_doc_pop_current_parent       (axlDoc * doc)
 }
 
 /** 
+ * @brief Allows to configure a PI target, with its content, on the given \ref axlDoc.
+ *
+ * A PI is a process instruction that is passed to the
+ * application. This process instruction has a target name, which
+ * acording to the standard is the application which should receive
+ * the target content and an optional target content associated.
+ *
+ * This function allows to configure (add) a new PI item inside the
+ * given xml document (\ref axlDoc). The PI content is optional. If
+ * provided NULL, the PI will only contain as information the PI
+ * target.
+ *
+ * Here is how a process instruction is used inside a xml document:
+ * \code
+ * <?xml version='1.0'>
+ * <?launch "some command" ?>
+ * <complex>
+ *    <?data "some data" ?>
+ *    <?data "more data" ?>
+ *    <data>
+ *       <row attr="20" />
+ *    </data>
+ * </complex>
+ * \endcode
+ *
+ * Previous example shows how to use PI (process instructions) from
+ * outside the xml root node (<b>complex</b>, and also how it is used
+ * from inside a xml node definition <b>complex</b>. 
+ *
+ * As you can see, PI elements could be used as many times as you want
+ * and places allowed to do so are just right before begining with the
+ * root node and inside xml node definitions.
+ * 
+ * @param doc The axlDocument where the PI will be added.
+ * @param target The PI target name.
+ * @param content The PI content (optional value).
+ */
+void      axl_doc_add_pi_target            (axlDoc * doc, 
+					    char * target, 
+					    char * content)
+{
+	axlPI * pi;
+
+	/* perform some environmental checks */
+	axl_return_if_fail (doc);
+	axl_return_if_fail (target);
+
+	/* create the PI element */
+	pi = axl_pi_create (target, content);
+
+	/* add the PI */
+	axl_list_add (doc->piTargets, pi);
+
+	return;
+}
+
+/** 
  * @brief Allows to check if the provided Processing instruction
  * target is defined on the given xml document (\ref axlDoc).
  *
@@ -1276,9 +1394,25 @@ void     axl_doc_pop_current_parent       (axlDoc * doc)
  */
 bool      axl_doc_has_pi_target            (axlDoc * doc, char * pi_target)
 {
+	axlPI * pi;
+	int     iterator = 0;
+	int     length   = 0;
+
+	
 	axl_return_val_if_fail (doc,       AXL_FALSE);
 	axl_return_val_if_fail (pi_target, AXL_FALSE);
 
+	/* get the length for the items inserted */
+	length = axl_list_length (doc->piTargets);
+	while (iterator < length) {
+		/* for each item inserted */
+		pi = axl_list_get_nth (doc->piTargets, iterator);
+		/* only check the first ocurrency */
+		if (axl_cmp (pi->name, pi_target))
+			return AXL_TRUE;
+
+		iterator++;
+	}
 	
 	return AXL_FALSE;
 }
@@ -1296,8 +1430,24 @@ bool      axl_doc_has_pi_target            (axlDoc * doc, char * pi_target)
  */
 char    * axl_doc_get_pi_target_content    (axlDoc * doc, char * pi_target)
 {
+	axlPI * pi;
+	int     iterator = 0;
+	int     length   = 0;
+
 	axl_return_val_if_fail (doc,       NULL);
 	axl_return_val_if_fail (pi_target, NULL);
+
+	/* get the length for the items inserted */
+	length = axl_list_length (doc->piTargets);
+	while (iterator < length) {
+		/* for each item inserted */
+		pi = axl_list_get_nth (doc->piTargets, iterator);
+		/* only check the first ocurrency */
+		if (axl_cmp (pi->name, pi_target))
+			return pi->content;
+
+		iterator++;
+	}
 
 	return NULL;
 }
@@ -1305,6 +1455,44 @@ char    * axl_doc_get_pi_target_content    (axlDoc * doc, char * pi_target)
 /** 
  * @brief Allows to get a list which contains \ref axlPI nodes,
  * representing all process instruction that the document has.
+ *
+ * While using PI, you can use the following functions to get PI
+ * information:
+ * 
+ *  - \ref axl_doc_has_pi_target
+ *  - \ref axl_doc_get_pi_target_content
+ *
+ * However, this function will return first ocurrency for PI found
+ * inside the xml document. If you don't use repeated PI elements, you
+ * won't find problems, but, if you need to iterate ever all PI found
+ * or you are using repeated PI, you can use this function as follows
+ * to get current pi elements:
+ * \code
+ * void show_all_pi (axlDoc * doc) 
+ * {
+ *      int       iterator;
+ *      axlPI   * pi;
+ *      axlList * PIs;
+ *
+ *      // get all PI target that the document has
+ *      PIs      = axl_doc_get_pi_target_list (doc);
+ *      iterator = 0;
+ *
+ *      while (iterator < axl_list_length (PIs)) {
+ *            // get next pi stored 
+ *            pi = axl_list_get_nth (PIs, iterator);
+ *
+ *            // do some stuff 
+ *            printf ("PI found target name=%s, content=%s\n",
+ *                    axl_pi_get_name (pi),
+ *                    axl_pi_get_content (pi));
+ *            
+ *            // update the iterator
+ *            iterator++;
+ *      }
+ *      return;
+ * }
+ * \endcode
  * 
  * @param doc The xml document (\ref axlDoc) where the process
  * instruction will be returned.
@@ -1316,7 +1504,80 @@ axlList * axl_doc_get_pi_target_list       (axlDoc * doc)
 {
 	axl_return_val_if_fail (doc,       NULL);
 
-	return NULL;
+	return doc->piTargets;
+}
+
+/** 
+ * @brief Allows to create a new \ref axlPI element. 
+ * 
+ * @param name The PI target name.
+ * @param content The PI content.
+ * 
+ * @return A newly allocated \ref axlPI element.
+ */
+axlPI * axl_pi_create (char * name,
+		       char * content)
+{
+	axlPI * pi;
+
+	/* create the PI */
+	pi          = axl_new (axlPI, 1);
+	pi->name    = axl_strdup (name);
+	
+	/* copy the content if defined */
+	if (content != NULL)
+		pi->content = axl_strdup (content);
+
+	return pi;
+}
+
+/** 
+ * @brief Allows to get current pi name from the given \ref axlPI
+ * reference.
+ *
+ * @param pi The PI reference where the name will returned.
+ * 
+ * @return A string representing the PI name. Returned value shouldn't
+ * be deallocated.
+ */
+char    * axl_pi_get_name                  (axlPI  * pi)
+{
+	axl_return_val_if_fail (pi, NULL);
+
+	/* return current PI name */
+	return pi->name;
+}
+
+/** 
+ * @brief Allows to get current optinal PI content.
+ * 
+ * @param pi The PI where the content will be returned.
+ * 
+ * @return A string representing the PI content. This value could be
+ * NULL because it is optional to be defined. Returned value must not
+ * be deallocated.
+ */
+char    * axl_pi_get_content               (axlPI  * pi)
+{
+	axl_return_val_if_fail (pi, NULL);
+	
+	/* return current PI content */
+	return pi->content;
+}
+
+/** 
+ * @brief Deallocates memory used by the \ref axlPI target.
+ * 
+ * @param target The target to destroy.
+ */
+void axl_pi_free (axlPI * target)
+{
+	/* free PI target */
+	axl_free (target->name);
+	if (target->content != NULL) 
+		axl_free (target->content);
+	axl_free (target);
+	return;
 }
 
 
@@ -1335,8 +1596,13 @@ void     axl_doc_free         (axlDoc * doc)
 	if (doc->rootNode != NULL)
 		axl_node_free (doc->rootNode);
 
+	/* free node hierarchy */
 	if (doc->parentNode != NULL)
 		axl_stack_destroy (doc->parentNode);
+
+	/* free pi targets read */
+	if (doc->piTargets != NULL)
+		axl_list_free (doc->piTargets);
 
 	/* free enconding allocated */
 	axl_free (doc->encoding);
@@ -1356,18 +1622,55 @@ void     axl_doc_free         (axlDoc * doc)
  *
  * @param error An optional axlError where problem will be reported.
  */
-bool      axl_doc_consume_comments         (axlStream * stream, axlError ** error)
+bool      axl_doc_consume_comments         (axlDoc * doc, axlStream * stream, axlError ** error)
 {
-	/* check for comments */
-	if ((axl_stream_inspect_several (stream, 2, "<!-- ", "<!--")) > 0) { 
-		if (! axl_stream_get_until (stream, NULL, NULL, AXL_TRUE, 2, " -->", "-->")) { 
-			axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "detected an opened comment but not found the comment ending"); 
-			axl_error_new (-1, "detected an opened comment but not found the comment ending",
-				       stream, error);
-			axl_stream_free (stream);
-			return AXL_FALSE;
-		} 
-	}
+
+	bool found_item;
+	
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "checking for comemnts");
+
+	/* know, try to read comments a process instructions.  Do this
+	 * until both fails. Do this until one of them find
+	 * something. */
+	do {
+		/* flag the loop to end, and only end if both,
+		 * comments matching and PI matching fails. */
+		found_item = AXL_FALSE;
+		
+		/* get rid from spaces */
+		AXL_CONSUME_SPACES(stream);
+
+		/* check for comments */
+		if ((axl_stream_inspect_several (stream, 2, "<!-- ", "<!--")) > 0) { 
+			if (! axl_stream_get_until (stream, NULL, NULL, AXL_TRUE, 2, " -->", "-->")) { 
+				axl_error_new (-1, "detected an opened comment but not found the comment ending",
+					       stream, error);
+				axl_stream_free (stream);
+				return AXL_FALSE;
+			} 
+			
+			/* flag that we have found a comment */
+			found_item = AXL_TRUE;
+		}
+		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "now see for process instructions");
+	
+		/* get rid from spaces */
+		AXL_CONSUME_SPACES(stream);
+
+		/* check for PI, only once the xml header have been processed */
+		if (doc->headerProcess && (axl_stream_peek (stream, "<?") > 0)) {
+			if (! axl_doc_consume_pi (doc, axl_stack_peek (doc->parentNode), stream, error))
+				return AXL_FALSE;
+			found_item = AXL_TRUE;
+		}
+
+		/* get rid from spaces */
+		AXL_CONSUME_SPACES(stream);
+		
+		/* check to break-the-loop */
+	}while (found_item);
+
+
 
 	/* true value */
 	return AXL_TRUE;
@@ -1389,8 +1692,95 @@ bool      axl_doc_consume_comments         (axlStream * stream, axlError ** erro
  * @return AXL_TRUE if not error was found, otherwise AXL_FASLSE is
  * returned.
  */
-bool      axl_doc_consume_pi (axlDoc * doc, axlStream * stream, axlError ** error)
+bool      axl_doc_consume_pi (axlDoc * doc, axlNode * node, 
+			      axlStream * stream, axlError ** error)
 {
+	char  * string_aux;
+	char  * string_aux2;
+	int     matched_chunk;
+	
+	
+	/* check if a PI target was found */
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "calling to consume PI..");
+	if (axl_stream_peek (stream, "<?") > 0) {
+		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found a process instruction initialization");
+		/* found a pi target initialization */
+		axl_stream_accept (stream);
+		
+		string_aux = axl_stream_get_until (stream, NULL, &matched_chunk, 
+						   AXL_TRUE, 3, " ?>", "?>", " ");
+		/* check error reported */
+		if (string_aux == NULL) {
+			axl_error_new (-1, "Found a error while reading the PI target name", stream, error);
+			return AXL_FALSE;
+		}
+
+		/* check that the reserved xml word is not used for the PI target */
+		string_aux2 = axl_strdup (string_aux);
+		if (axl_cmp (axl_stream_to_lower (string_aux2), "xml")) {
+			axl_free (string_aux2);
+			axl_error_new (-1, "Using a reserved PI target name (xml), not allowed", stream, error);
+			return AXL_FALSE;
+		}
+		axl_free (string_aux2);
+
+		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found PI target name: %s (terminator matched: %d)", 
+			 string_aux, matched_chunk);
+
+		/* check which was the matched string */
+		if (matched_chunk == 0 || matched_chunk == 1) {
+			/* seems that the PI target doesn't have more data associated, craete and return */
+			if (node != NULL) {
+				axl_node_add_pi_target (node, string_aux, NULL);
+				return AXL_TRUE;
+			}
+			
+			if (doc != NULL)
+				axl_doc_add_pi_target (doc, string_aux, NULL);
+			return AXL_TRUE;
+		}
+
+		/* seems that we have additional content to be read */
+		if (matched_chunk == 2) {
+			/* make a local copy for the PI target name
+			 * read previously */
+			string_aux  = axl_strdup (string_aux);
+			
+			/* get the PI content */
+			string_aux2 = axl_stream_get_until (stream, NULL, NULL, AXL_TRUE, 2, " ?>", "?>");
+
+			/* check error reported */
+			if (string_aux2 == NULL) {
+				axl_free (string_aux);
+				axl_error_new (-1, "Found a error while reading the PI content", stream, error);
+				return AXL_FALSE;
+			}
+
+			/* check the destination for the pi */			
+			if (node != NULL) {
+				axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "PI processing finished, adding PI (node) and its content");
+				axl_node_add_pi_target (node, string_aux, string_aux2);
+				axl_free (string_aux);
+				return AXL_TRUE;
+			}
+
+
+			if (doc != NULL) {
+				axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "PI processing finished, adding PI (doc) and its content");
+				axl_doc_add_pi_target (doc, string_aux, string_aux2);
+				axl_free (string_aux);
+				return AXL_TRUE;
+			}
+
+		}
+
+		/* check error reported */
+		axl_error_new (-1, "Found a error while reading the PI target name, unable to find PI terminator ?>", stream, error);
+		return AXL_FALSE;
+	}
+
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "PI processing finished");
+
 	return AXL_TRUE;
 }
 

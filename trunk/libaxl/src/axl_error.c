@@ -42,7 +42,17 @@ struct _axlError {
 	char * error;
 };
 
+/**
+ * \defgroup axl_error_module Axl Error report: Functions to help AXL library to report internal error to the application level.
+ */
+
 /** 
+ * \addtogroup axl_error_module
+ * @{
+ */
+
+/** 
+ *
  * @internal
  *
  * @brief Allows to create a new \ref axlError value that contains an
@@ -54,8 +64,7 @@ struct _axlError {
  * position to add more information to the place where the error was
  * found.
  *
- * @param error The error string to be used to initialize the received
- * \ref axlError.
+ * @param error The error string to be used to initialize the received \ref axlError.
  *
  * 
  * @param _error The \ref axlError to initialize.
@@ -150,3 +159,4 @@ void   axl_error_free     (axlError * _error)
 }
 
 
+/* @} */

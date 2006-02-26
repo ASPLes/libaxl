@@ -42,12 +42,20 @@
 
 BEGIN_C_DECLS
 
+/** 
+ * \addtogroup axl_log_module
+ * @{
+ */
+
 bool axl_log_is_enabled ();
 
 bool axl_log_color_is_enabled ();
 
 void axl_log (char * domain, AxlDebugLevel level, char * message, ...);
 
+/* @} */
+
 END_C_DECLS
 
 #endif
+
