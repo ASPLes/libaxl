@@ -49,7 +49,10 @@ BEGIN_C_DECLS
  */
 
 axlStream * axl_stream_new             (char * stream_source, 
-					int stream_size);
+					int stream_size,
+					char * file_path,
+					int    fd_handler,
+					axlError ** error);
 
 int         axl_stream_inspect         (axlStream * stream, char * chunk);
 
@@ -60,6 +63,10 @@ int         axl_stream_inspect_several (axlStream * stream, int chunk_num, ...);
 void        axl_stream_accept          (axlStream * stream);
 
 void        axl_stream_move            (axlStream * stream, int count);
+
+bool        axl_stream_fall_outside    (axlStream * stream, int inspected_size);
+
+bool        axl_stream_check           (axlStream * stream, char * chunk);
 
 char      * axl_stream_get_until       (axlStream * stream, 
 					char      * valid_chars, 
@@ -82,8 +89,9 @@ char      * axl_stream_get_near_to     (axlStream * stream, int count);
 
 char      * axl_stream_get_following   (axlStream * stream, int count);
 
-void        axl_stream_link            (axlStream * stream,
-					axlDoc    * doc);
+void        axl_stream_link            (axlStream  *   stream,
+					axlPointer     element,
+					axlDestroyFunc func);
 
 void        axl_stream_unlink          (axlStream * stream);
 

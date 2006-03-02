@@ -38,10 +38,30 @@
 #include <stdarg.h>
 #include <string.h>
 #include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <axl.h>
 #include <ctype.h>
+#include <unistd.h>
 
 #define LOG_DOMAIN "axl-stream"
+
+/** 
+ * @internal
+ * 
+ * This is the size of the buffer allocated while using the axlStream
+ * as a representation of a streaming media, like a file
+ * descriptor. This value should contain a value using the (4k * n + 1).
+ * 
+ * @param stream 
+ */
+#define STREAM_BUFFER_SIZE 4097
+
+typedef  enum {
+	STREAM_FD,
+	STREAM_MEM,
+}axlStreamType;
 
 struct _axlStream {
 
@@ -66,8 +86,20 @@ struct _axlStream {
 	/* last get following reference */
 	char   * last_get_following;
 
-	/* a reference to the associated document to this stream */
-	axlDoc * doc;
+	/* a reference to the associated element to this stream */
+	axlPointer * element_linked;
+	
+	/*The function to execute when the element must be destroyed. */ 
+	axlDestroyFunc element_destroy;
+
+	/* Stream type configuration. Information source is coming
+	 * from a file descriptor of a memory address. */
+	axlStreamType type;
+
+	/* File descriptor associated with the given stream. In the
+	 * case the stream if a STREAM_FD, this is the file descriptor
+	 * associated. */
+	int           fd;
 };
 
 
@@ -82,6 +114,38 @@ struct _axlStream {
 
 /** 
  * @internal
+ *
+ * @brief Read the next available information on the file descriptor
+ * placing that information into the stream.
+ * 
+ * @param stream The stream where the pre-buffering operation will be
+ * performed.
+ */
+void axl_stream_prebuffer (axlStream * stream, int padding)
+{
+	int bytes_read;
+
+	axl_return_if_fail (stream);
+	axl_return_if_fail (stream->type == STREAM_FD);
+	axl_return_if_fail (stream->fd   != -1);
+
+	/* read current content */
+	bytes_read = read (stream->fd, stream->stream + padding, STREAM_BUFFER_SIZE - padding - 1);
+	if (bytes_read == 0) {
+		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "end of file reached");
+		close (stream->fd);
+		stream->fd = -1;
+	}
+	
+	/* set the new size, that is the padding, the content already
+	 * read, and the bytes already read */
+	stream->stream_size = padding + bytes_read;
+
+	return;
+}
+
+/** 
+ * @internal
  * 
  * @brief Creates a new byte stream using as data the string pointer
  * and the size.
@@ -92,26 +156,68 @@ struct _axlStream {
  *
  * @param stream_size How many bytes are available to perform
  * streaming.
+ *
+ * @param file_path Optional parameter to allow reading the stream
+ * from a file using the open API.
+ *
+ * @param fd_handler Optional parameter to allow reading the stream
+ * from a file descriptor, that could be a file, a socket, etc..
  * 
  * @return A newly allocated stream instance that should be
  * deallocated by using \ref axl_stream_free. The function could
  * return a NULL value is received a NULL stream or a non positive
  * stream size.
  */
-axlStream * axl_stream_new (char * stream_source, int stream_size)
+axlStream * axl_stream_new (char * stream_source, int stream_size,
+			    char * file_path, int    fd_handler,
+			    axlError ** error)
 {
 	axlStream * stream;
+	int         fd;
 
 	/* perform some environmental checkings */
-	axl_return_val_if_fail (stream_source,   NULL);
-	axl_return_val_if_fail (stream_size > 0, NULL);
+	if (file_path != NULL || (fd_handler > 0)) {
+		if (fd_handler < 0) {
+			/* a file handle */
+			if ((fd = open (file_path, O_RDONLY)) < 0) {
+				axl_error_new (-1, "unable to read file provided", NULL, error);
+				return NULL;
+			}
+		}else
+			fd = fd_handler;
 
-	stream               = axl_new (axlStream, 1);
-	/* copy source */
-	stream->stream       = axl_new (char, stream_size + 1);
-	memcpy (stream->stream, stream_source, stream_size);
-	stream->stream_index = 0;
-	stream->stream_size  = stream_size;
+		/* create the stream holder */
+		stream               = axl_new (axlStream, 1);
+		stream->type         = STREAM_FD;
+		stream->fd           = fd;
+
+		/* allocate 4k to perform streaming */
+		stream->stream       = axl_new (char, STREAM_BUFFER_SIZE);
+
+		/* prebuffer */
+		axl_stream_prebuffer (stream, 0);
+	}else {
+		/* check chunk received */
+		if (stream_source == NULL) {
+			axl_error_new (-1, "Requested to open a stream without providing an memory chunk, file descriptor or a file path", NULL, error);
+			return NULL;
+		}
+
+		/* check memory chunk size */
+		if (stream_size == -1)
+			stream_size = strlen (stream_source);
+
+		/* create the stream holder */
+		stream               = axl_new (axlStream, 1);
+		stream->type         = STREAM_MEM;
+
+		/* copy source */
+		stream->stream       = axl_new (char, stream_size + 1);
+		memcpy (stream->stream, stream_source, stream_size);
+		
+		/* set initial indicators */
+		stream->stream_size  = stream_size;
+	}
 
 	/* return newly created stream */
 	return stream;
@@ -152,13 +258,13 @@ int         axl_stream_common_inspect (axlStream * stream, char * chunk, bool al
        
 	/* check that chunk to inspect doesn't fall outside the stream
 	 * boundaries */
-	if ((inspected_size + stream->stream_index) > stream->stream_size) {
+	if (axl_stream_fall_outside (stream, inspected_size)) {
 		axl_log (LOG_DOMAIN, AXL_LEVEL_WARNING, "requested to inspect a chunk that falls outside the stream size");
 		return -1; /* no more stream is left to satisfy current petition */
 	}
 	
 	/* check that the chunk to be search is found */
-	if (! memcmp (chunk, stream->stream + stream->stream_index, inspected_size)) {
+	if (axl_stream_check (stream, chunk)) {
 
 		if (! axl_stream_is_white_space (chunk)) 
 			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "chunk [%s] found inside the stream, saving inspected size=%d", chunk, inspected_size);
@@ -317,8 +423,25 @@ int         axl_stream_inspect_several (axlStream * stream, int chunk_num, ...)
 void axl_stream_accept (axlStream * stream)
 {
 	axl_return_if_fail (stream);
+	char temp[STREAM_BUFFER_SIZE];
 
-	stream->stream_index     += stream->previous_inspect;
+	if (stream->type == STREAM_MEM) {
+		stream->stream_index     += stream->previous_inspect;
+	}
+	if (stream->type == STREAM_FD) {
+		/* clear the memory */
+		memset (temp, 0, STREAM_BUFFER_SIZE - 1);
+		
+		/* displace memory already read to be at the begining
+		 * of the stream */
+		memcpy (temp, 
+			stream->stream + stream->previous_inspect, 
+			STREAM_BUFFER_SIZE - stream->previous_inspect);
+
+		/* fill the buffer with more data */
+		axl_stream_prebuffer (stream, stream->previous_inspect);
+	}
+
 	stream->previous_inspect  = 0;
 	if (stream->last_chunk != NULL)
 		axl_free (stream->last_chunk);
@@ -655,7 +778,7 @@ char      * axl_stream_get_following   (axlStream * stream, int count)
 /** 
  * @internal
  *
- * @brief Associates the given axlDoc with the given stream to be
+ * @brief Associates the given axlPointer with the given stream to be
  * life-time dependant.
  *
  * While performing the XML parsing, errors will be produced. This
@@ -671,15 +794,21 @@ char      * axl_stream_get_following   (axlStream * stream, int count)
  * 
  * @param stream The axlStream where the document will be linked to.
  *
- * @param doc The axlDoc where the document will be linked to.
+ * @param element The element to link (may a axlDoc or a axlDtd).
+ *
+ * @param func The function to call once the stream is released.
  */
-void axl_stream_link (axlStream * stream, axlDoc * doc) 
+void        axl_stream_link            (axlStream  *   stream,
+					axlPointer     element,
+					axlDestroyFunc func)
 {
 	axl_return_if_fail (stream);
-	axl_return_if_fail (doc);
+	axl_return_if_fail (element);
+	axl_return_if_fail (func);
 	
 	/* that's all */
-	stream->doc = doc;
+	stream->element_linked  = element;
+	stream->element_destroy = func;
 
 	return;
 }
@@ -696,7 +825,8 @@ void axl_stream_unlink (axlStream * stream)
 	axl_return_if_fail (stream);
 	
 	/* clear document association */
-	stream->doc = NULL;
+	stream->element_destroy = NULL;
+	stream->element_linked  = NULL;
 	
 	return;
 }
@@ -717,8 +847,8 @@ void axl_stream_free (axlStream * stream)
 	axl_free (stream->stream);
 
 	/* release associated document is defined. */
-	if (stream->doc) 
-		axl_doc_free (stream->doc);
+	if (stream->element_linked) 
+		stream->element_destroy (stream->element_linked);
 
 	/* releaset last chunk */
 	if (stream->last_chunk != NULL)
@@ -807,6 +937,65 @@ bool        axl_stream_cmp             (char * chunk1, char * chunk2, int size)
 	return AXL_FALSE;
 }
 
+/** 
+ * @internal
+ *
+ * @brief Allows to check if the provided stream could support
+ * checking a chunk of, at least, the provided inspected size.
+ * 
+ * @param stream The stream where the inspected operation is being
+ * requested.
+ *
+ * @param inspected_size The size to inspected, that is being
+ * requested to be checked on the given stream.
+ * 
+ * @return \ref AXL_TRUE if the stream could support the requested
+ * operation, or AXL_FALSE if not.
+ */
+bool axl_stream_fall_outside (axlStream * stream, int inspected_size)
+{
+	axl_return_val_if_fail (stream, AXL_FALSE);
+
+	/* if the content is inside memory, check it */
+	if (stream->type == STREAM_MEM)
+		return (inspected_size + stream->stream_index) > stream->stream_size;
+
+	/* a fd operation is allways supported */
+	if (stream->type == STREAM_FD)
+		return (inspected_size > stream->stream_size);
+	
+	/* otherwise, false is returned */
+	return AXL_FALSE;
+}
+
+/** 
+ * @internal
+ * @brief Allows to check if the given stream have as a next element
+ * the provided chunk.
+ * 
+ * @param stream The stream where the operation will be performed.
+ * @param chunk The chunk to check
+ * 
+ * @return Returns AXL_TRUE if the given stream contains the value requested
+ * or AXL_FALSE if not.
+ */
+bool         axl_stream_check           (axlStream * stream, char * chunk)
+{
+	int inspected_size;
+
+	axl_return_val_if_fail (stream, AXL_FALSE);
+	axl_return_val_if_fail (chunk, AXL_FALSE);
+
+	/* get current size to inspect */
+	inspected_size = strlen (chunk);
+	
+	if (stream->type == STREAM_MEM)
+		return (memcmp (chunk, stream->stream + stream->stream_index, inspected_size) == 0) ? AXL_TRUE : AXL_FALSE;
+	if (stream->type == STREAM_FD)
+		return (memcmp (chunk, stream->stream, inspected_size) == 0) ? AXL_TRUE : AXL_FALSE;
+	
+	return AXL_FALSE;
+}
 
 /** 
  * @internal
@@ -826,7 +1015,6 @@ bool        axl_stream_remains         (axlStream * stream)
 	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "checking for stream status with stream index=%d and stream size=%d",
 		 stream->stream_index, stream->stream_size);
 		 
-	
 	if (stream->stream_index >= (stream->stream_size - 1))
 		return AXL_FALSE;
 	return AXL_TRUE;

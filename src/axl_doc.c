@@ -790,13 +790,10 @@ axlDoc * axl_doc_parse (char * entity, int entity_size, axlError ** error)
 	}
 
 	/* create the xml stream using provided data */
-	if (entity_size == -1)
-		stream = axl_stream_new (entity, strlen (entity));
-	else
-		stream = axl_stream_new (entity, entity_size);
-
+	stream = axl_stream_new (entity, entity_size, NULL, -1, error);
+	axl_return_val_if_fail (stream, NULL);
 	doc            = __axl_doc_new ();
-	axl_stream_link (stream, doc);
+	axl_stream_link (stream, doc, (axlDestroyFunc) axl_doc_free);
 
 	/* parse initial xml header */
 	if (!__axl_doc_parse_xml_header (stream, doc, error))
@@ -1658,7 +1655,7 @@ bool      axl_doc_consume_comments         (axlDoc * doc, axlStream * stream, ax
 		AXL_CONSUME_SPACES(stream);
 
 		/* check for PI, only once the xml header have been processed */
-		if (doc->headerProcess && (axl_stream_peek (stream, "<?") > 0)) {
+		if ((doc != NULL) && doc->headerProcess && (axl_stream_peek (stream, "<?") > 0)) {
 			if (! axl_doc_consume_pi (doc, axl_stack_peek (doc->parentNode), stream, error))
 				return AXL_FALSE;
 			found_item = AXL_TRUE;

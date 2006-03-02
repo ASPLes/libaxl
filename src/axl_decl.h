@@ -156,15 +156,15 @@ typedef struct _axlStream axlStream;
 
 /** 
  * @brief Type definition to represent a boolean true value, that is
- * equal to 1.
+ * equal to 1. 
  */
-#define AXL_TRUE  1
+#define AXL_TRUE  (1)
 
 /** 
  * @brief Type definition to represent a boolean false value, that is
  * equal to 0.
  */
-#define AXL_FALSE 0
+#define AXL_FALSE (0)
 
 /** 
  * @brief Alias declaration to bind the <i>int</i> to the <b>bool</b>
