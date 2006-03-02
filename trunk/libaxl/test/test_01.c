@@ -2,6 +2,23 @@
 #include <stdio.h>
 
 /** 
+ * @brief DTD operations. Checks that DTD support works, reading
+ * simple DTD definitions, and ensuring elements are properly read.
+ * 
+ * @param error The axlError reference to be filled if the function
+ * returns AXL_FALSE.
+ * 
+ * @return AXL_TRUE if the validity test is passed, AXL_FALSE if not.
+ */
+bool test_05 (axlError ** error)
+{
+	axlDtd * dtd;
+
+	/* parse a DTD document */
+	
+}
+
+/** 
  * @brief Perform some additional checks for a more extended xml
  * documents, that includes attributes inside node definitions.
  *

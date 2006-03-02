@@ -53,6 +53,7 @@ axlDtd   * axl_dtd_parse (char      * entity,
 
 void       axl_dtd_free  (axlDtd * dtd);
 
+void       axl_dtd_element_free (axlDtdElement * element);
 
 /* @} */
 
