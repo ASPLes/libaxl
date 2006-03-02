@@ -733,42 +733,15 @@ bool __axl_doc_parse_close_node (axlStream * stream, axlDoc * doc, axlNode ** _n
 }
 
 
-
 /** 
- * @brief Parse an XML entity that is hold inside the memory pointed
- * by <b>entity</b> and limited by <b>entity_size</b>.
- *
- * The function parses the XML document inside the memory hold inside
- * the given reference. The function returns an XML document,
- * represented by \ref axlDoc.
- *
- * The function, optionall, could report error found inside the given
- * \ref axlError variable. In the case the function returns a NULL
- * value, this variable is filled containing the a textual diagnostic
- * error to be showed to the user interface and an error code.
+ * @internal
  * 
- * @param entity The XML document to load.
- *
- * @param entity_size The XML document size to load. If a <b>-1</b> is
- * provided, strlen function is used to figure out current document
- * size. This is not recomended while using xml documents that include
- * binary data, that maybe comes inside the CDATA section or because
- * an utf caracter used that includes the \\0 inside its value.
- *
- * @param error Optional \ref axlError reference that will be used to
- * report errors found while processing xml into the \ref axlDoc
- * instance.
- * 
- * @return A newly allocated Axl Document, that must be deallocated
- * using \ref axl_doc_free, when no longer needed. The function could
- * return NULL if the document is not loaded properly.
- *
- * In the case an error is found while procesing the document, error
- * variable will be filled, if defined. -1 will be returned is
- * received parameter are wrong. -2 will be returned if there some
- * error is found while processing the document.
+ * Internal function which works as a common base for all functions
+ * that parse XML documents from different inputs.
  */
-axlDoc * axl_doc_parse (char * entity, int entity_size, axlError ** error)
+axlDoc * __axl_doc_parse_common (char * entity, int entity_size, 
+			       char * file_path, int fd_handle, 
+			       axlError ** error)
 {
 	axlStream * stream        = NULL;
 	axlDoc    * doc           = NULL;
@@ -778,20 +751,10 @@ axlDoc * axl_doc_parse (char * entity, int entity_size, axlError ** error)
 	int         chunk_matched = 0;
 		
 	
-	/* check for environmental parameters */
-	if (entity == NULL) {
-		axl_error_new (-1, "Received and empty xml stream.", stream, error);
-		return NULL;
-	}
-
-	if ((entity_size != -1) && (entity_size <= 0)) {
-		axl_error_new (-1, "Received an entity size that is less or equal to 0, and it is not -1.", stream, error);
-		return NULL;
-	}
-
 	/* create the xml stream using provided data */
-	stream = axl_stream_new (entity, entity_size, NULL, -1, error);
+	stream = axl_stream_new (entity, entity_size, file_path, fd_handle, error);
 	axl_return_val_if_fail (stream, NULL);
+
 	doc            = __axl_doc_new ();
 	axl_stream_link (stream, doc, (axlDestroyFunc) axl_doc_free);
 
@@ -921,6 +884,90 @@ axlDoc * axl_doc_parse (char * entity, int entity_size, axlError ** error)
 	axl_stream_free (stream);
 	return doc;
 }
+
+/** 
+ * @brief Parse an XML entity that is hold inside the memory pointed
+ * by <b>entity</b> and limited by <b>entity_size</b>.
+ *
+ * The function parses the XML document inside the memory hold inside
+ * the given reference. The function returns an XML document,
+ * represented by \ref axlDoc.
+ *
+ * The function, optionall, could report error found inside the given
+ * \ref axlError variable. In the case the function returns a NULL
+ * value, this variable is filled containing the a textual diagnostic
+ * error to be showed to the user interface and an error code.
+ * 
+ * @param entity The XML document to load.
+ *
+ * @param entity_size The XML document size to load. If a <b>-1</b> is
+ * provided, strlen function is used to figure out current document
+ * size. This is not recomended while using xml documents that include
+ * binary data, that maybe comes inside the CDATA section or because
+ * an utf caracter used that includes the \\0 inside its value.
+ *
+ * @param error Optional \ref axlError reference that will be used to
+ * report errors found while processing xml into the \ref axlDoc
+ * instance.
+ * 
+ * @return A newly allocated Axl Document, that must be deallocated
+ * using \ref axl_doc_free, when no longer needed. The function could
+ * return NULL if the document is not loaded properly.
+ *
+ * In the case an error is found while procesing the document, error
+ * variable will be filled, if defined. -1 will be returned is
+ * received parameter are wrong. -2 will be returned if there some
+ * error is found while processing the document.
+ */
+axlDoc * axl_doc_parse (char * entity, int entity_size, axlError ** error)
+{
+	return __axl_doc_parse_common (entity, entity_size, NULL, -1, error);
+}
+
+/** 
+ * @brief Allows to parse an xml document from the given file path
+ * location.
+ *
+ * This function works the same way like \ref axl_doc_parse and \ref
+ * axl_doc_parse_strings, but using as an input, the selected file
+ * provided by the path. In fact, all this function, use the same xml
+ * parse engine. This advantage of this function is that it is more
+ * efficient while reading huge xml files. 
+ *
+ * Here is an example:
+ * \code
+ * axlDoc   * doc = NULL;
+ * axlError * error = NULL;
+ *
+ * // parse the provide file
+ * doc = axl_doc_parse_from_file ("test.xml");
+ * if (doc == NULL) {
+ *    // check error found
+ *    printf ("ERROR: (code: %d) %s\n",
+ *            axl_error_get_code (error),
+ *            axl_error_get (error));
+ *    axl_error_free (error);
+ *    return -1;
+ * }
+ *
+ * // do some stuff with the readed document
+ * 
+ * // release it once no longer needed
+ * axl_doc_free (doc);
+ * \endcode
+ * 
+ * @param file_path The file path to report.
+ *
+ * @param error The \ref axlError where errors found will be reported.
+ * 
+ * @return 
+ */
+axlDoc  * axl_doc_parse_from_file          (char      * file_path,
+					    axlError ** error)
+{
+	return __axl_doc_parse_common (NULL, -1, file_path, -1, error);
+}
+
 
 /** 
  * @brief Allows to parse an xml document that is provided as a set of
