@@ -54,6 +54,9 @@ axlDoc  * axl_doc_parse                    (char * entity,
 axlDoc  * axl_doc_parse_strings            (axlError ** error,
 					    ...);
 
+axlDoc  * axl_doc_parse_from_file          (char      * file_path,
+					    axlError ** error);
+
 axlNode * axl_doc_get_root                 (axlDoc * doc);
 
 axlList * axl_doc_get_list                 (axlDoc * doc, 

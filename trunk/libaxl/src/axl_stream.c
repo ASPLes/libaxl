@@ -120,28 +120,64 @@ struct _axlStream {
  * 
  * @param stream The stream where the pre-buffering operation will be
  * performed.
+ * 
+ * @return AXL_TRUE if the requested padding and buffer size were
+ * filled or AXL_FALSE if end of file was reached. In that case the
+ * stream size is not updated.
  */
-void axl_stream_prebuffer (axlStream * stream, int padding)
+bool axl_stream_prebuffer (axlStream * stream)
 {
-	int bytes_read;
+	int  bytes_read;
+	char temp[STREAM_BUFFER_SIZE];
 
-	axl_return_if_fail (stream);
-	axl_return_if_fail (stream->type == STREAM_FD);
-	axl_return_if_fail (stream->fd   != -1);
+	/* check some environment conditions */
+	axl_return_val_if_fail (stream, AXL_FALSE);
+	axl_return_val_if_fail (stream->type == STREAM_FD, AXL_FALSE);
 
+	if (stream->fd == -1)
+		return AXL_FALSE;
+
+	/* displace memory only if there were data already consumed */
+	if (stream->stream_index > 0) {
+
+		/* clear the memory */
+		memset (temp, 0, STREAM_BUFFER_SIZE - 1);
+		
+		/* displace memory already read to be at the begining
+		 * of the stream */
+		memcpy (temp, stream->stream + stream->stream_index,
+			STREAM_BUFFER_SIZE - stream->stream_index);
+		
+		/* now copy displaced content back to the stream */
+		memcpy (stream->stream, temp, 
+			STREAM_BUFFER_SIZE - stream->stream_index);
+	}
+	
 	/* read current content */
-	bytes_read = read (stream->fd, stream->stream + padding, STREAM_BUFFER_SIZE - padding - 1);
+	bytes_read = read (stream->fd, stream->stream + stream->stream_index,
+			   STREAM_BUFFER_SIZE - stream->stream_index);
+
+	/* set the new size, that is the padding, the content already
+	 * read, and the bytes already read */
+	if (stream->stream_size == 0)
+		stream->stream_size = bytes_read;
+	else
+		stream->stream_size = (stream->stream_size - stream->stream_index) + bytes_read;
+	
+	/* reset buffer index */
+	stream->stream_index = 0;
+
 	if (bytes_read == 0) {
 		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "end of file reached");
 		close (stream->fd);
 		stream->fd = -1;
+		return AXL_FALSE;
 	}
 	
-	/* set the new size, that is the padding, the content already
-	 * read, and the bytes already read */
-	stream->stream_size = padding + bytes_read;
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "prebuffering data: stream size: %d",
+		 stream->stream_size);
 
-	return;
+	return AXL_TRUE;
 }
 
 /** 
@@ -195,7 +231,7 @@ axlStream * axl_stream_new (char * stream_source, int stream_size,
 		stream->stream       = axl_new (char, STREAM_BUFFER_SIZE);
 
 		/* prebuffer */
-		axl_stream_prebuffer (stream, 0);
+		axl_stream_prebuffer (stream);
 	}else {
 		/* check chunk received */
 		if (stream_source == NULL) {
@@ -423,29 +459,20 @@ int         axl_stream_inspect_several (axlStream * stream, int chunk_num, ...)
 void axl_stream_accept (axlStream * stream)
 {
 	axl_return_if_fail (stream);
-	char temp[STREAM_BUFFER_SIZE];
 
-	if (stream->type == STREAM_MEM) {
-		stream->stream_index     += stream->previous_inspect;
-	}
-	if (stream->type == STREAM_FD) {
-		/* clear the memory */
-		memset (temp, 0, STREAM_BUFFER_SIZE - 1);
-		
-		/* displace memory already read to be at the begining
-		 * of the stream */
-		memcpy (temp, 
-			stream->stream + stream->previous_inspect, 
-			STREAM_BUFFER_SIZE - stream->previous_inspect);
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "Current, Index: %d, Size: %d, Inspected: %d",
+		 stream->stream_index, stream->stream_size, stream->previous_inspect);
 
-		/* fill the buffer with more data */
-		axl_stream_prebuffer (stream, stream->previous_inspect);
-	}
+	/* simple memory chunk parsing */
+	stream->stream_index     += stream->previous_inspect;
 
 	stream->previous_inspect  = 0;
 	if (stream->last_chunk != NULL)
 		axl_free (stream->last_chunk);
 	stream->last_chunk = NULL;
+
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "Before accepting, Index: %d, Size: %d, Inspected: %d",
+		 stream->stream_index, stream->stream_size, stream->previous_inspect);
 
 	return;
 }
@@ -572,6 +599,7 @@ char      * axl_stream_get_untilv      (axlStream * stream,
 	int          iterator = 0;
 	int          index    = 0;
 	int          length   = 0;
+	char       * string_aux;
 	
 	/* perform some environmental checks */
 	axl_return_val_if_fail (stream, NULL);
@@ -593,7 +621,13 @@ char      * axl_stream_get_untilv      (axlStream * stream,
 
 	/* now we have chunks to lookup, stream until get the stream
 	 * limited by the chunks received. */
+	/* axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "about to check: index(%d) + stream_index(%d) < stream_size(%d)",
+	   index, stream->stream_index, stream->stream_size);*/
+	
 	while ((index + stream->stream_index) < stream->stream_size) {
+		
+		/* axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "now, checking: index(%d) + stream_index(%d) < stream_size(%d)",
+		   index, stream->stream_index, stream->stream_size); */
 		
 		/* compare chunks received for each index increased
 		 * one step */
@@ -628,11 +662,39 @@ char      * axl_stream_get_untilv      (axlStream * stream,
 				stream->last_chunk = axl_new (char, index + 1);
 				memcpy (stream->last_chunk, stream->stream + stream->stream_index, index);
 
-				/* update internal indexes */
-				if (accept_terminator)
-					stream->stream_index += length;
-				stream->stream_index         += index;
-				stream->previous_inspect      = 0;
+				/* update internal indexes: this
+				 * depends on the type of resource
+				 * being streamed. */
+				switch (stream->type) {
+				case STREAM_MEM:
+					/* in the case a memory chunk is being read */
+					if (accept_terminator)
+						stream->stream_index     += length;
+					stream->stream_index             += index;
+					stream->previous_inspect          = 0;
+					break;
+
+				case STREAM_FD:
+					/* in the case a file descriptor is being read */
+					/* keep a copy for the last chunk read to avoid 
+					   the accept function removing it */
+					string_aux                        = stream->last_chunk;
+					stream->last_chunk                = NULL;
+
+					/* prepare indexes */
+					stream->previous_inspect          = 0;
+					if (accept_terminator)
+						stream->previous_inspect += length;
+					stream->previous_inspect         += index;
+
+					/* accept current indexes, displacing memory */
+					axl_stream_accept (stream);
+
+					/* restore current last chunk value */
+					stream->last_chunk = string_aux;
+					
+					break;
+				}
 
 				axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "returning chunk found: [%s] (matched chunk: %d)", stream->last_chunk,
 					 iterator);
@@ -862,6 +924,11 @@ void axl_stream_free (axlStream * stream)
 	if (stream->last_get_following != NULL)
 		axl_free (stream->last_get_following);
 
+	if (stream->fd > 0) {
+		/* close file descriptor if defined */
+		close (stream->fd);
+	}
+
 	/* release memory allocated by the stream received. */
 	axl_free (stream);
 
@@ -949,20 +1016,32 @@ bool        axl_stream_cmp             (char * chunk1, char * chunk2, int size)
  * @param inspected_size The size to inspected, that is being
  * requested to be checked on the given stream.
  * 
- * @return \ref AXL_TRUE if the stream could support the requested
- * operation, or AXL_FALSE if not.
+ * @return \ref AXL_TRUE if the stream couldn't support the requested
+ * operation, or AXL_FALSE if requested inspected size could be
+ * supported.
  */
 bool axl_stream_fall_outside (axlStream * stream, int inspected_size)
 {
 	axl_return_val_if_fail (stream, AXL_FALSE);
 
-	/* if the content is inside memory, check it */
-	if (stream->type == STREAM_MEM)
-		return (inspected_size + stream->stream_index) > stream->stream_size;
+#define fall_out_side_checking ((inspected_size + stream->stream_index) > stream->stream_size)
 
-	/* a fd operation is allways supported */
-	if (stream->type == STREAM_FD)
-		return (inspected_size > stream->stream_size);
+	/* if the content is inside memory, check it */
+	if (fall_out_side_checking) {
+		if (stream->type == STREAM_MEM)
+			return AXL_TRUE;
+	}else 
+		return AXL_FALSE;
+	
+	/* if we reach this place is that the stream doesn't support
+	 * the operation but the stream is not a memory chunk. Try to
+	 * prebuffer to satisfy the operation. */
+	if (stream->type == STREAM_FD) {
+		/* it seems it falls out side, try to prebuffer */
+		axl_stream_prebuffer (stream);
+	
+		return fall_out_side_checking;
+	}
 	
 	/* otherwise, false is returned */
 	return AXL_FALSE;
@@ -989,12 +1068,7 @@ bool         axl_stream_check           (axlStream * stream, char * chunk)
 	/* get current size to inspect */
 	inspected_size = strlen (chunk);
 	
-	if (stream->type == STREAM_MEM)
-		return (memcmp (chunk, stream->stream + stream->stream_index, inspected_size) == 0) ? AXL_TRUE : AXL_FALSE;
-	if (stream->type == STREAM_FD)
-		return (memcmp (chunk, stream->stream, inspected_size) == 0) ? AXL_TRUE : AXL_FALSE;
-	
-	return AXL_FALSE;
+	return (memcmp (chunk, stream->stream + stream->stream_index, inspected_size) == 0) ? AXL_TRUE : AXL_FALSE;
 }
 
 /** 

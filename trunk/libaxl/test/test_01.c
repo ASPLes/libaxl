@@ -12,9 +12,17 @@
  */
 bool test_05 (axlError ** error)
 {
-	axlDtd * dtd;
 
-	/* parse a DTD document */
+	axlDoc * doc;
+
+	/* parse the document found */
+	doc = axl_doc_parse_from_file ("test.xml", error);
+	if (doc == NULL)
+		return AXL_FALSE;
+	
+	/* release memory used by the parser */
+	axl_doc_free (doc);
+	return AXL_TRUE;
 	
 }
 
@@ -374,6 +382,15 @@ int main (int argc, char ** argv)
 		printf ("Test 04: complex xml parsing [   OK   ]\n");
 	else {
 		printf ("Test 04: complex xml parsing [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}	
+
+	if (test_05 (&error))
+		printf ("Test 05: DTD xml parsing [   OK   ]\n");
+	else {
+		printf ("Test 05: DTD xml parsing [ FAILED ]\n  (CODE: %d) %s\n",
 			axl_error_get_code (error), axl_error_get (error));
 		axl_error_free (error);
 		return -1;
