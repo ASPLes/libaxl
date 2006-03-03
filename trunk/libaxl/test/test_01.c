@@ -14,14 +14,36 @@ bool test_05 (axlError ** error)
 {
 
 	axlDoc * doc;
+	axlNode * node;
+	axlDtd  * dtd;
 
 	/* parse the document found */
 	doc = axl_doc_parse_from_file ("test.xml", error);
 	if (doc == NULL)
 		return AXL_FALSE;
+
+	node = axl_doc_get (doc, "/complex/data/row/td");
+	if (node == NULL) {
+		axl_error_new (-1, "Expected to receive a node, not found", NULL, error);
+		axl_doc_free (doc);
+		return AXL_FALSE;
+	}
+
+	if (! axl_cmp (axl_node_get_content (node, NULL), "10")) {
+		axl_error_new (-1, "Expected to receive a node content, not found", NULL, error);
+		axl_doc_free (doc);
+		return AXL_FALSE;
+	}
 	
 	/* release memory used by the parser */
 	axl_doc_free (doc);
+
+	dtd = axl_dtd_parse_from_file ("test.dtd", error);
+	if (dtd == NULL)
+		return AXL_FALSE;
+		
+	axl_dtd_free (dtd);
+
 	return AXL_TRUE;
 	
 }
