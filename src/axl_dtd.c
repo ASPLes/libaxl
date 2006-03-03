@@ -213,7 +213,7 @@ bool __axl_dtd_parse_element (axlDtd * dtd, axlStream * stream, axlError ** erro
 	AXL_CONSUME_SPACES (stream);
 
 	/* get for the first element declaration */
-	if (! axl_stream_inspect (stream, "<!ELEMENT") > 0) {
+	if (! (axl_stream_inspect (stream, "<!ELEMENT") > 0)) {
 		axl_error_new (-1, "Expected to receive a <!ELEMENT, but it wasn't found", stream, error);
 		axl_stream_free (stream);
 		return AXL_FALSE;
@@ -229,8 +229,9 @@ bool __axl_dtd_parse_element (axlDtd * dtd, axlStream * stream, axlError ** erro
 		axl_stream_free (stream);
 		return AXL_FALSE;
 	}
+
 	/* check that the DTD have an element name and an element type */
-	if (matched_chunk == 1) {
+	if (matched_chunk == 0) {
 		axl_error_new (-1, "Found a DTD <!ELEMENT declaration, without content specification. Missing value, examples: EMPTY, ANY, (..)", stream, error);
 		axl_stream_free (stream);
 		return AXL_FALSE;
@@ -262,6 +263,9 @@ bool __axl_dtd_parse_element (axlDtd * dtd, axlStream * stream, axlError ** erro
 		
 			/* consume previous white spaces */
 			AXL_CONSUME_SPACES (stream);
+
+			/* case not supported */
+			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "case not supported");
 		}
 	}
 
@@ -298,11 +302,10 @@ axlDtd * __axl_dtd_parse_common (char * entity, int entity_size,
 	axlDtd    * dtd;
 	int         iterator;
 	
-	axl_return_val_if_fail (entity, NULL);
-
 	/* create the stream associated */
 	stream = axl_stream_new (entity, entity_size, file_path, fd_handle, error);
 	axl_return_val_if_fail (stream, NULL);
+
 	dtd    = __axl_dtd_new ();
 	axl_stream_link (stream, dtd, (axlDestroyFunc) axl_dtd_free);
 
@@ -315,7 +318,7 @@ axlDtd * __axl_dtd_parse_common (char * entity, int entity_size,
 		/* check for element declaration */
 		if (axl_stream_peek (stream, "<!ELEMENT") > 0) {
 			/* found element declaration */
-			if (__axl_dtd_parse_element (dtd, stream, error))
+			if (! __axl_dtd_parse_element (dtd, stream, error))
 				return AXL_FALSE;
 			continue;
 		}
@@ -330,7 +333,10 @@ axlDtd * __axl_dtd_parse_common (char * entity, int entity_size,
 		iterator++;
 	}
 
-	return NULL;
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "DTD load COMPLETE");
+	axl_stream_unlink (stream);
+	axl_stream_free (stream);
+	return dtd;
 }
 
 /** 
@@ -358,12 +364,35 @@ axlDtd   * axl_dtd_parse (char      * entity,
 }
 
 /** 
+ * @brief Allows to parse the provided DTD definition, which is found
+ * on the provided file path.
+ * 
+ * @param file_path The file path where it is expected to receive a
+ * DTD file.
+ *
+ * @param error An optional \ref axlError reference where all errors found will be reported.
+ * 
+ * @return A newly allocated \ref axlDtd instance or NULL if it fails.
+ */
+axlDtd   * axl_dtd_parse_from_file (char * file_path,
+				    axlError ** error)
+{
+	return __axl_dtd_parse_common (NULL, -1, file_path, -1, error);
+}
+
+/** 
  * @brief Allows to destroy the provided \ref axlDtd  document.
  * 
  * @param dtd The \ref axlDtd document to destroy.
  */
 void       axl_dtd_free  (axlDtd * dtd)
 {
+	if (dtd == NULL)
+		return;
+
+	axl_list_free (dtd->elements);
+	axl_free (dtd);
+
 	return;
 }
 
@@ -378,6 +407,18 @@ void       axl_dtd_free  (axlDtd * dtd)
  */
 void       axl_dtd_element_free (axlDtdElement * element)
 {
+	if (element == NULL)
+		return;
+
+	/* free element name */
+	axl_free (element->name);
+
+	/* free element list definitions */
+	axl_list_free (element->list);
+	
+	/* free element itself */
+	axl_free (element);
+
 	return;
 }
 
