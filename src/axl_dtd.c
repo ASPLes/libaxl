@@ -168,6 +168,7 @@ bool __axl_dtd_add_element (axlDtd * dtd, axlStream * stream, axlDtdElement * el
 {
 	/* check the basic case */
 	if (dtd->root == NULL) {
+		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "adding DTD root node");
 		/* set as the root node the one received */
 		dtd->root     = element;
 
@@ -323,7 +324,6 @@ axlDtd * __axl_dtd_parse_common (char * entity, int entity_size,
 			continue;
 		}
 
-		
 		/* stop the loop */
 		if (iterator == 3) {
 			axl_error_new (-1, "unable to process DTD content, unable to found expected information", stream, error);
@@ -378,6 +378,78 @@ axlDtd   * axl_dtd_parse_from_file (char * file_path,
 				    axlError ** error)
 {
 	return __axl_dtd_parse_common (NULL, -1, file_path, -1, error);
+}
+
+/** 
+ * @brief Allows to validate the given XML document (\ref axlDoc)
+ * against the given document type definition (DTD, \ref axlDtd).
+ *
+ * This function allows to validate your XML documents providing the
+ * document type definition, that was read using \ref axl_dtd_parse or
+ * \ref axl_dtd_parse_from_file.
+ *
+ * Keep in mind that a document could be well-formed and valid. The
+ * only difference is that valid XML document are those that, meet all
+ * XML rules, but also are clasified and recognized as XML documents
+ * with some particular structure, that is represented (or
+ * constrained) with providing a DTD definition.
+ *
+ * @param doc The \ref axlDoc containing the XML document to be
+ * validated.
+ *
+ * @param dtd The \ref axlDtd containing the DTD definition used to
+ * validate the document.
+ *
+ * @return AXL_TRUE if the document is valid, AXL_FALSE if not.
+ */
+bool       axl_dtd_validate        (axlDoc * doc, axlDtd * dtd)
+{
+	axlNode * node;
+	
+	/* perform some checkings */
+	axl_return_val_if_fail (doc, AXL_FALSE);
+	axl_return_val_if_fail (dtd, AXL_FALSE);
+
+	/* validate the very first root node */
+	node = axl_doc_get_root (doc);
+	if (! NODE_CMP_NAME (node, axl_dtd_get_root (dtd))) {
+		/* root node doesn't match */
+		axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "Found that root node doesn't match!");
+		return AXL_FALSE;
+	}
+
+	/* perform a validation iteration over all elements */
+
+	/* the document is valid */
+	return AXL_TRUE;
+}
+
+/** 
+ * @brief Allows to get the root node for the provided DTD.
+ *
+ * Every DTD have a root node defined, which is the root node accepted
+ * for the set of XML document considered to be valid under the
+ * definition of the DTD provided.
+ *
+ * The value returned is the name of the root node that must have the
+ * XML document being validated.
+ * 
+ * @param dtd The \ref axlDtd where the root node name will be
+ * returned.
+ * 
+ * @return A reference to the internal representation of the root node
+ * name. Value must not be deallocated.
+ */
+char     * axl_dtd_get_root        (axlDtd * dtd)
+{
+	axl_return_val_if_fail (dtd, NULL);
+
+	/* return current status for the root node */
+	if (dtd->root == NULL) {
+		axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "dtd root element not defined");
+		return NULL;
+	}
+	return dtd->root->name;
 }
 
 /** 

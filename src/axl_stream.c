@@ -35,9 +35,9 @@
  *      Email address:
  *         info@aspl.es - http://fact.aspl.es
  */
-#include <stdarg.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdarg.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -74,7 +74,7 @@
 
 typedef  enum {
 	STREAM_FD,
-	STREAM_MEM,
+	STREAM_MEM
 }axlStreamType;
 
 struct _axlStream {
@@ -1136,6 +1136,20 @@ char      * axl_stream_strdup_n (char * chunk, int n)
 	
 	return result;
 }
+
+
+/** 
+ * @internal
+ *
+ * Internal prototype declaration to avoid getting gcc complaining
+ * every time it found a reference to this function. Many environment
+ * support this function, in the case this function is not support we
+ * will have to provide a fall back. However, it is required to
+ * program the library using ansi environment options to ensure the
+ * maximum compatibility.
+ */
+int vsnprintf(char *str, size_t size, const char *format, va_list ap);
+
 
 /** 
  * @brief Allows to produce an newly allocated string produced by the

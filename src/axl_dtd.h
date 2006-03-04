@@ -47,16 +47,21 @@ BEGIN_C_DECLS
  * @{
  */
 
-axlDtd   * axl_dtd_parse (char      * entity, 
-			  int         entity_size,
-			  axlError ** error);
+axlDtd   * axl_dtd_parse           (char      * entity, 
+				    int         entity_size,
+				    axlError ** error);
 
 axlDtd   * axl_dtd_parse_from_file (char * file_path,
 				    axlError ** error);
 
-void       axl_dtd_free  (axlDtd * dtd);
+bool       axl_dtd_validate        (axlDoc * doc, 
+				    axlDtd * dtd);
 
-void       axl_dtd_element_free (axlDtdElement * element);
+char     * axl_dtd_get_root        (axlDtd * dtd); 
+
+void       axl_dtd_free            (axlDtd * dtd);
+
+void       axl_dtd_element_free    (axlDtdElement * element);
 
 /* @} */
 

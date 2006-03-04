@@ -35,13 +35,20 @@ bool test_05 (axlError ** error)
 		return AXL_FALSE;
 	}
 	
-	/* release memory used by the parser */
-	axl_doc_free (doc);
-
 	dtd = axl_dtd_parse_from_file ("test.dtd", error);
 	if (dtd == NULL)
 		return AXL_FALSE;
-		
+
+	/* now validate the document */
+	if (! axl_dtd_validate (doc, dtd)) {
+		axl_error_new (-1, "found that the document provided should be valid, but validation function report an error", NULL, error);
+		return AXL_FALSE;
+	}
+
+	/* release memory used by the parser */
+	axl_doc_free (doc);
+	
+	/* release memory used by the DTD element */
 	axl_dtd_free (dtd);
 
 	return AXL_TRUE;
