@@ -88,7 +88,7 @@ char    * axl_doc_get_pi_target_content    (axlDoc * doc,
 
 axlList * axl_doc_get_pi_target_list       (axlDoc * doc);
 
-axlPI   * axl_pi_create                    (char * target,
+axlPI   * axl_pi_create                    (char * name,
 					    char * content);
 
 char    * axl_pi_get_name                  (axlPI  * pi);

@@ -70,7 +70,7 @@ char    * axl_node_get_attribute_value (axlNode * node, char * attribute);
  * 
  * @return AXL_TRUE if names are equal or AXL_FALSE if not.
  */
-#define NODE_CMP_NAME(node,name) (axl_stream_cmp ((node != NULL) ? axl_node_get_name(node) : "><", (name != NULL) ? name : "<>", (name != NULL) ? strlen (name) : 2))
+#define NODE_CMP_NAME(node,name) (axl_cmp ((node != NULL) ? axl_node_get_name(node) : "><", (name != NULL) ? name : "<>"))
 
 char    * axl_node_get_name           (axlNode * node);
 

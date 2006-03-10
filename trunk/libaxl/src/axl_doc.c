@@ -602,7 +602,7 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 	/* know, until the node ends, we have to find the node
 	 * attributes or the node defintion end */
 	iterator = 0;
-	while (axl_stream_remains (stream)) {
+	do {
 
 		/* check if we have an attribute for the node, or the node
 		 * definition have ended or the node definition is an empty
@@ -677,8 +677,10 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 			return AXL_FALSE;
 		}
 		iterator++;
-	}
+	} while (axl_stream_remains (stream));
 
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found end xml node definition (2)");
+	
 	/* document properly parsed */
 	return AXL_TRUE;
 }
@@ -1552,6 +1554,7 @@ axlList * axl_doc_get_pi_target_list       (axlDoc * doc)
 }
 
 /** 
+ *
  * @brief Allows to create a new \ref axlPI element. 
  * 
  * @param name The PI target name.
@@ -1559,8 +1562,7 @@ axlList * axl_doc_get_pi_target_list       (axlDoc * doc)
  * 
  * @return A newly allocated \ref axlPI element.
  */
-axlPI * axl_pi_create (char * name,
-		       char * content)
+axlPI * axl_pi_create (char * name, char * content)
 {
 	axlPI * pi;
 
@@ -1612,15 +1614,15 @@ char    * axl_pi_get_content               (axlPI  * pi)
 /** 
  * @brief Deallocates memory used by the \ref axlPI target.
  * 
- * @param target The target to destroy.
+ * @param pi The target to destroy.
  */
-void axl_pi_free (axlPI * target)
+void axl_pi_free (axlPI * pi)
 {
 	/* free PI target */
-	axl_free (target->name);
-	if (target->content != NULL) 
-		axl_free (target->content);
-	axl_free (target);
+	axl_free (pi->name);
+	if (pi->content != NULL) 
+		axl_free (pi->content);
+	axl_free (pi);
 	return;
 }
 

@@ -2,6 +2,37 @@
 #include <stdio.h>
 
 /** 
+ * @brief A bit more complex DTD parsing checkings
+ * 
+ * @param error The optional axlError to be used to report errors.
+ * 
+ * @return AXL_TRUE if the validity test is passed, AXL_FALSE if not.
+ */
+bool test_06 (axlError ** error)
+{
+	axlDoc * doc = NULL;
+	axlDtd * dtd = NULL;
+	
+	/* get current doc reference */
+	doc = axl_doc_parse_from_file ("test3.xml", error);
+	if (doc == NULL)
+		return AXL_FALSE;
+
+	/* load DTD */
+	dtd = axl_dtd_parse_from_file ("test3.dtd", error);
+	if (dtd == NULL)
+		return AXL_FALSE;
+
+	/* free document */
+	axl_doc_free (doc);
+
+	/* free dtd document */
+	axl_dtd_free (dtd);
+
+	return AXL_TRUE;
+}
+
+/** 
  * @brief DTD operations. Checks that DTD support works, reading
  * simple DTD definitions, and ensuring elements are properly read.
  * 
@@ -34,6 +65,15 @@ bool test_05 (axlError ** error)
 		axl_doc_free (doc);
 		return AXL_FALSE;
 	}
+
+	/* free previous document */
+	axl_doc_free (doc);
+
+	/* parse the document found */
+	doc = axl_doc_parse_from_file ("test2.xml", error);
+	if (doc == NULL)
+		return AXL_FALSE;
+	
 	
 	dtd = axl_dtd_parse_from_file ("test.dtd", error);
 	if (dtd == NULL)
@@ -417,9 +457,18 @@ int main (int argc, char ** argv)
 	}	
 
 	if (test_05 (&error))
-		printf ("Test 05: DTD xml parsing [   OK   ]\n");
+		printf ("Test 05: DTD basic parsing [   OK   ]\n");
 	else {
-		printf ("Test 05: DTD xml parsing [ FAILED ]\n  (CODE: %d) %s\n",
+		printf ("Test 05: DTD basic parsing [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}	
+
+	if (test_06 (&error))
+		printf ("Test 06: DTD basic parsing [   OK   ]\n");
+	else {
+		printf ("Test 06: DTD basic parsing [ FAILED ]\n  (CODE: %d) %s\n",
 			axl_error_get_code (error), axl_error_get (error));
 		axl_error_free (error);
 		return -1;

@@ -372,9 +372,9 @@ char    * axl_node_get_name           (axlNode * node)
 /** 
  * @brief Allows to get current emptyness configuration for the given \ref axlNode.
  *
- * A \ref axlNode, which is a representation if an xml node, is
+ * An \ref axlNode, which is a representation of a xml node, is
  * considered to be empty only if it has no content inside it. The
- * following xml code snipet shows which is considered the content:
+ * following xml code snipet shows what is considered the content:
  *
  * \code
  * <data>
@@ -383,11 +383,11 @@ char    * axl_node_get_name           (axlNode * node)
  * \endcode
  * 
  * If a node have content, this function will return \ref
- * AXL_TRUE. The content must not be confused with the node childs. An
- * xml node (\ref axlNode) could be empty but have childs. The
- * following xml code snipet shows a xml &lt;data> node with childs
- * that have content, but the parent node, &lt;data> do not have
- * content, therefore is empty.
+ * AXL_TRUE. The content must not be confused with the node childs. A
+ * xml node (\ref axlNode) could be empty but have childs at the same
+ * time (\ref axl_node_have_childs). The following xml code snipet shows a xml &lt;data> node with
+ * childs that have content, but the parent node, &lt;data> do not
+ * have content, therefore is empty.
  *
  * \code
  * <data>
