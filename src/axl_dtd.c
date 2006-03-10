@@ -80,6 +80,16 @@ typedef struct _axlDtdElementList {
 	 * nodes, configuring elements allowed.
 	 */
 	axlList             * itemList;
+	
+	/**
+	 * @brief In the case this is a final node, or PCdata,
+	 * previous variable, itemList, is not used, to avoid creating
+	 * a complex structure that only contains one item. In fact,
+	 * leaf variable is also not used if the elementType if the
+	 * AxlDtdNestedType is PCDATA.
+	 */
+	char                * leaf;
+
 }axlDtdElementList;
 
 struct _axlDtdElement {
@@ -98,10 +108,9 @@ struct _axlDtdElement {
 	 * @brief List of available items.
 	 * 
 	 * This variable holds current top level list selection. See
-	 * axlDetdElementList.choice variable.
+	 * axlDtdElementList.type variable.
 	 */
-	axlList             * list;
-
+	axlDtdElementList   * list;
 };
 
 struct _axlDtd {
@@ -187,6 +196,90 @@ bool __axl_dtd_add_element (axlDtd * dtd, axlStream * stream, axlDtdElement * el
 	return AXL_TRUE;
 }
 
+bool __axl_dtd_read_element_spec (axlStream * stream, axlDtdElement * dtd_element, axlError ** error)
+{
+	char              * string_aux;
+	int                 matched_chunk = -1;
+	axlStack          * dtd_item_stack;
+	axlDtdElementList * dtd_item_list;
+	
+	/* create the stack used to control which is
+	 * the current context for the items read for
+	 * the xml DTD especification (pd, pd2, (pr|po), ..) */
+	dtd_item_stack = axl_stack_new (NULL);
+	
+	/* consume previous white spaces */
+	AXL_CONSUME_SPACES (stream);
+	
+	/* check if the following character is the ( */
+	if (! (axl_stream_inspect (stream, "(") > 0)) {
+		axl_error_new (-1, "Expected to find a ELEMENT TYPE definition (, but it wasn't found",
+			       stream, error);
+		axl_stream_free (stream);
+		return AXL_FALSE;
+	}
+	
+	/* now read the next node identifier */
+	string_aux = axl_stream_get_until (stream, NULL, &matched_chunk, AXL_TRUE, 3, 
+					   " )", " ,", " |", 
+					   ")", ",", "|", 
+					   " ", "(", ">");
+	if (string_aux == NULL) {
+		axl_error_new (-1, "Unable to find ELEMENT type declaration definition",
+			       stream, error);
+		axl_stream_free (stream);
+		return AXL_FALSE;
+	}
+	
+	/* create the DTD item list */
+	dtd_item_list       = axl_new (axlDtdElementList, 1);
+	
+	/* push the item created */
+	axl_stack_push (dtd_item_stack, dtd_item_list);
+
+	switch (matched_chunk) {
+	case 0:
+	case 3:
+		/* matched the " )" or ")" chunk */
+		if ((dtd_item_list->itemList == NULL) && 
+		    (dtd_item_list->leaf == NULL)) {
+			/* copy default value */
+			dtd_item_list->leaf = axl_strdup (string_aux);
+		}
+		/* try to pop to previous element */
+		
+		break;
+	case 1:
+	case 4:
+		/* matched the " ," or "," chunk */
+		break;
+	case 2:
+	case 5:
+		/* matchedc the " |" chunk */
+		break;
+	case 6:
+		/* matched the "," chunk */
+		break;
+	case 7:
+		/* consume white spaces */
+		AXL_CONSUME_SPACES (stream);
+		break;
+	case 8:
+		/* check for a properly initialized DTD element type definition */
+		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "matched element: %d, %s", matched_chunk, string_aux);
+		axl_error_new (-1, "Unable to find ELEMENT type declaration definition begin(...)>",
+			       stream, error);
+		axl_stream_free (stream);
+		return AXL_FALSE;
+	}
+	
+	/* save particule data */
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "find content particule: %s", string_aux);
+
+	return AXL_TRUE;
+}
+
+
 /** 
  * @internal
  *
@@ -206,9 +299,9 @@ bool __axl_dtd_add_element (axlDtd * dtd, axlStream * stream, axlDtdElement * el
  */
 bool __axl_dtd_parse_element (axlDtd * dtd, axlStream * stream, axlError ** error)
 {
-	char           * string_aux;
-	int              matched_chunk = -1;
-	axlDtdElement  * element;
+	char              * string_aux;
+	int                 matched_chunk = -1;
+	axlDtdElement     * element;
 
 	/* consume previous white spaces */
 	AXL_CONSUME_SPACES (stream);
@@ -241,7 +334,6 @@ bool __axl_dtd_parse_element (axlDtd * dtd, axlStream * stream, axlError ** erro
 	/* create the DTD element */
 	element           = axl_new (axlDtdElement, 1);
 	element->name     = axl_strdup (string_aux);
-	element->list     = axl_list_new (axl_list_always_return_1, (axlDestroyFunc) axl_dtd_element_free);
 
 	/* now, check for the basic cases: ANY and EMPTY */
 	if (axl_stream_peek (stream, "EMPTY") > 0) {
@@ -261,12 +353,10 @@ bool __axl_dtd_parse_element (axlDtd * dtd, axlStream * stream, axlError ** erro
 		/* complex element type declaration, let's roll */
 		/* now get the element content type */
 		while (axl_stream_remains (stream)) {
-		
-			/* consume previous white spaces */
-			AXL_CONSUME_SPACES (stream);
 
-			/* case not supported */
-			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "case not supported");
+			/* read current dtd element spec */
+			if (!__axl_dtd_read_element_spec (stream, element, error))
+				return AXL_FALSE;
 		}
 	}
 
@@ -404,21 +494,30 @@ axlDtd   * axl_dtd_parse_from_file (char * file_path,
  */
 bool       axl_dtd_validate        (axlDoc * doc, axlDtd * dtd)
 {
-	axlNode * node;
+	axlNode       * node;
+	axlDtdElement * element;
 	
 	/* perform some checkings */
 	axl_return_val_if_fail (doc, AXL_FALSE);
 	axl_return_val_if_fail (dtd, AXL_FALSE);
 
 	/* validate the very first root node */
-	node = axl_doc_get_root (doc);
-	if (! NODE_CMP_NAME (node, axl_dtd_get_root (dtd))) {
+	node    = axl_doc_get_root (doc);
+	element = axl_dtd_get_root (dtd);
+	if (! NODE_CMP_NAME (node, axl_dtd_get_element_name (element))) {
 		/* root node doesn't match */
 		axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "Found that root node doesn't match!");
 		return AXL_FALSE;
 	}
 
+	/* check empty content spec */
+	if (axl_dtd_get_element_type (element) == ELEMENT_TYPE_EMPTY) {
+		/* check if the document provided have only one node */
+		return axl_node_is_empty (node) && !axl_node_have_childs (node);
+	}
+
 	/* perform a validation iteration over all elements */
+	
 
 	/* the document is valid */
 	return AXL_TRUE;
@@ -438,18 +537,48 @@ bool       axl_dtd_validate        (axlDoc * doc, axlDtd * dtd)
  * returned.
  * 
  * @return A reference to the internal representation of the root node
- * name. Value must not be deallocated.
+ * Value must not be deallocated.
  */
-char     * axl_dtd_get_root        (axlDtd * dtd)
+axlDtdElement  * axl_dtd_get_root        (axlDtd * dtd)
 {
 	axl_return_val_if_fail (dtd, NULL);
-
+	
 	/* return current status for the root node */
 	if (dtd->root == NULL) {
 		axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "dtd root element not defined");
 		return NULL;
 	}
-	return dtd->root->name;
+	return dtd->root;
+}
+
+/** 
+ * @brief Returns the name of the provided \ref axlDtdElement.
+ * 
+ * @param element A reference to a \ref axlDtdElement where the name
+ * will be returned.
+ * 
+ * @return A reference to the internal DTD element name. Returned
+ * value mustn't be deallocated.
+ */
+char           * axl_dtd_get_element_name (axlDtdElement * element)
+{
+	axl_return_val_if_fail (element,  NULL);
+
+	return element->name;
+}
+
+/** 
+ * @brief Returns current element type for the provided \ref axlDtdElement.
+ * 
+ * @param element The axlDtdElement where its type will be returned.
+ * 
+ * @return Current element type for the provided node.
+ */
+AxlDtdElementType    axl_dtd_get_element_type (axlDtdElement * element)
+{
+	axl_return_val_if_fail (element, ELEMENT_TYPE_UNKNOWN);
+	
+	return element->type;
 }
 
 /** 
@@ -486,7 +615,7 @@ void       axl_dtd_element_free (axlDtdElement * element)
 	axl_free (element->name);
 
 	/* free element list definitions */
-	axl_list_free (element->list);
+	/* axl_list_free (element->list); */
 	
 	/* free element itself */
 	axl_free (element);
