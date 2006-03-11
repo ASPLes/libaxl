@@ -154,7 +154,7 @@ bool test_02 ()
 	}
 
 	/* destroy the stack */
-	axl_stack_destroy (stack);
+	axl_stack_free (stack);
 
 	return AXL_TRUE;
 }
