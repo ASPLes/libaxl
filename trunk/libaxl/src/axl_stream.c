@@ -101,7 +101,7 @@ struct _axlStream {
 	char   * last_get_following;
 
 	/* a reference to the associated element to this stream */
-	axlPointer * element_linked;
+	axlList * elements_linked;
 	
 	/*The function to execute when the element must be destroyed. */ 
 	axlDestroyFunc element_destroy;
@@ -831,6 +831,35 @@ char      * axl_stream_get_following   (axlStream * stream, int count)
 	return stream->last_get_following;
 }
 
+typedef struct _AxlStreamAssociatedData {
+	axlPointer       data;
+	axlDestroyFunc   destroy_func;
+}AxlStreamAssociatedData;
+
+
+/** 
+ * @internal
+ * 
+ * Internal deallocation function to reclaim memory used by the \ref
+ * AxlStreamAssociatedData.
+ * 
+ * @param data The data to be deallocated.
+ */
+void __stream_associated_data_free (AxlStreamAssociatedData * data)
+{
+	/* do nothing if NULL is received */
+	if (data == NULL)
+		return;
+
+	/* destroy associated data used provided destroy function */
+	if (data->destroy_func != NULL && data->data != NULL)
+		data->destroy_func (data->data);
+
+	/* now free the node it self */
+	axl_free (data);
+
+	return;
+}
 
 /** 
  * @internal
@@ -859,13 +888,23 @@ void        axl_stream_link            (axlStream  *   stream,
 					axlPointer     element,
 					axlDestroyFunc func)
 {
+	AxlStreamAssociatedData * data;
 	axl_return_if_fail (stream);
 	axl_return_if_fail (element);
 	axl_return_if_fail (func);
 	
 	/* that's all */
-	stream->element_linked  = element;
-	stream->element_destroy = func;
+	if (stream->elements_linked == NULL)
+		stream->elements_linked = axl_list_new (axl_list_always_return_1, 
+							(axlDestroyFunc) __stream_associated_data_free);
+
+	/* create the data to be stored */
+	data               = axl_new (AxlStreamAssociatedData, 1);
+	data->data         = element;
+	data->destroy_func = func;
+
+	/* add the item to be destroy once the stream is unrefered */
+	axl_list_add (stream->elements_linked, data);
 
 	return;
 }
@@ -879,12 +918,23 @@ void        axl_stream_link            (axlStream  *   stream,
  */
 void axl_stream_unlink (axlStream * stream)
 {
+	int                       iterator;
+	AxlStreamAssociatedData * data;
+
 	axl_return_if_fail (stream);
 	
 	/* clear document association */
-	stream->element_destroy = NULL;
-	stream->element_linked  = NULL;
-	
+	iterator = 0;
+	while (iterator < axl_list_length (stream->elements_linked)) {
+		/* get a referece to the node to destroy */
+		data = axl_list_get_nth (stream->elements_linked, iterator);
+		
+		/* clear it */
+		data->data         = NULL;
+		data->destroy_func = NULL;
+		
+		iterator++;
+	}
 	return;
 }
 
@@ -904,8 +954,8 @@ void axl_stream_free (axlStream * stream)
 	axl_free (stream->stream);
 
 	/* release associated document is defined. */
-	if (stream->element_linked) 
-		stream->element_destroy (stream->element_linked);
+	if (stream->elements_linked) 
+		axl_list_free (stream->elements_linked);
 
 	/* releaset last chunk */
 	if (stream->last_chunk != NULL)

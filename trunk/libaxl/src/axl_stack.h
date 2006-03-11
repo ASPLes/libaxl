@@ -61,7 +61,7 @@ int        axl_stack_size (axlStack * stack);
 
 bool       axl_stack_is_empty (axlStack * stack);
 
-void       axl_stack_destroy (axlStack * stack);
+void       axl_stack_free (axlStack * stack);
 
 /* @} */
 

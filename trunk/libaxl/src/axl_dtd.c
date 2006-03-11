@@ -43,8 +43,7 @@
 typedef enum {
 	CHOICE        = 1,
 	SEQUENCE      = 2,
-	LEAF_NODE     = 3,
-	LEAF_PCDATA   = 4
+	LEAF_NODE     = 3
 }AxlDtdNestedType;
 
 typedef struct _axlDtdElementList {
@@ -196,10 +195,49 @@ bool __axl_dtd_add_element (axlDtd * dtd, axlStream * stream, axlDtdElement * el
 	return AXL_TRUE;
 }
 
+/** 
+ * @internal
+ * 
+ * Internal support function which adds the provided content particule
+ * to the dtd item list received. It also perform all operations
+ * required for the chunk_matched option received.
+ *
+ * In the case the function fails to do its work, it will deallocate
+ * the stream, filling the error received.
+ */
+bool __axl_dtd_element_content_particule_add (axlDtdElementList  * dtd_item_list, 
+					      char               * string_aux, 
+					      int                  chunk_matched, 
+					      axlStream          * stream, 
+					      axlError          **error)
+{
+	
+	return AXL_FALSE;
+}
+
+
+/** 
+ * @internal
+ *
+ * Support function which reads current <!ELEMENT specification,
+ * configuring it to the received axlDtdElement.
+ * 
+ * @param stream The stream where the axlDtdElement spec will be read.
+ *
+ * @param dtd_element The axlDtdElement that will receive the content
+ * spec.
+ *
+ * @param error An optional \ref axlError, where errors will be
+ * reported.
+ * 
+ * @return \ref AXL_TRUE if the content spec was properly read or \ref
+ * AXL_FALSE if not.
+ */
 bool __axl_dtd_read_element_spec (axlStream * stream, axlDtdElement * dtd_element, axlError ** error)
 {
 	char              * string_aux;
-	int                 matched_chunk = -1;
+	
+	int                 chunk_matched = -1;
 	axlStack          * dtd_item_stack;
 	axlDtdElementList * dtd_item_list;
 	
@@ -207,75 +245,69 @@ bool __axl_dtd_read_element_spec (axlStream * stream, axlDtdElement * dtd_elemen
 	 * the current context for the items read for
 	 * the xml DTD especification (pd, pd2, (pr|po), ..) */
 	dtd_item_stack = axl_stack_new (NULL);
+
+	/* create the DTD item list */
+	dtd_item_list       = axl_new (axlDtdElementList, 1);
+	dtd_item_list->type = LEAF_NODE; /* by default all elements are
+					  * considered LEAF_NODE */
+
+	/* set the content spec list to the dtd element read */
+	dtd_element->list = dtd_item_list;
+	   
+	
+	/* associate data create to the life time of the stream */
+	axl_stream_link (stream, dtd_item_list,  (axlDestroyFunc) axl_dtd_element_free);
+	axl_stream_link (stream, dtd_item_stack, (axlDestroyFunc) axl_stack_free);
+
+	/* push the item created */
+	axl_stack_push (dtd_item_stack, dtd_item_list);
 	
 	/* consume previous white spaces */
 	AXL_CONSUME_SPACES (stream);
-	
-	/* check if the following character is the ( */
-	if (! (axl_stream_inspect (stream, "(") > 0)) {
-		axl_error_new (-1, "Expected to find a ELEMENT TYPE definition (, but it wasn't found",
-			       stream, error);
-		axl_stream_free (stream);
-		return AXL_FALSE;
-	}
-	
-	/* now read the next node identifier */
-	string_aux = axl_stream_get_until (stream, NULL, &matched_chunk, AXL_TRUE, 3, 
-					   " )", " ,", " |", 
-					   ")", ",", "|", 
-					   " ", "(", ">");
-	if (string_aux == NULL) {
-		axl_error_new (-1, "Unable to find ELEMENT type declaration definition",
-			       stream, error);
-		axl_stream_free (stream);
-		return AXL_FALSE;
-	}
-	
-	/* create the DTD item list */
-	dtd_item_list       = axl_new (axlDtdElementList, 1);
-	
-	/* push the item created */
-	axl_stack_push (dtd_item_stack, dtd_item_list);
 
-	switch (matched_chunk) {
-	case 0:
-	case 3:
-		/* matched the " )" or ")" chunk */
-		if ((dtd_item_list->itemList == NULL) && 
-		    (dtd_item_list->leaf == NULL)) {
-			/* copy default value */
-			dtd_item_list->leaf = axl_strdup (string_aux);
-		}
-		/* try to pop to previous element */
-		
-		break;
-	case 1:
-	case 4:
-		/* matched the " ," or "," chunk */
-		break;
-	case 2:
-	case 5:
-		/* matchedc the " |" chunk */
-		break;
-	case 6:
-		/* matched the "," chunk */
-		break;
-	case 7:
-		/* consume white spaces */
+	/* check that the content specification have an ( */
+	if (! (axl_stream_inspect (stream, "("))) {
+		axl_error_new (-1, "Expected to find a element content specification opener \"(\", but it wasn't found",
+			       stream, error);
+		axl_stream_free (stream);
+		return AXL_FALSE;
+	}
+	
+	do {
+		/* consume previous white spaces */
 		AXL_CONSUME_SPACES (stream);
-		break;
-	case 8:
-		/* check for a properly initialized DTD element type definition */
-		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "matched element: %d, %s", matched_chunk, string_aux);
-		axl_error_new (-1, "Unable to find ELEMENT type declaration definition begin(...)>",
+		
+		/* read the spec particule */
+		string_aux = axl_stream_get_until (stream, NULL, &chunk_matched, AXL_TRUE, 4, " ", ",", "|", ")");
+		
+		if (string_aux == NULL) {
+			axl_error_new (-1, "Expected to find a element content specification particule, but it wasn't found",
+				       stream, error);
+			axl_stream_free (stream);
+			return AXL_FALSE;
+		}
+		
+		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found content spec particule: %s", string_aux);
+		
+		/* add the content particule found */
+		if (!__axl_dtd_element_content_particule_add (dtd_item_list, string_aux, chunk_matched, stream, error))
+			return AXL_FALSE;
+		
+		/* check if we have finished */
+	} while (chunk_matched == 3);
+		
+	/* consume previous white spaces */
+	AXL_CONSUME_SPACES (stream);
+
+	/* check that the content specification have an > */
+	if (! (axl_stream_inspect (stream, ">"))) {
+		axl_error_new (-1, "Expected to find a element content specification opener \"(\", but it wasn't found",
 			       stream, error);
 		axl_stream_free (stream);
 		return AXL_FALSE;
 	}
-	
-	/* save particule data */
-	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "find content particule: %s", string_aux);
 
+	/* content spec readed properly */
 	return AXL_TRUE;
 }
 

@@ -204,7 +204,7 @@ bool       axl_stack_is_empty (axlStack * stack)
  * 
  * @param stack The stack to destroy.
  */
-void       axl_stack_destroy (axlStack * stack)
+void       axl_stack_free (axlStack * stack)
 {
 	axl_return_if_fail (stack);
 

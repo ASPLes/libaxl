@@ -1644,7 +1644,7 @@ void     axl_doc_free         (axlDoc * doc)
 
 	/* free node hierarchy */
 	if (doc->parentNode != NULL)
-		axl_stack_destroy (doc->parentNode);
+		axl_stack_free (doc->parentNode);
 
 	/* free pi targets read */
 	if (doc->piTargets != NULL)
