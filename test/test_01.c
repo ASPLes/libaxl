@@ -2,6 +2,30 @@
 #include <stdio.h>
 
 /** 
+ * @brief Perform a loading for a large file.
+ * 
+ * @param error The optional axlError to be used to report errors.
+ * 
+ * @return AXL_TRUE if the validity test is passed, AXL_FALSE if not.
+ */
+bool test_08 (axlError ** error)
+{
+	/* top level definitions */
+	axlDoc            * doc = NULL;
+
+	/* get current doc reference */
+	doc = axl_doc_parse_from_file ("large.xml", error);
+	if (doc == NULL)
+		return AXL_FALSE;
+
+	/* release the document */
+	axl_doc_free (doc);
+
+	return AXL_TRUE;
+}
+
+
+/** 
  * @brief A bit more complex DTD parsing checkings
  * 
  * @param error The optional axlError to be used to report errors.
@@ -28,7 +52,7 @@ bool test_07 (axlError ** error)
 	if (! axl_dtd_validate (doc, dtd, error)) {
 		return  AXL_FALSE;
 	}
-
+	
 	
 	/* free document */
 	axl_doc_free (doc);
@@ -94,6 +118,12 @@ bool test_06 (axlError ** error)
 		return AXL_FALSE;
 	}
 
+	/* get times configuration */
+	if (axl_dtd_item_list_repeat (itemList) != ONE_AND_ONLY_ONE) {
+		axl_error_new (-1, "Expected to receive a repetition configuration (one and only one) but not found", NULL, error);
+		return AXL_FALSE;
+	}
+
 	/* get the child node reference */
 	itemNode = axl_dtd_item_list_get_node (itemList, 0);
 	if (! axl_cmp (axl_dtd_item_node_get_value (itemNode), "data")) {
@@ -138,6 +168,14 @@ bool test_06 (axlError ** error)
 		axl_error_new (-1, "Expected to receive an item node (column) but, not found", NULL, error);
 		return AXL_FALSE;
 	}
+
+	/* get current configuration for repetition value for the
+	 * provided content particule */
+	if (axl_dtd_item_node_get_repeat (itemNode) != ONE_AND_ONLY_ONE) {
+		axl_error_new (-1, "Expected to receive an item node repeat configuration but, not found", NULL, error);
+		return AXL_FALSE;
+	}
+		
 
 	/* get the child node reference */
 	itemNode = axl_dtd_item_list_get_node (itemList, 2);
@@ -629,6 +667,15 @@ int main (int argc, char ** argv)
 		printf ("Test 07: DTD validation (I) [   OK   ]\n");
 	else {
 		printf ("Test 07: DTD validation (I) [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}	
+
+	if (test_08 (&error)) 
+		printf ("Test 08: Large XML file loading [   OK   ]\n");
+	else {
+		printf ("Test 08: Large XML file loading [ FAILED ]\n  (CODE: %d) %s\n",
 			axl_error_get_code (error), axl_error_get (error));
 		axl_error_free (error);
 		return -1;

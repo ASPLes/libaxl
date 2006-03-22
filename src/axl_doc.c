@@ -593,7 +593,7 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 	if (calling_node != NULL)
 		*calling_node = node;
 
-	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "node found: %s", string_aux);
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "node found: [%s]", string_aux);
 
 	/* know, until the node ends, we have to find the node
 	 * attributes or the node defintion end */
@@ -616,7 +616,8 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 			axl_node_set_is_empty (node, AXL_TRUE);
 			axl_node_set_have_childs (node, AXL_FALSE);
 
-			/* make this node to be complated and no child could be set. */
+			/* make this node to be completed and no child
+			 * could be set. */
 			axl_doc_pop_current_parent (doc);
 			return AXL_TRUE;
 		}
@@ -632,7 +633,8 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 		if ((matched_chunk == 2) ||
 		    (matched_chunk == 3) ||
 		    axl_stream_inspect_several (stream, 2, " >", ">") > 0) {
-			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found end xml node definition '>'");
+			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found [end] xml node definition '>', for node: [%s]",
+				 axl_node_get_name (node));
 			axl_node_set_have_childs (node, AXL_TRUE);
 			/* this node is ended */
 			return AXL_TRUE;
@@ -644,13 +646,13 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 		/* found attribute declaration, try to read it */
 		string_aux = axl_stream_get_until (stream, NULL, NULL, AXL_TRUE, 3, "='", "=\"", "=");
 		if (string_aux != NULL) {
-			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "attribute found: %s", string_aux);
+			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "attribute found: [%s]", string_aux);
 			/* copy attribute found */
 			string_aux = axl_strdup (string_aux);
 
 			/* now get the attribute value */
-			string_aux2 = axl_stream_get_until (stream, NULL, NULL, AXL_TRUE, 5, "' ", "\" ", "'", "\"", " ");
-			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "value found: %s", string_aux2);
+			string_aux2 = axl_stream_get_until (stream, NULL, NULL, AXL_TRUE, 4, "' ", "\" ", "'", "\"");
+			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "value found: [%s]", string_aux2);
 
 			/* set a new attribute for the given node */
 			axl_node_set_attribute (node, string_aux, string_aux2);
@@ -664,7 +666,6 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 			
 			continue;
 		}
-			
 
 		/* do not iterate for ever */
 		if (iterator == 3) {
@@ -780,7 +781,8 @@ axlDoc * __axl_doc_parse_common (char * entity, int entity_size,
 
 			/* get current index */
 			index = axl_stream_get_index (stream);
-			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "current index: %d", index);
+			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "current index: %d (global: %d)", index,
+				 axl_stream_get_global_index (stream));
 
 			/* consume a possible comment */
 			if (! axl_doc_consume_comments (doc, stream, error))
@@ -838,11 +840,14 @@ axlDoc * __axl_doc_parse_common (char * entity, int entity_size,
 			
 			/* restore index position previous to the axl
 			 * space consuming */
-			axl_stream_move (stream, index);
-			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "before restoring index: %d", index);
+			if (axl_stream_get_index (stream) > index) {
+				axl_stream_move (stream, index);
+				axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "before restoring index: %d", index);
+			}else {
+				axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "not updating current index: %d <= %d", index,
+					 axl_stream_get_index (stream));
+			}
 			
-			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "seems that xml node content was found, while reading -->'%s'",
-				 axl_stream_get_following (stream, 20));
 			/* found node content */
 			chunk_matched = 0;
 			string = axl_stream_get_until (stream, NULL, &chunk_matched, AXL_FALSE, 3, "</", "<", ">");
@@ -855,6 +860,9 @@ axlDoc * __axl_doc_parse_common (char * entity, int entity_size,
 
 			/* check for a not properly formed xml document */
 			if (chunk_matched == 2) {
+				axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "while reading content for <%s>, found closing definition '>' while expected '<', current stream status: %s",
+					 axl_node_get_name (node),
+					 axl_stream_get_following (stream, 20));
 				axl_error_new (-1, "found a closing node definition '>' were expected '<' or '</'", stream, error);
 				axl_stream_free (stream);
 				return NULL;

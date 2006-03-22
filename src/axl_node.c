@@ -524,6 +524,9 @@ void      axl_node_set_child (axlNode * parent, axlNode * child)
 
 /** 
  * @brief Allows to configure that the given node have child nodes.
+ *
+ * <b>DEPRECATED:</b> The function doesn't perform any operation. See
+ * \ref axl_node_have_childs.
  * 
  * @param node The node to configure.
  *
@@ -532,9 +535,7 @@ void      axl_node_set_child (axlNode * parent, axlNode * child)
  */
 void      axl_node_set_have_childs (axlNode * node, bool childs)
 {
-	axl_return_if_fail (node);
-
-	node->have_childs = childs;
+	/* */
 	return;
 }
 
@@ -557,7 +558,7 @@ bool      axl_node_have_childs        (axlNode * node)
 	axl_return_val_if_fail (node, AXL_FALSE);
 	
 	/* return current configuration */
-	return node->have_childs;
+	return (axl_list_length (node->childs) > 0);
 }
 
 /** 
@@ -595,6 +596,28 @@ axlNode * axl_node_get_child_called   (axlNode * parent, char * name)
 
 	/* no child was found */
 	return NULL;
+}
+
+/** 
+ * @brief Allows to get the child that is located at the given
+ * position, for the given parent node.
+ *
+ * @param parent The parent node where the child will be looked up.
+ *
+ * @param position The position where the child will be looked up. The
+ * values for the position ranges from 0 up to (N - 1).
+ * 
+ * @return A reference to the child node \ref axlNode or NULL if fails. 
+ */
+axlNode * axl_node_get_child_nth      (axlNode * parent, int position)
+{
+	/* perform some environment checks */
+	axl_return_val_if_fail (parent, 
+				NULL);
+	axl_return_val_if_fail (position >= 0 && position < axl_list_length (parent->childs),
+				NULL);
+
+	return axl_list_get_nth (parent->childs, position);
 }
 
 /** 

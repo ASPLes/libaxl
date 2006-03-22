@@ -202,15 +202,12 @@ void      axl_list_add    (axlList * list, axlPointer pointer)
 	
 	/* check basic case */
 	if (list->first_node == NULL) {
-		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "adding first element to the list");
 		list->first_node = new_node;
 		list->last_node  = new_node;
 		list->length     = 1;
 		return;
 	}
 	
-	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "adding element to the list");
-
 	/* complex case */
 	node  = list->first_node;
 	node2 = list->last_node;
@@ -221,7 +218,6 @@ void      axl_list_add    (axlList * list, axlPointer pointer)
 		if (node != NULL) {
 			switch (list->are_equal (node->data, pointer)) {
 			case -1:
-				axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "adding data due to header lookup");
 				/* the node should be added before node  */
 				new_node->next     = node;
 				new_node->previous = node->previous;
@@ -261,7 +257,6 @@ void      axl_list_add    (axlList * list, axlPointer pointer)
 				/* the node found is equal, do not perform any operation */
 				return;
 			case 1:
-				axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "adding data due to tail lookup");
 				/* the node should be added after */
 				new_node->previous = node2;
 				new_node->next     = node2->next;
@@ -321,7 +316,6 @@ axlListNode * axl_list_internal_lookup (axlList * list, axlPointer pointer)
 				 */
 				return NULL;
 			case 0:
-				axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found data due to header lookup");
 				return node;
 			case 1:
 				/* the node should be after this one */
@@ -338,7 +332,6 @@ axlListNode * axl_list_internal_lookup (axlList * list, axlPointer pointer)
 				node2 = node2->next;
 				break;
 			case 0:
-				axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found data due to tail lookup");
 				return node2;
 			case 1:
 			default:
@@ -412,12 +405,10 @@ void     axl_list_common_remove (axlList * list, axlPointer pointer, bool alsoRe
 	/* complex case */
 	node  = axl_list_internal_lookup (list, pointer);
 	if (node == NULL) {
-		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "nothing to remove, element not found");
 		return;
 	}
 
 	
-	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "removing data");
 	/* the node found is equal, remove it */
 	if (node->previous == NULL)
 		list->first_node = node->next;

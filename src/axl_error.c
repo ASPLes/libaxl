@@ -83,9 +83,10 @@ void axl_error_new (int code, char * error_code, axlStream * stream, axlError **
 	if (stream == NULL)
 		error->error      = axl_stream_strdup_printf ("Error found: %s\n", error_code);
 	else
-		error->error      = axl_stream_strdup_printf ("Error found (stream size: %d, at byte %d, near to ...%s..., while reading: %s): %s\n", 
+		error->error      = axl_stream_strdup_printf ("Error found (stream size: %d, at byte %d (global index: %d), near to ...%s..., while reading: %s): %s\n", 
 							      axl_stream_get_size (stream),
 							      axl_stream_get_index (stream),
+							      axl_stream_get_global_index (stream),
 							      axl_stream_get_near_to (stream, 10),
 							      axl_stream_get_following (stream, 10),
 							      error_code);

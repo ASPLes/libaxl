@@ -41,8 +41,9 @@
 #define LOG_DOMAIN "axl-dtd"
 
 struct _axlDtdElementListNode {
-	NodeType   type;
-	axlPointer data;
+	NodeType     type;
+	AxlDtdTimes  times;
+	axlPointer   data;
 };
 
 struct _axlDtdElementList {
@@ -383,6 +384,8 @@ bool __axl_dtd_add_element (axlDtd * dtd, axlDtdElement * element,
 	while (iterator < axl_list_length (dtd->elements)) {
 		dtd_element_aux = axl_list_get_nth (dtd->elements, iterator);
 		if (axl_cmp (dtd_element_aux->name, element->name)) {
+			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "DTD element for <%s> == <%s> was defined twice", 
+				 dtd_element_aux->name, element->name);
 			axl_error_new (-1, "Find that an DTD element was defined twice (no more than one time is allowed)", 
 				       stream, error);
 			axl_stream_free (stream);
@@ -435,7 +438,11 @@ bool __axl_dtd_element_content_particule_add (axlDtdElementList  * dtd_item_list
 	/* check if the have matched a white space: next check is
 	 * based on the call to axl_stream_get_until at the caller
 	 * function */
-	if (chunk_matched == 0) {
+	if (chunk_matched == 0 ||  /* " " */
+	    chunk_matched == 4 ||  /* "+" */
+	    chunk_matched == 5 ||  /* "*" */
+	    chunk_matched == 6)    /* "?" */
+	{
 		/* consume previous white spaces */
 		AXL_CONSUME_SPACES (stream);
 		
@@ -456,6 +463,25 @@ bool __axl_dtd_element_content_particule_add (axlDtdElementList  * dtd_item_list
 		}
 	}
 
+	/* set configuration for item repetition */
+	switch (chunk_matched) {
+	case 4:
+		/* one or many times */
+		node->times = ONE_OR_MANY;
+		break;
+	case 5:
+		/* zero or many times */
+		node->times = ZERO_OR_MANY;
+		break;
+	case 6:
+		/* zero or one time */
+		node->times = ZERO_OR_ONE;
+		break;
+	default:
+		/* one and only one time */
+		node->times = ONE_AND_ONLY_ONE;
+	}
+
 	/* set current sequence type accoring to separators used */
 	switch (chunk_matched) {
 	case 1:
@@ -470,6 +496,40 @@ bool __axl_dtd_element_content_particule_add (axlDtdElementList  * dtd_item_list
 	return AXL_TRUE;
 }
 
+
+/** 
+ * @internal
+ * 
+ * @brief Support function which allows to get current repetition
+ * configuration.
+ * 
+ * @param stream The stream where the operation will be performed.
+ * 
+ * @return Current configuration read, the function will properly work
+ * if it is called when it is espected to find a content specification
+ * repetition. If not found, the \ref ONE_AND_ONLY_ONE is returned.
+ */
+AxlDtdTimes __axl_dtd_get_repetition_conf (axlStream * stream)
+{
+	axl_return_val_if_fail (stream, ONE_AND_ONLY_ONE);
+
+	if (axl_stream_inspect (stream, "?") > 0) {
+		/* seems the content specification could appear zero
+		 * or one time */
+		return ZERO_OR_ONE;
+	} else if (axl_stream_inspect (stream, "+") > 0) {
+		/* seems the content specification must appear one up
+		 * to many */
+		return ONE_OR_MANY;
+	} else if (axl_stream_inspect (stream, "*") > 0) {
+		/* seems the content specification could appear zero
+		 * up to many */
+		return ZERO_OR_MANY;
+	} 
+
+	/* the content specification must appear */
+	return ONE_AND_ONLY_ONE;
+}
 
 /** 
  * @internal
@@ -529,7 +589,11 @@ bool __axl_dtd_read_element_spec (axlStream * stream, axlDtdElement * dtd_elemen
 		AXL_CONSUME_SPACES (stream);
 		
 		/* read the spec particule */
-		string_aux = axl_stream_get_until (stream, NULL, &chunk_matched, AXL_TRUE, 4, " ", ",", "|", ")");
+		string_aux = axl_stream_get_until (stream, NULL, &chunk_matched, AXL_TRUE, 4, 
+						   /* basic, default delimiters: 0, 1, 2, 3 */
+						   " ", ",", "|", ")", 
+						   /* repetition configuration: 4, 5, 6 */
+						   "+", "*", "?");
 		
 		if (string_aux == NULL) {
 			axl_error_new (-1, "Expected to find a element content specification particule, but it wasn't found",
@@ -570,6 +634,9 @@ bool __axl_dtd_read_element_spec (axlStream * stream, axlDtdElement * dtd_elemen
 	/* consume previous white spaces */
 	AXL_CONSUME_SPACES (stream);
 
+	/* read here repetition specification */
+	dtd_item_list->times = __axl_dtd_get_repetition_conf (stream);
+		
 	/* free the stack used */
 	axl_stack_free (dtd_item_stack);
 
@@ -780,6 +847,178 @@ axlDtd   * axl_dtd_parse_from_file (char * file_path,
 	return __axl_dtd_parse_common (NULL, -1, file_path, -1, error);
 }
 
+
+/** 
+ * @internal
+ * 
+ * Support function for axl_dtd_validate which checks if the provided
+ * parent have its childs configuration according to the values
+ * expresed on the sequenced represented by the itemList.
+ *
+ * The function return AXL_TRUE if the validation was ok, or AXL_FALSE
+ * if something have failed. It also creates an error, using the
+ * optional axlError reference received.
+ */
+bool __axl_dtd_validate_sequence (axlNode           * parent, 
+				  axlDtdElementList * itemList, 
+				  axlError ** error)
+{
+	int                      iterator = 0;
+	axlNode                * node;
+	axlDtdElementListNode  * itemNode;
+
+	axl_return_val_if_fail (parent, AXL_FALSE);
+	axl_return_val_if_fail (itemList, AXL_FALSE);
+
+	/* iterate over the sequence, checking its order */
+	while (iterator < axl_dtd_item_list_count (itemList)) {
+		
+		/* get the item node specification */
+		itemNode = axl_dtd_item_list_get_node (itemList, iterator);
+
+		/* get the node that is located at the same position
+		 * than the sequence */
+		node     = axl_node_get_child_nth (parent, iterator);
+		
+		/* check node type */
+		if (axl_dtd_item_node_get_type (itemNode) != NODE) {
+			axl_error_new (-1, "Expected to find an item node to validate current sequence type but found a complex structure",
+				       NULL, error);
+			return AXL_FALSE;
+		}
+
+		/* check the name against the spec */
+		if (! NODE_CMP_NAME (node, axl_dtd_item_node_get_value (itemNode))) {
+			axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "Found different node (<%s>) for a sequence expected (<%s>)",
+				 axl_node_get_name (node), axl_dtd_item_node_get_value (itemNode));
+			axl_error_new (-1, "Found a different node, inside a sequence, than the sequence especification (DTD)",
+				       NULL, error);
+			return AXL_FALSE;
+		}
+
+		/* update iterator index */
+		iterator++;
+	}
+
+	/* return that the sequence has been validated */
+	return AXL_TRUE;
+}
+
+/** 
+ * @internal
+ *
+ * Support function validate parent nodes which are element type
+ * children ones.
+ */
+bool __axl_dtd_validte_element_type_children (axlDtdElement  * element, 
+					      axlNode        * parent, 
+					      axlStack       * stack,
+					      axlError      ** error)
+{
+	axlDtdElementList * itemList;
+
+	itemList = axl_dtd_get_item_list (element);
+	
+	switch (axl_dtd_item_list_repeat (itemList)) {
+	case ONE_AND_ONLY_ONE:
+		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "  found a (one and only one) spec..");
+		if (axl_dtd_item_list_type (itemList) == SEQUENCE) {
+			
+			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "    using a SEQUENCE form");
+			
+			/* it is a choice, so the item list specifies
+			 * the nodes that could appear */
+			if (!__axl_dtd_validate_sequence (parent, itemList, error)) {
+				/* free stack allocated */
+				axl_stack_free (stack);
+				return AXL_FALSE;
+			}
+		}else {
+			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "    using a CHOICE form");
+			/* it is a sequence, so, item list
+			 * specification represents the nodes,
+			 * in the order they must appear */
+		}
+		break;
+	case ZERO_OR_ONE:
+		break;
+	case ZERO_OR_MANY:
+		
+		break;
+	case ONE_OR_MANY:
+		break;
+	default:
+		/* this case will never be reached */
+		break;
+	}
+
+	/* element type children validated */
+	return AXL_TRUE;
+}
+
+/** 
+ * @internal
+ * Internal support function to validate #PCDATA nodes.
+ */
+bool __axl_dtd_validate_element_type_pcdata (axlDtdElement  * element, 
+					     axlNode        * parent, 
+					     axlStack       * stack, 
+					     axlError      ** error)
+{
+	/* check for childs */
+	if (axl_node_have_childs (parent)) {
+		axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "node <%s> should be #PCDATA and it contains childs",
+			 axl_node_get_name (parent));
+		axl_error_new (-1, 
+			       "Found a node for which its espeficiation makes it to be a node with only data and no childs, and it currently contains childs",
+			       NULL, error);
+		axl_stack_free (stack);
+		return AXL_FALSE;
+	}
+
+	/* check for emptyness */
+	if (axl_node_is_empty (parent)) {
+		axl_error_new (-1, 
+			       "Found a node for which its espeficiation makes it to be a node with only data and no childs, and it is empty",
+			       NULL, error);
+		axl_stack_free (stack);
+		return AXL_FALSE;
+	}
+	
+	/* return that the validation was ok */
+	return AXL_TRUE;
+}
+
+/** 
+ * @internal
+ * 
+ * Support function to validate empty nodes.
+ */
+bool __axl_dtd_validate_element_type_empty (axlDtdElement  * element,
+					    axlNode        * parent,
+					    axlStack       * stack,
+					    axlError      ** error)
+{
+	/* check the node is indeed, empty */
+	if (! axl_node_is_empty (parent)) {
+		axl_error_new (-1, "Found a node that it is especified that must be empty, but it isn't",
+			       NULL, error);
+		axl_stack_free (stack);
+		return AXL_FALSE;
+	}
+
+	/* check the node doesn't have childs */
+	if (axl_node_have_childs (parent)) {
+		axl_error_new (-1, "Found a node that it is especified that must be empty, but it has childs",
+			       NULL, error);
+		axl_stack_free (stack);
+		return AXL_FALSE;
+	}
+	
+	/* return that the validation was ok */
+	return AXL_TRUE;
+}
+
 /** 
  * @brief Allows to validate the given XML document (\ref axlDoc)
  * against the given document type definition (DTD, \ref axlDtd).
@@ -805,23 +1044,25 @@ axlDtd   * axl_dtd_parse_from_file (char * file_path,
 bool       axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 				    axlError ** error)
 {
-	axlNode       * node;
-	axlList       * childs;
-	axlStack      * stack;
-	axlDtdElement * element;
+	axlNode            * parent;
+	axlList            * childs;
+	axlStack           * stack;
+	axlDtdElement      * element;
 	
 	/* perform some checkings */
 	axl_return_val_if_fail (doc, AXL_FALSE);
 	axl_return_val_if_fail (dtd, AXL_FALSE);
 
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "starting DTD validation");
+
 	/* validate the very first root node */
-	node    = axl_doc_get_root (doc);
+	parent  = axl_doc_get_root (doc);
 	element = axl_dtd_get_root (dtd);
-	if (! NODE_CMP_NAME (node, axl_dtd_get_element_name (element))) {
+	if (! NODE_CMP_NAME (parent, axl_dtd_get_element_name (element))) {
 
 		/* because a DTD document could have several top level
 		 * elements, ensure this is not the case */
-		element = axl_dtd_get_element (dtd, axl_node_get_name (node));
+		element = axl_dtd_get_element (dtd, axl_node_get_name (parent));
 		if (element == NULL  || ! axl_dtd_element_is_toplevel (dtd, element)) {
 			/* root node doesn't match */
 			axl_error_new (-1, "Found that root node doesn't match!", NULL, error);
@@ -833,29 +1074,103 @@ bool       axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 	/* check empty content spec */
 	if (axl_dtd_get_element_type (element) == ELEMENT_TYPE_EMPTY) {
 		/* check if the document provided have only one node */
-		return axl_node_is_empty (node) && !axl_node_have_childs (node);
+		return axl_node_is_empty (parent) && !axl_node_have_childs (parent);
 	}
 
-	/* perform a validation iteration over all elements */
-	childs = axl_node_get_childs (node);
+
 
 	/* queue initial nodes to validate */
 	stack  = axl_stack_new (NULL);
-	__axl_dtd_queue_items (stack, childs);
 
 	do {
-		/* get a referene to the xml node */
-		node = axl_stack_pop ();
-
 		
+		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "doing a DTD iteration: <%s>...",
+			 axl_node_get_name (parent));
+		/* reach this position, the <parent> reference contains
+		 * a reference to the parent node, which will be used
+		 * to validate current child content against current
+		 * configuration for dtd element constraining it.
+		 * 
+		 * equally, the <element> reference contains a dtd
+		 * reference to the already checked DTD element which
+		 * configure this parent node. */
+		switch (axl_dtd_get_element_type (element)) {
+		case ELEMENT_TYPE_PCDATA:
+			/* ok, a leaf node was found, know it is
+			 * required to check that the node doesn't
+			 * have more childs and only have content,
+			 * that is, it is not empty  */
+			if (!__axl_dtd_validate_element_type_pcdata (element, parent, stack, error))
+				return AXL_FALSE;
+			break;
+		case ELEMENT_TYPE_CHILDREN:
+			/* ok, a parent node that have childs */
+			if (!__axl_dtd_validte_element_type_children (element, parent, stack, error))
+				return AXL_FALSE;
+			break;
+		case ELEMENT_TYPE_EMPTY:
+			/* the element especification is empty, the
+			 * node being validated must also be the
+			 * same */
+			if (!__axl_dtd_validate_element_type_empty (element, parent, stack, error))
+				return AXL_FALSE;
+			break;
+		case ELEMENT_TYPE_ANY:
+			/* the anything is allowed cased from this
+			 * parent node. */
+			goto continue_with_validation;
+		case ELEMENT_TYPE_MIXED:
+			/* the mixed case, where nodes and PC data
+			 * could be mixed */
+			break;
+		default:
+			/* do not do any thing on this case */
+			break;
+		}
+			
+		/* queue more childs, as future parents to be
+		 * validated on the provided queue, only in the case
+		 * the parent node have childs */
+		if (axl_node_have_childs (parent)) {
+			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "    parent node <%s> have childs, adding its parents",
+				 axl_node_get_name (parent));
+			childs = axl_node_get_childs (parent);
+			
+			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "    parent node <%s> childs: %d",
+				 axl_node_get_name (parent), axl_list_length (childs));
+			__axl_dtd_queue_items (stack, childs);
+		}
+		
+		/* set the parent reference to NULL */
+		parent = NULL;
+			
+		/* update the reference to the new parent node, only
+		 * if there are new parents on the stack */
+	continue_with_validation:
+		if (! axl_stack_is_empty (stack)) {
+
+
+			/* get a new reference */
+			parent  = axl_stack_pop (stack);
+			
+			/* get a reference to the DTD element to used */
+			element = axl_dtd_get_element (dtd, axl_node_get_name (parent));
+			if (element == NULL) {
+				axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "found that the node <%s> doesn't have DTD especification", 
+					 axl_node_get_name (parent));
+				axl_error_new (-1, "Found a node that doesn't have a DTD element espefication to validate it, DTD validation failed", NULL, error);
+				axl_stack_free (stack);
+				return AXL_FALSE;
+			}
+		}
 		
 		/* until the stack is empty */
-	}while (! axl_stack_is_empty (stack));
+	}while (parent != NULL);
 
 	/* deallocate stack used */
 	axl_stack_free (stack);
-	
 
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "DTD validation, ok");
 
 	/* the document is valid */
 	return AXL_TRUE;
@@ -1034,7 +1349,7 @@ int                  axl_dtd_item_list_count  (axlDtdElementList * itemList)
 }
 
 /** 
- * @brief Alllows to get current configuration for the provided item
+ * @brie Allows to get current configuration for the provided item
  * list, which is the content specification for a DTD element.
  * 
  * @param itemList The item list where the operation will be
@@ -1047,6 +1362,23 @@ AxlDtdNestedType     axl_dtd_item_list_type   (axlDtdElementList * itemList)
 	axl_return_val_if_fail (itemList, -1);
 
 	return itemList->type;
+}
+
+/** 
+ * @brief Allows to get current configuration for DTD content spec
+ * repetition.
+ * 
+ * @param itemList The content spec where the query will be performed.
+ * 
+ * @return Current configuration for times to be repeated DTD element
+ * content specification.
+ */
+AxlDtdTimes          axl_dtd_item_list_repeat (axlDtdElementList * itemList)
+{
+	axl_return_val_if_fail (itemList, DTD_TIMES_UNKNOWN);
+
+	/* returns current times configuration */
+	return itemList->times;
 }
 
 /** 
@@ -1128,6 +1460,23 @@ char               * axl_dtd_item_node_get_value (axlDtdElementListNode * node)
 	axl_return_val_if_fail (node->type == NODE, NULL);
 
 	return node->data;
+}
+
+/** 
+ * @brief Allows to get current configuration for the provided content
+ * particule for the times to be repeated.
+ * 
+ * @param node The content particule where the query will be
+ * performed.
+ * 
+ * @return Return current repetition configuration. 
+ */
+AxlDtdTimes          axl_dtd_item_node_get_repeat (axlDtdElementListNode * node)
+{
+	axl_return_val_if_fail (node, DTD_TIMES_UNKNOWN);
+
+	/* return value requested */
+	return node->times;
 }
 
 /** 

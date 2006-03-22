@@ -188,10 +188,32 @@ typedef enum {
  * DTD declaration.
  */
 typedef enum {
+	/** 
+	 * @internal 
+	 *
+	 * Internal representation to identify wrong repetition
+	 * especification values.
+	 */
 	DTD_TIMES_UNKNOWN = 0,
+	/** 
+	 * Current configuration for DTD element content specification
+	 * signals that it must appear one and only one times.
+	 */
 	ONE_AND_ONLY_ONE  = 1,
-	ZERO_OF_ONE       = 2,
+	/** 
+	 * Current configuration for DTD element content specification
+	 * signals that it could appear zero or one time.
+	 */
+	ZERO_OR_ONE       = 2,
+	/** 
+	 * Current configuration for DTD element content specification
+	 * signals that it could appear zero up to many times.
+	 */
 	ZERO_OR_MANY      = 3,
+	/** 
+	 * Current configuration for DTD element content specification
+	 * signals that it must appear one up to many times.
+	 */
 	ONE_OR_MANY       = 4
 }AxlDtdTimes;
 
