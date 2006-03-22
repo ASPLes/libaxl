@@ -1,0 +1,15 @@
+<!-- a bit more complex dtd -->
+
+<!ELEMENT complex (data)>
+
+<!ELEMENT data (row, column, value) >
+
+<!ELEMENT column (xpos | ypos | zpos | axis-position) >
+
+<!ELEMENT row (td | pr) >
+
+<!ELEMENT td (#PCDATA) >
+
+<!ELEMENT pr (#PCDATA) >
+
+
