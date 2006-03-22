@@ -12,4 +12,8 @@
 
 <!ELEMENT pr (#PCDATA) >
 
+<!ELEMENT value (#PCDATA) >
+
+<!ELEMENT empty EMPTY>
+
 

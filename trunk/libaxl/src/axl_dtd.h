@@ -74,6 +74,8 @@ int                  axl_dtd_item_list_count  (axlDtdElementList * itemList);
 
 AxlDtdNestedType     axl_dtd_item_list_type   (axlDtdElementList * itemList);
 
+AxlDtdTimes          axl_dtd_item_list_repeat (axlDtdElementList * itemList); 
+
 axlDtdElementListNode * axl_dtd_item_list_get_node (axlDtdElementList * itemList, 
 						    int position);
 
@@ -82,6 +84,8 @@ NodeType             axl_dtd_item_node_get_type (axlDtdElementListNode * node);
 axlDtdElementList  * axl_dtd_item_node_get_list (axlDtdElementListNode * node);
 
 char               * axl_dtd_item_node_get_value (axlDtdElementListNode * node);
+
+AxlDtdTimes          axl_dtd_item_node_get_repeat (axlDtdElementListNode * node);
 
 
 
