@@ -618,6 +618,7 @@ char      * axl_stream_get_untilv      (axlStream * stream,
 	int          iterator = 0;
 	int          index    = 0;
 	int          length   = 0;
+	bool         matched;
 	
 	/* perform some environmental checks */
 	axl_return_val_if_fail (stream, NULL);
@@ -662,8 +663,17 @@ char      * axl_stream_get_untilv      (axlStream * stream,
 			/* get current length for the chunk to check */
 			length = (chunks [iterator] != NULL) ?  strlen (chunks [iterator]) : 0;
 
+			/* if we receive a white space " " as a
+			 * delimiter, we will also stop on white
+			 * spaces (in the sense defined at the XML
+			 * 1.0, that is \r \n \t " ". */
+			if (axl_cmp (chunks[iterator], " "))
+				matched = axl_stream_is_white_space (stream->stream + index + stream->stream_index);
+			else 
+ 				matched = !memcmp (chunks[iterator], stream->stream + index + stream->stream_index, length);
+
 			/* check if we have found the chunk we were looking */
-			if (!memcmp (chunks[iterator], stream->stream + index + stream->stream_index, length)) {
+			if (matched) {
 				
 				axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "chunk %s found at index %d, starting from %d",
 					 chunks[iterator], index, stream->stream_index);

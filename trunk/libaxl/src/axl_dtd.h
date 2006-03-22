@@ -55,17 +55,41 @@ axlDtd             * axl_dtd_parse_from_file  (char * file_path,
 					       axlError ** error);
 
 bool                 axl_dtd_validate         (axlDoc * doc, 
-					       axlDtd * dtd);
+					       axlDtd * dtd,
+					       axlError ** error);
 
 axlDtdElement      * axl_dtd_get_root         (axlDtd * dtd); 
+
+axlDtdElement      * axl_dtd_get_element      (axlDtd * dtd, char * name);
 
 char               * axl_dtd_get_element_name (axlDtdElement * element);
 
 AxlDtdElementType    axl_dtd_get_element_type (axlDtdElement * element);
 
+axlDtdElementList  * axl_dtd_get_item_list    (axlDtdElement * element);
+
+bool                 axl_dtd_element_is_toplevel (axlDtd * dtd, axlDtdElement * element);
+
+int                  axl_dtd_item_list_count  (axlDtdElementList * itemList);
+
+AxlDtdNestedType     axl_dtd_item_list_type   (axlDtdElementList * itemList);
+
+axlDtdElementListNode * axl_dtd_item_list_get_node (axlDtdElementList * itemList, 
+						    int position);
+
+NodeType             axl_dtd_item_node_get_type (axlDtdElementListNode * node);
+
+axlDtdElementList  * axl_dtd_item_node_get_list (axlDtdElementListNode * node);
+
+char               * axl_dtd_item_node_get_value (axlDtdElementListNode * node);
+
+
+
 void                 axl_dtd_free             (axlDtd * dtd);
 
 void                 axl_dtd_element_free     (axlDtdElement * element);
+
+void                 axl_dtd_item_list_free   (axlDtdElementList * list);
 
 /* @} */
 

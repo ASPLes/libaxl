@@ -144,10 +144,11 @@ axlList * axl_list_new    (axlEqualFunc are_equal, axlDestroyFunc destroy_data)
  */
 int      axl_list_equal_string (axlPointer a, axlPointer b)
 {
+	int length = strlen (a);
 	axl_return_val_if_fail (a, 1);
 	axl_return_val_if_fail (b, 1);
 
-	int length = strlen (a);
+
 	if (axl_stream_cmp (a, b, length))
 		return 0;
 	return 1;
