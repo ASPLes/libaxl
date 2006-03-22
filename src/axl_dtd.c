@@ -40,13 +40,12 @@
 
 #define LOG_DOMAIN "axl-dtd"
 
-typedef enum {
-	CHOICE        = 1,
-	SEQUENCE      = 2,
-	LEAF_NODE     = 3
-}AxlDtdNestedType;
+struct _axlDtdElementListNode {
+	NodeType   type;
+	axlPointer data;
+};
 
-typedef struct _axlDtdElementList {
+struct _axlDtdElementList {
 	/** 
 	 * @brief Allows to configure how is given top level
 	 * configuration for nodes to be defined inside the xml
@@ -79,17 +78,7 @@ typedef struct _axlDtdElementList {
 	 * nodes, configuring elements allowed.
 	 */
 	axlList             * itemList;
-	
-	/**
-	 * @brief In the case this is a final node, or PCdata,
-	 * previous variable, itemList, is not used, to avoid creating
-	 * a complex structure that only contains one item. In fact,
-	 * leaf variable is also not used if the elementType if the
-	 * AxlDtdNestedType is PCDATA.
-	 */
-	char                * leaf;
-
-}axlDtdElementList;
+};
 
 struct _axlDtdElement {
 	/** 
@@ -137,6 +126,65 @@ struct _axlDtd {
 /** 
  * @internal
  *
+ * Allows to create a new dtd element list item, which represents a
+ * content particule inside an item list or a item list. This allows
+ * the recursion defined on the XML 1.0 standard.
+ *
+ * The function receives the node name and a reference list. According
+ * to the values the function creates a node which contains a leaf
+ * value or a node which contains a reference to the a new list which
+ * is nested.
+ */
+axlDtdElementListNode * __create_axl_dtd_element_list (char * node_name,
+						       axlDtdElementList * list)
+{
+	axlDtdElementListNode * node;
+
+	node = axl_new (axlDtdElementListNode, 1);
+
+	/* create a node element reference */
+	if (node_name != NULL) {
+		node->data = axl_strdup (node_name);
+		node->type = NODE;
+		return node;
+	}
+
+	/* create an element list reference */
+	if (list != NULL) {
+		node->data = list;
+		node->type = ELEMENT_LIST;
+	}
+
+	/* if another type is requested, return NULL */
+	return NULL;
+}
+
+/** 
+ * @internal
+ *
+ * Support function used to destroy all items stored on a item list.
+ * 
+ * @param node 
+ */
+void __destroy_axl_dtd_element_list (axlDtdElementListNode * node)
+{
+	if (node == NULL)
+		return;
+	/* free the reference to the leaf node if defined */
+	if (node->type == NODE)
+		axl_free (node->data);
+	/* do not do nothing if the reference is not element list */
+	if (node->type == ELEMENT_LIST)
+		axl_dtd_item_list_free (node->data);
+
+	/* free de node itself */
+	axl_free (node);
+	return;
+}
+
+/** 
+ * @internal
+ *
  * @brief Support function to \ref axl_dtd_parse which creates a new
  * empty DTD reference.
  * 
@@ -151,6 +199,158 @@ axlDtd * __axl_dtd_new ()
 	dtd->elements = axl_list_new (axl_list_always_return_1, (axlDestroyFunc) axl_dtd_element_free);
 
 	return dtd;
+}
+
+/** 
+ * @internal
+ *
+ * Support internal function which allows to queue all items inside an
+ * axlDtdElementList to be checked.
+ * 
+ * @param stack The stack where all data will be placed.
+ *
+ * @param dtd_element_list The dtd element list where the data will be
+ * extracted.
+ */
+void __axl_dtd_queue_items (axlStack * stack, axlList * list) 
+{
+	int                     iterator = 0;
+	axlPointer              data;
+	
+	while (iterator < axl_list_length (list)) {
+		data = axl_list_get_nth (list, iterator);
+		axl_stack_push (stack, data);
+		iterator++;
+	}
+	return;
+}
+
+/** 
+ * @internal
+ *
+ * Support function which allows to check if the provided two dtd
+ * elements are in fact, parent and child.
+ *
+ * DTD element have a parent-child relation based in the fact that the
+ * first define top level xml nodes that are followed, in the form of
+ * childs nodes, by other DTD elements that define more childs, etc...
+ *
+ * This function allows to check if the provided parent dtd element
+ * have references inside its content specification that proves that
+ * it is indeed a parent definition.
+ * 
+ * @param dtd_element_parent The supposed DTD parent element.
+ * @param dtd_element_child  The supposedd DTD child element.
+ * 
+ * @return AXL_TRUE if the function can confirm that the parent-child
+ * relation exists, AXL_FALSE if not or it could be proved.
+ */
+bool __axl_dtd_get_is_parent (axlDtdElement * dtd_element_parent,
+			      axlDtdElement * dtd_element_child)
+{
+	axlStack               * stack;
+	axlDtdElementListNode  * node;
+	axlDtdElementList      * list;
+
+	/* check for leaf nodes, that, by definition, could be a
+	 * parent of nothing. */
+	if (dtd_element_parent->list == NULL || dtd_element_parent->list->itemList == NULL) {
+		return AXL_FALSE;
+	}
+
+	/* prepare all elements inside the stack to be checked */
+	stack = axl_stack_new (NULL);
+	__axl_dtd_queue_items (stack, dtd_element_parent->list->itemList);
+	
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "stack size to operate: %d, list: %d", 
+		 axl_stack_size (stack),
+		 axl_list_length (dtd_element_parent->list->itemList));
+
+	/* now search for a content particule that makes are reference
+	 * to the child DTD element */
+	do {
+		node = axl_stack_pop (stack);
+		switch (node->type) {
+		case NODE:
+			/* leaf node case */
+			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found a leaf node, checking it");
+
+			/* seems this is a final node */
+			if (axl_cmp (node->data, dtd_element_child->name)) {
+				/* seems that the content
+				 * specification makes a reference to
+				 * the child node. */
+				axl_stack_free (stack);
+				return AXL_TRUE;
+			}
+			break;
+		case ELEMENT_LIST:
+			/* a nested list case */
+			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found a complex node queuing its internal elements, while checking parent=%s for child=%s",
+				 dtd_element_parent->name, dtd_element_child->name);
+			/* the item list read, is a complex value,
+			 * queue all items inside to be inspected */
+			list = node->data;
+			__axl_dtd_queue_items (stack, list->itemList);
+			break;
+		case NOT_DEFINED:
+			/* do nothing */
+			break;
+		}
+		
+		/* iterate until all elements are evaluated */
+	}while (! axl_stack_is_empty (stack));
+
+	/* deallocates no longer used stack */
+	axl_stack_free (stack);
+	
+	/* either it isn't the parent or it can't be proved. */
+	return AXL_FALSE;
+}
+
+
+/** 
+ * @internal
+ * 
+ * Support function which allows to get which is the most top root
+ * node for the provided set of DTD elements.
+ */
+axlDtdElement * __axl_dtd_get_new_root (axlDtd * dtd) 
+{
+	int             iterator;
+	bool            change_detected;
+
+	axlDtdElement * dtd_element_aux;
+	axlDtdElement * dtd_element_the_root_is_on_fire;
+
+	/* set the very first root node */
+	dtd_element_the_root_is_on_fire = axl_list_get_nth (dtd->elements, 0);
+	
+	do {
+		/* check which is the top */
+		iterator        = 0;
+		change_detected = AXL_FALSE;
+		while (iterator < axl_list_length (dtd->elements)) {
+			
+			/* get the next reference */
+			dtd_element_aux = axl_list_get_nth (dtd->elements, iterator);
+			
+			/* check which is the top */
+			if (__axl_dtd_get_is_parent (dtd_element_aux,
+						     dtd_element_the_root_is_on_fire)) {
+				/* it seems that the new element is the root
+				 * one, update the reference */
+				dtd_element_the_root_is_on_fire = dtd_element_aux;
+				change_detected = AXL_TRUE;
+			}
+			
+			/* update inner loop iterator */
+			iterator ++;
+		} /* while end */
+	}while (change_detected);
+
+	/* return the root found */
+	return dtd_element_the_root_is_on_fire;
 }
 
 /** 
@@ -172,26 +372,29 @@ axlDtd * __axl_dtd_new ()
  * @return AXL_TRUE if the given axlDtdElement is compatible inside
  * the axlDtd declaration or AXL_FALSE if a error is found.
  */
-bool __axl_dtd_add_element (axlDtd * dtd, axlStream * stream, axlDtdElement * element)
+bool __axl_dtd_add_element (axlDtd * dtd, axlDtdElement * element, 
+			    axlStream * stream, axlError ** error)
 {
-	/* check the basic case */
-	if (dtd->root == NULL) {
-		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "adding DTD root node");
-		/* set as the root node the one received */
-		dtd->root     = element;
+	int             iterator        = 0;
+	axlDtdElement * dtd_element_aux = NULL;
 
-		/* add the node found */
-		axl_list_add (dtd->elements, element);
-
-		return AXL_TRUE;
-	}
-
-	/* check that the is not element already named like the
+	/* check that there is no element already named like the
 	 * element received. If it is the case drop an error */
-	
+	while (iterator < axl_list_length (dtd->elements)) {
+		dtd_element_aux = axl_list_get_nth (dtd->elements, iterator);
+		if (axl_cmp (dtd_element_aux->name, element->name)) {
+			axl_error_new (-1, "Find that an DTD element was defined twice (no more than one time is allowed)", 
+				       stream, error);
+			axl_stream_free (stream);
+			return AXL_FALSE;
+		}
 
-	/* check that the element receive is not a top level one for
-	 * the set already defined */
+		/* update current iterator */
+		iterator++;
+	}
+	
+	/* add the new DTD element to the list */
+	axl_list_add (dtd->elements, element);
 	return AXL_TRUE;
 }
 
@@ -204,6 +407,10 @@ bool __axl_dtd_add_element (axlDtd * dtd, axlStream * stream, axlDtdElement * el
  *
  * In the case the function fails to do its work, it will deallocate
  * the stream, filling the error received.
+ *
+ * According to the chunk matched value, the function will react
+ * adding the element and configuring current element list.
+ *
  */
 bool __axl_dtd_element_content_particule_add (axlDtdElementList  * dtd_item_list, 
 					      char               * string_aux, 
@@ -211,8 +418,56 @@ bool __axl_dtd_element_content_particule_add (axlDtdElementList  * dtd_item_list
 					      axlStream          * stream, 
 					      axlError          **error)
 {
-	
-	return AXL_FALSE;
+	axlDtdElementListNode * node;
+
+	/* check if the item list was creted or not */
+	if (dtd_item_list->itemList == NULL) {
+		dtd_item_list->itemList = axl_list_new (axl_list_always_return_1, 
+							(axlDestroyFunc) __destroy_axl_dtd_element_list);
+	}
+
+	/* create the node to be added */
+	node = __create_axl_dtd_element_list (string_aux, NULL);
+
+	/* know add the element found */
+	axl_list_add (dtd_item_list->itemList, node);
+
+	/* check if the have matched a white space: next check is
+	 * based on the call to axl_stream_get_until at the caller
+	 * function */
+	if (chunk_matched == 0) {
+		/* consume previous white spaces */
+		AXL_CONSUME_SPACES (stream);
+		
+		/* check for for sequence or choice characters */
+		if (axl_stream_peek (stream, ",") > 0) {
+
+			/* flag that we have found a , (choice)
+			 * separator */
+			chunk_matched = 1;
+			axl_stream_accept (stream);
+
+		}else if (axl_stream_peek (stream, "|") > 0) {
+
+			/* flag that we have found a | (sequence)
+			 * separator */
+			chunk_matched = 2;
+			axl_stream_accept (stream);
+		}
+	}
+
+	/* set current sequence type accoring to separators used */
+	switch (chunk_matched) {
+	case 1:
+		dtd_item_list->type = SEQUENCE;
+		break;
+	case 2:
+		dtd_item_list->type = CHOICE;
+		break;
+	}
+
+	/* return that all is ok */
+	return AXL_TRUE;
 }
 
 
@@ -248,17 +503,12 @@ bool __axl_dtd_read_element_spec (axlStream * stream, axlDtdElement * dtd_elemen
 
 	/* create the DTD item list */
 	dtd_item_list       = axl_new (axlDtdElementList, 1);
-	dtd_item_list->type = LEAF_NODE; /* by default all elements are
-					  * considered LEAF_NODE */
+	dtd_item_list->type = SEQUENCE; /* by default all elements are
+					 * considered LEAF_NODE */
 
 	/* set the content spec list to the dtd element read */
 	dtd_element->list = dtd_item_list;
 	   
-	
-	/* associate data create to the life time of the stream */
-	axl_stream_link (stream, dtd_item_list,  (axlDestroyFunc) axl_dtd_element_free);
-	axl_stream_link (stream, dtd_item_stack, (axlDestroyFunc) axl_stack_free);
-
 	/* push the item created */
 	axl_stack_push (dtd_item_stack, dtd_item_list);
 	
@@ -269,7 +519,8 @@ bool __axl_dtd_read_element_spec (axlStream * stream, axlDtdElement * dtd_elemen
 	if (! (axl_stream_inspect (stream, "("))) {
 		axl_error_new (-1, "Expected to find a element content specification opener \"(\", but it wasn't found",
 			       stream, error);
-		axl_stream_free (stream);
+		axl_stack_free (dtd_item_stack);
+		axl_stream_free (stream);		
 		return AXL_FALSE;
 	}
 	
@@ -283,29 +534,44 @@ bool __axl_dtd_read_element_spec (axlStream * stream, axlDtdElement * dtd_elemen
 		if (string_aux == NULL) {
 			axl_error_new (-1, "Expected to find a element content specification particule, but it wasn't found",
 				       stream, error);
+			axl_stack_free (dtd_item_stack);
 			axl_stream_free (stream);
 			return AXL_FALSE;
 		}
 		
-		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found content spec particule: %s", string_aux);
-		
-		/* add the content particule found */
-		if (!__axl_dtd_element_content_particule_add (dtd_item_list, string_aux, chunk_matched, stream, error))
-			return AXL_FALSE;
-		
+		/* add the item read if have something defined */
+		if (strlen (string_aux) > 0) {
+			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found content spec particule: (size: %d) '%s'", 
+				 strlen (string_aux),
+				 string_aux);
+			
+			/* add the content particule found */
+			if (!__axl_dtd_element_content_particule_add (dtd_item_list, string_aux, chunk_matched, stream, error))
+				return AXL_FALSE;
+			
+			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "element added to the DTD ELEMENT, chunk matched=%d",
+				 chunk_matched);
+		}
+
+		/* set element type */
+		if ((chunk_matched == 3) && 
+		    (axl_cmp (string_aux, "#PCDATA"))) {
+			if (axl_list_length (dtd_item_list->itemList) == 1)
+				dtd_element->type = ELEMENT_TYPE_PCDATA;
+			else if (axl_list_length (dtd_item_list->itemList) > 1)
+				dtd_element->type = ELEMENT_TYPE_MIXED;
+		}
+
 		/* check if we have finished */
-	} while (chunk_matched == 3);
+	} while (chunk_matched != 3);
+
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "content spec terminated, now lookup for the termination");
 		
 	/* consume previous white spaces */
 	AXL_CONSUME_SPACES (stream);
 
-	/* check that the content specification have an > */
-	if (! (axl_stream_inspect (stream, ">"))) {
-		axl_error_new (-1, "Expected to find a element content specification opener \"(\", but it wasn't found",
-			       stream, error);
-		axl_stream_free (stream);
-		return AXL_FALSE;
-	}
+	/* free the stack used */
+	axl_stack_free (dtd_item_stack);
 
 	/* content spec readed properly */
 	return AXL_TRUE;
@@ -349,7 +615,7 @@ bool __axl_dtd_parse_element (axlDtd * dtd, axlStream * stream, axlError ** erro
 	AXL_CONSUME_SPACES (stream);
 	
 	/* get the element name */
-	string_aux = axl_stream_get_until (stream, NULL, &matched_chunk, AXL_TRUE, 2, "?>", " ");
+	string_aux = axl_stream_get_until (stream, NULL, &matched_chunk, AXL_FALSE, 3, ">", "(", " ", "<!ELEMENT");
 	if (string_aux == NULL) {
 		axl_error_new (-1, "Expected to receive a DTD element name for <!ELEMENT declaration, but not found", stream, error);
 		axl_stream_free (stream);
@@ -357,7 +623,7 @@ bool __axl_dtd_parse_element (axlDtd * dtd, axlStream * stream, axlError ** erro
 	}
 
 	/* check that the DTD have an element name and an element type */
-	if (matched_chunk == 0) {
+	if ((matched_chunk == 0) || (matched_chunk == 3)) {
 		axl_error_new (-1, "Found a DTD <!ELEMENT declaration, without content specification. Missing value, examples: EMPTY, ANY, (..)", stream, error);
 		axl_stream_free (stream);
 		return AXL_FALSE;
@@ -367,6 +633,9 @@ bool __axl_dtd_parse_element (axlDtd * dtd, axlStream * stream, axlError ** erro
 	element           = axl_new (axlDtdElement, 1);
 	element->name     = axl_strdup (string_aux);
 
+	/* consume previous white spaces */
+	AXL_CONSUME_SPACES (stream);
+
 	/* now, check for the basic cases: ANY and EMPTY */
 	if (axl_stream_peek (stream, "EMPTY") > 0) {
 		/* accept previous peek */
@@ -375,25 +644,28 @@ bool __axl_dtd_parse_element (axlDtd * dtd, axlStream * stream, axlError ** erro
 		/* found empty declaration */
 		element->type = ELEMENT_TYPE_EMPTY;
 
-	}else if (axl_stream_peek (stream, "ANY") > 0) {
+	} else if (axl_stream_peek (stream, "ANY") > 0) {
 		/* accept previous peek */
 		axl_stream_accept (stream);
 
 		/* found any declaration */
 		element->type = ELEMENT_TYPE_ANY;
-	}else {
-		/* complex element type declaration, let's roll */
-		/* now get the element content type */
-		while (axl_stream_remains (stream)) {
-
-			/* read current dtd element spec */
-			if (!__axl_dtd_read_element_spec (stream, element, error))
-				return AXL_FALSE;
-		}
+	} else {
+		/* complex element type declaration, let's roll now
+		 * get the element content type read current dtd
+		 * element spec. 
+		 *
+		 * By default, any comple element type definition,
+		 * have childrens, until PC data definition is found,
+		 * which leads to the two possible values: Mixed and
+		 * PcData */
+		element->type = ELEMENT_TYPE_CHILDREN;
+		if (!__axl_dtd_read_element_spec (stream, element, error))
+			return AXL_FALSE;
 	}
 
 	/* add element found */
-	if (! __axl_dtd_add_element (dtd, stream, element))
+	if (! __axl_dtd_add_element (dtd, element, stream, error))
 		return AXL_FALSE;
 	
 	/* consume previous white spaces */
@@ -454,6 +726,12 @@ axlDtd * __axl_dtd_parse_common (char * entity, int entity_size,
 		}
 		iterator++;
 	}
+
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "DTD elements totally loaded, building references..");
+
+	/* update current root reference, the DTD root for the DTD
+	 * document already parsed */
+	dtd->root = __axl_dtd_get_new_root (dtd);
 
 	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "DTD load COMPLETE");
 	axl_stream_unlink (stream);
@@ -524,9 +802,12 @@ axlDtd   * axl_dtd_parse_from_file (char * file_path,
  *
  * @return AXL_TRUE if the document is valid, AXL_FALSE if not.
  */
-bool       axl_dtd_validate        (axlDoc * doc, axlDtd * dtd)
+bool       axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
+				    axlError ** error)
 {
 	axlNode       * node;
+	axlList       * childs;
+	axlStack      * stack;
 	axlDtdElement * element;
 	
 	/* perform some checkings */
@@ -537,10 +818,17 @@ bool       axl_dtd_validate        (axlDoc * doc, axlDtd * dtd)
 	node    = axl_doc_get_root (doc);
 	element = axl_dtd_get_root (dtd);
 	if (! NODE_CMP_NAME (node, axl_dtd_get_element_name (element))) {
-		/* root node doesn't match */
-		axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "Found that root node doesn't match!");
-		return AXL_FALSE;
-	}
+
+		/* because a DTD document could have several top level
+		 * elements, ensure this is not the case */
+		element = axl_dtd_get_element (dtd, axl_node_get_name (node));
+		if (element == NULL  || ! axl_dtd_element_is_toplevel (dtd, element)) {
+			/* root node doesn't match */
+			axl_error_new (-1, "Found that root node doesn't match!", NULL, error);
+			return AXL_FALSE;
+
+		} /* end if */
+	} /* end if */
 
 	/* check empty content spec */
 	if (axl_dtd_get_element_type (element) == ELEMENT_TYPE_EMPTY) {
@@ -549,7 +837,25 @@ bool       axl_dtd_validate        (axlDoc * doc, axlDtd * dtd)
 	}
 
 	/* perform a validation iteration over all elements */
+	childs = axl_node_get_childs (node);
+
+	/* queue initial nodes to validate */
+	stack  = axl_stack_new (NULL);
+	__axl_dtd_queue_items (stack, childs);
+
+	do {
+		/* get a referene to the xml node */
+		node = axl_stack_pop ();
+
+		
+		
+		/* until the stack is empty */
+	}while (! axl_stack_is_empty (stack));
+
+	/* deallocate stack used */
+	axl_stack_free (stack);
 	
+
 
 	/* the document is valid */
 	return AXL_TRUE;
@@ -584,6 +890,45 @@ axlDtdElement  * axl_dtd_get_root        (axlDtd * dtd)
 }
 
 /** 
+ * @brief Allows to get the DTD element (\ref axlDtdElement), inside
+ * the provided DTD (\ref axlDtd), that represent the spefication for
+ * the node called by the provided name.
+ * 
+ * @param dtd The DTD (\ref axlDtd) where the lookup will be
+ * performed.
+ *
+ * @param name The element name to lookup.
+ * 
+ * @return A reference to the \ref axlDtdElement searched or NULL if
+ * fails. The function also returns NULL if values received are NULL.
+ */
+axlDtdElement      * axl_dtd_get_element      (axlDtd * dtd, char * name)
+{
+	int             iterator;
+	axlDtdElement * result;
+
+	axl_return_val_if_fail (dtd, NULL);
+	axl_return_val_if_fail (name, NULL);
+
+	iterator = 0;
+	while (iterator < axl_list_length (dtd->elements)) {
+		/* get a reference to the nth item */
+		result = axl_list_get_nth (dtd->elements, iterator);
+		
+		/* check that it is the value looked up */
+		if (axl_cmp (axl_dtd_get_element_name (result), name)) {
+			return result;
+		}
+
+		/* update the iterator */
+		iterator++;
+	} /* end while */
+
+	/* it seems that the value wasn't found */
+	return NULL;
+}
+
+/** 
  * @brief Returns the name of the provided \ref axlDtdElement.
  * 
  * @param element A reference to a \ref axlDtdElement where the name
@@ -611,6 +956,178 @@ AxlDtdElementType    axl_dtd_get_element_type (axlDtdElement * element)
 	axl_return_val_if_fail (element, ELEMENT_TYPE_UNKNOWN);
 	
 	return element->type;
+}
+
+/** 
+ * @brief Returns current DTD content specification, represented by the Item list.
+ * 
+ * @param element The DTD element (\ref axlDtdElement) which is being
+ * requested to return its \ref axlDtdElementList.
+ * 
+ * @return The \ref axlDtdElementList reference. The value returned
+ * must not be deallocated. The function returns NULL if the reference received is NULL.
+ */
+axlDtdElementList  * axl_dtd_get_item_list    (axlDtdElement * element)
+{
+	axl_return_val_if_fail (element, NULL);
+
+	return element->list; 
+}
+
+/** 
+ * @brief Allows to check if the provided DTD ELEMENT representation
+ * is a top level definition.
+ * 
+ * @param dtd The DTD document where the operation will be performed.
+ * @param element The \ref axlDtdElement to check.
+ * 
+ * @return \ref AXL_TRUE if the dtd element is a top level element or
+ * \ref AXL_FALSE if not. The function returns \ref AXL_FALSE if the
+ * provided reference is NULL.
+ */
+bool                 axl_dtd_element_is_toplevel (axlDtd * dtd, axlDtdElement * element)
+{
+	/* support several top level definitions */
+	int             iterator;
+	axlDtdElement * dtd_element_aux;
+
+	axl_return_val_if_fail (dtd, AXL_FALSE);
+	axl_return_val_if_fail (element, AXL_FALSE);
+
+	/* check which is the top */
+	iterator        = 0;
+	while (iterator < axl_list_length (dtd->elements)) {
+			
+		/* get the next reference */
+		dtd_element_aux = axl_list_get_nth (dtd->elements, iterator);
+			
+		/* check which is the top */
+		if (__axl_dtd_get_is_parent (dtd_element_aux, element)) {
+			/* the element provided have a parent */
+			return AXL_TRUE;
+		}
+			
+		/* update inner loop iterator */
+		iterator ++;
+	} /* while end */
+
+	/* return that the provided node doesn't have a parent node */
+	return AXL_FALSE;
+}
+
+/** 
+ * @brief Returns the number of item nodes (\ref
+ * axlDtdElementListNode) inside the item list received (\ref axlDtdElementList).
+ * 
+ * @param itemList The \ref axlDtdElementList where the count
+ * operation is being requested.
+ * 
+ * @return The number of item list the provided \ref axlDtdElementList
+ * reference has. The function return -1 if the provided reference is
+ * NULL.
+ */
+int                  axl_dtd_item_list_count  (axlDtdElementList * itemList)
+{
+	axl_return_val_if_fail (itemList, -1);
+
+	return axl_list_length (itemList->itemList);
+}
+
+/** 
+ * @brief Alllows to get current configuration for the provided item
+ * list, which is the content specification for a DTD element.
+ * 
+ * @param itemList The item list where the operation will be
+ * performed.
+ * 
+ * @return Current configuration (\ref SEQUENCE or a \ref CHOICE).
+ */
+AxlDtdNestedType     axl_dtd_item_list_type   (axlDtdElementList * itemList)
+{
+	axl_return_val_if_fail (itemList, -1);
+
+	return itemList->type;
+}
+
+/** 
+ * @brief Allows to get the provided item node reference (\ref
+ * axlDtdElementListNode) from the provided item list (\ref
+ * axlDtdElementList).
+ *
+ * Provided position ranges from 0 up to \ref axl_dtd_item_list_count.
+ * 
+ * @param itemList The itemList where the operation will be performed.
+ * @param position The position where the item node will be looked up.
+ * 
+ * @return A reference to the \ref axlDtdElementListNode, or NULL if
+ * there is no item node at the selected index.  The function return
+ * NULL if the provided position is a non positive value or it is
+ * greater than the current item list count (\ref
+ * axl_dtd_item_list_count) or the provided item list reference is
+ * NULL.
+ */
+axlDtdElementListNode * axl_dtd_item_list_get_node (axlDtdElementList * itemList, 
+						    int position)
+{
+	axl_return_val_if_fail (itemList, NULL);
+	axl_return_val_if_fail (position >= 0, NULL);
+	axl_return_val_if_fail (position < axl_dtd_item_list_count (itemList), NULL);
+	
+	return axl_list_get_nth (itemList->itemList, position);
+}
+
+/** 
+ * @brief Allows to get current node type for the provided DTD element
+ * type content particule or item node (\ref axlDtdElementListNode).
+ *
+ * @param node The node where the type is being requested.
+ * 
+ * @return It returns if the item node contains a final leaf node,
+ * making a reference to an explicit node naming that is allowed to be
+ * used in the context where is found the provided \ref
+ * axlDtdElementListNode or a \ref axlDtdElementList containing more
+ * nodes or lists. 
+ */
+NodeType             axl_dtd_item_node_get_type (axlDtdElementListNode * node)
+{
+	axl_return_val_if_fail (node, NOT_DEFINED);
+	return node->type;
+}
+
+/** 
+ * @brief Returns the item list inside the provided node.
+ *
+ * The node is supported to contain an item list reference or NULL
+ * will be returned. Check \ref axl_dtd_item_node_get_type.
+ * 
+ * @param node The node where the operation will be performed.
+ * 
+ * @return The item list inside the node or NULL if fails.
+ */
+axlDtdElementList   * axl_dtd_item_node_get_list (axlDtdElementListNode * node)
+{
+	axl_return_val_if_fail (node, NULL);
+	axl_return_val_if_fail (node->type == ELEMENT_LIST, NULL);
+
+	return node->data;
+}
+
+/** 
+ * @brief Allows to get the dtd item list value, which represents the
+ * node name that is being constrained/represented.
+ * 
+ * @param node The item node where the value is being requested.
+ * 
+ * @return The value inside the item node, supposing it contains an
+ * leaf item node or NULL if fails. The value returned must not be
+ * deallocated.
+ */
+char               * axl_dtd_item_node_get_value (axlDtdElementListNode * node)
+{
+	axl_return_val_if_fail (node, NULL);
+	axl_return_val_if_fail (node->type == NODE, NULL);
+
+	return node->data;
 }
 
 /** 
@@ -644,14 +1161,37 @@ void       axl_dtd_element_free (axlDtdElement * element)
 		return;
 
 	/* free element name */
-	axl_free (element->name);
+	if (element->name != NULL)
+		axl_free (element->name);
 
 	/* free element list definitions */
-	/* axl_list_free (element->list); */
+	axl_dtd_item_list_free (element->list);
 	
 	/* free element itself */
 	axl_free (element);
 
+	return;
+}
+
+/** 
+ * @internal 
+ *
+ * @brief Deallocates memory used by the \ref axlDtdElementList
+ * reference.
+ * 
+ * @param list The reference to deallocate.
+ */
+void axl_dtd_item_list_free (axlDtdElementList * list)
+{
+	if (list == NULL)
+		return;
+	
+	/* check and deallocate the list provided */
+	if (list->itemList != NULL)
+		axl_list_free (list->itemList);
+	
+	/* deallocates the node itself */
+	axl_free (list);
 	return;
 }
 

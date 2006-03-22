@@ -8,10 +8,54 @@
  * 
  * @return AXL_TRUE if the validity test is passed, AXL_FALSE if not.
  */
+bool test_07 (axlError ** error)
+{
+	/* top level definitions */
+	axlDoc            * doc = NULL;
+	axlDtd            * dtd = NULL;
+
+	/* get current doc reference */
+	doc = axl_doc_parse_from_file ("test3.xml", error);
+	if (doc == NULL)
+		return AXL_FALSE;
+
+	/* load DTD */
+	dtd = axl_dtd_parse_from_file ("test3.dtd", error);
+	if (dtd == NULL)
+		return AXL_FALSE;
+
+	/* validate the xml document */
+	if (! axl_dtd_validate (doc, dtd, error)) {
+		return  AXL_FALSE;
+	}
+
+	
+	/* free document */
+	axl_doc_free (doc);
+
+	/* free dtd document */
+	axl_dtd_free (dtd);
+
+	return AXL_TRUE;
+}
+
+/** 
+ * @brief A bit more complex DTD parsing checkings
+ * 
+ * @param error The optional axlError to be used to report errors.
+ * 
+ * @return AXL_TRUE if the validity test is passed, AXL_FALSE if not.
+ */
 bool test_06 (axlError ** error)
 {
-	axlDoc * doc = NULL;
-	axlDtd * dtd = NULL;
+	/* top level definitions */
+	axlDoc            * doc = NULL;
+	axlDtd            * dtd = NULL;
+
+	/* dtd iteration variables */
+	axlDtdElement         * element;
+	axlDtdElementList     * itemList;
+	axlDtdElementListNode * itemNode;
 	
 	/* get current doc reference */
 	doc = axl_doc_parse_from_file ("test3.xml", error);
@@ -22,6 +66,115 @@ bool test_06 (axlError ** error)
 	dtd = axl_dtd_parse_from_file ("test3.dtd", error);
 	if (dtd == NULL)
 		return AXL_FALSE;
+
+	/* get the DTD element reference and check it */
+	element = axl_dtd_get_root (dtd);
+	if (element == NULL) {
+		axl_error_new (-1, "Expected to receive a root DTD node, not found", NULL, error);
+		return AXL_FALSE;
+	}
+
+	/* check expected DTD root content */
+	if (! axl_cmp (axl_dtd_get_element_name (element), "complex")) {
+		axl_error_new (-1, "Expected to receive a root DTD node name, not found", NULL, error);
+		return AXL_FALSE;
+	}
+
+	if (axl_dtd_get_element_type (element) != ELEMENT_TYPE_CHILDREN) {
+		axl_error_new (-1, "Expected to receive a root DTD node selection type (Children), not found", NULL, error);
+		return AXL_FALSE;
+	}
+
+	/* get content specification */
+	itemList = axl_dtd_get_item_list (element);
+	if (axl_dtd_item_list_count (itemList) != 1) {
+		axl_log ("test-01", AXL_LEVEL_DEBUG, "item count %d != %d item spected",
+			 axl_dtd_item_list_count (itemList), 1);
+		axl_error_new (-1, "Expected to receive an item list specification with only one node, not found", NULL, error);
+		return AXL_FALSE;
+	}
+
+	/* get the child node reference */
+	itemNode = axl_dtd_item_list_get_node (itemList, 0);
+	if (! axl_cmp (axl_dtd_item_node_get_value (itemNode), "data")) {
+		axl_error_new (-1, "Expected to receive an item node but, not found", NULL, error);
+		return AXL_FALSE;
+	}
+
+	/* get the DTD element which represents the provided data */
+	element = axl_dtd_get_element (dtd, "data");
+	if ((element == NULL) || (!axl_cmp (axl_dtd_get_element_name (element), "data"))) {
+		axl_error_new (-1, "Expected to receive a DTD element definition but NULL was found or a different DTD name, not found", NULL, error);
+		return AXL_FALSE;
+	}
+	
+	/* get content specification */
+	itemList = axl_dtd_get_item_list (element);
+	if (axl_dtd_item_list_count (itemList) != 3) {
+		axl_log ("test-01", AXL_LEVEL_DEBUG, "item count %d != %d item spected",
+			 axl_dtd_item_list_count (itemList), 3);
+		axl_error_new (-1, "Expected to receive an item list specification with only one node, not found", NULL, error);
+		return AXL_FALSE;
+	}
+
+	/* get item list especification */
+	if (axl_dtd_item_list_type (itemList) != SEQUENCE) {
+		axl_log ("test-01", AXL_LEVEL_DEBUG, "item count %d != %d item spected",
+			 axl_dtd_item_list_count (itemList), 3);
+		axl_error_new (-1, "Expected to receive an item list specification as a sequence type, not found", NULL, error);
+		return AXL_FALSE;
+	}
+
+	/* check item nodes found inside the item list */
+	itemNode = axl_dtd_item_list_get_node (itemList, 0);
+	if (! axl_cmp (axl_dtd_item_node_get_value (itemNode), "row")) {
+		axl_error_new (-1, "Expected to receive an item node (row) but, not found", NULL, error);
+		return AXL_FALSE;
+	}
+
+	/* get the child node reference */
+	itemNode = axl_dtd_item_list_get_node (itemList, 1);
+	if (! axl_cmp (axl_dtd_item_node_get_value (itemNode), "column")) {
+		axl_error_new (-1, "Expected to receive an item node (column) but, not found", NULL, error);
+		return AXL_FALSE;
+	}
+
+	/* get the child node reference */
+	itemNode = axl_dtd_item_list_get_node (itemList, 2);
+	if (! axl_cmp (axl_dtd_item_node_get_value (itemNode), "value")) {
+		axl_error_new (-1, "Expected to receive an item node (value) but, not found", NULL, error);
+		return AXL_FALSE;
+	}
+
+	/* now work with the choice element */
+	element = axl_dtd_get_element (dtd, "column");
+	if ((element == NULL) || (!axl_cmp (axl_dtd_get_element_name (element), "column"))) {
+		axl_error_new (-1, "Expected to receive a DTD element definition but NULL was found or a different DTD name (column), not found", NULL, error);
+		return AXL_FALSE;
+	}
+	
+	/* get content specification */
+	itemList = axl_dtd_get_item_list (element);
+	if (axl_dtd_item_list_count (itemList) != 4) {
+		axl_log ("test-01", AXL_LEVEL_DEBUG, "item count %d != %d item spected",
+			 axl_dtd_item_list_count (itemList), 4);
+		axl_error_new (-1, "Expected to receive an item list specification with only one node, not found", NULL, error);
+		return AXL_FALSE;
+	}
+
+	/* get item list especification */
+	if (axl_dtd_item_list_type (itemList) != CHOICE) {
+		axl_error_new (-1, "Expected to receive an item list specification as a CHOICE type, not found", NULL, error);
+		return AXL_FALSE;
+	}
+
+	/* get the DTD element which represents the provided data */
+	element = axl_dtd_get_element (dtd, "data");
+	if ((element == NULL) || (!axl_cmp (axl_dtd_get_element_name (element), "data"))) {
+		axl_error_new (-1, "Expected to receive a DTD element definition but NULL was found or a different DTD name, not found", NULL, error);
+		return AXL_FALSE;
+	}
+
 
 	/* free document */
 	axl_doc_free (doc);
@@ -80,8 +233,7 @@ bool test_05 (axlError ** error)
 		return AXL_FALSE;
 
 	/* now validate the document */
-	if (! axl_dtd_validate (doc, dtd)) {
-		axl_error_new (-1, "found that the document provided should be valid, but validation function report an error", NULL, error);
+	if (! axl_dtd_validate (doc, dtd, error)) {
 		return AXL_FALSE;
 	}
 
@@ -110,7 +262,6 @@ bool test_04 (axlError ** error)
 
 	/* parse the document */
 	doc = axl_doc_parse_strings (error, 
-				     "<!-- Coment example -->",
 				     "<?xml version='1.0' ?>",
 				     "  <?test \"my content\" ?>",
 				     "  <complex>",
@@ -466,9 +617,18 @@ int main (int argc, char ** argv)
 	}	
 
 	if (test_06 (&error))
-		printf ("Test 06: DTD basic parsing [   OK   ]\n");
+		printf ("Test 06: DTD basic parsing (2) [   OK   ]\n");
 	else {
-		printf ("Test 06: DTD basic parsing [ FAILED ]\n  (CODE: %d) %s\n",
+		printf ("Test 06: DTD basic parsing (2) [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}	
+
+	if (test_07 (&error)) 
+		printf ("Test 07: DTD validation (I) [   OK   ]\n");
+	else {
+		printf ("Test 07: DTD validation (I) [ FAILED ]\n  (CODE: %d) %s\n",
 			axl_error_get_code (error), axl_error_get (error));
 		axl_error_free (error);
 		return -1;

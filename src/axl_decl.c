@@ -63,3 +63,32 @@ bool axl_cmp (char * string, char * string2)
 			       (string2 != NULL) ? string2 : "s2",
 			       (string2 != NULL) ? strlen (string2) : 2);
 }
+
+/** 
+ * @brief Allows to deallocate memory referenced by <i>ref</i> but
+ * checking before that the reference is different from null.
+ * 
+ * @param ref The reference to clear.
+ */
+void axl_free (axlPointer ref)
+{
+	if (ref == NULL)
+		return;
+
+	free (ref);
+	return;
+}
+
+/** 
+ *
+ * @brief Call to strdup function check if received is a NULL
+ * reference
+ * 
+ * @param string The string to copy.
+ * 
+ * @return A newly allocated value or NULL.
+ */
+char * axl_strdup (char * string)
+{
+	return (string != NULL) ? (char *) axl_stream_strdup ((char *) string) : NULL;
+}

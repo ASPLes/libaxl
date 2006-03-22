@@ -77,11 +77,72 @@ typedef struct _axlDtd        axlDtd;
 typedef struct _axlDtdElement axlDtdElement;
 
 /** 
+ * @brief Axl DTD item list element declaration.
+ */
+typedef struct _axlDtdElementList axlDtdElementList;
+
+/** 
+ * @brief Axl DTD item list element declaration.
+ */
+typedef struct _axlDtdElementListNode axlDtdElementListNode;
+
+
+/** 
+ * @brief The type of the DTD sequences stored by the \ref
+ * axlDtdElementList.
+ */
+typedef enum {
+	/** 
+	 * @brief Represents that the item selection is configured to
+	 * be a choice (a selection allowed from any item inside the
+	 * collection).
+	 */
+	CHOICE        = 1,
+	/** 
+	 * @brief Represents that the item selection is configured to
+	 * select each item in the order they apper.
+	 */
+	SEQUENCE      = 2
+}AxlDtdNestedType;
+
+/** 
+ * @brief An indication of the element type stored on the provided
+ * \ref axlDtdElementListNode reference.
+ *
+ * An \ref axlDtdElementListNode reference could contain a single
+ * reference to a content particule name, that is the XML node name to
+ * be allowed to be used at the provided position or a reference to an
+ * \ref axlDtdElementList which contains a nested list containing more
+ * content particules.
+ * 
+ */
+typedef enum {
+	/** 
+	 * @internal
+	 * Represents the not defined value.
+	 */
+	NOT_DEFINED = 1,
+	/** 
+	 * @brief The reference contains an \ref axlDtdElementList.
+	 */
+	ELEMENT_LIST = 2,
+	/** 
+	 * @brief The reference contains a reference to a leaf node, a
+	 * content particule.
+	 */
+	NODE = 3
+} NodeType;
+
+/** 
  * @brief DTD element type enumeration.
  *
  * While using DTD declaration, <b>ELEMENT</b> used to define how your
  * xml document is structured and constrained, are clasified using the
  * following values.
+ *
+ * This type specification must not be confused with \ref NodeType,
+ * which is the configuration for an element, inside the content DTD
+ * element specification.
  */
 typedef enum {
 	/** 
@@ -113,7 +174,13 @@ typedef enum {
 	 * only xml nodes as content, in the form of xml childs,
 	 * without inlucing PCDATA.
 	 */
-	ELEMENT_TYPE_CHILDREN = 4
+	ELEMENT_TYPE_CHILDREN = 4,
+	/** 
+	 * @brief Used to represent that the DTD element specification
+	 * contains only PCDATA. No child nodes or childs nodes mixed
+	 * with PCDATA.
+	 */
+	ELEMENT_TYPE_PCDATA = 5
 } AxlDtdElementType;
 
 /** 
@@ -262,13 +329,7 @@ AxlDebugLevel;
  */
 #define axl_new(type, count) (type *) calloc (count, sizeof (type))
 
-/** 
- * @brief Allows to deallocate memory referenced by <i>ref</i> but
- * checking before that the reference is different from null.
- * 
- * @param ref The reference to clear.
- */
-#define axl_free(ref) if (ref != NULL) free (ref)
+void axl_free(axlPointer ref);
 
 /** 
  * @internal
@@ -293,18 +354,8 @@ if (!(expr)) return;
 #define axl_return_val_if_fail(expr, val) \
 if (!(expr)) { axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "Expresion '%s' have failed, returning: %s", #expr, #val); return val;}
 
-/** 
- *
- * @brief Call to strdup function check if received is a NULL
- * reference
- * 
- * @param string The string to copy.
- * 
- * @return A newly allocated value or NULL.
- */
-#define axl_strdup(string) (string != NULL) ? (char *) axl_stream_strdup ((char *) string) : NULL;
 
-
+char * axl_strdup (char * string);
 
 /** 
  * @internal

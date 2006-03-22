@@ -409,10 +409,6 @@ bool __axl_doc_parse_xml_header (axlStream * stream, axlDoc * doc, axlError ** e
 		return AXL_FALSE;
 	}
 
-	/* consume comments found */
-	if (! axl_doc_consume_comments (doc, stream, error))
-		return AXL_FALSE;
-	
 	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "looking for an xml header declaration");
 
 	/* check for initial XMLDec (production 23) */

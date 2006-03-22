@@ -74,15 +74,20 @@ char    * axl_node_get_attribute_value (axlNode * node, char * attribute);
 
 char    * axl_node_get_name           (axlNode * node);
 
-void      axl_node_set_child          (axlNode * parent, axlNode * child);
+void      axl_node_set_child          (axlNode * parent, 
+				       axlNode * child);
 
-void      axl_node_set_is_empty       (axlNode * node, bool empty);
+void      axl_node_set_is_empty       (axlNode * node, 
+				       bool empty);
 
 bool      axl_node_is_empty           (axlNode * node);
 
-char    * axl_node_get_content        (axlNode * node, int  * content_size);
+char    * axl_node_get_content        (axlNode * node, 
+				       int  * content_size);
 
-void      axl_node_set_content        (axlNode * node, char * content, int content_size);
+void      axl_node_set_content        (axlNode * node, 
+				       char * content, 
+				       int content_size);
 
 char    * axl_node_get_content_copy   (axlNode * node, int  * content_size);
 
@@ -91,6 +96,8 @@ void      axl_node_set_have_childs    (axlNode * node, bool childs);
 bool      axl_node_have_childs        (axlNode * node);
 
 axlNode * axl_node_get_child_called   (axlNode * parent, char * name);
+
+axlList * axl_node_get_childs         (axlNode * node);
 
 void      axl_node_add_pi_target            (axlNode * node, 
 					     char * target, 

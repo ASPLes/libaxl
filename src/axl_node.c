@@ -598,6 +598,23 @@ axlNode * axl_node_get_child_called   (axlNode * parent, char * name)
 }
 
 /** 
+ * @brief Allows to get childs nodes for the given xml node (\ref
+ * axlNode).
+ *
+ * @param node The node where the childs will be returned.
+ * 
+ * @return An \ref axlList containing \ref axlNode items or NULL if it
+ * fails. The list returned must not be deallocated.
+ */
+axlList * axl_node_get_childs         (axlNode * node)
+{
+	axl_return_val_if_fail (node, NULL);
+	
+	/* return current childs */
+	return node->childs;
+}
+
+/** 
  * @brief Allows to associate a PI element, including its content to
  * the provided node.
  *
