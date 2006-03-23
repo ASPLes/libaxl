@@ -351,7 +351,7 @@ AxlDebugLevel;
  */
 #define axl_new(type, count) (type *) calloc (count, sizeof (type))
 
-void axl_free(axlPointer ref);
+void    axl_free(axlPointer ref);
 
 /** 
  * @internal
