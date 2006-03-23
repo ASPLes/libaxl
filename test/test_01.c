@@ -2,6 +2,38 @@
 #include <stdio.h>
 
 /** 
+ * @brief A more complex DTD parsing example
+ * 
+ * @param error The optional axlError to be used to report errors.
+ * 
+ * @return AXL_TRUE if the validity test is passed, AXL_FALSE if not.
+ */
+bool test_09 (axlError ** error) 
+{
+	axlDoc * doc = NULL;
+	axlDtd * dtd = NULL;
+
+	/* parse gmovil file (an af-arch xml chunk) */
+	/* doc = axl_doc_parse_from_file ("gmovil2.xml", error); */
+	/* if (doc == NULL) */
+	/* return AXL_FALSE; */
+
+	/* parse af-arch DTD */
+	dtd = axl_dtd_parse_from_file ("fact.dtd", error);
+	if (dtd == NULL)
+		return AXL_FALSE;
+
+	/* free doc reference */
+	/* axl_doc_free (doc); */
+	
+	/* free dtd reference */
+	axl_dtd_free (dtd);
+
+	/* test end */
+	return AXL_TRUE;
+}
+
+/** 
  * @brief Perform a loading for a large file.
  * 
  * @param error The optional axlError to be used to report errors.
@@ -127,6 +159,8 @@ bool test_06 (axlError ** error)
 	/* get the child node reference */
 	itemNode = axl_dtd_item_list_get_node (itemList, 0);
 	if (! axl_cmp (axl_dtd_item_node_get_value (itemNode), "data")) {
+		axl_log ("test-01", AXL_LEVEL_CRITICAL, "found item name: '%s' != data",
+			 axl_dtd_item_node_get_value (itemNode));
 		axl_error_new (-1, "Expected to receive an item node but, not found", NULL, error);
 		return AXL_FALSE;
 	}
@@ -608,7 +642,7 @@ int main (int argc, char ** argv)
 		return -1;
 	}
 
-	
+		
 	if (test_01 (&error))
 		printf ("Test 01: basic xml parsing [   OK   ]\n");
 	else {
@@ -672,6 +706,8 @@ int main (int argc, char ** argv)
 		return -1;
 	}	
 
+	goto test;
+
 	if (test_08 (&error)) 
 		printf ("Test 08: Large XML file loading [   OK   ]\n");
 	else {
@@ -680,6 +716,19 @@ int main (int argc, char ** argv)
 		axl_error_free (error);
 		return -1;
 	}	
+
+ test:
+
+	if (test_09 (&error)) 
+		printf ("Test 09: Complex DTD validation [   OK   ]\n");
+	else {
+		printf ("Test 09: Complex DTD validation [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}	
+
+
 
 	/* cleanup axl library */
 	axl_end ();

@@ -1,6 +1,6 @@
 <!-- a bit more complex dtd -->
 
-<!ELEMENT complex (data)>
+<!ELEMENT complex (data   )  >
 
 <!ELEMENT data (row, column, value) >
 

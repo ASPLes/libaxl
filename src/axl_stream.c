@@ -745,8 +745,8 @@ char      * axl_stream_get_untilv      (axlStream * stream,
 				stream->global_index             += index;
 				stream->previous_inspect          = 0;
 
-				axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "returning: '%s' (index: %d, stream index: %d, stream_size: %d)", 
-					 stream->last_chunk, index, stream->stream_index, stream->stream_size);
+				axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "returning: '%s' (chunk num: %d) (index: %d, stream index: %d, stream_size: %d)", 
+					 stream->last_chunk, iterator, index, stream->stream_index, stream->stream_size);
 
 				return stream->last_chunk;
 			}

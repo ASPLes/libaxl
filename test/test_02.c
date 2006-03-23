@@ -14,33 +14,38 @@ bool test_01 ()
 	/* create the list */
 	list = axl_list_new (axl_list_equal_string, NULL);
 	if (axl_list_length (list) != 0) {
-		printf ("Bad length returned by the list\n");
+		printf ("Bad length returned by the list (%d != 0)\n",
+			axl_list_length (list));
 		return AXL_FALSE;
 	}
 	
 	/* add data */
 	axl_list_add (list, "test 1");
 	if (axl_list_length (list) != 1) {
-		printf ("Bad length returned by the list\n");
+		printf ("Bad length returned by the list (%d != 1)\n",
+			axl_list_length (list));
 		return AXL_FALSE;
 	}
 	
 	axl_list_add (list, "test 2");
 	if (axl_list_length (list) != 2) {
-		printf ("Bad length returned by the list\n");
+		printf ("Bad length returned by the list (%d != 2)\n",
+			axl_list_length (list));
 		return AXL_FALSE;
 	}
 
 	axl_list_add (list, "test 3");
 	if (axl_list_length (list) != 3) {
-		printf ("Bad length returned by the list\n");
+		printf ("Bad length returned by the list (%d != 3)\n",
+			axl_list_length (list));
 		return AXL_FALSE;
 	}
 
 	/* remove data */
 	axl_list_remove (list, "test 1");
 	if (axl_list_length (list) != 2) {
-		printf ("Bad length returned by the list, seems that remove doesn't work\n");
+		printf ("Bad length returned by the list, seems that remove doesn't work (%d != 2)\n",
+			axl_list_length (list));
 		return AXL_FALSE;
 	}
 
