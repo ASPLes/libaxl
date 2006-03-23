@@ -145,7 +145,7 @@ axlDtdElementListNode * __create_axl_dtd_element_list (char * node_name,
 
 	/* create a node element reference */
 	if (node_name != NULL) {
-		node->data = axl_strdup (node_name);
+		node->data = node_name;
 		node->type = NODE;
 		return node;
 	}
@@ -154,6 +154,7 @@ axlDtdElementListNode * __create_axl_dtd_element_list (char * node_name,
 	if (list != NULL) {
 		node->data = list;
 		node->type = ELEMENT_LIST;
+		return node;
 	}
 
 	/* if another type is requested, return NULL */
@@ -174,6 +175,7 @@ void __destroy_axl_dtd_element_list (axlDtdElementListNode * node)
 	/* free the reference to the leaf node if defined */
 	if (node->type == NODE)
 		axl_free (node->data);
+	
 	/* do not do nothing if the reference is not element list */
 	if (node->type == ELEMENT_LIST)
 		axl_dtd_item_list_free (node->data);
@@ -435,34 +437,6 @@ bool __axl_dtd_element_content_particule_add (axlDtdElementList  * dtd_item_list
 	/* know add the element found */
 	axl_list_add (dtd_item_list->itemList, node);
 
-	/* check if the have matched a white space: next check is
-	 * based on the call to axl_stream_get_until at the caller
-	 * function */
-	if (chunk_matched == 0 ||  /* " " */
-	    chunk_matched == 4 ||  /* "+" */
-	    chunk_matched == 5 ||  /* "*" */
-	    chunk_matched == 6)    /* "?" */
-	{
-		/* consume previous white spaces */
-		AXL_CONSUME_SPACES (stream);
-		
-		/* check for for sequence or choice characters */
-		if (axl_stream_peek (stream, ",") > 0) {
-
-			/* flag that we have found a , (choice)
-			 * separator */
-			chunk_matched = 1;
-			axl_stream_accept (stream);
-
-		}else if (axl_stream_peek (stream, "|") > 0) {
-
-			/* flag that we have found a | (sequence)
-			 * separator */
-			chunk_matched = 2;
-			axl_stream_accept (stream);
-		}
-	}
-
 	/* set configuration for item repetition */
 	switch (chunk_matched) {
 	case 4:
@@ -480,16 +454,6 @@ bool __axl_dtd_element_content_particule_add (axlDtdElementList  * dtd_item_list
 	default:
 		/* one and only one time */
 		node->times = ONE_AND_ONLY_ONE;
-	}
-
-	/* set current sequence type accoring to separators used */
-	switch (chunk_matched) {
-	case 1:
-		dtd_item_list->type = SEQUENCE;
-		break;
-	case 2:
-		dtd_item_list->type = CHOICE;
-		break;
 	}
 
 	/* return that all is ok */
@@ -514,14 +478,17 @@ AxlDtdTimes __axl_dtd_get_repetition_conf (axlStream * stream)
 	axl_return_val_if_fail (stream, ONE_AND_ONLY_ONE);
 
 	if (axl_stream_inspect (stream, "?") > 0) {
+		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found '?' repetition conf");
 		/* seems the content specification could appear zero
 		 * or one time */
 		return ZERO_OR_ONE;
 	} else if (axl_stream_inspect (stream, "+") > 0) {
+		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found '+' repetition conf");
 		/* seems the content specification must appear one up
 		 * to many */
 		return ONE_OR_MANY;
 	} else if (axl_stream_inspect (stream, "*") > 0) {
+		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found '*' repetition conf");
 		/* seems the content specification could appear zero
 		 * up to many */
 		return ZERO_OR_MANY;
@@ -529,6 +496,130 @@ AxlDtdTimes __axl_dtd_get_repetition_conf (axlStream * stream)
 
 	/* the content specification must appear */
 	return ONE_AND_ONLY_ONE;
+}
+
+/** 
+ * @internal
+ *
+ * Support function which creates a child item list, insert it to the
+ * parent item list received.
+ * 
+ * @param parent 
+ * 
+ * @return 
+ */
+axlDtdElementList * __axl_dtd_create_and_queue (axlDtdElementList * parent)
+{
+	axlDtdElementList     * child;
+	axlDtdElementListNode * node;
+	
+	/* create the DTD item list */
+	child       = axl_new (axlDtdElementList, 1);
+	child->type = SEQUENCE; /* by default all elements are
+				 * considered LEAF_NODE */
+	
+	/* create a node that */
+	node = __create_axl_dtd_element_list (NULL, child);
+
+	/* create the parent list reference if weren't */
+	if (parent->itemList == NULL) {
+		parent->itemList = axl_list_new (axl_list_always_return_1, 
+						 (axlDestroyFunc) __destroy_axl_dtd_element_list);
+	}
+
+	/* add the node */
+	axl_list_add (parent->itemList, node);
+
+	/* return the new child created */
+	return child;
+}
+
+/** 
+ * @internal
+ *
+ * Updates current chunk readed information to allow perform a better
+ * code after calling this function.
+ *
+ */
+void __axl_dtd_element_spec_update_chunk_matched (axlStream * stream, 
+						  int * chunk_matched)
+{
+	/* check for for sequence or choice characters */
+	if (axl_stream_inspect (stream, ",") > 0) {
+		/* flag that we have found a , (choice)
+		 * separator */
+		(*chunk_matched) = 1;
+		
+	} else if (axl_stream_inspect (stream, "|") > 0) {
+		/* flag that we have found a | (sequence)
+		 * separator */
+		(*chunk_matched) = 2;
+
+	} else if (axl_stream_inspect (stream, ")") > 0) {
+		/* flag that we have found a | (sequence)
+		 * separator */
+		(*chunk_matched) = 3;
+		
+	} else if (axl_stream_inspect (stream, "+") > 0) {
+		/* flag that we have found a | (sequence)
+		 * separator */
+		(*chunk_matched) = 4;
+		
+	} else if (axl_stream_inspect (stream, "*") > 0) {
+		/* flag that we have found a | (sequence)
+		 * separator */
+		(*chunk_matched) = 5;
+		
+	} else if (axl_stream_inspect (stream, "?") > 0) {
+		/* flag that we have found a | (sequence)
+		 * separator */
+		(*chunk_matched) = 6;
+	}
+
+	return;
+}
+
+/** 
+ * @internal
+ *
+ * Support function which allows to read the next content particule.
+ */
+char * __axl_dtd_read_content_particule (axlStream  * stream, 
+					 int        * chunk_matched,
+					 axlStack   * dtd_item_stack, 
+					 axlError  ** error)
+{
+	char * string_aux;
+
+	/* read the spec particule stopping when a white space
+	 * or other character is found */
+	string_aux = axl_stream_get_until (stream, NULL, chunk_matched, AXL_TRUE, 8, 
+					   /* basic, default delimiters: 0, 1, 2, 3 */
+					   " ", ",", "|", ")",
+					   /* repetition configuration: 4, 5, 6 */
+					   "+", "*", "?",
+					   /* new dtd item list being opened: 8 */
+					   "(");
+	if (string_aux == NULL) {
+		axl_error_new (-1, "Expected to find a element content specification particule, but it wasn't found",
+			       stream, error);
+		axl_stack_free (dtd_item_stack);
+		axl_stream_free (stream);
+		return NULL;
+	}
+	
+	/* check the user doesn't nest item list in a not
+	 * proper way */
+	if (*chunk_matched == 8) {
+		axl_error_new (-1, "Found a not proper nesting item list for a DTD element, before using ( a separator must be used (CHOICE: |, SEQUENCE: ,)",
+			       stream, error);
+		axl_stack_free (dtd_item_stack);
+		axl_stream_free (stream);
+		return NULL;
+	}
+	
+	/* return the content particule found */
+	return string_aux;
 }
 
 /** 
@@ -551,7 +642,7 @@ AxlDtdTimes __axl_dtd_get_repetition_conf (axlStream * stream)
 bool __axl_dtd_read_element_spec (axlStream * stream, axlDtdElement * dtd_element, axlError ** error)
 {
 	char              * string_aux;
-	
+	bool                is_pcdata;
 	int                 chunk_matched = -1;
 	axlStack          * dtd_item_stack;
 	axlDtdElementList * dtd_item_list;
@@ -587,47 +678,122 @@ bool __axl_dtd_read_element_spec (axlStream * stream, axlDtdElement * dtd_elemen
 	do {
 		/* consume previous white spaces */
 		AXL_CONSUME_SPACES (stream);
-		
-		/* read the spec particule */
-		string_aux = axl_stream_get_until (stream, NULL, &chunk_matched, AXL_TRUE, 4, 
-						   /* basic, default delimiters: 0, 1, 2, 3 */
-						   " ", ",", "|", ")", 
-						   /* repetition configuration: 4, 5, 6 */
-						   "+", "*", "?");
-		
-		if (string_aux == NULL) {
-			axl_error_new (-1, "Expected to find a element content specification particule, but it wasn't found",
-				       stream, error);
-			axl_stack_free (dtd_item_stack);
-			axl_stream_free (stream);
-			return AXL_FALSE;
+
+		/* a new item list have been opened */
+		if (axl_stream_inspect (stream, "(") > 0) {
+			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found a DTD item list openining");
+
+			/* a new item list is being defined, we have
+			 * to queue current dtd_item_list and create a
+			 * new item list */
+			axl_stack_push (dtd_item_stack, dtd_item_list);
+			
+			/* create the DTD item list */
+			dtd_item_list        = __axl_dtd_create_and_queue (dtd_item_list);
+
+			/* let's continue at the begining */
+			continue;
 		}
 		
+		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "iterating again to the a new content particule");
+
+		/* read the next content particule: here is the chunk
+		 * matched codes found: 
+		 * basic, default delimiters: 
+		 * 0, 1, 2, 3 -> " ", ",", "|", ")" 
+		 * repetition configuration: 
+		 * 4, 5, 6  -> "+", "*", "?",
+		 * new dtd item list being opened: 
+		 * 8 -> "(" */
+		string_aux = __axl_dtd_read_content_particule (stream, &chunk_matched,
+							       dtd_item_stack, error);
+		if (string_aux == NULL)
+			return AXL_FALSE;
+
+		/* make a local copy */
+		string_aux = axl_strdup (string_aux);
+		
+		/* check, and record, that the string read is
+		 * PCDATA */
+		is_pcdata = axl_cmp (string_aux, "#PCDATA");
+
 		/* add the item read if have something defined */
-		if (strlen (string_aux) > 0) {
-			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found content spec particule: (size: %d) '%s'", 
-				 strlen (string_aux),
-				 string_aux);
+		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found content spec particule: (size: %d) '%s'", 
+			 strlen (string_aux),
+			 string_aux);
+
+		/* check if the have matched a white space: next check is
+		 * based on the call to axl_stream_get_until at the caller
+		 * function: " " */
+		if (chunk_matched == 0) {
+			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, 
+				 "found white spaces as delimiter, consuming them (current chunk matched: %d)",
+				 chunk_matched);
 			
-			/* add the content particule found */
-			if (!__axl_dtd_element_content_particule_add (dtd_item_list, string_aux, chunk_matched, stream, error))
-				return AXL_FALSE;
-			
-			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "element added to the DTD ELEMENT, chunk matched=%d",
+			/* consume previous white spaces */
+			AXL_CONSUME_SPACES (stream);
+
+			/* update current chunk_matched to conform to
+			 * an stream that have all elements really
+			 * close: the following function tries to read
+			 * and update chunk_matched variable to point
+			 * to the value read for ",", "|", "+", "*",
+			 * "?" and ")" because white spaces were found */
+			__axl_dtd_element_spec_update_chunk_matched (stream, &chunk_matched);
+
+			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, 
+				 "current chunk matched before update (%d)",
 				 chunk_matched);
 		}
 
-		/* set element type */
-		if ((chunk_matched == 3) && 
-		    (axl_cmp (string_aux, "#PCDATA"))) {
+		/* add the content particule found, this function
+		 * already detect that a white space was found and
+		 * consumes all white spaces found */
+		if (!__axl_dtd_element_content_particule_add (dtd_item_list, string_aux, chunk_matched, stream, error))
+			return AXL_FALSE;
+
+		/* set current sequence type accoring to separators
+		 * used */
+		switch (chunk_matched) {
+		case 1:
+			dtd_item_list->type = SEQUENCE;
+			break;
+		case 2:
+			dtd_item_list->type = CHOICE;
+			break;
+		}
+
+		/* set element type if a element list terminator was
+		 * found ( 3 = ')' = chunk_matched) */
+		if ((chunk_matched == 3) && is_pcdata) {
 			if (axl_list_length (dtd_item_list->itemList) == 1)
 				dtd_element->type = ELEMENT_TYPE_PCDATA;
 			else if (axl_list_length (dtd_item_list->itemList) > 1)
 				dtd_element->type = ELEMENT_TYPE_MIXED;
 		}
 
+		/* pop current element list header */
+		if (chunk_matched == 3) {
+			do {
+				axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found a DTD item list termination");
+				/* consume previous white spaces */
+				AXL_CONSUME_SPACES (stream);
+				dtd_item_list->times = __axl_dtd_get_repetition_conf (stream);
+				
+				/* this means that a ) was found, we have to
+				 * pop current queue */
+				dtd_item_list = axl_stack_pop (dtd_item_stack);
+				
+				/* special case: check if the next element to
+				 * be read is a new ) */
+				/* consume previous white spaces */
+				AXL_CONSUME_SPACES (stream);
+
+			}while (axl_stream_inspect (stream, ")") > 0);
+		}
+
 		/* check if we have finished */
-	} while (chunk_matched != 3);
+	} while (chunk_matched != 3 || (! axl_stack_is_empty (dtd_item_stack)));
 
 	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "content spec terminated, now lookup for the termination");
 		
@@ -639,6 +805,8 @@ bool __axl_dtd_read_element_spec (axlStream * stream, axlDtdElement * dtd_elemen
 		
 	/* free the stack used */
 	axl_stack_free (dtd_item_stack);
+
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "DTD content element specification found and parsed ok");
 
 	/* content spec readed properly */
 	return AXL_TRUE;
@@ -779,9 +947,19 @@ axlDtd * __axl_dtd_parse_common (char * entity, int entity_size,
 		
 		/* check for element declaration */
 		if (axl_stream_peek (stream, "<!ELEMENT") > 0) {
+			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found DTD element declaration");
 			/* found element declaration */
 			if (! __axl_dtd_parse_element (dtd, stream, error))
 				return AXL_FALSE;
+			continue;
+		}
+
+		/* check for attribute list declarations */
+		if (axl_stream_peek (stream, "<!ATTLIST") > 0) {
+			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found DTD attribute list declaration (NOT SUPPORTED YET)");
+			
+			/* ignore any but until > */
+			axl_stream_get_until (stream, NULL, NULL, AXL_TRUE, 1, ">");
 			continue;
 		}
 
