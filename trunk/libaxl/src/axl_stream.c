@@ -117,6 +117,11 @@ struct _axlStream {
 	 * case the stream if a STREAM_FD, this is the file descriptor
 	 * associated. */
 	int           fd;
+
+	/* Temporal buffer used by the stream to handle prebuffering
+	 * operations.
+	 */
+	char  temp[STREAM_BUFFER_SIZE];
 };
 
 
@@ -145,7 +150,6 @@ struct _axlStream {
 bool axl_stream_prebuffer (axlStream * stream)
 {
 	int  bytes_read;
-	char temp[STREAM_BUFFER_SIZE];
 
 	/* check some environment conditions */
 	axl_return_val_if_fail (stream, AXL_FALSE);
@@ -169,21 +173,19 @@ bool axl_stream_prebuffer (axlStream * stream)
 			 stream->stream + stream->stream_index);
 
 		/* clear the memory */
-		memset (temp, 0, STREAM_BUFFER_SIZE);
+		memset (stream->temp, 0, STREAM_BUFFER_SIZE);
 		
 		/* displace memory already read to be at the begining
 		 * of the stream */
-		memcpy (temp, stream->stream + stream->stream_index,
+		memcpy (stream->temp, stream->stream + stream->stream_index,
 			STREAM_BUFFER_SIZE - stream->stream_index);
 
 		/* clear the memory */
 		memset (stream->stream, 0, STREAM_BUFFER_SIZE);
 
 		/* now copy displaced content back to the stream */
-		memcpy (stream->stream, temp, 
+		memcpy (stream->stream, stream->temp, 
 			STREAM_BUFFER_SIZE - stream->stream_index);
-
-		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "   current stream header: %s", stream->stream);
 
 		/* update the index to the positioned at the next byte
 		 * available on the buffer */

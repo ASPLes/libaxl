@@ -51,6 +51,9 @@ struct _axlList {
 	axlListNode    * first_node;
 	axlListNode    * last_node;
 	int              length;
+	axlListNode   ** preallocated;
+	int              available;
+	int              allocated;
 };
 
 struct _axlListNode {
@@ -77,6 +80,73 @@ struct _axlListNode {
 int __axl_list_always_true (axlPointer a, axlPointer b)
 {
 	return 0;
+}
+
+/** 
+ * @internal
+ *
+ * Preallocates nodes to be used to store data on the lists.
+ * 
+ * @param list The list where the preallocation operation will be
+ * performed.
+ */
+void  __axl_list_allocate_nodes (axlList * list)
+{
+	int iterator;
+
+	list->available     = 1;
+	list->allocated    += list->available;
+
+	/* allocate enough memory to hold all nodes already
+	 * allocated */
+	if (list->preallocated == NULL)
+		list->preallocated  = axl_new (axlListNode *, list->allocated);
+	else
+		list->preallocated  = realloc (list->preallocated, sizeof (axlListNode *) * list->allocated);
+
+	/* allocate a node for each available position */
+	for (iterator = 0; iterator < list->available; iterator++) {
+		list->preallocated[iterator] = axl_new (axlListNode, 1);
+	}
+	
+	return;
+}
+
+/** 
+ * @internal
+ * 
+ * Disposes the node provided, reusing on the next operation
+ * requested.
+ */
+void __axl_list_dispose_node (axlList * list, axlListNode * node)
+{
+	/* store the node to be usable again */
+	list->preallocated [list->available] = node;
+	
+	/* increase current available nodes */
+	list->available++;
+	
+	return;
+}
+
+/** 
+ * @internal
+ *
+ * Returns a reference to an list node to be used.
+ */
+axlListNode * __axl_list_get_next_node_available (axlList * list)
+{
+	axlListNode * node;
+
+	/* check that there are nodes available */
+	if (list->available == 0) 
+		__axl_list_allocate_nodes (list);
+	
+	/* get the next node available */
+	node = list->preallocated[list->available - 1];
+	list->available--;
+		
+	return node;
 }
 
 
@@ -123,7 +193,10 @@ axlList * axl_list_new    (axlEqualFunc are_equal, axlDestroyFunc destroy_data)
 	result               = axl_new (axlList, 1);
 	result->are_equal    = are_equal;
 	result->destroy_data = destroy_data;
-	
+
+	/* preallocate memory for nodes */
+	__axl_list_allocate_nodes (result);
+
 	return result;
 }
 
@@ -196,8 +269,9 @@ void      axl_list_add    (axlList * list, axlPointer pointer)
 	/* perform some environment checkings */
 	axl_return_if_fail (list);
 	axl_return_if_fail (pointer);
-
-	new_node         = axl_new (axlListNode, 1);
+	
+	new_node         = __axl_list_get_next_node_available (list); 
+	/* new_node         = axl_new (axlListNode, 1); */
 	new_node->data   = pointer;
 	
 	/* check basic case */
@@ -426,7 +500,8 @@ void     axl_list_common_remove (axlList * list, axlPointer pointer, bool alsoRe
 		list->destroy_data (pointer);
 	
 	/* release memory allocated by the node */
-	axl_free (node);
+	__axl_list_dispose_node (list, node); 
+	/* axl_free (node);  */
 
 	/* decrease list length */
 	list->length--;
@@ -657,6 +732,7 @@ int       axl_list_length (axlList * list)
  */
 void      axl_list_free (axlList * list)
 {
+	int iterator;
 	axlListNode * node;
 	axlListNode * node2;
 	axl_return_if_fail (list);
@@ -669,6 +745,16 @@ void      axl_list_free (axlList * list)
 		node  = node->next;
 		axl_free (node2);
 	}
+
+	/* allocate a node for each available position */
+	for (iterator = 0; iterator < list->available; iterator++) {
+		axl_free (list->preallocated[iterator]);
+	}
+
+	/* free the array */
+	axl_free (list->preallocated);
+	
+	/* free the list itself */
 	axl_free (list);
 
 	return;

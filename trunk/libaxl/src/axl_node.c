@@ -173,16 +173,62 @@ axlNode * axl_node_create (char * name)
 	node           = axl_new (axlNode, 1);
 	node->name     = axl_strdup (name);
 	
-	/* create the child list */
-	node->childs   = axl_list_new (__axl_node_equal, (axlDestroyFunc) axl_node_free);
+	return node;
+}
 
-	/* create attribute list */
-	node->attributes = axl_list_new (__axl_node_equal, (axlDestroyFunc) __axl_node_destroy_attr);
+/** 
+ * @internal
+ * 
+ * Support function to initialize piTargets if required.
+ * 
+ * @param node 
+ */
+void __axl_node_init_pitargets (axlNode * node)
+{
+	/* do not init pi targets once done */
+	if (node->piTargets != NULL)
+		return;
 
 	/* create PI list */
-	node->piTargets  = axl_list_new (axl_list_always_return_1, (axlDestroyFunc) axl_pi_free);
+	node->piTargets  = axl_list_new (axl_list_always_return_1, (axlDestroyFunc) axl_pi_free);	
+}
 
-	return node;
+/** 
+ * @internal
+ *
+ * Support function which initializes the attribute list if required.
+ * 
+ * @param node 
+ */
+void __axl_node_init_attributes (axlNode * node)
+{
+	/* do not init attribute list twice */
+	if (node->attributes != NULL)
+		return;
+	
+	/* create attribute list */
+	node->attributes = axl_list_new (__axl_node_equal, (axlDestroyFunc) __axl_node_destroy_attr);
+}
+
+/** 
+ * @internal
+ *
+ * Support function which initializes current childs node list, if
+ * necessary.
+ * 
+ * @param node The axlNode where the child node initialization will be
+ * performed.
+ */
+void __axl_node_init_childs (axlNode * node)
+{
+	/* do not init childs if already created */
+	if (node->childs != NULL)
+		return;
+	
+	/* create the child list */
+	node->childs   = axl_list_new (__axl_node_equal, (axlDestroyFunc) axl_node_free);	
+	
+	return;
 }
 
 /** 
@@ -227,6 +273,8 @@ void      axl_node_set_attribute      (axlNode * node, char * attribute, char * 
 	/* attribute could be added twice */
 	axl_return_if_fail (! axl_node_has_attribute (node, attribute));
 	
+	/* init attribute list */
+	__axl_node_init_attributes (node);
 
 	/* create the attribute */
 	_attribute        = axl_new (axlAttribute, 1);
@@ -252,6 +300,11 @@ axlAttribute * __axl_node_common_attr_get (axlNode * node, char * attribute)
 
 	axl_return_val_if_fail (node, AXL_FALSE);
 	axl_return_val_if_fail (attribute, AXL_FALSE);
+
+	/* assume the attribute requested doesn't exist because the
+	 * attribute list is not initialized  */
+	if (node->attributes == NULL)
+		return NULL;
 
 	/* get the first */
 	while (iterator < axl_list_length (node->attributes)) {
@@ -515,6 +568,9 @@ void      axl_node_set_child (axlNode * parent, axlNode * child)
 {
 	axl_return_if_fail (parent);
 	axl_return_if_fail (child);
+
+	/* init childs list */
+	__axl_node_init_childs (parent);
 	
 	/* add the child node to the parent node */
 	axl_list_add (parent->childs, child);
@@ -556,6 +612,11 @@ void      axl_node_set_have_childs (axlNode * node, bool childs)
 bool      axl_node_have_childs        (axlNode * node)
 {
 	axl_return_val_if_fail (node, AXL_FALSE);
+
+	/* if childs list is NULL, assume the node doesn't have
+	 * childs */
+	if (node->childs == NULL)
+		return AXL_FALSE;
 	
 	/* return current configuration */
 	return (axl_list_length (node->childs) > 0);
@@ -579,6 +640,11 @@ axlNode * axl_node_get_child_called   (axlNode * parent, char * name)
 	
 	axl_return_val_if_fail (parent, NULL);
 	axl_return_val_if_fail (name, NULL);
+
+	/* if the child list is not defined, assume there is no node
+	 * called the name requested */
+	if (parent->childs == NULL)
+		return NULL;
 	
 	/* if no childs, no result */
 	length = axl_list_length (parent->childs);
@@ -617,6 +683,12 @@ axlNode * axl_node_get_child_nth      (axlNode * parent, int position)
 	axl_return_val_if_fail (position >= 0 && position < axl_list_length (parent->childs),
 				NULL);
 
+	/* if not initialized childs list, assume there is no node at
+	 * the provided position */
+	if (parent->childs == NULL)
+		return NULL;
+
+
 	return axl_list_get_nth (parent->childs, position);
 }
 
@@ -632,7 +704,7 @@ axlNode * axl_node_get_child_nth      (axlNode * parent, int position)
 axlList * axl_node_get_childs         (axlNode * node)
 {
 	axl_return_val_if_fail (node, NULL);
-	
+
 	/* return current childs */
 	return node->childs;
 }
@@ -663,6 +735,9 @@ void      axl_node_add_pi_target            (axlNode * node,
 
 	/* create the PI element */
 	pi = axl_pi_create (target, content);
+
+	/* init pi targets */
+	__axl_node_init_pitargets (node);
 
 	/* add the PI */
 	axl_list_add (node->piTargets, pi);
@@ -697,6 +772,11 @@ bool      axl_node_has_pi_target            (axlNode * node,
 	
 	axl_return_val_if_fail (node,      AXL_FALSE);
 	axl_return_val_if_fail (pi_target, AXL_FALSE);
+
+	/* assume the pi target doesn't exist if it is not
+	 * initialized */
+	if (node->piTargets == NULL)
+		return AXL_FALSE;
 
 	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "checking it target element: %s is defined on the node", pi_target);
 
@@ -737,6 +817,11 @@ char    * axl_node_get_pi_target_content    (axlNode * node,
 
 	axl_return_val_if_fail (node,       NULL);
 	axl_return_val_if_fail (pi_target, NULL);
+
+	/* assume NULL content if the pitarget list is not
+	 * initialized */
+	if (node->piTargets == NULL)
+		return NULL;
 
 	/* get the length for the items inserted */
 	length = axl_list_length (node->piTargets);
@@ -833,10 +918,12 @@ void axl_node_free (axlNode * node)
 		axl_list_free (node->piTargets);
 
 	/* release memory hold by attributes */
-	axl_list_free (node->attributes);
+	if (node->attributes)
+		axl_list_free (node->attributes);
 
 	/* release memory hold by childs */
-	axl_list_free (node->childs);
+	if (node->childs != NULL)
+		axl_list_free (node->childs);
 
 	/* free attributes */
 	axl_free (node);
