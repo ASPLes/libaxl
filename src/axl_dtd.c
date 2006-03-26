@@ -441,18 +441,22 @@ bool __axl_dtd_element_content_particule_add (axlDtdElementList  * dtd_item_list
 	switch (chunk_matched) {
 	case 4:
 		/* one or many times */
+		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "setting one to many repeat pattern: (+)");
 		node->times = ONE_OR_MANY;
 		break;
 	case 5:
 		/* zero or many times */
+		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "setting zero to many repeat pattern: (*)");
 		node->times = ZERO_OR_MANY;
 		break;
 	case 6:
 		/* zero or one time */
+		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "setting one to one repeat pattern: (?)");
 		node->times = ZERO_OR_ONE;
 		break;
 	default:
 		/* one and only one time */
+		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "setting one and only one repeat pattern: ()");
 		node->times = ONE_AND_ONLY_ONE;
 	}
 
@@ -582,6 +586,42 @@ void __axl_dtd_element_spec_update_chunk_matched (axlStream * stream,
 /** 
  * @internal
  *
+ * Support function to read the content particule separator once the
+ * repeat pattern was found 
+ * 
+ */
+bool __axl_dtd_element_spec_update_chunk_matched_for_cp_separator (axlStream * stream, 
+								   int * chunk_matched)
+{
+	/* consume previous white spaces */
+	AXL_CONSUME_SPACES (stream);
+
+	/* check for for sequence or choice characters */
+	if (axl_stream_inspect (stream, ",") > 0) {
+		/* flag that we have found a , (choice)
+		 * separator */
+		(*chunk_matched) = 1;
+		return AXL_TRUE;
+		
+	} else if (axl_stream_inspect (stream, "|") > 0) {
+		/* flag that we have found a | (sequence)
+		 * separator */
+		(*chunk_matched) = 2;
+		return AXL_TRUE;
+
+	} else if (axl_stream_inspect (stream, ")") > 0) {
+		/* flag that we have found a | (sequence)
+		 * separator */
+		(*chunk_matched) = 3;
+		return AXL_TRUE;
+	}
+	
+	return AXL_FALSE;
+}
+
+/** 
+ * @internal
+ *
  * Support function which allows to read the next content particule.
  */
 char * __axl_dtd_read_content_particule (axlStream  * stream, 
@@ -705,8 +745,7 @@ bool __axl_dtd_read_element_spec (axlStream * stream, axlDtdElement * dtd_elemen
 		 * 4, 5, 6  -> "+", "*", "?",
 		 * new dtd item list being opened: 
 		 * 8 -> "(" */
-		string_aux = __axl_dtd_read_content_particule (stream, &chunk_matched,
-							       dtd_item_stack, error);
+		string_aux = __axl_dtd_read_content_particule (stream, &chunk_matched, dtd_item_stack, error);
 		if (string_aux == NULL)
 			return AXL_FALSE;
 
@@ -751,6 +790,17 @@ bool __axl_dtd_read_element_spec (axlStream * stream, axlDtdElement * dtd_elemen
 		 * consumes all white spaces found */
 		if (!__axl_dtd_element_content_particule_add (dtd_item_list, string_aux, chunk_matched, stream, error))
 			return AXL_FALSE;
+
+		if (chunk_matched == 4 || chunk_matched == 5 || chunk_matched == 6) {
+			/* found a repetition pattern */
+			if (! __axl_dtd_element_spec_update_chunk_matched_for_cp_separator (stream, &chunk_matched)) {
+				axl_error_new (-1, "Before a repetition pattern (*,+,?) expected to find a content particule separator",
+					       stream, error);
+				axl_stack_free (dtd_item_stack);
+				axl_stream_free (stream);		
+				return AXL_FALSE;
+			}
+		}
 
 		/* set current sequence type accoring to separators
 		 * used */
@@ -1037,13 +1087,18 @@ axlDtd   * axl_dtd_parse_from_file (char * file_path,
  * if something have failed. It also creates an error, using the
  * optional axlError reference received.
  */
-bool __axl_dtd_validate_sequence (axlNode           * parent, 
-				  axlDtdElementList * itemList, 
-				  axlError ** error)
+bool __axl_dtd_validate_sequence (axlNode            * parent, 
+				  int                * child_position,
+				  axlDtdElementList  * itemList, 
+				  axlStack           * stack,
+				  axlError          ** error)
 {
-	int                      iterator = 0;
+	int                      iterator  = *child_position;
+	int                      child_pos = *child_position;
 	axlNode                * node;
 	axlDtdElementListNode  * itemNode;
+	bool                     status    = AXL_FALSE;
+	bool                     one_matched;
 
 	axl_return_val_if_fail (parent, AXL_FALSE);
 	axl_return_val_if_fail (itemList, AXL_FALSE);
@@ -1052,51 +1107,177 @@ bool __axl_dtd_validate_sequence (axlNode           * parent,
 	while (iterator < axl_dtd_item_list_count (itemList)) {
 		
 		/* get the item node specification */
-		itemNode = axl_dtd_item_list_get_node (itemList, iterator);
+		itemNode    = axl_dtd_item_list_get_node (itemList, iterator);
+		one_matched = AXL_FALSE;
 
-		/* get the node that is located at the same position
-		 * than the sequence */
-		node     = axl_node_get_child_nth (parent, iterator);
-		
-		/* check node type */
-		if (axl_dtd_item_node_get_type (itemNode) != NODE) {
-			axl_error_new (-1, "Expected to find an item node to validate current sequence type but found a complex structure",
-				       NULL, error);
-			return AXL_FALSE;
-		}
+		do {
+			/* get the node that is located at the same position
+			 * than the sequence */
+			node     = axl_node_get_child_nth (parent, child_pos);
 
-		/* check the name against the spec */
-		if (! NODE_CMP_NAME (node, axl_dtd_item_node_get_value (itemNode))) {
-			axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "Found different node (<%s>) for a sequence expected (<%s>)",
-				 axl_node_get_name (node), axl_dtd_item_node_get_value (itemNode));
-			axl_error_new (-1, "Found a different node, inside a sequence, than the sequence especification (DTD)",
-				       NULL, error);
-			return AXL_FALSE;
-		}
+			/* the node child list have ended, check if
+			 * this situation was expected */
+			if (node == NULL) {
+				/* check if we were working with a
+				 * list, which have matched at least
+				 * one item */
+				if (itemNode->times == ONE_OR_MANY && status && 
+				    (iterator + 1 == axl_dtd_item_list_count (itemList))) {
+					*child_position = child_pos;
+					return AXL_TRUE;
+				}
+				
+				/* check that the reset of the
+				 * specification item is optional,
+				 * including the one used */
+				status = AXL_TRUE;
+				do {
+					if (itemNode->times != ZERO_OR_MANY &&
+					    itemNode->times != ZERO_OR_ONE) {
+						status = AXL_FALSE;
+					}
+
+					/* update index and get the next item */
+					iterator++;
+					itemNode = axl_dtd_item_list_get_node (itemList, iterator);
+				}while (status && (iterator < axl_dtd_item_list_count (itemList)));
+
+				/* check status before checking the rest of the item spec */
+				if (status) {
+					*child_position = child_pos;
+					return AXL_TRUE;
+				}
+				
+				axl_error_new (-1, "Found that DTD specifies more nodes to be hold by the parent, but no more childs were found",
+					       NULL, error);
+				axl_stack_free (stack);
+				return AXL_FALSE;
+			}
+
+			/* check node type */
+			switch (axl_dtd_item_node_get_type (itemNode)) {
+			case ELEMENT_LIST:
+				/* element list found, validate its content */
+				if (! __axl_dtd_validate_item_list (axl_dtd_item_node_get_list (itemNode),
+								    parent, &child_pos,
+								    stack, error)) {
+					axl_stack_free (stack);
+					return AXL_FALSE;
+				}
+				status = AXL_TRUE;
+				break;
+			case NODE:
+				/* check the name against the spec */
+				status = NODE_CMP_NAME (node, axl_dtd_item_node_get_value (itemNode));
+				break;
+			default:
+				/* critical, this section must never
+				 * be reached */
+				break;
+			}
+
+			/* check previous status */
+			if ((itemNode->times == ONE_AND_ONLY_ONE) || 
+			    (itemNode->times == ONE_OR_MANY && one_matched == AXL_FALSE)) {
+				if (! status) {
+					axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "Found different node (<%s>) for a sequence expected (<%s>)",
+						 axl_node_get_name (node), 
+						 axl_dtd_item_node_get_value (itemNode));
+					axl_error_new (-1, "Found a different node, inside a sequence, than the sequence especification (DTD)",
+						       NULL, error);
+					axl_stack_free (stack);
+					return AXL_FALSE;					
+				}
+				break;
+			}
+
+			/* according to the repetition pattern, update loop indexes */
+
+			/* one only item to match and exactly one */
+			if (itemNode->times == ONE_AND_ONLY_ONE) {
+				child_pos++;
+				break;
+			}
+
+			/* one or many items to match */
+			if (itemNode->times == ONE_OR_MANY) { 
+
+				/* if the match have failed and
+				 * previous matches was ok, it seems
+				 * we have reached the next
+				 * items. Just break the loop */
+				if (status == AXL_FALSE && one_matched == AXL_TRUE) 
+					break;
+
+				child_pos++;
+				one_matched = AXL_TRUE;
+				continue; /* don't break the loop */
+			}
+
+			/* zero or optionally one item to match */			
+			if (itemNode->times == ZERO_OR_ONE) {
+				/* if previous status was ok, it seems
+				 * that we have matched the optional
+				 * character. In that case, move the
+				 * index to the following value. If
+				 * not, just break the loop. */
+				if (status == AXL_TRUE)
+					child_pos++;
+				break;
+			}
+
+			/* zero or many items to match */
+			if (itemNode->times == ZERO_OR_MANY) {
+				if (status == AXL_TRUE) {
+					one_matched = AXL_TRUE;
+					child_pos++;
+					continue;
+				}
+				break;
+			}
+
+
+			/* until break the loop */
+		}while (AXL_TRUE);
 
 		/* update iterator index */
 		iterator++;
 	}
 
 	/* return that the sequence has been validated */
+	*child_position = child_pos;
 	return AXL_TRUE;
 }
 
 /** 
- * @internal
+ * @internal 
  *
- * Support function validate parent nodes which are element type
- * children ones.
+ * Tries to perform a validation, based on the item list received and
+ * the repetition configuration.
+ * 
+ * @param itemList The item list containing DTD content spec
+ * information used to validate.
+ *
+ * @param parent The parent node where the validation process is being
+ * applied. The content spec refers to the childs the parent has.
+ *
+ * @param stack An stack used by the overall process to store the
+ * subsequent parents to be validated. This stack must be released if
+ * a error is found.
+ *
+ * @param error An optional axlError reference containing the error
+ * textual diagnostic if found.
+ * 
+ * @return AXL_TRUE if the validation was ok, otherwise AXL_FALSE is
+ * returned.
  */
-bool __axl_dtd_validte_element_type_children (axlDtdElement  * element, 
-					      axlNode        * parent, 
-					      axlStack       * stack,
-					      axlError      ** error)
+bool __axl_dtd_validate_item_list (axlDtdElementList  * itemList, 
+				   axlNode            * parent, 
+				   int                * child_position,
+				   axlStack           * stack,
+				   axlError          **error)
 {
-	axlDtdElementList * itemList;
-
-	itemList = axl_dtd_get_item_list (element);
-	
+	/* now check repetition type */
 	switch (axl_dtd_item_list_repeat (itemList)) {
 	case ONE_AND_ONLY_ONE:
 		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "  found a (one and only one) spec..");
@@ -1106,9 +1287,7 @@ bool __axl_dtd_validte_element_type_children (axlDtdElement  * element,
 			
 			/* it is a choice, so the item list specifies
 			 * the nodes that could appear */
-			if (!__axl_dtd_validate_sequence (parent, itemList, error)) {
-				/* free stack allocated */
-				axl_stack_free (stack);
+			if (!__axl_dtd_validate_sequence (parent, child_position, itemList, stack, error)) {
 				return AXL_FALSE;
 			}
 		}else {
@@ -1131,7 +1310,28 @@ bool __axl_dtd_validte_element_type_children (axlDtdElement  * element,
 	}
 
 	/* element type children validated */
-	return AXL_TRUE;
+	return AXL_TRUE;       
+}
+
+/** 
+ * @internal
+ *
+ * Support function validate parent nodes which are element type
+ * children ones.
+ */
+bool __axl_dtd_validate_element_type_children (axlDtdElement  * element, 
+					       axlNode        * parent, 
+					       axlStack       * stack,
+					       axlError      ** error)
+{
+	axlDtdElementList * itemList;
+	int                 child_pos = 0;
+
+	/* get a reference to the item list */
+	itemList = axl_dtd_get_item_list (element);
+
+	/* validate the item list, starting from the child 0 */
+	return __axl_dtd_validate_item_list (itemList, parent, &child_pos, stack, error);
 }
 
 /** 
@@ -1255,8 +1455,6 @@ bool       axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 		return axl_node_is_empty (parent) && !axl_node_have_childs (parent);
 	}
 
-
-
 	/* queue initial nodes to validate */
 	stack  = axl_stack_new (NULL);
 
@@ -1274,6 +1472,7 @@ bool       axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 		 * configure this parent node. */
 		switch (axl_dtd_get_element_type (element)) {
 		case ELEMENT_TYPE_PCDATA:
+			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "  find  PCDATA dtd element");
 			/* ok, a leaf node was found, know it is
 			 * required to check that the node doesn't
 			 * have more childs and only have content,
@@ -1282,11 +1481,13 @@ bool       axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 				return AXL_FALSE;
 			break;
 		case ELEMENT_TYPE_CHILDREN:
+			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "  find  CHILDREN dtd element");
 			/* ok, a parent node that have childs */
-			if (!__axl_dtd_validte_element_type_children (element, parent, stack, error))
+			if (!__axl_dtd_validate_element_type_children (element, parent, stack, error))
 				return AXL_FALSE;
 			break;
 		case ELEMENT_TYPE_EMPTY:
+			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "  find  EMPTY dtd element");
 			/* the element especification is empty, the
 			 * node being validated must also be the
 			 * same */
@@ -1294,10 +1495,12 @@ bool       axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 				return AXL_FALSE;
 			break;
 		case ELEMENT_TYPE_ANY:
+			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "  find  ANY dtd element");
 			/* the anything is allowed cased from this
 			 * parent node. */
 			goto continue_with_validation;
 		case ELEMENT_TYPE_MIXED:
+			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "  find  MIXED dtd element");
 			/* the mixed case, where nodes and PC data
 			 * could be mixed */
 			break;
@@ -1635,7 +1838,8 @@ axlDtdElementList   * axl_dtd_item_node_get_list (axlDtdElementListNode * node)
 char               * axl_dtd_item_node_get_value (axlDtdElementListNode * node)
 {
 	axl_return_val_if_fail (node, NULL);
-	axl_return_val_if_fail (node->type == NODE, NULL);
+	if (node->type != NODE) 
+		return "requested-value-on-a-list";
 
 	return node->data;
 }

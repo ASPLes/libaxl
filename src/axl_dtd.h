@@ -95,6 +95,14 @@ void                 axl_dtd_element_free     (axlDtdElement * element);
 
 void                 axl_dtd_item_list_free   (axlDtdElementList * list);
 
+
+/* DON'T USE THIS FUNCTIONS, PROTOTYPES DECLARATIONS */
+bool __axl_dtd_validate_item_list (axlDtdElementList  * itemList, 
+				   axlNode            * parent, 
+				   int                * child_pos,
+				   axlStack           * stack, 
+				   axlError          **error);
+
 /* @} */
 
 END_C_DECLS

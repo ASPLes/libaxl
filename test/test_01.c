@@ -8,23 +8,189 @@
  * 
  * @return AXL_TRUE if the validity test is passed, AXL_FALSE if not.
  */
-bool test_09 (axlError ** error) 
+bool test_10 (axlError ** error) 
 {
 	axlDoc * doc = NULL;
 	axlDtd * dtd = NULL;
 
 	/* parse gmovil file (an af-arch xml chunk) */
-	/* doc = axl_doc_parse_from_file ("gmovil2.xml", error); */
-	/* if (doc == NULL) */
-	/* return AXL_FALSE; */
+	doc = axl_doc_parse_from_file ("gmovil2.xml", error); 
+	if (doc == NULL) 
+		return AXL_FALSE;
 
 	/* parse af-arch DTD */
 	dtd = axl_dtd_parse_from_file ("fact.dtd", error);
 	if (dtd == NULL)
 		return AXL_FALSE;
 
+	/* perform DTD validation */
+	if (! axl_dtd_validate (doc, dtd, error)) {
+		return AXL_FALSE;
+	}
+
 	/* free doc reference */
-	/* axl_doc_free (doc); */
+	axl_doc_free (doc); 
+	
+	/* free dtd reference */
+	axl_dtd_free (dtd);
+
+	/* test end */
+	return AXL_TRUE;
+}
+
+/** 
+ * @brief A more complex DTD parsing example
+ * 
+ * @param error The optional axlError to be used to report errors.
+ * 
+ * @return AXL_TRUE if the validity test is passed, AXL_FALSE if not.
+ */
+bool test_09 (axlError ** error) 
+{
+	axlDoc                * doc      = NULL;
+	axlDtd                * dtd      = NULL;
+	axlDtdElement         * element  = NULL;
+	axlDtdElementList     * itemList = NULL;
+	axlDtdElementListNode * itemNode = NULL;
+	
+
+	/* parse gmovil file (an af-arch xml chunk) */
+	doc = axl_doc_parse_from_file ("test4.xml", error); 
+	if (doc == NULL) 
+		return AXL_FALSE;
+
+	/* parse af-arch DTD */
+	dtd = axl_dtd_parse_from_file ("test4.dtd", error);
+	if (dtd == NULL)
+		return AXL_FALSE;
+
+	
+	/* get dtd element */
+	element = axl_dtd_get_element (dtd, "nodes");
+	if (element == NULL) {
+		axl_error_new (-1, "unable to find expected DTD element", NULL, error);
+		return AXL_FALSE;
+	}
+
+	/* get the item list */
+	itemList = axl_dtd_get_item_list (element);
+	if (axl_dtd_item_list_count (itemList) != 6) {
+		axl_log ("test-01", AXL_LEVEL_CRITICAL, "found item list size: %d != 6",
+			 axl_dtd_item_list_count (itemList));
+		axl_error_new (-1, "expected to find an item list definition with 6 elements", NULL, error);
+		return AXL_FALSE;
+	}
+
+	/* check <first> node spec */
+	itemNode = axl_dtd_item_list_get_node (itemList, 0);
+	if (axl_dtd_item_node_get_type (itemNode) != NODE) {
+		axl_error_new (-1, "expected to find an item node definition, not found", NULL, error);
+		return AXL_FALSE;
+	}
+	
+	if (! axl_cmp (axl_dtd_item_node_get_value (itemNode), "first")) {
+		axl_error_new (-1, "expected to find an item node name (first) definition, not found", NULL, error);
+		return AXL_FALSE;
+	}
+
+	if (axl_dtd_item_node_get_repeat (itemNode) != ONE_OR_MANY) {
+		axl_error_new (-1, "expected to find an item node definition with one or many repeat def (+), not found", NULL, error);
+		return AXL_FALSE;
+	}
+
+	/* check <second> node spec */
+	itemNode = axl_dtd_item_list_get_node (itemList, 1);
+	if (axl_dtd_item_node_get_type (itemNode) != NODE) {
+		axl_error_new (-1, "expected to find an item node definition, not found", NULL, error);
+		return AXL_FALSE;
+	}
+	
+	if (! axl_cmp (axl_dtd_item_node_get_value (itemNode), "second")) {
+		axl_error_new (-1, "expected to find an item node name (second) definition, not found", NULL, error);
+		return AXL_FALSE;
+	}
+
+	if (axl_dtd_item_node_get_repeat (itemNode) != ONE_AND_ONLY_ONE) {
+		axl_error_new (-1, "expected to find an item node definition with one and only one repeat def (), not found", NULL, error);
+		return AXL_FALSE;
+	}
+
+	/* check <third> node spec */
+	itemNode = axl_dtd_item_list_get_node (itemList, 2);
+	if (axl_dtd_item_node_get_type (itemNode) != NODE) {
+		axl_error_new (-1, "expected to find an item node definition, not found", NULL, error);
+		return AXL_FALSE;
+	}
+	
+	if (! axl_cmp (axl_dtd_item_node_get_value (itemNode), "third")) {
+		axl_error_new (-1, "expected to find an item node name (third) definition, not found", NULL, error);
+		return AXL_FALSE;
+	}
+
+	if (axl_dtd_item_node_get_repeat (itemNode) != ZERO_OR_ONE) {
+		axl_error_new (-1, "expected to find an item node definition with zero or one repeat def (?), not found", NULL, error);
+		return AXL_FALSE;
+	}
+
+	/* check <fourth> node spec */
+	itemNode = axl_dtd_item_list_get_node (itemList, 3);
+	if (axl_dtd_item_node_get_type (itemNode) != NODE) {
+		axl_error_new (-1, "expected to find an item node definition, not found", NULL, error);
+		return AXL_FALSE;
+	}
+	
+	if (! axl_cmp (axl_dtd_item_node_get_value (itemNode), "fourth")) {
+		axl_error_new (-1, "expected to find an item node name (fourth) definition, not found", NULL, error);
+		return AXL_FALSE;
+	}
+
+	if (axl_dtd_item_node_get_repeat (itemNode) != ONE_AND_ONLY_ONE) {
+		axl_error_new (-1, "expected to find an item node definition with one and only one repeat def (), not found", NULL, error);
+		return AXL_FALSE;
+	}
+
+	/* check <fifth> node spec */
+	itemNode = axl_dtd_item_list_get_node (itemList, 4);
+	if (axl_dtd_item_node_get_type (itemNode) != NODE) {
+		axl_error_new (-1, "expected to find an item node definition, not found", NULL, error);
+		return AXL_FALSE;
+	}
+	
+	if (! axl_cmp (axl_dtd_item_node_get_value (itemNode), "fifth")) {
+		axl_error_new (-1, "expected to find an item node name (fifth) definition, not found", NULL, error);
+		return AXL_FALSE;
+	}
+
+	if (axl_dtd_item_node_get_repeat (itemNode) != ZERO_OR_MANY) {
+		axl_error_new (-1, "expected to find an item node definition with zero to many repeat def (*), not found", NULL, error);
+		return AXL_FALSE;
+	}
+
+	/* check <fourth> node spec */
+	itemNode = axl_dtd_item_list_get_node (itemList, 5);
+	if (axl_dtd_item_node_get_type (itemNode) != NODE) {
+		axl_error_new (-1, "expected to find an item node definition, not found", NULL, error);
+		return AXL_FALSE;
+	}
+	
+	if (! axl_cmp (axl_dtd_item_node_get_value (itemNode), "fourth")) {
+		axl_error_new (-1, "expected to find an item node name (fourth) definition, not found", NULL, error);
+		return AXL_FALSE;
+	}
+
+	if (axl_dtd_item_node_get_repeat (itemNode) != ZERO_OR_MANY) {
+		axl_error_new (-1, "expected to find an item node definition with zero to many repeat def (*), not found", NULL, error);
+		return AXL_FALSE;
+	}
+
+
+	/* perform DTD validation */
+	if (! axl_dtd_validate (doc, dtd, error)) { 
+		return AXL_FALSE; 
+	} 
+
+	/* free doc reference */
+	axl_doc_free (doc); 
 	
 	/* free dtd reference */
 	axl_dtd_free (dtd);
@@ -642,6 +808,8 @@ int main (int argc, char ** argv)
 		return -1;
 	}
 
+	goto test;
+
 		
 	if (test_01 (&error))
 		printf ("Test 01: basic xml parsing [   OK   ]\n");
@@ -706,7 +874,7 @@ int main (int argc, char ** argv)
 		return -1;
 	}	
 
-	goto test;
+
 
 	if (test_08 (&error)) 
 		printf ("Test 08: Large XML file loading [   OK   ]\n");
@@ -718,7 +886,6 @@ int main (int argc, char ** argv)
 	}	
 
  test:
-
 	if (test_09 (&error)) 
 		printf ("Test 09: Complex DTD validation [   OK   ]\n");
 	else {
@@ -726,7 +893,16 @@ int main (int argc, char ** argv)
 			axl_error_get_code (error), axl_error_get (error));
 		axl_error_free (error);
 		return -1;
-	}	
+	}
+	
+/*	if (test_10 (&error)) 
+		printf ("Test 10: Complex DTD validation (II) [   OK   ]\n");
+	else {
+		printf ("Test 10: Complex DTD validation (II) [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+		}	*/
 
 
 
