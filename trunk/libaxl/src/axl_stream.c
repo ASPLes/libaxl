@@ -665,8 +665,9 @@ char      * axl_stream_get_untilv      (axlStream * stream,
 			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "prebuffering from get-until (requested %d, starting from: %d): current status: %s", 
 				 index, stream->stream_index, 
 				 axl_stream_get_following (stream, 10));
+
 			if (! axl_stream_prebuffer (stream)) {
-				axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "failed on prebuffer");
+				axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "failed while prebuffer");
 				/* free memory hold by chunks */
 				axl_free (chunks);
 				return NULL;

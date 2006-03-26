@@ -207,7 +207,7 @@ typedef enum {
 	ZERO_OR_ONE       = 2,
 	/** 
 	 * Current configuration for DTD element content specification
-	 * signals that it could appear zero up to many times.
+	 * signals 
 	 */
 	ZERO_OR_MANY      = 3,
 	/** 

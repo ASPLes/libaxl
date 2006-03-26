@@ -801,7 +801,13 @@ axlDoc * __axl_doc_parse_common (char * entity, int entity_size,
 				 * closed, make the parent to be the
 				 * previous one */
 				axl_stack_pop (doc->parentNode);
-				continue;
+
+				axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "node properly closed, current parent node stack size: %d",
+					 axl_stack_size (doc->parentNode));
+
+				if (axl_stack_size (doc->parentNode) > 0)
+					continue;
+				break;
 			}
 
 			/* check here for CDATA section. This is done
@@ -842,10 +848,6 @@ axlDoc * __axl_doc_parse_common (char * entity, int entity_size,
 			 * space consuming */
 			if (axl_stream_get_index (stream) > index) {
 				axl_stream_move (stream, index);
-				axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "before restoring index: %d", index);
-			}else {
-				axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "not updating current index: %d <= %d", index,
-					 axl_stream_get_index (stream));
 			}
 			
 			/* found node content */
@@ -860,9 +862,6 @@ axlDoc * __axl_doc_parse_common (char * entity, int entity_size,
 
 			/* check for a not properly formed xml document */
 			if (chunk_matched == 2) {
-				axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "while reading content for <%s>, found closing definition '>' while expected '<', current stream status: %s",
-					 axl_node_get_name (node),
-					 axl_stream_get_following (stream, 20));
 				axl_error_new (-1, "found a closing node definition '>' were expected '<' or '</'", stream, error);
 				axl_stream_free (stream);
 				return NULL;
@@ -877,7 +876,6 @@ axlDoc * __axl_doc_parse_common (char * entity, int entity_size,
 	}
 
 	/* pop axl parent */
-	axl_stack_pop (doc->parentNode);
 	if (! axl_stack_is_empty (doc->parentNode)) {
 		axl_error_new (-1, "XML document is not balanced, still remains xml nodes", stream, error);
 		axl_stream_free (stream);
