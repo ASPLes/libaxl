@@ -74,10 +74,10 @@ bool test_09 (axlError ** error)
 
 	/* get the item list */
 	itemList = axl_dtd_get_item_list (element);
-	if (axl_dtd_item_list_count (itemList) != 6) {
-		axl_log ("test-01", AXL_LEVEL_CRITICAL, "found item list size: %d != 6",
+	if (axl_dtd_item_list_count (itemList) != 8) {
+		axl_log ("test-01", AXL_LEVEL_CRITICAL, "found item list size: %d != 8",
 			 axl_dtd_item_list_count (itemList));
-		axl_error_new (-1, "expected to find an item list definition with 6 elements", NULL, error);
+		axl_error_new (-1, "expected to find an item list definition with 8 elements", NULL, error);
 		return AXL_FALSE;
 	}
 
@@ -180,6 +180,34 @@ bool test_09 (axlError ** error)
 
 	if (axl_dtd_item_node_get_repeat (itemNode) != ZERO_OR_MANY) {
 		axl_error_new (-1, "expected to find an item node definition with zero to many repeat def (*), not found", NULL, error);
+		return AXL_FALSE;
+	}
+
+	/* check repetition pattern for node spec 6 */
+	itemNode = axl_dtd_item_list_get_node (itemList, 6);
+	if (axl_dtd_item_node_get_type (itemNode) != ELEMENT_LIST) {
+		axl_error_new (-1, "expected to find an item node definition, not found", NULL, error);
+		return AXL_FALSE;
+	}
+	
+	if (axl_dtd_item_node_get_repeat (itemNode) != ZERO_OR_ONE) {
+		axl_log ("test-01", AXL_LEVEL_DEBUG, "repeat configuration was different: %d != %d",
+			 axl_dtd_item_node_get_repeat (itemNode), ZERO_OR_ONE);
+		axl_error_new (-1, "expected to find an item node definition with zero or one repeat def (?), not found", NULL, error);
+		return AXL_FALSE;
+	}
+
+	/* check repetition pattern for node spec 7 */
+	itemNode = axl_dtd_item_list_get_node (itemList, 7);
+	if (axl_dtd_item_node_get_type (itemNode) != ELEMENT_LIST) {
+		axl_error_new (-1, "expected to find an item node definition, not found", NULL, error);
+		return AXL_FALSE;
+	}
+	
+	if (axl_dtd_item_node_get_repeat (itemNode) != ZERO_OR_MANY) {
+		axl_log ("test-01", AXL_LEVEL_DEBUG, "repeat configuration was different: %d != %d",
+			 axl_dtd_item_node_get_repeat (itemNode), ZERO_OR_MANY);
+		axl_error_new (-1, "expected to find an item node definition with zero or one repeat def (*), not found", NULL, error);
 		return AXL_FALSE;
 	}
 
