@@ -99,6 +99,8 @@ axlNode * axl_node_get_child_called   (axlNode * parent, char * name);
 
 axlNode * axl_node_get_child_nth      (axlNode * parent, int position);
 
+int       axl_node_get_child_num      (axlNode * parent);
+
 axlList * axl_node_get_childs         (axlNode * node);
 
 void      axl_node_add_pi_target            (axlNode * node, 

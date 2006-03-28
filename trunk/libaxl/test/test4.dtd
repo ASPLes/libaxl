@@ -1,1 +1,20 @@
-<!ELEMENT nodes (first+, second, third?, fourth, fifth*, fourth*)>
+<!ELEMENT nodes (first+, second, third?, fourth, fifth*, fourth*, (option1, option2)?, (option3, option4)* )>
+
+<!ELEMENT first (#PCDATA)>
+
+<!ELEMENT second (#PCDATA)>
+
+<!ELEMENT third (#PCDATA)>
+
+<!ELEMENT fourth (#PCDATA)>
+
+<!ELEMENT fifth (#PCDATA)>
+
+<!ELEMENT option1 (first, second)>
+
+<!ELEMENT option2 (third, fourth+)>
+
+<!ELEMENT option3 (first, second)>
+
+<!ELEMENT option4 (third, fourth+)>
+

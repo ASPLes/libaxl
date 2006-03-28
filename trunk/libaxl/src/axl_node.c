@@ -693,6 +693,28 @@ axlNode * axl_node_get_child_nth      (axlNode * parent, int position)
 }
 
 /** 
+ * @brief Allows to get the number of childs the provided node has.
+ * 
+ * @param parent The node where the number of childs is being queried.
+ * 
+ * @return The number of childs or -1 if fails.
+ */
+int       axl_node_get_child_num      (axlNode * parent)
+{
+	/* perform some environment checks */
+	axl_return_val_if_fail (parent, 
+				-1);
+
+	/* if no child list is created, assume 0 */
+	if (parent->childs == NULL)
+		return 0;
+
+	/* return current child number */
+	return axl_list_length (parent->childs);
+}
+
+
+/** 
  * @brief Allows to get childs nodes for the given xml node (\ref
  * axlNode).
  *

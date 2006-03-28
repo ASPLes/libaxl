@@ -2,10 +2,34 @@
    <first>10</first>
    <first>10</first>
    <first>10</first>
+   <first>10</first>
+   <first>10</first>
    <second>20</second>
    <third>10</third>
    <fourth>10</fourth>
+   <fifth>10</fifth>
+   <fifth>10</fifth>
+   <fifth>10</fifth>
+   <fifth>10</fifth>
    <fourth>10</fourth>
    <fourth>10</fourth>
    <fourth>10</fourth>
+   <option1>
+     <first>10</first>
+     <second>20</second>
+   </option1>
+   <option2>
+     <third>10</third>
+     <fourth>10</fourth>
+     <fourth>10</fourth>
+   </option2>
+   <option3>
+     <first>10</first>
+     <second>20</second>
+   </option3>
+   <option4>
+     <third>10</third>
+     <fourth>10</fourth>
+     <fourth>10</fourth>
+   </option4>
 </nodes>
