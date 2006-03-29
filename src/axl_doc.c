@@ -583,6 +583,10 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 	if (doc->rootNode == NULL) {
 		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "setting as first node found, the root node: <%s>", string_aux);
 		doc->rootNode  = node;
+		
+		/* set the node read, the root one, to be the parent */
+		axl_stack_push (doc->parentNode, node);
+
 	} else {
 		/* or set the node as a child of the current parent */
 		axl_doc_set_child_current_parent (doc, node);
@@ -767,10 +771,7 @@ axlDoc * __axl_doc_parse_common (char * entity, int entity_size,
 	/* parse the rest of the document */
 	if (!__axl_doc_parse_node (stream, doc, &node, error))
 		return NULL;
-
-	/* set the node read, the root one, to be the parent */
-	axl_stack_push (doc->parentNode, node);
-
+	
 	/* if the node returned is not empty */
 	if (! axl_node_is_empty (node)) {
 
@@ -877,6 +878,9 @@ axlDoc * __axl_doc_parse_common (char * entity, int entity_size,
 
 	/* pop axl parent */
 	if (! axl_stack_is_empty (doc->parentNode)) {
+		axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, 
+			 "current parent stack size shows that not all opened nodes were closed. This means that the XML document is not properly balanced (stack size: %d)",
+			 axl_stack_size (doc->parentNode));
 		axl_error_new (-1, "XML document is not balanced, still remains xml nodes", stream, error);
 		axl_stream_free (stream);
 		return NULL;
@@ -1347,6 +1351,8 @@ void     axl_doc_set_child_current_parent (axlDoc * doc, axlNode * node)
 
 	/* set the new parent */
 	axl_stack_push (doc->parentNode, node);
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "pushed a new parent into the stack <%s>, current status after operatoin: %d",
+		 axl_node_get_name (node), axl_stack_size (doc->parentNode));
 
 	return;
 }
@@ -1364,6 +1370,8 @@ void     axl_doc_pop_current_parent       (axlDoc * doc)
 
 	/* pop current parent */
 	axl_stack_pop (doc->parentNode);
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "pop current parent node, status after operation: %d",
+		 axl_stack_size (doc->parentNode));
 
 	return;
 }
