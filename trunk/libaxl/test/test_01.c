@@ -836,8 +836,6 @@ int main (int argc, char ** argv)
 		return -1;
 	}
 
-	goto test;
-
 		
 	if (test_01 (&error))
 		printf ("Test 01: basic xml parsing [   OK   ]\n");
@@ -913,7 +911,6 @@ int main (int argc, char ** argv)
 		return -1;
 	}	
 
- test:
 	if (test_09 (&error)) 
 		printf ("Test 09: Complex DTD validation [   OK   ]\n");
 	else {
