@@ -100,7 +100,8 @@ void                 axl_dtd_item_list_free   (axlDtdElementList * list);
 bool __axl_dtd_validate_item_list (axlDtdElementList  * itemList, 
 				   axlNode            * parent, 
 				   int                * child_pos,
-				   axlError          ** error);
+				   axlError          ** error,
+				   bool                 top_level);
 
 
 /* @} */

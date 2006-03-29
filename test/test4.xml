@@ -32,4 +32,22 @@
      <fourth>10</fourth>
      <fourth>10</fourth>
    </option4>
+   <option3>
+     <first>10</first>
+     <second>20</second>
+   </option3>
+   <option4>
+     <third>10</third>
+     <fourth>10</fourth>
+     <fourth>10</fourth>
+   </option4>
+   <option3>
+     <first>10</first>
+     <second>20</second>
+   </option3>
+   <option4>
+     <third>10</third>
+     <fourth>10</fourth>
+     <fourth>10</fourth>
+   </option4>
 </nodes>
