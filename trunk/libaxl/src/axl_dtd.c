@@ -92,7 +92,6 @@ struct _axlDtdElement {
 	 * @brief This is the type of the xml node being constrained.
 	 */
 	AxlDtdElementType     type;
-	
 	/** 
 	 * @brief List of available items.
 	 * 
@@ -1109,7 +1108,8 @@ bool __axl_dtd_validate_sequence (axlNode            * parent,
 				  int                * child_position,
 				  axlDtdElementList  * itemList, 
 				  axlError          ** error,
-				  bool                 try_match)
+				  bool                 try_match,
+				  bool                 top_level)
 {
 	int                      iterator        = 0;
 	int                      child_pos       = *child_position;
@@ -1123,13 +1123,13 @@ bool __axl_dtd_validate_sequence (axlNode            * parent,
 	axl_return_val_if_fail (parent, AXL_FALSE);
 	axl_return_val_if_fail (itemList, AXL_FALSE);
 
-	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "validating a sequence list: iterator=%d, item list cound=%d",
-		 iterator, axl_dtd_item_list_count (itemList));
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "validating a sequence list: iterator=%d, item list cound=%d, at child position=%d",
+		 iterator, axl_dtd_item_list_count (itemList), child_pos);
 
 	/* iterate over the sequence, checking its order */
 	while (iterator < axl_dtd_item_list_count (itemList)) {
 		
-		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "  getting next item node from the DTD item list at: %d",
+		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "getting next item node from the DTD item list at: %d",
 			 iterator);
 		
 		/* get the item node specification */
@@ -1138,7 +1138,7 @@ bool __axl_dtd_validate_sequence (axlNode            * parent,
 		times       = axl_dtd_item_node_get_repeat (itemNode);
 
 		do {
-			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "    getting node at child position: %d",
+			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "getting node at child position: %d",
 				 child_pos);
 			/* get the node that is located at the same position
 			 * than the sequence */
@@ -1150,7 +1150,7 @@ bool __axl_dtd_validate_sequence (axlNode            * parent,
 			/* the node child list have ended, check if
 			 * this situation was expected */
 			if (node == NULL) {
-				axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "no more child nodes to validated at %d, for parent: %s, times: %d, iterator: %d, item count: %d",
+				axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "no more child nodes to validate at %d, for parent: %s, times: %d, iterator: %d, item count: %d",
 					 child_pos, axl_node_get_name (parent), times,
 					 iterator, axl_dtd_item_list_count (itemList));
 				/* check if we were working with a
@@ -1200,30 +1200,44 @@ bool __axl_dtd_validate_sequence (axlNode            * parent,
 			}
 
 			/* check node type */
-			switch (axl_dtd_item_node_get_type (itemNode)) {
-			case ELEMENT_LIST:
-				axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "the item node is an item list, dtd item list position: %d, child position: %d",
-					 iterator, child_pos);
+			if (axl_dtd_item_node_get_type (itemNode) == ELEMENT_LIST) {
+				axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "the item node is an item list, dtd item list position: %d, child position: %d=<%s>",
+					 iterator, child_pos, axl_node_get_name (node));
 				/* element list found, validate its content */
 				if (! __axl_dtd_validate_item_list (axl_dtd_item_node_get_list (itemNode),
-								    parent, &child_pos, error)) {
+								    parent, &child_pos, error, AXL_FALSE)) {
+					
+					axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "sub item list validation have failed (not critical)");
+
+					/* check if we are the top
+					 * level list and the itemNode
+					 * checked is the last one
+					 * item on the item list */
+					if (top_level && ((iterator + 1) == axl_node_get_child_num (parent))) {
+						axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "found that the last item list wasn't matched");
+						
+					}
+
 					*child_position = child_pos;
 					return AXL_FALSE;
 				}
 				
 				axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "validated item list, child position after: %d",
 					 child_pos);
-				status = AXL_TRUE;
+				/* because child position updating and
+				 * repeat matching is already handled
+				 * by dtd_validate_item_list function
+				 * we just continue with the next
+				 * iteration */
 				break;
-			case NODE:
+
+			} else if (axl_dtd_item_node_get_type (itemNode) == NODE) {
 				/* check the name against the spec */
-				axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "the item node is a final content particule definition");
+				axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, 
+					 "the item node is a final content particule definition: %s",
+					 axl_dtd_item_node_get_value (itemNode));
+					 
 				status = NODE_CMP_NAME (node, axl_dtd_item_node_get_value (itemNode));
-				break;
-			default:
-				/* critical, this section must never
-				 * be reached */
-				break;
 			}
 
 			/* check previous status */
@@ -1248,8 +1262,8 @@ bool __axl_dtd_validate_sequence (axlNode            * parent,
 			}
 
 			/* according to the repetition pattern, update loop indexes */
-			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "updating child nodes references: %d, repeat type: %d",
-				 child_pos, itemNode->times);
+			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "updating child nodes references: %d, repeat type: %d, status=%d",
+				 child_pos, itemNode->times, status);
 
 			/* one only item to match and exactly one */
 			if (times == ONE_AND_ONLY_ONE) {
@@ -1304,15 +1318,15 @@ bool __axl_dtd_validate_sequence (axlNode            * parent,
 	}
 
 	/* check if more nodes where specified than the DTD spec */
-	if (child_pos  < axl_node_get_child_num (parent)) {
+	if (top_level && (child_pos  < axl_node_get_child_num (parent))) {
+		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "parent node <%s> have more childs=%d than the childs iterated=%d",
+			 axl_node_get_name (parent),
+			 axl_node_get_child_num (parent),
+			 child_pos);
+
 		/* do not report an error found if a try match is
 		 * being run */
 		if (! try_match) {
-			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "parent node <%s> have more childs=%d than the DTD content particule elements=%d",
-				 axl_node_get_name (parent),
-				 axl_node_get_child_num (parent),
-				 child_pos);
-			
 			axl_error_new (-1, "More childs, than the ones especified in the DTD, were found",
 				       NULL, error);
 		}
@@ -1349,39 +1363,41 @@ bool __axl_dtd_validate_sequence (axlNode            * parent,
  * @return AXL_TRUE if the validation was ok, otherwise AXL_FALSE is
  * returned.
  */
-bool __axl_dtd_validate_item_list (axlDtdElementList  * itemList, 
+bool __axl_dtd_validate_item_list (axlDtdElementList  * itemList,
 				   axlNode            * parent, 
 				   int                * child_position,
-				   axlError          ** error)
+				   axlError          ** error,
+				   bool                 top_level)
 {
 	int  temp_child_pos;
 	bool status;
 
-	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "  validating an item list with repeat pattern: %d",
-		 axl_dtd_item_list_repeat (itemList));
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "validating an item list with repeat pattern: %d, at %d",
+		 axl_dtd_item_list_repeat (itemList), *child_position);
 
 	/* now check repetition type */
 	switch (axl_dtd_item_list_repeat (itemList)) {
 	case ONE_AND_ONLY_ONE:
-		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "  found a (one and only one) spec..");
+		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found a (one and only one) spec..");
 		if (axl_dtd_item_list_type (itemList) == SEQUENCE) {
-			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "    using a SEQUENCE form");
+			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "using a SEQUENCE form");
 			/* it is a choice, so the item list specifies
 			 * the nodes that could appear */
-			if (!__axl_dtd_validate_sequence (parent, child_position, itemList, error, AXL_TRUE)) {
+			if (!__axl_dtd_validate_sequence (parent, child_position, itemList, error, 
+							  AXL_FALSE, top_level)) {
 				return AXL_FALSE;
 			}
 		}else {
-			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "    using a CHOICE form");
+			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "using a CHOICE form");
 			/* it is a sequence, so, item list
 			 * specification represents the nodes, in the
 			 * order they must appear */
 		}
 		break;
 	case ZERO_OR_ONE:
-		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "  found a (zero or one) spec..");
+		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found a (zero or one) spec..");
 		if (axl_dtd_item_list_type (itemList) == SEQUENCE) {
-			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "    using a SEQUENCE form, parent: <%s>",
+			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "using a SEQUENCE form, parent: <%s>",
 				 axl_node_get_name (parent));
 			/* because we are running a zero or one item
 			 * list matching, we don't care if it doesn't
@@ -1391,7 +1407,8 @@ bool __axl_dtd_validate_item_list (axlDtdElementList  * itemList,
 			 * happens, it also don't matter because the
 			 * pattern allow to not match */
 			temp_child_pos = *child_position;
-			if (!__axl_dtd_validate_sequence (parent, child_position, itemList, error, AXL_FALSE)) {
+			if (!__axl_dtd_validate_sequence (parent, child_position, itemList, error, 
+							  AXL_TRUE, top_level)) {
 				/* check that the match wasn't
 				 * produced, at any level */
 				if (temp_child_pos != *child_position) {
@@ -1399,6 +1416,8 @@ bool __axl_dtd_validate_item_list (axlDtdElementList  * itemList,
 						       NULL, error);
 					return AXL_FALSE;
 				}
+
+				return AXL_FALSE;
 			}
 			
 		}else {
@@ -1409,18 +1428,21 @@ bool __axl_dtd_validate_item_list (axlDtdElementList  * itemList,
 		}
 		break;
 	case ZERO_OR_MANY:
-		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "  found a (zero or many) spec..");
+		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found a (zero or many) spec..");
 		if (axl_dtd_item_list_type (itemList) == SEQUENCE) {
-			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "    using a SEQUENCE form");
+			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "    using a SEQUENCE (size: %d) form ",
+				 axl_dtd_item_list_count (itemList));
 			/* one this case, several matches must be
 			 * tried, until the validation fails */
 			do {
 				temp_child_pos = *child_position;
-				status         = __axl_dtd_validate_sequence (parent, child_position, itemList, error, AXL_FALSE);
+				status         = __axl_dtd_validate_sequence (parent, child_position, itemList, error, 
+									      AXL_TRUE, top_level);
+				axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "sequence match status=%d", status);
 				if (! status) {
 					/* check that the match wasn't
 					 * produced, at any level */
-					if (temp_child_pos != *child_position) {
+					if ((temp_child_pos != *child_position)) {
 						axl_error_new (-1, "Found an DTD item list definition, that should be matched entirely or not, zero or many times, but it was matched partially",
 							       NULL, error);
 						return AXL_FALSE;
@@ -1462,7 +1484,7 @@ bool __axl_dtd_validate_element_type_children (axlDtdElement  * element,
 	itemList = axl_dtd_get_item_list (element);
 
 	/* validate the item list, starting from the child 0 */
-	return __axl_dtd_validate_item_list (itemList, parent, &child_pos, error);
+	return __axl_dtd_validate_item_list (itemList, parent, &child_pos, error, AXL_TRUE);
 }
 
 /** 
@@ -1646,14 +1668,14 @@ bool       axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 		 * validated on the provided queue, only in the case
 		 * the parent node have childs */
 		if (axl_node_have_childs (parent)) {
-			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "    parent node <%s> have childs, adding its childs (stack size: %d)",
+			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "parent node <%s> have childs, adding its childs (stack size: %d)",
 				 axl_node_get_name (parent),
 				 axl_stack_size (stack));
 			childs = axl_node_get_childs (parent);
 			
 			__axl_dtd_queue_items (stack, childs);
 
-			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "    parent node <%s> childs: %d, (stack size: %d)",
+			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "parent node <%s> childs: %d, (stack size: %d)",
 				 axl_node_get_name (parent), axl_list_length (childs),
 				 axl_stack_size (stack));
 		}
