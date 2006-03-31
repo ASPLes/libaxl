@@ -14,6 +14,14 @@
 
 <!ELEMENT value (#PCDATA) >
 
+<!ELEMENT xpos (#PCDATA) >
+
+<!ELEMENT ypos (#PCDATA) >
+
+<!ELEMENT zpos (#PCDATA) >
+
+<!ELEMENT axis-position (#PCDATA) >
+
 <!ELEMENT empty EMPTY>
 
 

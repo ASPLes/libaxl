@@ -460,8 +460,13 @@ bool __axl_doc_parse_xml_header (axlStream * stream, axlDoc * doc, axlError ** e
 			
 			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "encoding found=%s", string_aux);
 
-			/* set document encoding */
-			doc->encoding = axl_strdup (string_aux);
+			/* set document encoding: do not allocate
+			 * twice the string returned, just nullify
+			 * stream internal reference and use the same
+			 * reference */
+			axl_stream_nullify (stream, LAST_CHUNK);
+			doc->encoding = string_aux;
+
 		}
 
 		/* check for an space */
@@ -579,7 +584,8 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 	}
 
 	/* create the node and associate it */
-	node           = axl_node_create (string_aux);
+	axl_stream_nullify (stream, LAST_CHUNK);
+	node           = axl_node_create_ref (string_aux);
 	if (doc->rootNode == NULL) {
 		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "setting as first node found, the root node: <%s>", string_aux);
 		doc->rootNode  = node;
@@ -651,23 +657,24 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 		string_aux = axl_stream_get_until (stream, NULL, NULL, AXL_TRUE, 3, "='", "=\"", "=");
 		if (string_aux != NULL) {
 			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "attribute found: [%s]", string_aux);
-			/* copy attribute found */
-			string_aux = axl_strdup (string_aux);
+			/* nullify internal reference to the stream:
+			 * now we have inside string_aux the attribute
+			 * name */
+			axl_stream_nullify (stream, LAST_CHUNK);
 
 			/* now get the attribute value */
 			string_aux2 = axl_stream_get_until (stream, NULL, NULL, AXL_TRUE, 4, "' ", "\" ", "'", "\"");
 			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "value found: [%s]", string_aux2);
 
+			/* nullify internal reference so we have the
+			 * only one reference to attribute value
+			 * inside string_aux2 */
+			axl_stream_nullify (stream, LAST_CHUNK);
+
 			/* set a new attribute for the given node */
-			axl_node_set_attribute (node, string_aux, string_aux2);
+			axl_node_set_attribute_ref (node, string_aux, string_aux2);
 
 			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "attribute installed..");
-			
-			/* only deallocate the string_aux, because
-			 * string_aux2 is automatically handled by the
-			 * library */
-			axl_free (string_aux);
-			
 			continue;
 		}
 
@@ -694,10 +701,11 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 bool __axl_doc_parse_close_node (axlStream * stream, axlDoc * doc, axlNode ** _node, axlError ** error)
 {
 	char    * string;
+	int       result_size = -1;
 	axlNode * node;
 
 	/* get the node being closed to check to the current parent */
-	string = axl_stream_get_until (stream, NULL, NULL, AXL_TRUE, 2, " >", ">");
+	string = axl_stream_get_until_ref (stream, NULL, NULL, AXL_TRUE, &result_size, 2, " >", ">");
 	if (string == NULL) {
 		axl_error_new (-1, "An error was found while closing the xml node", stream, error);
 		axl_stream_free (stream);
@@ -712,8 +720,10 @@ bool __axl_doc_parse_close_node (axlStream * stream, axlDoc * doc, axlNode ** _n
 		axl_stream_free (stream);
 		return AXL_FALSE;
 	}
+	
+	if (axl_stream_cmp (axl_node_get_name (node), string, strlen (axl_node_get_name (node))) &&
+	    axl_stream_cmp (axl_node_get_name (node), string, result_size)) {
 
-	if (NODE_CMP_NAME (node, string)) {
 		/* ok, axl node to be closed is the one expected */
 		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "closing xml node, that matched with parent opened");
 		return AXL_TRUE;
@@ -827,8 +837,14 @@ axlDoc * __axl_doc_parse_common (char * entity, int entity_size,
 					return NULL;
 				}
 
+				/* nullify internal reference to the
+				 * string_aux so we can use that
+				 * memory allocated as our
+				 * reference */
+				axl_stream_nullify (stream, LAST_CHUNK);
+
 				/* set current data */
-				axl_node_set_content (node, string, -1);
+				axl_node_set_content_ref (node, string, -1);
 				continue;
 			}
 
@@ -868,9 +884,12 @@ axlDoc * __axl_doc_parse_common (char * entity, int entity_size,
 				return NULL;
 			}
 
+			/* nullify internal stream reference to have
+			 * the unique reference */
+			axl_stream_nullify (stream, LAST_CHUNK);
 
-			/* store content inside the xml node */
-			axl_node_set_content (node, string, -1);
+			/* set current data */
+			axl_node_set_content_ref (node, string, -1);
 
 			/* keep on looping */
 		}

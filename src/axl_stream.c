@@ -579,13 +579,99 @@ char      * axl_stream_get_until       (axlStream * stream,
 	va_start (args, chunk_num);
 
 	/* call to get next chunk separated by the provided values */
-	result = axl_stream_get_untilv (stream, valid_chars, chunk_matched, accept_terminator, chunk_num, args);
+	result = axl_stream_get_untilv (stream, valid_chars, chunk_matched, accept_terminator, NULL, chunk_num, args);
 
 	/* close the standard argument */
 	va_end (args);
 
 	/* return value read */
 	return result;
+}
+
+/** 
+ * @internal
+ * 
+ * Works the same way like axl_strteam_get_until but wihtout allocated
+ * the memory returned, and filling the size for the chunk returned
+ * in result_size reference.
+ * 
+ * @param stream The stream where the operation will be performed.
+ *
+ * @param valid_chars The valid chars reference to match (currently
+ * not implemented).
+ *
+ * @param chunk_matched The chunk matched reference 
+ *
+ * @param accept_terminator Configure if the terminator should be
+ * accepted or not.
+ *
+ * @param result_size The variable where the result size will be
+ * returned.
+ *
+ * @param chunk_num The number of chunks to match.
+ * 
+ * @return A reference to the internal stream copy. The reference
+ * returned must not be deallocated.
+ */
+char      * axl_stream_get_until_ref   (axlStream * stream, 
+					char      * valid_chars, 
+					int       * chunk_matched,
+					bool        accept_terminator,
+					int       * result_size,
+					int         chunk_num, ...)
+{
+	char * result;
+	va_list args;
+	
+	/* open the standard argument */
+	va_start (args, chunk_num);
+
+	/* call to get next chunk separated by the provided values */
+	result = axl_stream_get_untilv (stream, valid_chars, chunk_matched, accept_terminator, result_size, chunk_num, args);
+
+	/* close the standard argument */
+	va_end (args);
+
+	/* return value read */
+	return result;
+}
+
+/** 
+ * @internal
+ *
+ * Allows to nullify the internal reference of the stream, making that
+ * reference to be not deallocated once the stream is moving.
+ *
+ * This is mainly used to reduce the malloc/free round trip while
+ * using the stream abstraction, making the stream received from the
+ * memory chunk to be allocated only once, avoiding the allocate-free,
+ * allocate-free cycle.
+ * 
+ * @param stream The \ref axlStream where the operation will be
+ * performed.
+ *
+ * @param item The item to nullify. 
+ */
+void        axl_stream_nullify         (axlStream * stream,
+					NullifyItem item)
+{
+	/* do not operate if a null stream reference is received */
+	axl_return_if_fail (stream);
+
+	switch (item) {
+	case LAST_CHUNK:
+		stream->last_chunk         = NULL;
+		break;
+	case LAST_NEAR_TO:
+		stream->last_near_to       = NULL;
+		break;
+	case LAST_GET_FOLLOWING:
+		stream->last_get_following = NULL;
+		break;
+	}
+	
+	/* nothing more to do here */
+	return;
 }
 
 /** 
@@ -618,6 +704,7 @@ char      * axl_stream_get_untilv      (axlStream * stream,
 					char      * valid_chars, 
 					int       * chunk_matched,
 					bool        accept_terminator,
+					int       * result_size,
 					int         chunk_num, 
 					va_list args)
 {
@@ -627,6 +714,7 @@ char      * axl_stream_get_untilv      (axlStream * stream,
 	int          length     = 0;
 	int          max_length = 0;
 	bool         matched;
+	char       * string     = NULL;
 	
 	/* perform some environmental checks */
 	axl_return_val_if_fail (stream, NULL);
@@ -736,8 +824,13 @@ char      * axl_stream_get_untilv      (axlStream * stream,
 				}
 
 				/* get a copy to the chunk to be returned */
-				stream->last_chunk = axl_new (char, index + 1);
-				memcpy (stream->last_chunk, stream->stream + stream->stream_index, index);
+				if (result_size == NULL) {
+					stream->last_chunk = axl_new (char, index + 1);
+					memcpy (stream->last_chunk, stream->stream + stream->stream_index, index);
+				}else {
+					*result_size = index;
+					string       = stream->stream + stream->stream_index;
+				}
 
 				/* in the case a memory chunk is being read */
 				if (accept_terminator)
@@ -746,10 +839,16 @@ char      * axl_stream_get_untilv      (axlStream * stream,
 				stream->global_index             += index;
 				stream->previous_inspect          = 0;
 
+		 
+				if (result_size == NULL) {
+					axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "returning: '%s' (chunk num: %d) (index: %d, stream index: %d, stream_size: %d)", 
+						 stream->last_chunk, iterator, index, stream->stream_index, stream->stream_size);
+					return stream->last_chunk;
+				}
+				
 				axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "returning: '%s' (chunk num: %d) (index: %d, stream index: %d, stream_size: %d)", 
-					 stream->last_chunk, iterator, index, stream->stream_index, stream->stream_size);
-
-				return stream->last_chunk;
+					 string, iterator, index, stream->stream_index, stream->stream_size);
+				return string;
 			}
 			/* update iterator */
 			iterator ++;

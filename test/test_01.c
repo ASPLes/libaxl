@@ -8,7 +8,7 @@
  * 
  * @return AXL_TRUE if the validity test is passed, AXL_FALSE if not.
  */
-bool test_10 (axlError ** error) 
+bool test_11 (axlError ** error) 
 {
 	axlDoc * doc = NULL;
 	axlDtd * dtd = NULL;
@@ -27,6 +27,68 @@ bool test_10 (axlError ** error)
 	if (! axl_dtd_validate (doc, dtd, error)) {
 		return AXL_FALSE;
 	}
+
+	/* free doc reference */
+	axl_doc_free (doc); 
+	
+	/* free dtd reference */
+	axl_dtd_free (dtd);
+
+	/* test end */
+	return AXL_TRUE;
+}
+
+/** 
+ * @brief A more complex DTD parsing example
+ * 
+ * @param error The optional axlError to be used to report errors.
+ * 
+ * @return AXL_TRUE if the validity test is passed, AXL_FALSE if not.
+ */
+bool test_10 (axlError ** error) 
+{
+	axlDoc                * doc      = NULL;
+	axlDtd                * dtd      = NULL;
+	axlDtdElement         * element  = NULL;
+	axlDtdElementList     * itemList = NULL;
+
+	/* parse gmovil file (an af-arch xml chunk) */
+	doc = axl_doc_parse_from_file ("test5.xml", error); 
+	if (doc == NULL) 
+		return AXL_FALSE;
+
+	/* parse af-arch DTD */
+	dtd = axl_dtd_parse_from_file ("test5.dtd", error);
+	if (dtd == NULL)
+		return AXL_FALSE;
+
+	/* get the dtd element representation */
+	element = axl_dtd_get_element (dtd, "choices");
+
+	/* get the item list inside */
+	itemList = axl_dtd_get_item_list (element);
+	if (axl_dtd_item_list_count (itemList) != 3) {
+		axl_error_new (-1, "expected to receive an item list with 3 item nodes inside", NULL, error);
+		return AXL_FALSE;
+	}
+
+	if (axl_dtd_item_list_type (itemList) != CHOICE) {
+		axl_error_new (-1, "expected to receive a choice item list", NULL, error);
+		return AXL_FALSE;
+	}
+
+	if (axl_dtd_item_list_repeat (itemList) != ZERO_OR_MANY) {
+		axl_log ("test-01", AXL_LEVEL_DEBUG, "received a different repeat configuration: %d != %d",
+			 ZERO_OR_MANY, axl_dtd_item_list_repeat (itemList));
+		axl_error_new (-1, "expected to receive an item list with (*) zero or many spec", NULL, error);
+		return AXL_FALSE;
+	}
+	
+
+	/* perform DTD validation */
+	if (! axl_dtd_validate (doc, dtd, error)) { 
+		return AXL_FALSE; 
+	} 
 
 	/* free doc reference */
 	axl_doc_free (doc); 
@@ -836,7 +898,6 @@ int main (int argc, char ** argv)
 		return -1;
 	}
 
-		
 	if (test_01 (&error))
 		printf ("Test 01: basic xml parsing [   OK   ]\n");
 	else {
@@ -911,6 +972,8 @@ int main (int argc, char ** argv)
 		return -1;
 	}	
 
+
+
 	if (test_09 (&error)) 
 		printf ("Test 09: Complex DTD validation [   OK   ]\n");
 	else {
@@ -919,15 +982,24 @@ int main (int argc, char ** argv)
 		axl_error_free (error);
 		return -1;
 	}
-	
-/*	if (test_10 (&error)) 
+
+	if (test_10 (&error)) 
 		printf ("Test 10: Complex DTD validation (II) [   OK   ]\n");
 	else {
 		printf ("Test 10: Complex DTD validation (II) [ FAILED ]\n  (CODE: %d) %s\n",
 			axl_error_get_code (error), axl_error_get (error));
 		axl_error_free (error);
 		return -1;
-		}	*/
+	}
+
+	if (test_11 (&error)) 
+		printf ("Test 11: Complex DTD validation (III) [   OK   ]\n");
+	else {
+		printf ("Test 11: Complex DTD validation (III) [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}	
 
 
 

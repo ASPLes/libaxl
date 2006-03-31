@@ -156,14 +156,7 @@ void __axl_node_destroy_attr (axlAttribute * attr)
 	return;
 }
 
-/** 
- * @brief Creates a new \ref axlNode with the provided name.
- *
- * @param name The name to be used for the node be created.
- * 
- * @return 
- */
-axlNode * axl_node_create (char * name)
+axlNode * __axl_node_create_internal (char * name)
 {
 	axlNode * node = NULL;
 
@@ -171,9 +164,69 @@ axlNode * axl_node_create (char * name)
 	axl_return_val_if_fail (name, NULL);
 	
 	node           = axl_new (axlNode, 1);
-	node->name     = axl_strdup (name);
-	
+	node->name     = name;
+
 	return node;
+}
+
+/** 
+ * @brief Creates a new \ref axlNode with the provided name.
+ *
+ * The function will perform a new local copy for the reference
+ * received. See also \ref axl_node_create_ref for an explanation
+ * about saving memory.
+ *
+ * @param name The name to be used for the node be created.
+ * 
+ * @return A newly allocate \ref axlNode reference, that must be
+ * deallocated by \ref axl_node_free.
+ */
+axlNode * axl_node_create (char * name)
+{
+	axl_return_val_if_fail (name, NULL);
+	
+	/* return a reference to a new axlNode */
+	return __axl_node_create_internal (axl_strdup (name));
+}
+
+/** 
+ * @brief Creates a new \ref axlNode but using the memory passed in by
+ * the name reference.
+ *
+ * This function works the same way like \ref axl_node_create, but
+ * previous one makes a local copy for the name provided. This means
+ * that, if you have allocated the reference being passed, the
+ * previous function will allocate again memory for the name
+ * reference.
+ *
+ * Obviously, for a few xml nodes this have none or little effect but,
+ * if your xml document have 100.000 nodes you save 100.000 extra
+ * memory allocations and deallocations. This have a great impact in
+ * the long term impact of your programm because memory fragmentation
+ * is kept as low as possible.
+ *
+ * Keep in mind that this function should not be used for static names
+ * declared on the code. Example:
+ * \code
+ *    // propery node creation 
+ *    axlNode * node = axl_node_create ("test");
+ *  
+ *    // NOT PROPER node creation
+ *    axlNode * node = axl_node_create_ref ("test");
+ * \endcode
+ *
+ * @param name A reference to the node name that is hold by
+ * dinamically allocated memory from the user space code.
+ * 
+ * @return A newly created \ref axlNode reference that must be
+ * deallocated by \ref axl_node_free.
+ */
+axlNode * axl_node_create_ref         (char * name)
+{
+	axl_return_val_if_fail (name, NULL);
+	
+	/* return a reference to a new axlNode */
+	return __axl_node_create_internal (name);
 }
 
 /** 
@@ -232,6 +285,50 @@ void __axl_node_init_childs (axlNode * node)
 }
 
 /** 
+ * @internal
+ * 
+ * Internal function to perform common checks for setting attribute
+ * code.
+ */
+bool     __axl_node_set_attribute_common_check (axlNode * node, char * attribute, char * value)
+{
+	/* checks values received */
+	axl_return_val_if_fail (node, AXL_FALSE);
+	axl_return_val_if_fail (attribute, AXL_FALSE);
+	axl_return_val_if_fail (value, AXL_FALSE);
+
+	/* attribute could be added twice */
+	axl_return_val_if_fail (! axl_node_has_attribute (node, attribute), AXL_FALSE);
+
+	/* check ok */
+	return AXL_TRUE;
+}
+
+/** 
+ * @internal
+ * 
+ * Support function to install attribute information provided into the
+ * \ref axlNode provided.
+ */
+void      __axl_node_set_attribute      (axlNode * node, char * attribute, char * value)
+{
+	axlAttribute * _attribute;
+	
+	/* init attribute list */
+	__axl_node_init_attributes (node);
+
+	/* create the attribute */
+	_attribute        = axl_new (axlAttribute, 1);
+	_attribute->name  = attribute;
+	_attribute->value = value;
+
+	/* add the attribute */
+	axl_list_add (node->attributes, _attribute);
+
+	return;
+}
+
+/** 
  * @brief Allows to configure an xml attribute to the given node.
  *
  * Attributes are that piece of the xml node definition that is
@@ -263,26 +360,40 @@ void __axl_node_init_childs (axlNode * node)
  */
 void      axl_node_set_attribute      (axlNode * node, char * attribute, char * value)
 {
-	axlAttribute * _attribute;
 
-	/* checks values received */
-	axl_return_if_fail (node);
-	axl_return_if_fail (attribute);
-	axl_return_if_fail (value);
+	/* perform initial checks */
+	if (!__axl_node_set_attribute_common_check (node, attribute, value))
+		return;
 
-	/* attribute could be added twice */
-	axl_return_if_fail (! axl_node_has_attribute (node, attribute));
-	
-	/* init attribute list */
-	__axl_node_init_attributes (node);
+	/* insert the attribute */
+	__axl_node_set_attribute (node, axl_strdup (attribute), axl_strdup (value));
+	return;
+}
 
-	/* create the attribute */
-	_attribute        = axl_new (axlAttribute, 1);
-	_attribute->name  = axl_strdup (attribute);
-	_attribute->value = axl_strdup (value);
+/** 
+ * @brief Allows to install a new attribute pair, based on the
+ * attribute name and the attribute value, without allocating memory
+ * for them.
+ * 
+ * This function works the same way like \ref axl_node_set_attribute
+ * but reusing memory allocated by the user space to avoid allocating
+ * information twice.
+ * 
+ * @param node The \ref axlNode where the attributes will be
+ * installed.
+ *
+ * @param attribute The attribute name to be installed.
+ *
+ * @param value The attribute value to be installed.
+ */
+void      axl_node_set_attribute_ref  (axlNode * node, char * attribute, char * value)
+{
+	/* perform initial checks */
+	if (!__axl_node_set_attribute_common_check (node, attribute, value))
+		return;
 
-	/* add the attribute */
-	axl_list_add (node->attributes, _attribute);
+	/* insert the attribute */
+	__axl_node_set_attribute (node, attribute, value);
 
 	return;
 }
@@ -521,7 +632,7 @@ void      axl_node_set_content        (axlNode * node, char * content, int conte
 	/* get current content in the case a -1 is provided */
 	if (content_size == -1)
 		content_size = strlen (content);
-	node->content_size = content_size;
+	node->content_size   = content_size;
 
 	/* set current content */
 	node->content = axl_new (char, node->content_size + 1);
@@ -529,9 +640,45 @@ void      axl_node_set_content        (axlNode * node, char * content, int conte
 
 	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "setting xml node (name: %s) content (size: %d) %s",
 		 node->name, node->content_size, node->content);
-
 	/* job done */
 	return;
+}
+
+/** 
+ * @brief Set the content for the provided node, reusing the reference
+ * provided, without making a local copy.
+ *
+ * This function works like \ref axl_node_set_content_ref but without
+ * copy memory provided. This allows reduce memory allocations if the
+ * memory was already allocated by the user space.
+ * 
+ * @param node The \ref axlNode where the content will be set.
+ *
+ * @param content The user space allocated content to be set to the
+ * node.
+ *
+ * @param content_size The content size.
+ */
+void      axl_node_set_content_ref    (axlNode * node, 
+				       char * content, 
+				       int content_size)
+{
+	axl_return_if_fail (node);
+	axl_return_if_fail (content);
+
+	/* get current content in the case a -1 is provided */
+	if (content_size == -1)
+		content_size = strlen (content);
+	node->content_size = content_size;
+
+	/* set current content */
+	node->content = content;
+
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "setting xml node (name: %s) content (size: %d) %s",
+		 node->name, node->content_size, node->content);
+
+	/* job done */
+	return;	
 }
 
 /** 

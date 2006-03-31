@@ -93,6 +93,13 @@ typedef struct _axlDtdElementListNode axlDtdElementListNode;
  */
 typedef enum {
 	/** 
+	 * @internal
+	 *
+	 * Internal value used by the library to support mixing
+	 * content seperator types detection.
+	 */
+	STILL_UNDEF  = 0,
+	/** 
 	 * @brief Represents that the item selection is configured to
 	 * be a choice (a selection allowed from any item inside the
 	 * collection).
