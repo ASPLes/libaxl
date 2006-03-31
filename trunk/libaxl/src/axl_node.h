@@ -49,7 +49,11 @@ BEGIN_C_DECLS
 
 axlNode * axl_node_create             (char * name);
 
+axlNode * axl_node_create_ref         (char * name);
+
 void      axl_node_set_attribute      (axlNode * node, char * attribute, char * value);
+
+void      axl_node_set_attribute_ref  (axlNode * node, char * attribute, char * value);
 
 bool      axl_node_has_attribute      (axlNode * node, char * attribute);
 
@@ -86,6 +90,10 @@ char    * axl_node_get_content        (axlNode * node,
 				       int  * content_size);
 
 void      axl_node_set_content        (axlNode * node, 
+				       char * content, 
+				       int content_size);
+
+void      axl_node_set_content_ref    (axlNode * node, 
 				       char * content, 
 				       int content_size);
 

@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<!-- testing DTD choice support -->
+<choices>
+  <p>This is a test example</p>
+  <ul>
+    <li>This is a value..</li>
+    <li>This is another value...</li>
+ </ul>
+ <table>
+    <tr>
+       <td>110</td><td>120</td>
+    </tr>
+    <tr>
+       <td>110</td><td>120</td>
+    </tr>
+ </table>
+<inside>
+  <element>
+    <first>10</first>
+  </element>
+  <element>
+    <second>10</second>
+  </element>
+  <element>
+    <third>10</third>
+  </element>
+  <element>
+    <fourth>value</fourth>
+    <fourth>value</fourth>
+    <fourth>value</fourth>
+    <fourth>value</fourth>
+  </element>
+</inside>
+</choices>

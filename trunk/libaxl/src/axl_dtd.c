@@ -518,8 +518,10 @@ axlDtdElementList * __axl_dtd_create_and_queue (axlDtdElementList * parent)
 	
 	/* create the DTD item list */
 	child       = axl_new (axlDtdElementList, 1);
-	child->type = SEQUENCE; /* by default all elements are
-				 * considered LEAF_NODE */
+
+	/* make by default the item list to be defined as "not
+	 * defined" until the first separator is found */
+	child->type = STILL_UNDEF; 
 	
 	/* create a node that */
 	node = __create_axl_dtd_element_list (NULL, child);
@@ -656,6 +658,9 @@ char * __axl_dtd_read_content_particule (axlStream  * stream,
 		axl_stream_free (stream);
 		return NULL;
 	}
+
+	/* nullify stream internal reference */
+	axl_stream_nullify (stream, LAST_CHUNK);
 	
 	/* return the content particule found */
 	return string_aux;
@@ -693,11 +698,15 @@ bool __axl_dtd_read_element_spec (axlStream * stream, axlDtdElement * dtd_elemen
 
 	/* create the DTD item list */
 	dtd_item_list       = axl_new (axlDtdElementList, 1);
-	dtd_item_list->type = SEQUENCE; /* by default all elements are
-					 * considered LEAF_NODE */
+
+	/* by default, set still undef to change it once a separator
+	 * is detected or the function ends. This will help to detect
+	 * problems produced by people mixing content element
+	 * separators. */
+	dtd_item_list->type = STILL_UNDEF; 
 
 	/* set the content spec list to the dtd element read */
-	dtd_element->list = dtd_item_list;
+	dtd_element->list   = dtd_item_list;
 	   
 	/* push the item created */
 	/* axl_stack_push (dtd_item_stack, dtd_item_list); */
@@ -749,9 +758,6 @@ bool __axl_dtd_read_element_spec (axlStream * stream, axlDtdElement * dtd_elemen
 		string_aux = __axl_dtd_read_content_particule (stream, &chunk_matched, dtd_item_stack, error);
 		if (string_aux == NULL)
 			return AXL_FALSE;
-
-		/* make a local copy */
-		string_aux = axl_strdup (string_aux);
 		
 		/* check, and record, that the string read is
 		 * PCDATA */
@@ -807,9 +813,23 @@ bool __axl_dtd_read_element_spec (axlStream * stream, axlDtdElement * dtd_elemen
 		 * used */
 		switch (chunk_matched) {
 		case 1:
+			if (dtd_item_list->type == CHOICE) {
+				axl_error_new (-1, "Detected that the DTD definition is mixing content particules separators at the same level ('|' and ','). First detected a sequence spec (,) but then detected a choice element (|)",
+					       stream, error);
+				axl_stack_free (dtd_item_stack);
+				axl_stream_free (stream);		
+				return AXL_FALSE;
+			}
 			dtd_item_list->type = SEQUENCE;
 			break;
 		case 2:
+			if (dtd_item_list->type == SEQUENCE) {
+				axl_error_new (-1, "Detected that the DTD definition is mixing content particules separators at the same level ('|' and ','). First detected a choice spec (|) but then detected a sequence element (,)",
+					       stream, error);
+				axl_stack_free (dtd_item_stack);
+				axl_stream_free (stream);		
+				return AXL_FALSE;
+			}
 			dtd_item_list->type = CHOICE;
 			break;
 		}
@@ -865,10 +885,14 @@ bool __axl_dtd_read_element_spec (axlStream * stream, axlDtdElement * dtd_elemen
 	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "content spec terminated, now lookup for the termination");
 		
 	/* consume previous white spaces */
-	AXL_CONSUME_SPACES (stream);
+	/* AXL_CONSUME_SPACES (stream);*/
 
 	/* read here repetition specification */
-	dtd_item_list->times = __axl_dtd_get_repetition_conf (stream);
+	/* dtd_item_list->times = __axl_dtd_get_repetition_conf (stream); */
+	
+	/* set default content element separator */
+	if (dtd_item_list->type == STILL_UNDEF)
+		dtd_item_list->type = SEQUENCE;
 		
 	/* free the stack used */
 	axl_stack_free (dtd_item_stack);
@@ -930,10 +954,13 @@ bool __axl_dtd_parse_element (axlDtd * dtd, axlStream * stream, axlError ** erro
 		axl_stream_free (stream);
 		return AXL_FALSE;
 	}
+
+	/* nullify internal stream content */
+	axl_stream_nullify (stream, LAST_CHUNK);
 	
 	/* create the DTD element */
 	element           = axl_new (axlDtdElement, 1);
-	element->name     = axl_strdup (string_aux);
+	element->name     = string_aux;
 
 	/* consume previous white spaces */
 	AXL_CONSUME_SPACES (stream);
@@ -1342,6 +1369,116 @@ bool __axl_dtd_validate_sequence (axlNode            * parent,
 }
 
 /** 
+ * @internal
+ * 
+ * Internal support function to validate the choice list.
+ */
+bool __axl_dtd_validate_choice (axlNode * parent, int * child_position, 
+				axlDtdElementList * itemList, 
+				axlError  ** error,
+				bool try_match, bool top_level)
+{
+	axlNode               * node;
+	axlDtdElementListNode * itemNode;
+	int                     iterator;
+	bool                    status;
+	AxlDtdTimes             times;
+	bool                    one_match;
+
+	
+	if (*child_position < axl_node_get_child_num (parent)) {
+		/* get a reference to be matched by the choice list */
+		node = axl_node_get_child_nth (parent, *child_position);
+		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "validated choice list at position: %d=<%s>",
+			 *child_position, axl_node_get_name (node));
+	} else {
+		/* tried to match a choice list with a child index
+		 * outside the maximum number of childs */
+		if (! try_match) {
+			axl_error_new (-1, "Unable to match choice list, it seems that the are not enough childs to validate the choice list",
+				       NULL, error);
+		}
+		return AXL_FALSE;
+	}
+
+	iterator = 0; 
+	while (iterator < axl_dtd_item_list_count (itemList)) {
+		/* get the DTD item list to match */
+		itemNode = axl_dtd_item_list_get_node   (itemList, iterator);
+		times    = axl_dtd_item_node_get_repeat (itemNode);
+
+		if (axl_dtd_item_node_get_type (itemNode) == NODE) {
+			/* reset match configuration */
+			one_match = AXL_FALSE;
+		repeat_for_node:
+			/* a node was found */
+			status    = NODE_CMP_NAME (node, axl_dtd_item_node_get_value (itemNode));
+
+			/* know, if the node was matched check it
+			 * repetition configuration */
+			if (status) {
+				/* update child position */
+				(*child_position)++;
+
+				if (times == ONE_AND_ONLY_ONE || times == ZERO_OR_ONE) {
+					/* the node was matched and
+					 * the itemNode has a one and
+					 * only one configuration,
+					 * just return that the choice
+					 * list was matched */
+					return AXL_TRUE;
+				}
+				if (times == ONE_OR_MANY || times == ZERO_OR_MANY) {
+					/* because the node was matched, but the repetition
+					 * pattern allows to match more nodes we have to
+					 * iterate a bit more */
+					node = axl_node_get_child_nth (parent, *child_position);
+					if (node == NULL) {
+						/* because we already matched at least one item, 
+						 * we can assume that the itemNode was successfully 
+						 * matched for both cases (*) and (+). */
+						return AXL_TRUE;
+					}
+					/* flag the one match */
+					one_match = AXL_TRUE;
+					
+					/* if the node reference is
+					 * not NULL, try to match the
+					 * next item */
+					goto repeat_for_node;
+				}
+			} /* end if */
+			
+			/* before returning, that that we have matched
+			 * previously, at least, one node for
+			 * one-to-many and zero-to-many pattern */
+			if ((times == ONE_OR_MANY || times == ZERO_OR_MANY) && one_match) {
+				return AXL_TRUE;
+			}
+
+		} else if (axl_dtd_item_node_get_type (itemNode) == ELEMENT_LIST) {
+			/* an element list was found, call to validate it */
+			/* element list found, validate its content */
+			if (__axl_dtd_validate_item_list (axl_dtd_item_node_get_list (itemNode),
+							  parent, child_position, error, AXL_FALSE)) {
+				/* item list matched */
+				return AXL_TRUE;
+			}
+		}
+
+		/* no item was matched, update iterator indexes */
+		iterator++;
+	}
+
+	/* seems that the choice list wasn't matched */
+	if (! try_match) {
+		axl_error_new (-1, "Unable to match choice list, after checking all posibilities, choice list wasn't validated", 
+			       NULL, error);
+	}
+	return AXL_FALSE;
+}
+
+/** 
  * @internal 
  *
  * Tries to perform a validation, based on the item list received and
@@ -1392,6 +1529,11 @@ bool __axl_dtd_validate_item_list (axlDtdElementList  * itemList,
 			/* it is a sequence, so, item list
 			 * specification represents the nodes, in the
 			 * order they must appear */
+			if (!__axl_dtd_validate_choice (parent, child_position, itemList, error,
+							AXL_FALSE, top_level)) {
+				return AXL_FALSE;
+			}
+			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "choice list was properly validated");
 		}
 		break;
 	case ZERO_OR_ONE:
@@ -1425,6 +1567,8 @@ bool __axl_dtd_validate_item_list (axlDtdElementList  * itemList,
 			/* it is a sequence, so, item list
 			 * specification represents the nodes, in the
 			 * order they must appear */
+			__axl_dtd_validate_choice (parent, child_position, itemList, error,
+						   AXL_TRUE, top_level);
 		}
 		break;
 	case ZERO_OR_MANY:
@@ -1454,6 +1598,10 @@ bool __axl_dtd_validate_item_list (axlDtdElementList  * itemList,
 			/* it is a sequence, so, item list
 			 * specification represents the nodes, in the
 			 * order they must appear */
+			do {
+				status = __axl_dtd_validate_choice (parent, child_position, itemList, error,
+								    AXL_TRUE, top_level);
+			}while (status);
 		}
 		break;
 	case ONE_OR_MANY:
@@ -1461,6 +1609,21 @@ bool __axl_dtd_validate_item_list (axlDtdElementList  * itemList,
 	default:
 		/* this case will never be reached */
 		break;
+	}
+
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "validate item list terminated, now check post-conditions");
+
+	/* check that, in the case that the choice item list is being
+	 * validated, ensure it has validated all nodes, especially if
+	 * we are the top level definition */
+	if (top_level && (axl_dtd_item_list_type (itemList) == CHOICE)) {
+		if (((*child_position) + 1) < axl_node_get_child_num (parent)) {
+			axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "found that the choice list didn't cover all childs (%d), while parent=<%s> has: (%d)",
+				 (*child_position), axl_node_get_name (parent), axl_node_get_child_num (parent));
+			axl_error_new (-1, "Found that the validation process didn't cover all nodes, while using a choice list. This means that the xml document have more content than the DTD spec",
+				       NULL, error);
+			return AXL_FALSE;
+		}
 	}
 
 	/* element type children validated */

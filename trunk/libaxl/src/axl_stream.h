@@ -74,10 +74,28 @@ char      * axl_stream_get_until       (axlStream * stream,
 					bool        accept_terminator,
 					int         chunk_num, ...);
 
+char      * axl_stream_get_until_ref   (axlStream * stream, 
+					char      * valid_chars, 
+					int       * chunk_matched,
+					bool        accept_terminator,
+					int       * result_size,
+					int         chunk_num, ...);
+
+typedef enum { 
+	LAST_CHUNK, 
+	LAST_NEAR_TO, 
+	LAST_GET_FOLLOWING
+} NullifyItem;
+
+void        axl_stream_nullify         (axlStream * stream,
+					NullifyItem item);
+					
+
 char      * axl_stream_get_untilv      (axlStream * stream, 
 					char      * valid_chars, 
 					int       * chunk_matched,
 					bool        accept_terminator,
+					int       * result_size,
 					int         chunk_num,
 					va_list args);
 

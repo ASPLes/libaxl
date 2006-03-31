@@ -1,0 +1,26 @@
+<!ELEMENT choices (p | ul | table)*>
+
+<!ELEMENT p (#PCDATA)>
+
+<!ELEMENT ul (li*)>
+
+<!ELEMENT li (#PCDATA)>
+
+<!ELEMENT table (tr+)>
+
+<!ELEMENT inside (element+) >
+
+<!ELEMENT element (first | second | third | fourth*)>
+
+<!ELEMENT tr (td+)>
+
+<!ELEMENT td (#PCDATA)>
+
+<!ELEMENT first (#PCDATA)>
+
+<!ELEMENT second (#PCDATA)>
+
+<!ELEMENT third (#PCDATA)>
+
+<!ELEMENT fourth (#PCDATA)>
+
