@@ -1052,7 +1052,16 @@ axlDtd * __axl_dtd_parse_common (char * entity, int entity_size,
 		if (axl_stream_peek (stream, "<!ATTLIST") > 0) {
 			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found DTD attribute list declaration (NOT SUPPORTED YET)");
 			
-			/* ignore any but until > */
+			/* ignore anything until > */
+			axl_stream_get_until (stream, NULL, NULL, AXL_TRUE, 1, ">");
+			continue;
+		}
+
+		/* check for the entity declaration */
+		if (axl_stream_peek (stream, "<!ENTITY") > 0) {
+			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found DTD entity declaration (NOT SUPPORTED YET)");
+
+			/* ignore anything until > */
 			axl_stream_get_until (stream, NULL, NULL, AXL_TRUE, 1, ">");
 			continue;
 		}
@@ -1669,14 +1678,6 @@ bool __axl_dtd_validate_element_type_pcdata (axlDtdElement  * element,
 		return AXL_FALSE;
 	}
 
-	/* check for emptyness */
-	if (axl_node_is_empty (parent)) {
-		axl_error_new (-1, 
-			       "Found a node for which its espeficiation makes it to be a node with only data and no childs, and it is empty",
-			       NULL, error);
-		return AXL_FALSE;
-	}
-	
 	/* return that the validation was ok */
 	return AXL_TRUE;
 }
@@ -1753,7 +1754,7 @@ bool       axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 		/* because a DTD document could have several top level
 		 * elements, ensure this is not the case */
 		element = axl_dtd_get_element (dtd, axl_node_get_name (parent));
-		if (element == NULL  || ! axl_dtd_element_is_toplevel (dtd, element)) {
+		if (element == NULL) { /*  || ! axl_dtd_element_is_toplevel (dtd, element)) { */
 			/* root node doesn't match */
 			axl_error_new (-1, "Found that root node doesn't match!", NULL, error);
 			return AXL_FALSE;
@@ -1784,7 +1785,9 @@ bool       axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 		 * configure this parent node. */
 		switch (axl_dtd_get_element_type (element)) {
 		case ELEMENT_TYPE_PCDATA:
-			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "  find  PCDATA dtd element");
+			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "  find  PCDATA dtd element=%s: parent=<%s>, ",
+				 axl_dtd_get_element_name (element), 
+				 axl_node_get_name (parent));
 			/* ok, a leaf node was found, know it is
 			 * required to check that the node doesn't
 			 * have more childs and only have content,
@@ -2008,7 +2011,7 @@ bool                 axl_dtd_element_is_toplevel (axlDtd * dtd, axlDtdElement * 
 	int             iterator;
 	axlDtdElement * dtd_element_aux;
 
-	axl_return_val_if_fail (dtd, AXL_FALSE);
+	axl_return_val_if_fail (dtd,     AXL_FALSE);
 	axl_return_val_if_fail (element, AXL_FALSE);
 
 	/* check which is the top */
@@ -2021,7 +2024,7 @@ bool                 axl_dtd_element_is_toplevel (axlDtd * dtd, axlDtdElement * 
 		/* check which is the top */
 		if (__axl_dtd_get_is_parent (dtd_element_aux, element)) {
 			/* the element provided have a parent */
-			return AXL_TRUE;
+			return AXL_FALSE;
 		}
 			
 		/* update inner loop iterator */
@@ -2029,7 +2032,7 @@ bool                 axl_dtd_element_is_toplevel (axlDtd * dtd, axlDtdElement * 
 	} /* while end */
 
 	/* return that the provided node doesn't have a parent node */
-	return AXL_FALSE;
+	return AXL_TRUE;
 }
 
 /** 
