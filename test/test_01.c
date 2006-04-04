@@ -8,6 +8,82 @@
  * 
  * @return AXL_TRUE if the validity test is passed, AXL_FALSE if not.
  */
+bool test_12 (axlError ** error) 
+{
+	axlDoc * doc = NULL;
+	axlDtd * dtd = NULL;
+
+	/* parse gmovil file (an af-arch xml chunk) */
+	doc = axl_doc_parse_from_file ("channel.xml", error); 
+	if (doc == NULL) 
+		return AXL_FALSE;
+
+	/* parse af-arch DTD */
+	dtd = axl_dtd_parse_from_file ("channel.dtd", error);
+	if (dtd == NULL)
+		return AXL_FALSE;
+
+	/* perform DTD validation */
+	if (! axl_dtd_validate (doc, dtd, error)) {
+		return AXL_FALSE;
+	}
+
+	/* free doc reference */
+	axl_doc_free (doc); 
+
+	/* parse gmovil file (an af-arch xml chunk) */
+	doc = axl_doc_parse_from_file ("channel2.xml", error); 
+	if (doc == NULL) 
+		return AXL_FALSE;
+
+	/* perform DTD validation */
+	if (! axl_dtd_validate (doc, dtd, error)) {
+		return AXL_FALSE;
+	}
+
+	/* free doc reference */
+	axl_doc_free (doc); 
+
+	/* parse gmovil file (an af-arch xml chunk) */
+	doc = axl_doc_parse_from_file ("channel3.xml", error); 
+	if (doc == NULL) 
+		return AXL_FALSE;
+
+	/* perform DTD validation */
+	if (! axl_dtd_validate (doc, dtd, error)) {
+		return AXL_FALSE;
+	}
+
+	/* free doc reference */
+	axl_doc_free (doc); 
+
+	/* parse gmovil file (an af-arch xml chunk) */
+	doc = axl_doc_parse_from_file ("channel4.xml", error); 
+	if (doc == NULL) 
+		return AXL_FALSE;
+
+	/* perform DTD validation */
+	if (! axl_dtd_validate (doc, dtd, error)) {
+		return AXL_FALSE;
+	}
+
+	/* free doc reference */
+	axl_doc_free (doc); 
+	
+	/* free dtd reference */
+	axl_dtd_free (dtd);
+
+	/* test end */
+	return AXL_TRUE;
+}
+
+/** 
+ * @brief A more complex DTD parsing example
+ * 
+ * @param error The optional axlError to be used to report errors.
+ * 
+ * @return AXL_TRUE if the validity test is passed, AXL_FALSE if not.
+ */
 bool test_11 (axlError ** error) 
 {
 	axlDoc * doc = NULL;
@@ -898,6 +974,7 @@ int main (int argc, char ** argv)
 		return -1;
 	}
 
+
 	if (test_01 (&error))
 		printf ("Test 01: basic xml parsing [   OK   ]\n");
 	else {
@@ -996,6 +1073,15 @@ int main (int argc, char ** argv)
 		printf ("Test 11: Complex DTD validation (III) [   OK   ]\n");
 	else {
 		printf ("Test 11: Complex DTD validation (III) [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}	
+
+	if (test_12 (&error)) 
+		printf ("Test 12: Complex DTD validation (IV) [   OK   ]\n");
+	else {
+		printf ("Test 12: Complex DTD validation (IV) [ FAILED ]\n  (CODE: %d) %s\n",
 			axl_error_get_code (error), axl_error_get (error));
 		axl_error_free (error);
 		return -1;
