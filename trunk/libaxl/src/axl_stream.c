@@ -72,6 +72,14 @@
  */
 #define STREAM_BUFFER_SIZE 4096
 
+/** 
+ * @internal
+ *
+ * Internal definition used to represent the maximum value used for
+ * calls done to match a set of chunks. 
+ */
+#define MAX_INSPECTED_CHUNKS 8
+
 typedef  enum {
 	STREAM_FD,
 	STREAM_MEM
@@ -102,6 +110,9 @@ struct _axlStream {
 
 	/* last get following reference */
 	char   * last_get_following;
+
+	/* support variable for chunk matching */
+	char  ** chunks;
 
 	/* a reference to the associated element to this stream */
 	axlList * elements_linked;
@@ -303,6 +314,9 @@ axlStream * axl_stream_new (char * stream_source, int stream_size,
 		/* set initial indicators */
 		stream->stream_size  = stream_size;
 	}
+
+	/* initilize common stream part */
+	stream->chunks = axl_new (char *, MAX_INSPECTED_CHUNKS + 1);
 
 	/* return newly created stream */
 	return stream;
@@ -708,7 +722,6 @@ char      * axl_stream_get_untilv      (axlStream * stream,
 					int         chunk_num, 
 					va_list args)
 {
-	char      ** chunks;
 	int          iterator   = 0;
 	int          index      = 0;
 	int          length     = 0;
@@ -721,9 +734,6 @@ char      * axl_stream_get_untilv      (axlStream * stream,
 	/* axl_return_val_if_fail (valid_chars, NULL); */
 	axl_return_val_if_fail (chunk_num > 0, NULL);
 
-	/* get chunks to lookup */
-	chunks = axl_new (char *, chunk_num + 1);
-
 	/* set current matched value */
 	if (chunk_matched != NULL)
 		*chunk_matched = -1;
@@ -731,16 +741,15 @@ char      * axl_stream_get_untilv      (axlStream * stream,
 	/* iterate over the chunk list */
 	while (iterator < chunk_num) {
 		/* get the chunk */
-		chunks[iterator] = va_arg (args, char *);
-		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "looking for: '%s'", chunks[iterator]);
+		stream->chunks[iterator] = va_arg (args, char *);
+		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "looking for: '%s'", stream->chunks[iterator]);
 		
 		/* get current length */
-		if (strlen (chunks [iterator]) > max_length)
-			max_length = strlen (chunks [iterator]);
+		if (strlen (stream->chunks [iterator]) > max_length)
+			max_length = strlen (stream->chunks [iterator]);
 
 		/* update index */
 		iterator ++;
-		
 	}
 
 	/* now we have chunks to lookup, stream until get the stream
@@ -756,8 +765,6 @@ char      * axl_stream_get_untilv      (axlStream * stream,
 
 			if (! axl_stream_prebuffer (stream)) {
 				axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "failed while prebuffer");
-				/* free memory hold by chunks */
-				axl_free (chunks);
 				return NULL;
 			}
 
@@ -780,16 +787,16 @@ char      * axl_stream_get_untilv      (axlStream * stream,
 		while (iterator < chunk_num) {
 			
 			/* get current length for the chunk to check */
-			length = (chunks [iterator] != NULL) ?  strlen (chunks [iterator]) : 0;
+			length = (stream->chunks [iterator] != NULL) ?  strlen (stream->chunks [iterator]) : 0;
 
 			/* if we receive a white space " " as a
 			 * delimiter, we will also stop on white
 			 * spaces (in the sense defined at the XML
 			 * 1.0, that is \r \n \t " " */
-			if (axl_cmp (chunks[iterator], " "))
+			if (axl_cmp (stream->chunks[iterator], " "))
 				matched = axl_stream_is_white_space (stream->stream + index + stream->stream_index);
 			else 
- 				matched = !memcmp (chunks[iterator], stream->stream + index + stream->stream_index, length);
+ 				matched = !memcmp (stream->chunks[iterator], stream->stream + index + stream->stream_index, length);
 
 			/* check if we have found the chunk we were looking */
 			if (matched) {
@@ -808,9 +815,6 @@ char      * axl_stream_get_untilv      (axlStream * stream,
 						goto init_get_until;
 				}
 
-
-				/* chunk found */
-				axl_free (chunks); 
 
 				/* report which is the chunk being
 				 * matched by the expresion */
@@ -858,9 +862,6 @@ char      * axl_stream_get_untilv      (axlStream * stream,
 		index++;
 
 	}while (AXL_TRUE);
-
-	/* chunk found */
-	axl_free (chunks); 
 
 	/* return a NULL chunk. */
 	return NULL;	
@@ -1140,6 +1141,9 @@ void axl_stream_free (axlStream * stream)
 		/* close file descriptor if defined */
 		close (stream->fd);
 	}
+
+	/* free memory allocated for chunk matching */
+	axl_free (stream->chunks);
 
 	/* release memory allocated by the stream received. */
 	axl_free (stream);

@@ -19,10 +19,6 @@ int main (int argc, char ** argv)
 		return -1;
 	}
 
-	cursor  = xmlDocGetRootElement (doc);
-	printf ("Document loaded properly: %s..", cursor->name);
-	
-
 	/* release memory */
 	xmlFreeDoc (doc);
 
