@@ -1782,8 +1782,8 @@ bool      axl_doc_consume_pi (axlDoc * doc, axlNode * node,
 		/* found a pi target initialization */
 		axl_stream_accept (stream);
 		
-		string_aux = axl_stream_get_until (stream, NULL, &matched_chunk, 
-						   AXL_TRUE, 3, " ?>", "?>", " ");
+		string_aux = axl_stream_get_until (stream, NULL, &matched_chunk, AXL_TRUE, 3, 
+						   " ?>", "?>", " ");
 		/* check error reported */
 		if (string_aux == NULL) {
 			axl_error_new (-1, "Found a error while reading the PI target name", stream, error);
