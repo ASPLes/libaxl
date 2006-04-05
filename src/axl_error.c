@@ -135,7 +135,7 @@ char * axl_error_get      (axlError * _error)
 	/* check received reference */
 	if (_error == NULL)
 		return "no string error defined";
-
+	
 	return _error->error;
 }
 

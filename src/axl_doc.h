@@ -47,6 +47,16 @@ BEGIN_C_DECLS
  * @{
  */
 
+axlDoc  * axl_doc_create                   (char * version, 
+					    char * encoding,
+					    bool   standalone);
+
+void      axl_doc_dump                     (axlDoc  * doc, 
+					    char   ** content, 
+					    int     * size);
+
+int       axl_doc_get_flat_size            (axlDoc * doc);
+
 axlDoc  * axl_doc_parse                    (char * entity, 
 					    int entity_size, 
 					    axlError ** error);
@@ -59,11 +69,18 @@ axlDoc  * axl_doc_parse_from_file          (char      * file_path,
 
 axlNode * axl_doc_get_root                 (axlDoc * doc);
 
+void      axl_doc_set_root                 (axlDoc * doc, 
+					    axlNode * root);
+
 axlList * axl_doc_get_list                 (axlDoc * doc, 
 					    char * path_to);
 
 axlNode * axl_doc_get                      (axlDoc * doc, 
 					    char * path_to);
+
+char    * axl_doc_get_content_at           (axlDoc * doc,
+					    char   * path_to,
+					    int    * content_size);
 
 char    * axl_doc_get_encoding             (axlDoc * doc);
 
