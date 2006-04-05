@@ -305,6 +305,13 @@ struct _axlDoc {
 	 * has. 
 	 */
 	axlNode * rootNode;
+
+	/** 
+	 * @internal
+	 * The document version.
+	 */
+	char * version;
+
 	/** 
 	 * @internal
 	 * @brief Current xml encoding document.
@@ -364,11 +371,14 @@ struct _axlPI {
 
 /** 
  * @internal
+ *
  * @brief Creates a new empty \ref axlDoc reference.
+ *
+ * Creates the parent stack used for parsing functions.
  * 
  * @return A newly allocated \ref axlDoc reference.
  */
-axlDoc * __axl_doc_new () 
+axlDoc * __axl_doc_new (bool create_parent_stack) 
 {
 	axlDoc    * result = axl_new (axlDoc, 1);
 
@@ -376,6 +386,24 @@ axlDoc * __axl_doc_new ()
 	result->piTargets  = axl_list_new (axl_list_always_return_1, (axlDestroyFunc) axl_pi_free);
 
 	return result;
+}
+
+/** 
+ * @internal
+ *
+ * Clears internal axlDoc variables used mainly to parse documents.
+ * 
+ * @param doc The \ref axlDoc to clear
+ */
+void __axl_doc_clean (axlDoc * doc)
+{
+	/* release memory used by the parser */
+	if (doc->parentNode != NULL) {
+		axl_stack_free (doc->parentNode);
+		doc->parentNode = NULL;
+	}
+
+	return;
 }
 
 /** 
@@ -768,7 +796,8 @@ axlDoc * __axl_doc_parse_common (char * entity, int entity_size,
 	stream = axl_stream_new (entity, entity_size, file_path, fd_handle, error);
 	axl_return_val_if_fail (stream, NULL);
 
-	doc            = __axl_doc_new ();
+	/* create a document reference */
+	doc            = __axl_doc_new (AXL_TRUE);
 	axl_stream_link (stream, doc, (axlDestroyFunc) axl_doc_free);
 
 	/* parse initial xml header */
@@ -909,8 +938,135 @@ axlDoc * __axl_doc_parse_common (char * entity, int entity_size,
 	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "xml document parse COMPLETED"); 
 	axl_stream_unlink (stream);
 	axl_stream_free (stream);
+
+	/* clean document internal variables */
+	__axl_doc_clean (doc);
+
 	return doc;
 }
+
+/** 
+ * @brief Creates a new empty xml document, especifying options to be
+ * used in the header.
+ *
+ * This function allows to create the xml document representation the
+ * must be used to add childs to it.
+ * 
+ * @param version The xml document version. This value is optional. If
+ * NULL is used, the library will use "1.0" as version value.
+ *
+ * @param encoding The document encoding to be used. This value is
+ * optional, if NULL is provided, no encoding specification will be
+ * used.
+ *
+ * @param standalone Standalone configuration flag. By default, use
+ * AXL_FALSE.
+ * 
+ * @return Returns a newly allocated \ref axlDoc instance that must be
+ * deallocated by using \ref axl_doc_free.
+ */
+axlDoc  * axl_doc_create                   (char * version, 
+					    char * encoding,
+					    bool   standalone)
+{
+	axlDoc * doc;
+
+	/* create a new reference, without creating  */
+	doc = __axl_doc_new (AXL_FALSE);
+	
+	/* save the version */
+	if (version != NULL)
+		doc->version  = axl_strdup (version);
+
+	/* save encoding value */
+	if (encoding != NULL)
+		doc->encoding = axl_strdup (encoding);
+
+	/* save standalone configuration */
+	doc->standalone       = standalone;
+	
+	/* return the reference created */
+	return doc;
+}
+
+/** 
+ * @brief Allows to get the xml representation for the provided \ref
+ * axlDoc reference.
+ *
+ * Given the \ref axlDoc reference, which represents a XML document,
+ * this function allows to get its stringify representation.
+ * 
+ * @param doc The \ref axlDoc to stringify
+ *
+ * @param content The reference where the result will be returned.
+ *
+ * @param size The reference where the document content size will be
+ * returned.
+ */
+void      axl_doc_dump                     (axlDoc  * doc, 
+					    char   ** content, 
+					    int     * size)
+{
+	char * result;
+
+	/* perform some envrironmental checks */
+	axl_return_if_fail (doc);
+	axl_return_if_fail (content);
+	axl_return_if_fail (size);
+
+	/* get the about of memory to allocate so the whole xml
+	 * document fit in only one memory block */
+	(* size) = axl_doc_get_flat_size (doc);
+
+	/* check returned size */
+	if ((* size) == -1)
+		return;
+	
+	/* allocate the memory block required */
+	result = axl_new (char, size + 1);
+	
+	return;
+}
+
+/** 
+ * @brief Allows to get how much will take the \ref axlDoc instance
+ * represented as an XML document.
+ *
+ * @param doc The \ref axlDoc reference that is being requested to return its size.
+ * 
+ * @return The size the \ref axlDoc will represent, in a
+ * octect-counting, or -1 if fails. The function will only fail if the
+ * provided reference is NULL.
+ */
+int axl_doc_get_flat_size (axlDoc * doc)
+{
+	int result;
+	axl_return_val_if_fail (doc, -1);
+
+	/* count the xml header: 
+	 *
+	 * "<?xml version='1.0'" = 19 characters 
+	 * " standalone='yes'"   = 17 characters
+	 * " encoding='enc'"     = 12 characters + strlen (enc)
+	 * " ?>"                 = 3  characters
+	 *
+	 */
+	result = 22;
+	if (doc->standalone)
+		result += 17;
+	
+	if (doc->encoding != NULL) {
+		result += 12 + strlen (doc->encoding);
+	}
+	
+
+	/* now, count every node that the document have */
+	result += axl_node_get_flat_size (doc->rootNode);
+	
+	/* return current result */
+	return result;
+}
+
 
 /** 
  * @brief Parse an XML entity that is hold inside the memory pointed
@@ -924,6 +1080,25 @@ axlDoc * __axl_doc_parse_common (char * entity, int entity_size,
  * \ref axlError variable. In the case the function returns a NULL
  * value, this variable is filled containing the a textual diagnostic
  * error to be showed to the user interface and an error code.
+ *
+ * Here is an example:
+ * \code
+ * // axl document representation 
+ * axlDoc   * doc;
+ * axlError * error;
+ *	
+ *
+ * // parse the given string 
+ * doc = axl_doc_parse ("<?xml version='1.0' ?><axldoc />", 32, &error);
+ * if (doc == NULL) {
+ *      printf ("Error found: %s\n", axl_error_get (error));
+ *      axl_error_free (error);
+ *      return AXL_FALSE;
+ * }
+ *
+ * // release document parsed 
+ * axl_doc_free (doc);	
+ * \endcode
  * 
  * @param entity The XML document to load.
  *
@@ -1304,6 +1479,39 @@ axlNode * axl_doc_get                      (axlDoc * doc, char * path_to)
 	axl_list_free (list);
 	return node;
 	
+}
+
+/** 
+ * @brief Allows to get the node content for the final node provided
+ * by the path.
+ * 
+ * @param doc The (\ref axlDoc) xml document where the content will be
+ * looked up.
+ *
+ * @param path_to Path to the node where the content will be returned.
+ *
+ * @param content_size An optional reference to a variable to store
+ * the size of the content returned. If the function receives NULL,
+ * the content size will not be returned.
+ * 
+ * @return A reference to the content that the node have or NULL if
+ * fails. The function could fail either because the node doesn't have
+ * content or because the node identified by the path doesn't
+ * exist. The result returned must not be deallocated.
+ */
+char    * axl_doc_get_content_at           (axlDoc * doc,
+					    char   * path_to,
+					    int    * content_size)
+{
+
+	axlNode * node;
+
+	/* get the node reference */
+	node = axl_doc_get (doc, path_to);
+	axl_return_val_if_fail (node, NULL);
+
+	/* return the content requested */
+	return axl_node_get_content (node, content_size);
 	
 }
 
@@ -1345,6 +1553,36 @@ bool     axl_doc_get_standalone (axlDoc * doc)
 }
 
 /** 
+ * @brief Allows to configure the document root for the given \ref
+ * axlDoc instance.
+ *
+ * Every xml document has a xml node root. This is the first node,
+ * that holds all childs. This function allows to configure that xml
+ * document root. See also \ref axl_doc_get_root.
+ *
+ * Remember that previous document root will not be deallocated so,
+ * the user space must take care about previous reference.
+ *
+ * @param doc The \ref axlDoc where the document root will be
+ * configured.
+ *
+ * @param root The \ref axlNode used to configure the new document
+ * root.
+ */
+void    axl_doc_set_root (axlDoc * doc, axlNode * root)
+{
+	axl_return_if_fail (doc);
+	axl_return_if_fail (root);
+
+	/* set the new root */
+	doc->rootNode = root;
+
+	return;
+}
+
+/** 
+ * @internal
+ *
  * @brief Allows to set the given axlNode to be child of the current
  * parent.
  *

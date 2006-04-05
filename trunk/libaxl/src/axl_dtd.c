@@ -1730,6 +1730,9 @@ bool __axl_dtd_validate_element_type_empty (axlDtdElement  * element,
  * @param dtd The \ref axlDtd containing the DTD definition used to
  * validate the document.
  *
+ * @param error An optional reference to a \ref axlError object where
+ * validation errors are reported.
+ *
  * @return AXL_TRUE if the document is valid, AXL_FALSE if not.
  */
 bool       axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
@@ -2057,7 +2060,7 @@ int                  axl_dtd_item_list_count  (axlDtdElementList * itemList)
 }
 
 /** 
- * @brie Allows to get current configuration for the provided item
+ * @brief Allows to get current configuration for the provided item
  * list, which is the content specification for a DTD element.
  * 
  * @param itemList The item list where the operation will be

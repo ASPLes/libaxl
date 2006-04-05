@@ -476,6 +476,33 @@ char    * axl_node_get_attribute_value (axlNode * node, char * attribute)
 }
 
 /** 
+ * @brief Gets an allocated copy for the value associated to the given
+ * attribute.
+ *
+ * See \ref axl_node_get_attribute_value for more information. This
+ * function works the same way but returning an already allocated
+ * attribute value.
+ * 
+ * @param node The node where the attribute value is requested.
+ *
+ * @param attribute The attribute that is being requested.
+ * 
+ * @return A newly allocated reference that must be deallocated when
+ * no longer needed calling to axl_free.
+ */
+char    * axl_node_get_attribute_value_copy (axlNode * node, char * attribute)
+{
+	char * _value;
+
+	/* get the attribute */
+	_value = axl_node_get_attribute_value (node, attribute);
+	axl_return_val_if_fail (_value, NULL);
+	
+	/* return a copy */
+	return axl_strdup (_value);
+}
+
+/** 
  * @brief Allows to configure the given node to be empty.
  *
  * A \ref axlNode is empty when it is known that the node doesn't have
@@ -1062,6 +1089,57 @@ axlList * axl_node_get_pi_target_list       (axlNode * node)
 	axl_return_val_if_fail (node,       NULL);
 
 	return node->piTargets;
+}
+
+/** 
+ * @internal
+ *
+ * Returns which the size that the node and its childs will hold if
+ * the are represented into a flat xml stream.
+ * 
+ * @param node The node that is requested its stream xml size.
+ * 
+ * @return The stream size or -1 if fails.
+ */
+int       axl_node_get_flat_size            (axlNode * node)
+{
+	int       result   = 0;
+	int       iterator = 0;
+	axlNode * child;
+
+	axl_return_val_if_fail (node, -1);
+
+	/* check if the node is empty */
+	if (axl_node_is_empty (node)) {
+		if (! axl_node_have_childs (node)) {
+			/* "<" + strlen (node-name) + " />" */
+			return strlen (node->name) + 4;
+		}
+	}
+
+	/* the node have content */
+	if (! axl_node_is_empty (node)) {
+		/* "<" + strlen (node-name) + ">" + strlen (node-content) + 
+		 * "</" + strlen (node-name) + ">" */
+		result = 5 + (2 * strlen (node->name)) + node->content_size;
+	}
+
+	/* if the node have childs */
+	if (axl_node_have_childs (node)) {
+		while (iterator < axl_node_get_child_num (node)) {
+			/* get a reference to the child */
+			child   = axl_node_get_child_nth (node, iterator);
+
+			/* count how many bytes the node holds */
+			result += axl_node_get_flat_size (node);
+
+			/* update the iterator reference */
+			iterator++;
+		}
+	}
+
+	/* return the result */
+	return result;
 }
 
 /** 
