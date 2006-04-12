@@ -61,6 +61,8 @@ char    * axl_node_get_attribute_value      (axlNode * node, char * attribute);
 
 char    * axl_node_get_attribute_value_copy (axlNode * node, char * attribute);
 
+char    * axl_node_get_attribute_value_trans (axlNode * node, char * attribute);
+
 /** 
  * @brief Allows to easily check that the given xml node (\ref
  * axlNode) have the provided name.
@@ -101,6 +103,8 @@ void      axl_node_set_content_ref    (axlNode * node,
 
 char    * axl_node_get_content_copy   (axlNode * node, int  * content_size);
 
+char    * axl_node_get_content_trans  (axlNode * node, int * content_size);
+
 void      axl_node_set_have_childs    (axlNode * node, bool childs);
 
 bool      axl_node_have_childs        (axlNode * node);
@@ -112,6 +116,8 @@ axlNode * axl_node_get_child_nth      (axlNode * parent, int position);
 int       axl_node_get_child_num      (axlNode * parent);
 
 axlList * axl_node_get_childs         (axlNode * node);
+
+bool      axl_node_are_equal          (axlNode * node, axlNode * node2);
 
 void      axl_node_add_pi_target            (axlNode * node, 
 					     char * target, 
@@ -126,6 +132,10 @@ char    * axl_node_get_pi_target_content    (axlNode * node,
 axlList * axl_node_get_pi_target_list       (axlNode * node);
 
 int       axl_node_get_flat_size            (axlNode * node);
+
+int       axl_node_dump_at                  (axlNode * node,
+					     char    * content,
+					     int       desp);
 
 void      axl_node_free            (axlNode * node);
 

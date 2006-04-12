@@ -164,10 +164,241 @@ axlNode * __axl_node_create_internal (char * name)
 	axl_return_val_if_fail (name, NULL);
 	
 	node           = axl_new (axlNode, 1);
+	node->is_empty = AXL_TRUE;
 	node->name     = name;
 
 	return node;
 }
+
+
+/** 
+ * @internal
+ * 
+ * Allows to check if the provided string have escape sequences that
+ * must be defined by using the entity reference rather the value
+ * itself.
+ *
+ * @param content The content to check.
+ *
+ * @param additional_size An integer reference where the additional
+ * size variable will be added.
+ * 
+ * @return AXL_TRUE if the string contains non valid sequences that
+ * must be escaped using entity references.
+ */
+bool __axl_node_content_have_not_valid_sequences (char * content, 
+						  int    content_size,
+						  int * additional_size)
+{
+	int  iterator = 0;
+	bool result   = AXL_FALSE;
+	axl_return_val_if_fail (content, AXL_FALSE);
+
+	/* reset additional size value */
+	*additional_size = 0;
+
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "checking valid sequence: content size=%d", content_size);
+
+	/* iterate over all content defined */
+	while (iterator < content_size) {
+		/* check for &apos; */
+		if (content [iterator] == '\'') {
+			result = AXL_TRUE;
+			(*additional_size) += 5;
+		}
+
+		/* check for &quot; */
+		if (content [iterator] == '"') {
+			result = AXL_TRUE;
+			(*additional_size) += 5;
+		}
+
+		/* check for &amp; */
+		if (content [iterator] == '&') {
+			result = AXL_TRUE;
+			(*additional_size) += 4;
+		}
+
+		/* check for &gt; */
+		if (content [iterator] == '>') {
+			result = AXL_TRUE;
+			(*additional_size) += 3;
+		}
+
+		/* check for &lt; */
+		if (content [iterator] == '<') {
+			result = AXL_TRUE;
+			(*additional_size) += 3;
+		}
+
+		/* update the iterator */
+		iterator++;
+	}
+
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "valid sequence checking result=%d: content size=%d, additional size=%d", 
+		 result, content_size, *additional_size);
+
+	/* return results */
+	return result;
+}
+
+/** 
+ * @internal
+ *
+ * Internal function which allocates the enough memory to copy
+ * received content changing all escape sequences.
+ */
+char * __axl_node_content_copy_and_escape (char * content, 
+					   int    content_size, 
+					   int    additional_size)
+{
+	int    iterator  = 0;
+	int    iterator2 = 0;
+	char * result;
+	axl_return_val_if_fail (content, AXL_FALSE);
+
+	/* allocate the memory to be returned */
+	result = axl_new (char, content_size + additional_size + 1);
+
+	/* iterate over all content defined */
+	while (iterator2 < content_size) {
+		/* check for &apos; */
+		if (content [iterator2] == '\'') {
+			memcpy (result + iterator, "&apos;", 6);
+			iterator += 6;
+			iterator2++;
+			continue;
+		}
+
+		/* check for &quot; */
+		if (content [iterator2] == '"') {
+			memcpy (result + iterator, "&quot;", 6);
+			iterator += 6;
+			iterator2++;
+			continue;
+		}
+
+		/* check for &amp; */
+		if (content [iterator2] == '&') {
+			memcpy (result + iterator, "&amp;", 5);
+			iterator += 5;
+			iterator2++;
+			continue;
+		}
+
+		/* check for &gt; */
+		if (content [iterator2] == '>') {
+			memcpy (result + iterator, "&gt;", 4);
+			iterator += 4;
+			iterator2++;
+			continue;
+		}
+
+		/* check for &lt; */
+		if (content [iterator2] == '<') {
+			memcpy (result + iterator, "&lt;", 4);
+			iterator += 4;
+			iterator2++;
+			continue;
+		}
+
+		/* copy value received because it is not an escape
+		 * sequence */
+		memcpy (result + iterator, content + iterator2, 1);
+
+		/* update the iterator */
+		iterator++;
+		iterator2++;
+	}
+
+	/* return results */
+	return result;
+}
+
+/** 
+ * @internal
+ *
+ * 
+ * Internal function which replaces all entity references to its
+ * corresponding values. Initially, this function only implements
+ * translation for default recognized entities (&, <, >, ' and ").
+ *
+ * Because the pattern substitution applied on this operation makes
+ * not necessary to allocate memory, the function return the same
+ * string received, but with all values replaced.
+ */
+char * __axl_node_content_translate_defaults (char * content, 
+					      int  * content_size)
+{
+	int    iterator  = 0;
+	int    iterator2 = 0;
+	
+	axl_return_val_if_fail (content, AXL_FALSE);
+
+	/* iterate over all content defined */
+	while (iterator < (*content_size)) {
+		
+		/* check for &apos; */
+		if (axl_stream_cmp (content + iterator, "&apos;", 6)) {
+			content [iterator2] = '\'';
+			iterator2++;
+			
+			iterator += 6;
+			continue;
+		}
+		
+		/* check for &quot; */
+		if (axl_stream_cmp (content + iterator, "&quot;", 6)) {
+			content [iterator2] = '"';
+			iterator2++;
+			
+			iterator += 6;
+			continue;
+		}
+
+		/* check for &amp; */
+		if (axl_stream_cmp (content + iterator, "&amp;", 5)) {
+			content [iterator2] = '&';
+			iterator2++;
+			
+			iterator += 5;
+			continue;
+		}
+
+		/* check for &gt; */
+		if (axl_stream_cmp (content + iterator, "&gt;", 4)) {
+			content [iterator2] = '>';
+			iterator2++;
+			
+			iterator += 4;
+			continue;
+		}
+
+		/* check for &lt; */
+		if (axl_stream_cmp (content + iterator, "&lt;", 4)) {
+			content [iterator2] = '<';
+			iterator2++;
+			
+			iterator += 4;
+			continue;
+		}
+
+		/* copy move the content */
+		if (iterator2 != iterator)
+			content [iterator2] = content [iterator];
+
+		/* update the iterator */
+		iterator++;
+		iterator2++;
+	}
+
+	/* return results, setting the new content size */
+	*content_size       = iterator2;
+	content [iterator2] = 0;
+	return content;
+}
+
+
 
 /** 
  * @brief Creates a new \ref axlNode with the provided name.
@@ -360,13 +591,43 @@ void      __axl_node_set_attribute      (axlNode * node, char * attribute, char 
  */
 void      axl_node_set_attribute      (axlNode * node, char * attribute, char * value)
 {
+	int    additional_size = 0;
+	char * _attr;
+	char * _value;
 
 	/* perform initial checks */
 	if (!__axl_node_set_attribute_common_check (node, attribute, value))
 		return;
 
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "setting attribute: %s='%s'", attribute, value);
+
+	/* check attribute name */
+	if (__axl_node_content_have_not_valid_sequences (attribute, strlen (attribute),
+							 &additional_size)) {
+		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found attribute content with escapable, non-valid content");
+		_attr = __axl_node_content_copy_and_escape (attribute, 
+							    strlen (attribute),
+							    additional_size);
+	}else {
+		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "'%s' is a valid string..", attribute);
+		_attr = axl_strdup (attribute);
+	}
+
+	/* check attribute value */
+	additional_size = 0;
+	if (__axl_node_content_have_not_valid_sequences (value, strlen (value),
+							 &additional_size)) {
+
+		_value = __axl_node_content_copy_and_escape (value, 
+							     strlen (value),
+							     additional_size);
+	}else {
+		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "'%s' is a valid string..", value);
+		_value = axl_strdup (value);
+	}
+
 	/* insert the attribute */
-	__axl_node_set_attribute (node, axl_strdup (attribute), axl_strdup (value));
+	__axl_node_set_attribute (node, _attr, _value);
 	return;
 }
 
@@ -503,6 +764,46 @@ char    * axl_node_get_attribute_value_copy (axlNode * node, char * attribute)
 }
 
 /** 
+ * @brief Gets the attribute content for the provided attribute name,
+ * at the provided node, but translating entity references.
+ *
+ * This function works the same way like \ref
+ * axl_node_get_attribute_value_copy, in the sense it returns a
+ * dinamically allocated copy for the attribute value requested but,
+ * at the same time, it returns the content with all entity references
+ * already translated.
+ *
+ * If the attribute content has <b>&amp;</b>, <b>&lt;</b>, etc, this
+ * function will translate them into the corresponding values.
+ * 
+ * @param node The \ref axlNode instance where the attribute content
+ * will be returned.
+ *
+ * @param attribute The attribute name that is being requested.
+ * 
+ * @return The attribute content, already translated, for those
+ * entities found. The function returns a dinamilly allocated string
+ * so \ref axl_free must be used.
+ */
+char    * axl_node_get_attribute_value_trans (axlNode * node, char * attribute)
+{
+	char * _value;
+	int    size;
+
+	/* get the attribute */
+	_value = axl_node_get_attribute_value (node, attribute);
+	axl_return_val_if_fail (_value, NULL);
+
+	/* perform a local copy */
+	_value = axl_strdup (_value);
+	
+	/* return a copy */
+	size   = strlen (_value);
+	return __axl_node_content_translate_defaults (_value, &size);
+}
+
+
+/** 
  * @brief Allows to configure the given node to be empty.
  *
  * A \ref axlNode is empty when it is known that the node doesn't have
@@ -561,7 +862,8 @@ char    * axl_node_get_name           (axlNode * node)
 }
 
 /** 
- * @brief Allows to get current emptyness configuration for the given \ref axlNode.
+ * @brief Allows to get current emptyness configuration for the given
+ * \ref axlNode.
  *
  * An \ref axlNode, which is a representation of a xml node, is
  * considered to be empty only if it has no content inside it. The
@@ -574,9 +876,11 @@ char    * axl_node_get_name           (axlNode * node)
  * \endcode
  * 
  * If a node have content, this function will return \ref
- * AXL_TRUE. The content must not be confused with the node childs. A
+ * AXL_FALSE. The content must not be confused with the node childs. A
  * xml node (\ref axlNode) could be empty but have childs at the same
- * time (\ref axl_node_have_childs). The following xml code snipet shows a xml &lt;data> node with
+ * time (\ref axl_node_have_childs).
+ *
+ * The following xml code snipet shows a xml &lt;data> node with
  * childs that have content, but the parent node, &lt;data> do not
  * have content, therefore is empty.
  *
@@ -588,8 +892,6 @@ char    * axl_node_get_name           (axlNode * node)
  * \endcode
  *
  * A node that is empty will return NULL data once called to \ref axl_node_get_content.
- * 
- * 
  * 
  * @param node The node to check for its empty status. 
  * 
@@ -639,6 +941,30 @@ char    * axl_node_get_content     (axlNode * node, int * content_size)
  *   Content inside the xml node.
  * </data>
  * \endcode
+ *
+ * Because the function will perform a local copy for the provided
+ * data, it will also check for especial entities to be placed
+ * properly. 
+ *
+ * The following characters represents the set of characters that
+ * should be referenced by using its associated entity reference. But,
+ * if provided as is, the function will translate them into the
+ * appropiate entity reference.
+ *
+ * <table>
+ * <tr><td><b>Character</td><td>Entity name</td></tr>
+ * <tr><td>'</td><td>&apos;</td></tr>
+ * <tr><td><</td><td>&lt;</td></tr>
+ * <tr><td>></td><td>&gt;</td></tr>
+ * <tr><td>&</td><td>&amp;</td></tr>
+ * <tr><td>"</td><td>&quot;</td></tr>
+ * </table>
+ *
+ * In general it is a good idea to espace previous sequences by
+ * providing the right entity value, avoding the additional
+ * computation required to translate the value received. 
+ * 
+ * Rembember that valid XML documents have these values escaped. 
  * 
  * @param node The xml node, represented by an already initialized
  * \ref axlNode, where the node content will be set.
@@ -653,20 +979,38 @@ char    * axl_node_get_content     (axlNode * node, int * content_size)
  */
 void      axl_node_set_content        (axlNode * node, char * content, int content_size)
 {
+	int additional_size = 0;
+
 	axl_return_if_fail (node);
 	axl_return_if_fail (content);
 
 	/* get current content in the case a -1 is provided */
 	if (content_size == -1)
 		content_size = strlen (content);
-	node->content_size   = content_size;
 
-	/* set current content */
-	node->content = axl_new (char, node->content_size + 1);
-	memcpy (node->content, content, node->content_size);
+
+	/* check if the string received have escapable characters */
+	if (__axl_node_content_have_not_valid_sequences (content, content_size, 
+							 &additional_size)) {
+		/* allocate the content */
+		node->content = __axl_node_content_copy_and_escape (content, 
+								    content_size, 
+								    additional_size);
+		/* set node content size */
+		node->content_size   = content_size + additional_size;
+	}else {
+		/* set current content */
+		node->content_size   = content_size;
+		node->content        = axl_new (char, node->content_size + 1);
+		memcpy (node->content, content, node->content_size);
+	}
 
 	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "setting xml node (name: %s) content (size: %d) %s",
 		 node->name, node->content_size, node->content);
+
+	/* set that the node is not empty */
+	node->is_empty = AXL_FALSE;
+
 	/* job done */
 	return;
 }
@@ -678,6 +1022,11 @@ void      axl_node_set_content        (axlNode * node, char * content, int conte
  * This function works like \ref axl_node_set_content_ref but without
  * copy memory provided. This allows reduce memory allocations if the
  * memory was already allocated by the user space.
+ *
+ * Because this function doesn't perform a copy, if the content
+ * received has to be escaped, the function will fail. To use this
+ * function the caller must ensure that entity references are used to
+ * especify the &, ', ", < or >.
  * 
  * @param node The \ref axlNode where the content will be set.
  *
@@ -725,8 +1074,71 @@ void      axl_node_set_content_ref    (axlNode * node,
  */
 char    * axl_node_get_content_copy (axlNode * node, int * content_size)
 {
-	return NULL;
+	int    _content_size;
+	char * result;
+	char * content;
+
+	/* get the content and check if it is defined */
+	if (content_size)
+		content = axl_node_get_content (node, content_size);
+	else
+		content = axl_node_get_content (node, &_content_size);
+
+	/* check result */
+	if (content == NULL)
+		return NULL;
+
+	/* allocate enough memory for the result */
+	if (content_size) {
+		result = axl_new (char, (*content_size) + 1);
+		memcpy (result, content, *content_size);
+	}else {
+		result = axl_new (char, _content_size + 1);
+		memcpy (result, content, _content_size);
+	}
+  	
+	/* return a newly allocated reference to the content */
+	return result;
 }
+
+/** 
+ * @brief Allows to the get node content, performing a memory
+ * allocation for the returned result, translating default entities
+ * values with its replacement text.
+ * 
+ * @param node The XML node where the content is being requested.
+ *
+ *
+ * @param content_size An optional reference to an integer variable to
+ * return the node content size.
+ * 
+ * @return A newly allocated string, representing the node content,
+ * with all entities references already translated into the
+ * replacement text.
+ */
+char    * axl_node_get_content_trans (axlNode * node, int * content_size)
+{
+	char * result;
+	int    _content_size = 0;
+
+	/* get a copy for the node content, getting the node content
+	 * size. If the user don't provide a reference, use a local
+	 * one. */
+	if (content_size)
+		result = axl_node_get_content_copy (node, content_size);
+	else
+		result = axl_node_get_content_copy (node, &_content_size);
+
+	/* check result returned */
+	axl_return_val_if_fail (result, NULL);
+
+	/* translate all references that performs the entities to the
+	 * replacement text. */
+	if (content_size)
+		return __axl_node_content_translate_defaults (result, content_size);
+	return __axl_node_content_translate_defaults (result, &_content_size);
+}
+
 
 /** 
  * @brief Allows to configure a child node to the given parent.
@@ -903,6 +1315,79 @@ axlList * axl_node_get_childs         (axlNode * node)
 
 	/* return current childs */
 	return node->childs;
+}
+
+/** 
+ * @brief Allows to check if the provided references represents two
+ * equivalent nodes.
+ *
+ * The function will check node name, node content and node attributes
+ * and its values.
+ * 
+ * @param node The node to check.
+ * @param node2 The second node to check.
+ * 
+ * @return AXL_TRUE if both nodes are equivalent or AXL_FALSE if not.
+ */
+bool      axl_node_are_equal          (axlNode * node, axlNode * node2)
+{
+	int             iterator = 0;
+	int             length;
+	
+	axlAttribute  * attr;
+	axlAttribute  * attr2;
+	
+	axl_return_val_if_fail (node,  AXL_FALSE);
+	axl_return_val_if_fail (node2, AXL_FALSE);
+
+	/* check document root name */
+	if (! axl_cmp (axl_node_get_name (node), axl_node_get_name (node2))) {
+		return AXL_FALSE;
+	}
+
+	/* check empty ness configuration */
+	if (axl_node_is_empty (node) != axl_node_is_empty (node2)) {
+		return AXL_FALSE;
+	}
+	
+	/* check childs configuration */
+	if (axl_node_have_childs (node) != axl_node_have_childs (node2)) {
+		return AXL_FALSE;
+	}
+
+	/* check childs number */
+	if (axl_node_get_child_num (node) != axl_node_get_child_num (node2)) {
+		return AXL_FALSE;
+	}
+
+	/* check attribute values */
+	if (node->attributes != NULL) {
+		if (axl_list_length (node->attributes) != axl_list_length (node2->attributes)) {
+			return AXL_FALSE;
+		}
+		
+		length = axl_list_length (node->attributes);
+		while (iterator < length) {
+			/* get a reference to the attributes to compare */
+			attr  = axl_list_get_nth (node->attributes, iterator);
+			attr2 = axl_list_get_nth (node2->attributes, iterator);
+			
+			/* check attribute name */
+			if (! axl_cmp (attr->name, attr2->name))
+				return AXL_FALSE;
+			
+			/* check attribute name */
+			if (! axl_cmp (attr->value, attr2->value))
+				return AXL_FALSE;
+			
+			/* update the iterator index */
+			iterator++;
+		}
+	} /* end if */
+
+
+	/* both nodes seems to be equal */
+	return AXL_TRUE;
 }
 
 /** 
@@ -1093,6 +1578,38 @@ axlList * axl_node_get_pi_target_list       (axlNode * node)
 
 /** 
  * @internal
+ * @brief Returns the space required to write the attribute part.
+ */
+int __axl_node_get_flat_size_attributes (axlNode * node)
+{
+	axlAttribute * attr;
+	int            length;
+	int            iterator;
+	
+	/* if attribute list is not defined just return 0 */
+	if (node->attributes == NULL)
+		return 0;
+
+	length   = 0;
+	iterator = 0;
+	while (iterator < axl_list_length (node->attributes)) {
+
+		/* get a reference to the attributes to compare */
+		attr   = axl_list_get_nth (node->attributes, iterator);
+
+		/* " attribute='value' */
+		length += 4 + strlen (attr->name) + strlen (attr->value);
+
+		/* update iterator */
+		iterator++;
+	}
+
+	/* return the length */
+	return length;
+}
+
+/** 
+ * @internal
  *
  * Returns which the size that the node and its childs will hold if
  * the are represented into a flat xml stream.
@@ -1113,25 +1630,25 @@ int       axl_node_get_flat_size            (axlNode * node)
 	if (axl_node_is_empty (node)) {
 		if (! axl_node_have_childs (node)) {
 			/* "<" + strlen (node-name) + " />" */
-			return strlen (node->name) + 4;
+			return strlen (node->name) + 4 + __axl_node_get_flat_size_attributes (node);
 		}
 	}
 
-	/* the node have content */
-	if (! axl_node_is_empty (node)) {
-		/* "<" + strlen (node-name) + ">" + strlen (node-content) + 
-		 * "</" + strlen (node-name) + ">" */
-		result = 5 + (2 * strlen (node->name)) + node->content_size;
-	}
+	/* the node is emtpy because it has no content but it has
+	 * childs:
+	 * "<" + strlen (node-name) + ">" + strlen (node-content) + 
+	 * "</" + strlen (node-name) + ">" */
+	result = 5 + (2 * strlen (node->name)) + node->content_size + __axl_node_get_flat_size_attributes (node);
 
 	/* if the node have childs */
 	if (axl_node_have_childs (node)) {
+
 		while (iterator < axl_node_get_child_num (node)) {
 			/* get a reference to the child */
 			child   = axl_node_get_child_nth (node, iterator);
 
 			/* count how many bytes the node holds */
-			result += axl_node_get_flat_size (node);
+			result += axl_node_get_flat_size (child);
 
 			/* update the iterator reference */
 			iterator++;
@@ -1140,6 +1657,156 @@ int       axl_node_get_flat_size            (axlNode * node)
 
 	/* return the result */
 	return result;
+}
+
+/** 
+ * @internal
+ * 
+ * Internal support function which dumps current attribute
+ * configuration into the given memory using the provided desp.
+ */
+int axl_node_dump_attributes_at (axlNode * node, char * content, int desp)
+{
+	axlAttribute * attr;
+	int            length;
+	int            iterator;
+	
+	/* if attribute list is not defined just return 0 */
+	if (node->attributes == NULL)
+		return desp;
+
+	length   = 0;
+	iterator = 0;
+	while (iterator < axl_list_length (node->attributes)) {
+
+		/* get a reference to the attributes to compare */
+		attr   = axl_list_get_nth (node->attributes, iterator);
+
+		memcpy (content + desp, " ", 1);
+		desp += 1;
+
+		memcpy (content + desp, attr->name, strlen (attr->name));
+		desp += strlen (attr->name);
+
+		memcpy (content + desp, "='", 2);
+		desp += 2;
+
+		memcpy (content + desp, attr->value, strlen (attr->value));
+		desp += strlen (attr->value);
+
+		memcpy (content + desp, "'", 1);
+		desp += 1;
+
+		/* update iterator */
+		iterator++;
+	}
+
+	/* return the length */
+	return desp;
+}
+
+/** 
+ * @internal
+ *
+ * Writes the node information represented by the node provided at the
+ * given position into the buffer provided.
+ * 
+ * @param node The node to dump and its childs.
+ *
+ * @param content The memory buffer where the content will be dumped.
+ *
+ * @param desp A memory desp where to dump the node content inside the
+ * memory provided.
+ * 
+ * @return The new desp value to be used on the next dump.
+ */
+int       axl_node_dump_at                  (axlNode * node,
+					     char    * content,
+					     int       desp)
+{
+	int       iterator = 0;
+	axlNode * child;
+
+	axl_return_val_if_fail (node, -1);
+
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "dumping node=<%s> at %d", 
+		 axl_node_get_name (node), desp);
+
+	/* check if the node is empty */
+	if (axl_node_is_empty (node)) {
+		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "the node <%s> is empty", 
+			 axl_node_get_name (node));
+		if (! axl_node_have_childs (node)) {
+			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "dumping an empty node without childs=<%s>",
+				 axl_node_get_name (node));
+			/* "<" + strlen (node-name) + " />" */
+			memcpy (content + desp, "<", 1);
+			desp += 1;
+
+			memcpy (content + desp, node->name, strlen (node->name));
+			desp += strlen (node->name);
+
+			/* dump attribute values */
+			desp = axl_node_dump_attributes_at (node, content, desp);
+
+			memcpy (content + desp, " />", 3);
+			desp += 3;
+
+			return desp;
+		}
+	}
+
+	/* the node is empty because it doesn't have content but it
+	 * has childs 
+	 * "<" + strlen (node-name) + ">" + strlen (node-content) + 
+	 * "</" + strlen (node-name) + ">" */
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "getting content for: <%s>", axl_node_get_name (node));
+
+	/* dump node start tag */
+	memcpy (content + desp, "<", 1);
+	desp += 1;
+
+	memcpy (content + desp, node->name, strlen (node->name));
+	desp += strlen (node->name);
+
+	/* dump attribute values */
+	desp = axl_node_dump_attributes_at (node, content, desp);
+
+	memcpy (content + desp, ">", 1);
+	desp += 1;
+		
+	/* if the node have childs */
+	if (axl_node_have_childs (node)) {
+		while (iterator < axl_node_get_child_num (node)) {
+			/* get a reference to the child */
+			child = axl_node_get_child_nth (node, iterator);
+
+			/* count how many bytes the node holds */
+			desp  = axl_node_dump_at (child, content, desp);
+
+			/* update the iterator reference */
+			iterator++;
+		}
+	}else {
+		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "the node is not empty and have childs");
+
+		/* dump node content */
+		memcpy (content + desp, node->content, strlen (node->content));
+		desp += strlen (node->content);
+	}
+
+	/* dump close tag */
+	memcpy (content + desp,	"</", 2);
+	desp += 2;
+	
+	memcpy (content + desp, node->name, strlen (node->name));
+	desp += strlen (node->name);
+	
+	memcpy (content + desp,	">", 1);
+	desp += 1;
+
+	/* return the result */
+	return desp;
 }
 
 /** 
