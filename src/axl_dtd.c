@@ -1159,7 +1159,7 @@ bool __axl_dtd_validate_sequence (axlNode            * parent,
 	axl_return_val_if_fail (parent, AXL_FALSE);
 	axl_return_val_if_fail (itemList, AXL_FALSE);
 
-	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "validating a sequence list: iterator=%d, item list cound=%d, at child position=%d",
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "validating a sequence list: iterator=%d, item list count=%d, at child position=%d",
 		 iterator, axl_dtd_item_list_count (itemList), child_pos);
 
 	/* iterate over the sequence, checking its order */
@@ -1299,11 +1299,13 @@ bool __axl_dtd_validate_sequence (axlNode            * parent,
 
 			/* according to the repetition pattern, update loop indexes */
 			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "updating child nodes references: %d, repeat type: %d, status=%d",
-				 child_pos, itemNode->times, status);
+				 child_pos, times, status);
 
 			/* one only item to match and exactly one */
 			if (times == ONE_AND_ONLY_ONE) {
 				child_pos++;
+				axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "updated child position to: %d, repeat type: %d, status=%d",
+					 child_pos, times, status);
 				break;
 			}
 
@@ -1354,7 +1356,9 @@ bool __axl_dtd_validate_sequence (axlNode            * parent,
 	}
 
 	/* check if more nodes where specified than the DTD spec */
-	if (top_level && (child_pos  < axl_node_get_child_num (parent))) {
+	times = axl_dtd_item_list_repeat (itemList);
+	if ((times == ONE_OR_MANY || times == ONE_AND_ONLY_ONE) && 
+	    top_level && (child_pos  < axl_node_get_child_num (parent))) {
 		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "parent node <%s> have more childs=%d than the childs iterated=%d",
 			 axl_node_get_name (parent),
 			 axl_node_get_child_num (parent),
@@ -1563,7 +1567,9 @@ bool __axl_dtd_validate_item_list (axlDtdElementList  * itemList,
 				/* check that the match wasn't
 				 * produced, at any level */
 				if (temp_child_pos != *child_position) {
-					axl_error_new (-1, "Found an DTD item list definition, that should be matched entirely or not, zero or one times, but it was matched partially",
+					axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "item list mismatch (%d != %d)", 
+						 temp_child_pos, *child_position);
+					axl_error_new (-1, "Found an DTD item list definition, that should be matched entirely or not, zero or one time, but it was matched partially",
 						       NULL, error);
 					return AXL_FALSE;
 				}
@@ -1596,6 +1602,8 @@ bool __axl_dtd_validate_item_list (axlDtdElementList  * itemList,
 					/* check that the match wasn't
 					 * produced, at any level */
 					if ((temp_child_pos != *child_position)) {
+						axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "item list mismatch (%d != %d)", 
+							 temp_child_pos, *child_position);
 						axl_error_new (-1, "Found an DTD item list definition, that should be matched entirely or not, zero or many times, but it was matched partially",
 							       NULL, error);
 						return AXL_FALSE;
@@ -2212,9 +2220,12 @@ AxlDtdTimes          axl_dtd_item_node_get_repeat (axlDtdElementListNode * node)
  */
 void       axl_dtd_free  (axlDtd * dtd)
 {
-	if (dtd == NULL)
+	if (dtd == NULL) {
+		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "received a null DTD reference, doing nothing");
 		return;
-
+	}
+	
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "releasing the DTD reference");
 	axl_list_free (dtd->elements);
 	axl_free (dtd);
 

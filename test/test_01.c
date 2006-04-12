@@ -8,6 +8,124 @@
  * 
  * @return AXL_TRUE if the validity test is passed, AXL_FALSE if not.
  */
+bool test_14 (axlError ** error) 
+{
+	axlDoc  * doc  = NULL;
+	axlNode * node = NULL;
+	
+	char    * xml_document;
+	char    * value;
+	int       size = 0;
+	int       document_size;
+	
+
+	/* create an emtpy document */
+	doc = axl_doc_create ("1.0", NULL, AXL_FALSE);
+
+	/* create the root node */
+	node = axl_node_create ("test");
+	axl_node_set_content (node, "This is a test (') (\") (>) (<) (&), more data###", -1);
+	
+	axl_doc_set_root (doc, node);
+
+	/* dump the document */
+	axl_doc_dump (doc, &xml_document, &document_size);
+	
+	if (!axl_cmp ("<?xml version='1.0' ?><test>This is a test (&apos;) (&quot;) (&gt;) (&lt;) (&amp;), more data###</test>",
+		      xml_document)) {
+		axl_error_new (-1, "Found dump mismatch that shows entities are not handled properly", NULL, error);
+		return AXL_FALSE;
+	}
+
+	/* free memory dump */
+	axl_free (xml_document);
+
+	/* get the content translated */
+	value = axl_node_get_content_copy (node, &size);
+
+	if (size != 68) {
+		axl_error_new (-1, "Found a document size mismatch while dumping entity content", NULL, error);
+		return AXL_FALSE;
+	}
+	
+	/* free the content received */
+	axl_free (value);
+
+	/* get the content translated */
+	value = axl_node_get_content_trans (node, &size);
+
+	if (size != 48) {
+		axl_error_new (-1, "Found a document size mismatch while dumping entity content (already translated)", NULL, error);
+		return AXL_FALSE;
+	}
+
+	/* check node content returned */
+	if (!axl_cmp (value, "This is a test (\') (\") (>) (<) (&), more data###")) {
+		axl_error_new (-1, "Found an string mismatch while checking a node content which was translated", NULL, error);
+		return AXL_FALSE;
+	}
+
+	/* free the content translated */
+	axl_free (value);
+
+	/* free document */
+	axl_doc_free (doc);
+	
+	return AXL_TRUE;
+}
+
+/** 
+ * @brief A more complex DTD parsing example
+ * 
+ * @param error The optional axlError to be used to report errors.
+ * 
+ * @return AXL_TRUE if the validity test is passed, AXL_FALSE if not.
+ */
+bool test_13 (axlError ** error) 
+{
+	axlDoc * doc  = NULL;
+	axlDoc * doc2 = NULL;
+	char   * content;
+	int      size;
+	
+	doc = axl_doc_parse_from_file ("test13.xml", error);
+	if (doc == NULL)
+		return AXL_FALSE;
+
+	/* dump xml document */
+	axl_doc_dump (doc, &content, &size);
+
+	printf ("Document dumped (size: %d): \n%s\n", size, content);
+
+	doc2 = axl_doc_parse (content, size, error);
+	if (doc2 == NULL)
+		return AXL_FALSE;
+
+	/* check if both documents are equals */
+	if (! axl_doc_are_equal (doc, doc2)) {
+		axl_error_new (-1, "Expected to dump an equivalent xml document, but found an error", NULL, error);
+		return AXL_FALSE;
+	}
+
+	/* free dump */
+	axl_free (content);
+	   
+	/* free axl document */
+	axl_doc_free (doc);
+
+	/* free axl document */
+	axl_doc_free (doc2);
+	
+	return AXL_TRUE;
+}
+
+/** 
+ * @brief A more complex DTD parsing example
+ * 
+ * @param error The optional axlError to be used to report errors.
+ * 
+ * @return AXL_TRUE if the validity test is passed, AXL_FALSE if not.
+ */
 bool test_12 (axlError ** error) 
 {
 	axlDoc * doc = NULL;
@@ -72,6 +190,28 @@ bool test_12 (axlError ** error)
 	
 	/* free dtd reference */
 	axl_dtd_free (dtd);
+
+	/* parse a BEEP greetins example */
+	doc = axl_doc_parse_from_file ("channel5.xml", error);
+	if (doc == NULL)
+		return AXL_FALSE;
+
+	/* parse the TLS dtd file */
+	dtd = axl_dtd_parse_from_file ("channel.dtd", error);
+	if (dtd == NULL)
+		return AXL_FALSE;
+
+	/* perform DTD validation */
+	if (! axl_dtd_validate (doc, dtd, error)) {
+		return AXL_FALSE;
+	}
+
+	/* free doc reference */
+	axl_doc_free (doc); 
+	
+	/* free dtd reference */
+	axl_dtd_free (dtd);
+	
 
 	/* test end */
 	return AXL_TRUE;
@@ -974,7 +1114,6 @@ int main (int argc, char ** argv)
 		return -1;
 	}
 
-
 	if (test_01 (&error))
 		printf ("Test 01: basic xml parsing [   OK   ]\n");
 	else {
@@ -1086,8 +1225,24 @@ int main (int argc, char ** argv)
 		axl_error_free (error);
 		return -1;
 	}	
+	
+	if (test_13 (&error)) 
+		printf ("Test 13: XML memory dumping [   OK   ]\n");
+	else {
+		printf ("Test 13: XML memory dumping [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}	
 
-
+	if (test_14 (&error)) {
+		printf ("Test 14: quotation and escape sequences (&,',\",<,>) [   OK   ]\n");
+	} else {
+		printf ("Test 14: quotation and escape sequences (&,',\",<,>) [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}	
 
 	/* cleanup axl library */
 	axl_end ();

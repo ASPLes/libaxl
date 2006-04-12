@@ -51,12 +51,6 @@ axlDoc  * axl_doc_create                   (char * version,
 					    char * encoding,
 					    bool   standalone);
 
-void      axl_doc_dump                     (axlDoc  * doc, 
-					    char   ** content, 
-					    int     * size);
-
-int       axl_doc_get_flat_size            (axlDoc * doc);
-
 axlDoc  * axl_doc_parse                    (char * entity, 
 					    int entity_size, 
 					    axlError ** error);
@@ -66,6 +60,15 @@ axlDoc  * axl_doc_parse_strings            (axlError ** error,
 
 axlDoc  * axl_doc_parse_from_file          (char      * file_path,
 					    axlError ** error);
+
+void      axl_doc_dump                     (axlDoc  * doc, 
+					    char   ** content, 
+					    int     * size);
+
+int       axl_doc_get_flat_size            (axlDoc * doc);
+
+bool      axl_doc_are_equal                (axlDoc * doc, 
+					    axlDoc * doc2);
 
 axlNode * axl_doc_get_root                 (axlDoc * doc);
 

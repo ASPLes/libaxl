@@ -1,0 +1,4 @@
+<greeting>
+   <profile uri='http://fact.aspl.es/profiles/plain_profile' />
+   <profile uri='http://iana.org/beep/TLS' />
+</greeting>

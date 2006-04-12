@@ -447,13 +447,16 @@ int         axl_stream_peek            (axlStream * stream, char * chunk)
 int         axl_stream_inspect_several (axlStream * stream, int chunk_num, ...)
 {
 	va_list   args;
-	int       iterator  = 0;
-	char    * chunk     = NULL;
+	int       iterator   = 0;
+	char    * chunk      = NULL;
+	int       last_value = 0;
 
 	axl_return_val_if_fail (stream,        -1);
 	axl_return_val_if_fail (chunk_num > 0, -1);
 
 	va_start (args, chunk_num);
+
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "inspecting severall (%d)..", chunk_num);
 	
 	/* check each chunk */
 	while (iterator < chunk_num) {
@@ -461,16 +464,20 @@ int         axl_stream_inspect_several (axlStream * stream, int chunk_num, ...)
 		/* get the next chunk */
 		chunk = va_arg (args, char *);
 
+		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "checking for chunk='%s'..", chunk);
+
 		/* check the chunk read */
 		switch (axl_stream_inspect (stream, chunk)) {
 		case -2:
 			/* wrong parameter received */
-			va_end (args);
-			return -2;
+			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "wrong parameter received");
+			last_value = -2;
+			break;
 		case -1:
 			/* there is no more stream left */
-			va_end (args);
-			return -1;
+			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "there are not more stream left");
+			last_value = -1;
+			break;
 		case 0:
 			/* the chunk wasn't found, break and
 			 * continue. */
@@ -478,6 +485,8 @@ int         axl_stream_inspect_several (axlStream * stream, int chunk_num, ...)
 		default:
 			/* the chunk was found */
 			va_end (args);
+			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "chunk found: %d", iterator + 1);
+
 			return (iterator + 1);
 		}
 		
@@ -489,7 +498,7 @@ int         axl_stream_inspect_several (axlStream * stream, int chunk_num, ...)
 	va_end (args);
 
 	/* return that no chunk was found */
-	return 0;
+	return last_value;
 }
 
 /** 
@@ -762,7 +771,8 @@ char      * axl_stream_get_untilv      (axlStream * stream,
 			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "prebuffering from get-until (requested %d, starting from: %d): current status: %s", 
 				 index, stream->stream_index, 
 				 axl_stream_get_following (stream, 10));
-
+			
+			
 			if (! axl_stream_prebuffer (stream)) {
 				axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "failed while prebuffer");
 				return NULL;
@@ -845,13 +855,13 @@ char      * axl_stream_get_untilv      (axlStream * stream,
 
 		 
 				if (result_size == NULL) {
-					axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "returning: '%s' (chunk num: %d) (index: %d, stream index: %d, stream_size: %d)", 
+					axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "returning (last chunk): '%s' (chunk num: %d) (index: %d, stream index: %d, stream_size: %d)", 
 						 stream->last_chunk, iterator, index, stream->stream_index, stream->stream_size);
 					return stream->last_chunk;
 				}
 				
-				axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "returning: '%s' (chunk num: %d) (index: %d, stream index: %d, stream_size: %d)", 
-					 string, iterator, index, stream->stream_index, stream->stream_size);
+				axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "returning: (internal ref) (chunk num: %d) (index: %d, stream index: %d, stream_size: %d)", 
+					 iterator, index, stream->stream_index, stream->stream_size);
 				return string;
 			}
 			/* update iterator */

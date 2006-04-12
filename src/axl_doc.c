@@ -295,6 +295,11 @@
  */
 
 #include <axl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <fcntl.h>
+
 
 #define LOG_DOMAIN "axl-doc"
 
@@ -674,6 +679,7 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found [end] xml node definition '>', for node: [%s]",
 				 axl_node_get_name (node));
 			axl_node_set_have_childs (node, AXL_TRUE);
+			axl_node_set_is_empty (node, AXL_FALSE);
 			/* this node is ended */
 			return AXL_TRUE;
 		}
@@ -752,6 +758,11 @@ bool __axl_doc_parse_close_node (axlStream * stream, axlDoc * doc, axlNode ** _n
 	if (axl_stream_cmp (axl_node_get_name (node), string, strlen (axl_node_get_name (node))) &&
 	    axl_stream_cmp (axl_node_get_name (node), string, result_size)) {
 
+		/* update emptyness configuration */
+		if (axl_node_get_content (node, NULL) == NULL && (! axl_node_is_empty (node)))
+			axl_node_set_is_empty (node, AXL_TRUE);
+
+
 		/* ok, axl node to be closed is the one expected */
 		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "closing xml node, that matched with parent opened");
 		return AXL_TRUE;
@@ -770,6 +781,7 @@ bool __axl_doc_parse_close_node (axlStream * stream, axlDoc * doc, axlNode ** _n
 	axl_error_new (-1, "An error was found while closing the opened xml node, parent opened and xml node being closed doesn't match",
 		       stream, error);
 	axl_stream_free (stream);
+
 	return AXL_FALSE;
 }
 
@@ -935,12 +947,13 @@ axlDoc * __axl_doc_parse_common (char * entity, int entity_size,
 	}
 
 	/* parse complete */
-	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "xml document parse COMPLETED"); 
 	axl_stream_unlink (stream);
 	axl_stream_free (stream);
 
 	/* clean document internal variables */
 	__axl_doc_clean (doc);
+
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "xml document parse COMPLETED"); 
 
 	return doc;
 }
@@ -1008,11 +1021,14 @@ void      axl_doc_dump                     (axlDoc  * doc,
 					    int     * size)
 {
 	char * result;
+	int    index;
 
 	/* perform some envrironmental checks */
 	axl_return_if_fail (doc);
 	axl_return_if_fail (content);
 	axl_return_if_fail (size);
+
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "getting document size..");
 
 	/* get the about of memory to allocate so the whole xml
 	 * document fit in only one memory block */
@@ -1021,9 +1037,49 @@ void      axl_doc_dump                     (axlDoc  * doc,
 	/* check returned size */
 	if ((* size) == -1)
 		return;
+
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "document dump size: %d", *size);
 	
 	/* allocate the memory block required */
-	result = axl_new (char, size + 1);
+	result = axl_new (char, (*size) + 1);
+
+	/* xml document header */
+	index = 0;
+	memcpy (result, "<?xml version='1.0' ", 20);
+	index = 20;
+
+	/* standalone attribute */
+	if (doc->standalone) {
+		memcpy (result + index, "standalone='yes' ", 17); 
+		index += 17;
+	}
+
+	/* encoding declaration */
+	if (doc->encoding) {
+		/* initial encoding declaration */
+		memcpy (result + index, "encoding='", 10);
+		index += 10;
+
+		/* copy encoding content */
+		memcpy (result + index, doc->encoding, strlen (doc->encoding));
+		index += strlen (doc->encoding);
+
+		/* encoding trailing */
+		memcpy (result + index, "' ", 2);
+		index += 2;
+	}
+
+	/* header trailing */
+	memcpy (result + index, "?>", 2);
+	index += 2;
+	
+	/* dump node information */
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "starting dump at: %d", index);
+	index    = axl_node_dump_at (doc->rootNode, result, index);
+
+	/* set results */
+	*content = result;
+	*size    = index;
 	
 	return;
 }
@@ -1124,6 +1180,30 @@ int axl_doc_get_flat_size (axlDoc * doc)
 axlDoc * axl_doc_parse (char * entity, int entity_size, axlError ** error)
 {
 	return __axl_doc_parse_common (entity, entity_size, NULL, -1, error);
+}
+
+/** 
+ * @internal
+ * 
+ * Allows to get current file size, in bytes, of the provided file
+ * located at the given file path.
+ */
+int __axl_doc_get_file_size (char * file_path)
+{
+	struct stat buf;
+
+	axl_return_val_if_fail (file_path, -1);
+	
+	/* clear the memory hold */
+	memset (&buf, 0, sizeof (struct stat));
+
+	/* return current file size */
+	if (stat ((const char *) file_path, &buf) < 0)
+		return -1;
+	
+	/* return the file size */
+	return buf.st_size;
+	
 }
 
 /** 
@@ -1255,6 +1335,82 @@ axlDoc  * axl_doc_parse_strings            (axlError ** error,
 
 	return doc;
 }
+
+/** 
+ * @internal 
+ * 
+ * Internal support function which checks the provided child and its
+ * childs are equal.
+ */
+bool __axl_doc_are_equal (axlNode * node, axlNode * node2)
+{
+	int       iterator;
+	int       length;
+
+	axlNode * child;
+	axlNode * child2;
+
+	/* check if parent nodes are equal */
+	if (! axl_node_are_equal (node, node2))
+		return AXL_FALSE;
+
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "<%s>=<%s>", 
+		 axl_node_get_name (node), axl_node_get_name (node2));
+
+	/* iterate over all childs inside the node */
+	iterator = 0;
+	length   = axl_node_get_child_num (node);
+	while (iterator < length) {
+
+		/* get a referece to the childs to check */
+		child  = axl_node_get_child_nth (node, iterator);
+		child2 = axl_node_get_child_nth (node2, iterator);
+
+		/* check if these nodes are also equal */
+		if (! axl_node_are_equal (child, child2)) 
+			return AXL_FALSE;
+
+		/* check its childs */
+		if (! __axl_doc_are_equal (child, child2))
+			return AXL_FALSE;
+
+		/* update iterator count */
+		iterator++;
+	}
+
+	/* the nodes recieved are equal */
+	return AXL_TRUE;
+}
+
+/** 
+ * @brief Allows to check if the provided two references represents
+ * equivalent xml documents.
+ * 
+ * @param doc The first XML document to check.
+ * @param doc2 The second XML document to check.
+ * 
+ * @return AXL_TRUE if both documents represents the same document,
+ * AXL_FALSE if not.
+ */
+bool      axl_doc_are_equal                (axlDoc * doc, 
+					    axlDoc * doc2)
+{
+	axlNode * node;
+	axlNode * node2;
+
+	axl_return_val_if_fail (doc, AXL_FALSE);
+	axl_return_val_if_fail (doc, AXL_FALSE);
+
+	/* first, check the document root */
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "checking that both documents are equal");
+	node  = axl_doc_get_root (doc);
+	node2 = axl_doc_get_root (doc2);
+
+	/* check document root for both */
+	return __axl_doc_are_equal (node, node2);
+}
+
+
 
 
 /** 
@@ -1917,8 +2073,16 @@ void     axl_doc_free         (axlDoc * doc)
 	if (doc->piTargets != NULL)
 		axl_list_free (doc->piTargets);
 
-	/* free enconding allocated */
-	axl_free (doc->encoding);
+	if (doc->encoding != NULL) {
+		/* free enconding allocated */
+		axl_free (doc->encoding);
+	}
+	
+	if (doc->version != NULL) {
+		/* free allocated version value */
+		axl_free (doc->version);
+	}
+
 
 	/* free document allocated */
 	axl_free (doc);
