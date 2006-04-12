@@ -46,11 +46,24 @@
 typedef struct _axlListNode axlListNode;
 
 struct _axlList {
+	/* functions used by the list to properly order elements
+	 * inside it and how they are destroyed */
 	axlEqualFunc     are_equal;
 	axlDestroyFunc   destroy_data;
+
+	/* pointers to the list content */
 	axlListNode    * first_node;
 	axlListNode    * last_node;
+
+	/* simple cache implementation */
+	axlListNode    * cache1;
+	axlListNode    * cache2;
+	axlListNode    * cache3;
+
+	/* list length */
 	int              length;
+
+	/* memory management functions */
 	axlListNode   ** preallocated;
 	int              available;
 	int              allocated;
@@ -271,7 +284,6 @@ void      axl_list_add    (axlList * list, axlPointer pointer)
 	axl_return_if_fail (pointer);
 	
 	new_node         = __axl_list_get_next_node_available (list); 
-	/* new_node         = axl_new (axlListNode, 1); */
 	new_node->data   = pointer;
 	
 	/* check basic case */

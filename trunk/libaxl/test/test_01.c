@@ -95,8 +95,6 @@ bool test_13 (axlError ** error)
 	/* dump xml document */
 	axl_doc_dump (doc, &content, &size);
 
-	printf ("Document dumped (size: %d): \n%s\n", size, content);
-
 	doc2 = axl_doc_parse (content, size, error);
 	if (doc2 == NULL)
 		return AXL_FALSE;
@@ -819,7 +817,7 @@ bool test_04 (axlError ** error)
 				     " \n \n \r     <?test \"my content\" ?>     \n    \n",
 				     "  <?test \"my content\" ?>",
 				     "          <more>",
-				     "              <test2 attr='2.0' />",
+				     "              <test3 attr='2.0' />",
 				     "          </more>",
 				     "       </row>",
 				     "       <test2 />",
@@ -851,20 +849,22 @@ bool test_04 (axlError ** error)
 	/* get the node <td> value */
 	node = axl_doc_get (doc, "/complex/data/row/td");
 	if (! axl_cmp (axl_node_get_content (node, NULL), "10")) {
+		axl_log ("test-04", AXL_LEVEL_DEBUG, "found a different content than the expected ('10' != '%s')",
+			 axl_node_get_content (node, NULL));
 		axl_error_new (-1, "Expected to receive a 10 value, but not found", NULL, error);
 		return AXL_FALSE;
 	}
 
 	/* get a reference to the test2 node */
-	node = axl_doc_get (doc, "/complex/data/row/more/test2");
+	node = axl_doc_get (doc, "/complex/data/row/more/test3");
 	if (node == NULL) {
-		axl_error_new (-1, "Expected to find a test2 node at the given location", NULL, error);
+		axl_error_new (-1, "Expected to find a test3 node at the given location", NULL, error);
 		return AXL_FALSE;
 	}
 
 	/* check the attribute */
 	if (! axl_node_has_attribute (node, "attr")) {
-		axl_error_new (-1, "Expected to find an attribute called 'attr' inside test2 node at the given location", NULL, error);
+		axl_error_new (-1, "Expected to find an attribute called 'attr' inside test3 node at the given location", NULL, error);
 		return AXL_FALSE;
 	}
 
@@ -976,6 +976,8 @@ bool test_03 (axlError ** error)
 
 	node = axl_doc_get (doc, "/complex/data2/td");
 	if (!axl_cmp (axl_node_get_content (node, NULL), " 23  ")) {
+		axl_log ("test-03", AXL_LEVEL_DEBUG, "expected to receive a node content: ' 23  ' but received '%s'",
+			 axl_node_get_content (node, NULL));
 		axl_error_new (-2, "Node content have failed, expected a different value", NULL, error);
 		return AXL_FALSE;
 	}
@@ -1045,6 +1047,7 @@ bool test_01 (axlError ** error)
 
 	/* release document parsed */
 	axl_doc_free (doc);	
+	return AXL_TRUE;
 
 	doc = axl_doc_parse ("<?xml      version='1.0'            ?>      <another />", 55, error);
 	if (doc == NULL) {
@@ -1243,7 +1246,7 @@ int main (int argc, char ** argv)
 		axl_error_free (error);
 		return -1;
 	}	
-
+	
 	/* cleanup axl library */
 	axl_end ();
 	return 0;

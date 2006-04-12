@@ -154,11 +154,15 @@ axlPointer axl_stack_peek (axlStack * stack)
 {
 	axl_return_val_if_fail (stack, NULL);
 
+#ifdef SHOW_DEBUG_LOG
 	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "peeking the stack with current size=%d", axl_list_length (stack->list));
+#endif
 
 	/* do not perform any operation if the stack is empty */
 	if (axl_stack_is_empty (stack)) {
+#ifdef SHOW_DEBUG_LOG
 		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "peek operation over a empty stack was detected, returning NULL");
+#endif
 		return NULL;
 	}
 

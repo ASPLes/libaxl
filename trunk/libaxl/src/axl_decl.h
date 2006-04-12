@@ -397,8 +397,7 @@ char * axl_strdup (char * string);
  * @param stream The stream where the operation will be performed.
  */
 #define AXL_CONSUME_SPACES(stream) \
-while ((axl_stream_inspect_several (stream, 4, " ", "\t", "\r", "\n") > 0)) \
-	axl_stream_accept (stream); 
+axl_stream_consume_white_spaces (stream)
 
 /** 
  * @internal
