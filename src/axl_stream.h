@@ -54,9 +54,9 @@ axlStream * axl_stream_new             (char * stream_source,
 					int    fd_handler,
 					axlError ** error);
 
-int         axl_stream_inspect         (axlStream * stream, char * chunk);
+int         axl_stream_inspect         (axlStream * stream, char * chunk, int inspected_size);
 
-int         axl_stream_peek            (axlStream * stream, char * chunk);
+int         axl_stream_peek            (axlStream * stream, char * chunk, int inspected_size);
 
 int         axl_stream_inspect_several (axlStream * stream, int chunk_num, ...);
 
@@ -66,7 +66,7 @@ void        axl_stream_move            (axlStream * stream, int count);
 
 bool        axl_stream_fall_outside    (axlStream * stream, int inspected_size);
 
-bool        axl_stream_check           (axlStream * stream, char * chunk);
+bool        axl_stream_check           (axlStream * stream, char * chunk, int inspected_size);
 
 char      * axl_stream_get_until       (axlStream * stream, 
 					char      * valid_chars, 
@@ -118,6 +118,8 @@ void        axl_stream_unlink          (axlStream * stream);
 void        axl_stream_free            (axlStream * stream);
 
 bool        axl_stream_is_white_space  (char * chunk);
+
+void        axl_stream_consume_white_spaces (axlStream * stream);
 
 bool        axl_stream_remains         (axlStream * stream);
 

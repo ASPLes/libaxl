@@ -197,7 +197,9 @@ bool __axl_node_content_have_not_valid_sequences (char * content,
 	/* reset additional size value */
 	*additional_size = 0;
 
+#ifdef SHOW_DEBUG_LOG
 	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "checking valid sequence: content size=%d", content_size);
+#endif
 
 	/* iterate over all content defined */
 	while (iterator < content_size) {
@@ -235,8 +237,10 @@ bool __axl_node_content_have_not_valid_sequences (char * content,
 		iterator++;
 	}
 
+#ifdef SHOW_DEBUG_LOG
 	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "valid sequence checking result=%d: content size=%d, additional size=%d", 
 		 result, content_size, *additional_size);
+#endif
 
 	/* return results */
 	return result;
@@ -546,7 +550,9 @@ void      __axl_node_set_attribute      (axlNode * node, char * attribute, char 
 	axlAttribute * _attribute;
 	
 	/* init attribute list */
-	__axl_node_init_attributes (node);
+	/* do not init attribute list twice */
+	if (node->attributes != NULL)
+		__axl_node_init_attributes (node);
 
 	/* create the attribute */
 	_attribute        = axl_new (axlAttribute, 1);
@@ -599,17 +605,23 @@ void      axl_node_set_attribute      (axlNode * node, char * attribute, char * 
 	if (!__axl_node_set_attribute_common_check (node, attribute, value))
 		return;
 
+#ifdef SHOW_DEBUG_LOG
 	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "setting attribute: %s='%s'", attribute, value);
+#endif
 
 	/* check attribute name */
 	if (__axl_node_content_have_not_valid_sequences (attribute, strlen (attribute),
 							 &additional_size)) {
+#ifdef SHOW_DEBUG_LOG
 		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found attribute content with escapable, non-valid content");
+#endif
 		_attr = __axl_node_content_copy_and_escape (attribute, 
 							    strlen (attribute),
 							    additional_size);
 	}else {
+#ifdef SHOW_DEBUG_LOG
 		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "'%s' is a valid string..", attribute);
+#endif
 		_attr = axl_strdup (attribute);
 	}
 
@@ -622,7 +634,9 @@ void      axl_node_set_attribute      (axlNode * node, char * attribute, char * 
 							     strlen (value),
 							     additional_size);
 	}else {
+#ifdef SHOW_DEBUG_LOG
 		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "'%s' is a valid string..", value);
+#endif
 		_value = axl_strdup (value);
 	}
 
@@ -675,12 +689,20 @@ axlAttribute * __axl_node_common_attr_get (axlNode * node, char * attribute)
 
 	/* assume the attribute requested doesn't exist because the
 	 * attribute list is not initialized  */
-	if (node->attributes == NULL)
+	if (node->attributes == NULL) {
+#ifdef SHOW_DEBUG_LOG
+		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "the node doesn't have any attribute installed");
+#endif
 		return NULL;
+	}
 
 	/* get the first */
 	while (iterator < axl_list_length (node->attributes)) {
 		attr = axl_list_get_nth (node->attributes, iterator);
+
+#ifdef SHOW_DEBUG_LOG
+		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "checking attribute name='%s'", attr->name);
+#endif
 		if (axl_cmp (attr->name, attribute))
 			return attr;
 
@@ -952,7 +974,7 @@ char    * axl_node_get_content     (axlNode * node, int * content_size)
  * appropiate entity reference.
  *
  * <table>
- * <tr><td><b>Character</td><td>Entity name</td></tr>
+ * <tr><td><b>Character</b></td><td>Entity name</td></tr>
  * <tr><td>'</td><td>&apos;</td></tr>
  * <tr><td><</td><td>&lt;</td></tr>
  * <tr><td>></td><td>&gt;</td></tr>
@@ -1005,8 +1027,10 @@ void      axl_node_set_content        (axlNode * node, char * content, int conte
 		memcpy (node->content, content, node->content_size);
 	}
 
+#ifdef SHOW_DEBUG_LOG
 	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "setting xml node (name: %s) content (size: %d) %s",
 		 node->name, node->content_size, node->content);
+#endif
 
 	/* set that the node is not empty */
 	node->is_empty = AXL_FALSE;
@@ -1050,8 +1074,10 @@ void      axl_node_set_content_ref    (axlNode * node,
 	/* set current content */
 	node->content = content;
 
+#ifdef SHOW_DEBUG_LOG
 	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "setting xml node (name: %s) content (size: %d) %s",
 		 node->name, node->content_size, node->content);
+#endif
 
 	/* job done */
 	return;	
@@ -1459,7 +1485,9 @@ bool      axl_node_has_pi_target            (axlNode * node,
 	if (node->piTargets == NULL)
 		return AXL_FALSE;
 
+#ifdef SHOW_DEBUG_LOG
 	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "checking it target element: %s is defined on the node", pi_target);
+#endif
 
 	/* get the length for the items inserted */
 	length = axl_list_length (node->piTargets);
@@ -1468,7 +1496,9 @@ bool      axl_node_has_pi_target            (axlNode * node,
 		pi = axl_list_get_nth (node->piTargets, iterator);
 		/* only check the first ocurrency */
 		if (axl_cmp (axl_pi_get_name (pi), pi_target)) {
+#ifdef SHOW_DEBUG_LOG
 			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "element %s found, %s", pi_target, axl_pi_get_name (pi));
+#endif
 			return AXL_TRUE;
 		}
 
@@ -1729,16 +1759,22 @@ int       axl_node_dump_at                  (axlNode * node,
 
 	axl_return_val_if_fail (node, -1);
 
+#ifdef SHOW_DEBUG_LOG
 	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "dumping node=<%s> at %d", 
 		 axl_node_get_name (node), desp);
+#endif
 
 	/* check if the node is empty */
 	if (axl_node_is_empty (node)) {
+#ifdef SHOW_DEBUG_LOG
 		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "the node <%s> is empty", 
 			 axl_node_get_name (node));
+#endif
 		if (! axl_node_have_childs (node)) {
+#ifdef SHOW_DEBUG_LOG
 			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "dumping an empty node without childs=<%s>",
 				 axl_node_get_name (node));
+#endif
 			/* "<" + strlen (node-name) + " />" */
 			memcpy (content + desp, "<", 1);
 			desp += 1;
@@ -1760,7 +1796,9 @@ int       axl_node_dump_at                  (axlNode * node,
 	 * has childs 
 	 * "<" + strlen (node-name) + ">" + strlen (node-content) + 
 	 * "</" + strlen (node-name) + ">" */
+#ifdef SHOW_DEBUG_LOG
 	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "getting content for: <%s>", axl_node_get_name (node));
+#endif
 
 	/* dump node start tag */
 	memcpy (content + desp, "<", 1);
@@ -1788,7 +1826,9 @@ int       axl_node_dump_at                  (axlNode * node,
 			iterator++;
 		}
 	}else {
+#ifdef SHOW_DEBUG_LOG
 		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "the node is not empty and have childs");
+#endif
 
 		/* dump node content */
 		memcpy (content + desp, node->content, strlen (node->content));

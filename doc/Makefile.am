@@ -6,7 +6,7 @@ bin_SCRIPTS = initial_build_doc
 
 help:
 	@echo 
-	@echo " Documentation not build!:"
+	@echo " Documentation not built!:"
 	@echo " ~~~~~~~~~~~~~~~~~~~~~~~~~"
 	@echo " --> Doxygen documentation wasn't built because an stamp was detected: doc.stamp"
 	@echo " --> To regenerate or force doc building type make build_doc or remove doc.stamp";

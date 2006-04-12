@@ -49,6 +49,9 @@
  * @{
  */
 
+bool not_executed  = AXL_TRUE;
+bool debug_enabled = AXL_FALSE;
+
 /** 
  * @brief Allows to check if the log reporting inside the system is
  * enabled.
@@ -57,9 +60,13 @@
  */
 bool axl_log_is_enabled () 
 {
-	if (getenv ("AXL_DEBUG") != NULL)
-		return AXL_TRUE;
-	return AXL_FALSE;
+	if (not_executed) {
+		debug_enabled = (getenv ("AXL_DEBUG") != NULL);
+		not_executed  = AXL_FALSE;
+	}
+
+	/* return current value */
+	return debug_enabled;
 }
 
 /** 
