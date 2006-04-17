@@ -23,7 +23,9 @@ h3 {
   font-size: 120%;
 }
 
-
+a { 
+  color: #6394ec;
+}
 
 .main-page { 
    margin-top: 10px;
@@ -56,12 +58,23 @@ h3 {
    float: left;
 }
 
+.left-content-25 { 
+   padding: 0;
+   margin: 0;
+   width: 100px;
+   float: left;
+}
+
+.left-content-25 img { 
+   margin-left: 15px;
+}
+
 .pre-menu { 
   position: relative; left: -53%; top: 85%; z-index: 1;
   padding: 0;
   margin: 0;
   font-weight: lighter;
-  font-size: 150%;
+  font-size: 120%;
 }
 
 .pre-menu a { 
@@ -99,6 +112,12 @@ h3 {
    float: right;
 }
 
+.right-content-75 { 
+   padding-left: 10px;
+   width: 480px;
+   float: right;
+}
+
 ul.news { 
   padding: 0;
   margin: 0;
@@ -112,6 +131,16 @@ ul.news li.header-news {
   margin-bottom: 10px;
   border-bottom: 1px dashed #000090;
 
+}
+
+.central-link { 
+  padding-left: 150px;
+  color: #6394ec;
+  text-decoration: none; 
+}
+
+.central-link img { 
+  border: 0;
 }
 
 .footer { 
