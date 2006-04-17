@@ -1,0 +1,38 @@
+# Project: vortex-listener vortex-client
+
+CC       = gcc.exe -g -Wall
+OBJ      = test_01.o \
+	   test_02.o
+
+PROGRAMS = test_01.exe \
+           test_02.exe
+
+LIBS     = -Wall -g -L../src -laxl 
+
+INCS =  -I"." -I"../src"
+
+CFLAGS   = $(INCS) -DVERSION=\""$(AXL_VERSION)"\" -Wall -g
+
+.PHONY: all all-before all-after clean clean-custom
+
+all: all-before $(PROGRAMS) all-after links
+
+all-before:
+	cd ../src;make -f Makefile.win
+
+all-after:
+
+clean: clean-custom
+	${RM} $(OBJ) $(PROGRAMS) *.dll
+
+test_01.exe: test_01.o
+	$(CC) -mconsole $< -o $@ $(LIBS)
+
+test_02.exe: test_02.o
+	$(CC) -mconsole $< -o $@ $(LIBS)
+
+links:
+	cp ../src/libaxl.dll .
+%.o: %.c
+	$(CC) -c $< -o $@ $(CFLAGS)
+
