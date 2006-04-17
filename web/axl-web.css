@@ -1,0 +1,131 @@
+body { 
+  font-family: Verdana,Tahoma,Arial,Sans-Serif;
+  font-weight: normal;
+  font-size:   small;
+  color: #636363;
+  text-align: justify;
+}
+
+h1, h2, h3 { 
+  color: #000090;
+  font-weight: normal;
+}
+
+h1 { 
+  font-size: 140%;
+}
+
+h2 { 
+  font-size: 130%;
+}
+
+h3 { 
+  font-size: 120%;
+}
+
+
+
+.main-page { 
+   margin-top: 10px;
+/*   border: 1px solid #000000; */
+   position: absolute; left: 50%; top: 0%; z-index: 1;
+   margin-left: -300px;
+   width: 600px;
+}
+
+.header-content { 
+   margin-bottom: 10px;
+   border-bottom: 1px dotted #000090;
+   height: 150px;
+}
+
+
+.slogan { 
+   border: 0;
+   float: left;
+   padding-left: 10px;
+}
+.aspl-logo { 
+   border: 0;
+   float: right;
+   padding-right: 10px;
+}
+
+.left-content { 
+   width: 200px;
+   float: left;
+}
+
+.pre-menu { 
+  position: relative; left: -53%; top: 85%; z-index: 1;
+  padding: 0;
+  margin: 0;
+  font-weight: lighter;
+  font-size: 150%;
+}
+
+.pre-menu a { 
+  color: #6394ec;
+  text-decoration: none;
+  padding: 1px;
+  margin-right: 10px;
+  border: 1px dotted #6394ec;
+}
+
+.pre-menu a:link { 
+  color: #6394ec;
+  text-decoration: none;
+}
+
+.pre-menu a:visited { 
+  color: #6394ec;
+  text-decoration: none;
+}
+
+.pre-menu a:hover { 
+  background: #6394ec;
+  color: white;
+  text-decoration: none;
+}
+
+.pre-menu a:active { 
+  color: #6394ec;
+  text-decoration: none;
+}
+
+.right-content { 
+   padding-left: 10px;
+   width: 380px;
+   float: right;
+}
+
+ul.news { 
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+ul.news li.header-news { 
+  padding: 0;
+  margin: 0;
+  margin-top: 15px;
+  margin-bottom: 10px;
+  border-bottom: 1px dashed #000090;
+
+}
+
+.footer { 
+   margin-top: 20px;
+   border-top: 1px dotted #000090;
+   float: left;
+   width: 100%;
+   font-size: small; 
+
+}
+
+.footer p { 
+   margin: 0;
+   padding: 0;
+   padding-top: 5px;
+   margin-left: 150px; 
+}
