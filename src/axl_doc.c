@@ -603,7 +603,7 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 		return AXL_FALSE;
 
 	/* check for initial < definition */
-	if (! (axl_stream_inspect (stream, "<", 1) > 0) && ! axl_stream_remains (stream)) {
+	if (! (axl_stream_inspect (stream, "<", 1) > 0)  && ! axl_stream_remains (stream)) {
 		/* check if we are reading the first node node */
 		if (doc->rootNode == NULL)
 			axl_error_new (-2, "expected initial < for a root node definition, not found. An xml document must have, at least, one node definition.", 
@@ -625,6 +625,7 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 	/* create the node and associate it */
 	axl_stream_nullify (stream, LAST_CHUNK);
 	node           = axl_node_create_ref (string_aux);
+
 	if (doc->rootNode == NULL) {
 #ifdef SHOW_DEBUG_LOG
 		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "setting as first node found, the root node: <%s>", string_aux);

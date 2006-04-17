@@ -1,6 +1,6 @@
-EXTRA_DIST = axl-doc.doxygen \
-             af-arch-doc-footer.html \
-	     af-arch-doc-header.html
+EXTRA_DIST = axl-doc.doxygen axl.css main-page-logo.png body_back.gif \
+             axl-doc-footer.html \
+	     axl-doc-header.html
 
 bin_SCRIPTS = initial_build_doc
 

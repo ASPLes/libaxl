@@ -1,4 +1,4 @@
-EXTRA_DIST      = $(wildcard *.c)
+EXTRA_DIST      = $(wildcard *.c) $(wildcard *.dtd) $(wildcard *.xml) Makefile.win
 
 INCLUDES = -I../src/ -pg -Wall
 

@@ -551,8 +551,7 @@ void      __axl_node_set_attribute      (axlNode * node, char * attribute, char 
 	
 	/* init attribute list */
 	/* do not init attribute list twice */
-	if (node->attributes == NULL)
-		__axl_node_init_attributes (node);
+	__axl_node_init_attributes (node);
 
 	/* create the attribute */
 	_attribute        = axl_new (axlAttribute, 1);

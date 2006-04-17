@@ -1,0 +1,114 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-15">
+<link rel="stylesheet" type="text/css" href="axl-web.css"></link>
+<title>Axl Library (Another XML Library), XML Library, XML, XML Software, XML Parser</title>
+</head>
+
+<body>
+<div class="main-page">
+
+<div class="header-content">
+<img class="slogan" src="axl-slogan.png" />
+<a href="http://www.aspl.es"><img class="aspl-logo" src="aspl-logo.png" /></a>
+<pre class="pre-menu">
+ <a href="index.html">&lt;home/> </a><a href="news.html">&lt;news/></a> <a href="doc.html">&lt;doc, support and downloads/></a> 
+</pre>
+</div><!-- header-content -->
+<div class="left-content-25">
+<img src="axl-logo-80x80.png" />
+</div><!-- left-content -->
+
+<div class="right-content-75">
+<h2><img src="arrow.png" /> Axl memory usage report, evolution until 0.2.1</h2>
+
+<h3><img src="arrow.png" />1. Introduction</h3>
+
+<p>The following information was gathered through several modifications
+performed to the libaxl library inside a machine with a intel pentium
+4. This report covers the memory profile that the library has and compares
+that result with the libxml library.</p>
+
+<p>It is in no way a complete library comparation at all, but provides
+some useful information about the motivations for building LibAxl
+library.</p>
+
+<p>The implementation reference chosen was <a
+href="http:/www.xmlsoft.org">LibXml-2.0</a> mainly because it is the
+one being used until now within the <a
+href="http://fact.aspl.es">Af-Arch</a> and the <a
+href="http://vortex.aspl.es">Vortex Library</a> projects.
+
+<h3><img src="arrow.png" />2. Initial status</h3>
+
+Initial report to get current memory usage and memory consuption
+evolution are covered using the massif reports identified by: 8779,
+9323, 10661, 11755, 8755, 13488.
+
+Memory improvement works started at massif.11755. After an initial work
+the library memory status, using the valgrind tool, was:
+
+(A) 273629 (F) 273629 (T) 3554854
+
+This shows that the library was consuming up to 3,5 megabytes to parse
+an xml document which is 632660 bytes.  Before seing this results, it
+was applied a modification to the library to avoid double
+allocations/deallocations, produced by function that was receiving a
+chunk already allocated, and then making another copy. 
+
+Before applying this initial patch, results was the following:
+
+(A) 212650 (F) 212650 (T) 3123296
+
+Now the library perform, for the same task, supporting the same
+features, up to 60000 fewer allocations/deallocations operations,
+consuming around 3,1 megabytes.
+
+On this stage the same test was runned using the libxml library. Here
+was the results:
+
+(A) 127809 (F) 127809 (T) 4201579
+
+This shows that libaxl is more memory efficient than libxml, after
+doing some minimal changes!! However the libxml library was performing
+fewer memory pairs (alloc and dealloc operations).
+
+After analize current implementation it was detected that some
+function, especially axl_stream_get_until was allocating memory that
+was returned as a reference that could be usable from the user space,
+but the axl stream implementation was forcing the user space to
+perform a new allocation to get a copy. 
+
+After modifying the library, adding a new api to allow the axl stream
+to nullify the reference returned so the user space could be the only
+owner of the memory returned, new test results was:
+
+(A) 199962 (F) 199962 (T) 3014631
+
+On this case, memory usage improvement was not so great. Massif report
+was covered by massif.13488
+
+Then a new change was applied to the axl_stream_get_until function,
+which was creating an array to iterate the chunk set to match to later
+free it. After making the library to create for each stream this
+structured and deallocate it once the stream is destroyed, results got
+was:
+
+(A) 139088 (F) 139088 (T) 1937471
+
+The change applied was really great, now the library was under the 2
+megabyte limit and memory pairs produced was similar to the libxml
+library. Massif report covering results was: massif.1980
+
+</div><!-- right-content -->
+
+
+
+<div class="footer">
+<p>
+<!-- hhmts start -->Last modified: Mon Apr 17 17:45:10 CEST 2006 <!-- hhmts end -->
+</p>
+</div>
+<div> <!-- main-page -->
+</body> </html>
