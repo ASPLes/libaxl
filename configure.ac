@@ -36,6 +36,16 @@ AC_ISC_POSIX
 AC_HEADER_STDC
 AM_PROG_LIBTOOL
 
+##########################
+# Check for doxygen tool #
+##########################
+dnl check for doxygen documentation
+AC_ARG_ENABLE(axl-doc, [  --enable-axl-doc     Enable building Axl documentation (doxygen required) [default=yes]], enable_axl_doc="$enableval", enable_axl_doc=yes)
+if test x$enable_axl_doc = xyes ; then
+        AC_CHECK_PROG(DOXYGEN, doxygen, "yes", "no")
+fi
+AM_CONDITIONAL(ENABLE_AF_ARCH_DOC, test "x$DOXYGEN" = "xyes")
+
 AC_OUTPUT([
 Makefile
 src/Makefile
@@ -49,6 +59,15 @@ echo "--       LibAXL LIBRARY SETTINGS        --"
 echo "------------------------------------------"
 echo "   Installation prefix:          [$prefix]"
 echo
+if test x$DOXYGEN = xyes ; then
+   echo "   Build Axl Library doc:        enabled"
+else	    
+   echo "   Build Axl Library doc:        disabled"
+   echo  
+   echo "     NOTE: To enable Axl documentation you will"
+   echo "     have to install doxygen tool. Then run again"
+   echo "     configure process."
+fi
 echo "------------------------------------------"
 echo "--     NOW TYPE: make; make install     --"
 echo "------------------------------------------"
