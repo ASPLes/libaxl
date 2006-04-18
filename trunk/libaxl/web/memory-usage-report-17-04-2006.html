@@ -42,7 +42,7 @@ profile heap allocation and memory performance, called <b>massif</b>.
 <p>The test used for this memory usage report was the following for
 the case of Axl library results:</p>
 
-<pre>
+<pre class="code">
 #include <axl.h>
 #include <stdio.h>
 
@@ -77,7 +77,7 @@ int main (int argc, char ** argv)
 <p>For the performance results get for the LibXMl-2.0 library, the
 test code was:</p>
 
-<pre>
+<pre class="code">
 #include <libxml/parser.h>
 #include <libxml/xmlmemory.h>
 
@@ -108,54 +108,106 @@ int main (int argc, char ** argv)
 <p>The xml file used is a glade file definition that is 650K sized
 aprox. </p>
 
-<h3><img src="arrow.png" />2. Initial status</h3>
+<p>Test was run using the following commad to get memory usage:</p>
+
+<pre class="code">
+  bash: ~$ valgrind --leak-check --show-reachable=yes ./test_file
+</pre>
+
+<p>The following command was used to get the memory profiling
+information for both libraries.</p>
+
+<pre class="code">
+ bash: ~$ valgrind --tool=massif ./test_file
+</pre>
+
+
+<p>Conventions used on this report to identify memory allocations,
+memory deallocations and total amount of memory used are the
+following:</p>
+
+<pre class="code">
+  (A) = allocations
+  (F) = deallocations
+  (T) = total amount (bytes)
+</pre>
+
+<h3><img src="arrow.png" /> 2. Initial status</h3>
 
 <p>Once the library reached its base features, XML parsing and DTD
 validation for a enough big validation data set, initial report to get
 current memory usage and memory consuption for the Axl Library without
 any modification was the following:</p>
 
-<img src="massif.8779.png" />
+<img src="massif.11755.png" />
 
 Memory consuption for this initial state is was:
 
 
-<pre>
+<pre class="code">
  (A) 273629 (F) 273629 (T) 3554854
 </pre>
 
-<p>evolution are covered using the massif reports identified by: 8779,
-9323, 10661, 11755, 8755, 13488.</p>
+<p>Doing the same test to the total amount of memory used by LibXML to
+parse and release the same file, results was:</p>
 
-<p>Memory improvement works started at massif.11755. After an initial work
-the library memory status, using the valgrind tool, was:</p>
-
-<pre>
-(A) 273629 (F) 273629 (T) 3554854
+<pre class="code">
+ (A) 127809 (F) 127809 (T) 4201579
 </pre>
 
-<p>This shows that the library was consuming up to 3,5 megabytes to parse
-an xml document which is 632660 bytes.  Before seing this results, it
-was applied a modification to the library to avoid double
-allocations/deallocations, produced by function that was receiving a
-chunk already allocated, and then making another copy. </p>
+<p>Being its memory profile the following graphic:</p>
+
+<img src="massif.5012.png" />
+
+
+<p>As starting point conclusion we have found the following issues to be considered:</p>
+
+<ul>
+  
+  <li>LibXml is an implementation that is unbelievable fast. At the
+moment this report was generated, we can ensure it could be the faster
+xml parser available today.</li>
+
+  <li><p>Initial profiling results shows that Axl library is slower than
+LibXml, but, its memory consumption is lower. Graphics shows how the
+Axl library could perform the test without requiring more memory that
+the initialy assignated on the heap.</p>
+
+  <p>The <b>"head-admin"</b> limit shows how many administration
+memory blocks was allocated to control the memory required by the
+program. When a program request memory, an admin block is associated
+to it (for memory administration purposes). </p>
+
+</li>
+
+</ul>
+
+<p>Previous graphs shows that LibAxl library allows less memory but
+with more small operations than LibXML. This is not good because
+allocating several small pieces of memory is more inefficient than
+allocation fewer but bigger, mainly because it is required for the
+same total amount of memory allocated, more administration memory
+(<b>"heap-admin"</b>).</p>
+
+
+<h3><img src="arrow.png" /> 3. Improving the library memory efficiency</h3>
+
+<p>Before seing this results, it was applied a modification to the
+library to avoid double allocations/deallocations, produced by
+function that was receiving a chunk already allocated, and then making
+another copy. </p>
 
 <p>Before applying this initial patch, results was the following:</p>
 
-<p>(A) 212650 (F) 212650 (T) 3123296</p>
+<pre class="code">
+ (A) 212650 (F) 212650 (T) 3123296
+</pre>
+
+<img src="massif.8755.png" />
 
 <p>Now the library perform, for the same task, supporting the same
 features, up to 60000 fewer allocations/deallocations operations,
 consuming around 3,1 megabytes.</p>
-
-<p>On this stage the same test was runned using the libxml library. Here
-was the results:</p>
-
-<p>(A) 127809 (F) 127809 (T) 4201579</p>
-
-<p>This shows that libaxl is more memory efficient than libxml, after
-doing some minimal changes!! However the libxml library was performing
-fewer memory pairs (alloc and dealloc operations).</p>
 
 <p>After analize current implementation it was detected that some
 function, especially axl_stream_get_until was allocating memory that
@@ -163,31 +215,103 @@ was returned as a reference that could be usable from the user space,
 but the axl stream implementation was forcing the user space to
 perform a new allocation to get a copy. </p>
 
-<p>After modifying the library, adding a new api to allow the axl stream
-to nullify the reference returned so the user space could be the only
-owner of the memory returned, new test results was:</p>
+<p>After modifying the library, adding a new API to allow the axl
+stream to nullify the reference returned so the user space could be
+the only owner of the memory returned, new test results was:</p>
 
-<p>(A) 199962 (F) 199962 (T) 3014631</p>
+<pre class="code">
+ (A) 199962 (F) 199962 (T) 3014631
+</pre>
 
-<p>On this case, memory usage improvement was not so great. Massif report
-was covered by massif.13488</p>
+<img src="massif.13488.png" />
+
+<p>On this case, memory usage improvement was not so great. </p>
 
 <p>Then a new change was applied to the axl_stream_get_until function,
 which was creating an array to iterate the chunk set to match to later
 free it. After making the library to create for each stream this
 structured and deallocate it once the stream is destroyed, results got
-was:</p>
+was: </p>
 
-<p>(A) 139088 (F) 139088 (T) 1937471</p>
+<pre class="code">
+ (A) 139088 (F) 139088 (T) 1937471
+</pre>
+
+<img src="massif.1980.png" />
 
 <p>The change applied was really great, now the library was under the 2
 megabyte limit and memory pairs produced was similar to the libxml
 library. Massif report covering results was: massif.1980</p>
 
+<h3><img src="arrow.png" /> 4. Speeding up library execution time</h3>
+
+<p>We have observer how the library execution time have evolved from
+its initial measures (45000ms >>) to (16000ms >>)). This improvement
+is mainly based on the concept that requiring memory from the kernel
+makes the program slower. </p>
+
+<p>So, at this pointer we could say that memory consumption could be
+improved (yes, even more!!) but now it is time to focus on timing
+issues. </p>
+
+<p>We started with some initial measures using the <b>time</b> command
+to check how fast were both test and here was the initial results:</p>
+
+<pre class="code">
+  test_01a (axl): 0.637ms
+  test_01b (xml): 0.047ms
+</pre>
+
+<p>Wow!! Ok, this is not a surprise, we have stated at the begin of this
+report that the LibXml library was really efficient doing its
+job. </p>
+
+<p>Then, we started to use <b>callgrind</b> tool to check were was
+inverted cpu time while runing axl test and we found several
+issues. Here is a list of improvements and its associated time:</p>
+
+<ol>
+  <li>After making some function to not call several times to strlen,
+  but cache the value to be used not only in the function itself but
+  all functions called from it:<br>
+      <b>[0.600ms]</b></li>
+  <li>After making inspect serveral to not calculate every time chunk
+      lengths, but cache those lenghts to be used over and over again: <br>
+      <b>[0.565ms]</b></li>
+  <li>After making get until function to not compare with white space strings: <br>
+      <b>[0.435ms]</b></li>
+  <li>After avoiding calling to getenv from axl_log_is_enabled, and
+      make the first call to be cached: <br>
+      <b>[0.262ms!!!]</b><br>
+      
+      We have to say here that this wasn't expected. A simple call to
+      the system call getenv was causing the overall system to have
+      a performance impact of 200ms!!!
+      </li>
+  <li>After rewriting AXL_CONSUME_SPACES to have an efficient implementation: <br>
+      <b>[0.116ms!!!]</b></li>
+
+      Well, at this point we have to say that things started to get interesting.
+      
+  <li>After making a function, from inside the axl node module, to not call to
+      initialize an internal list when it is known that the function will do nothing:<br>
+      <b>[0.106!!!]</b></li>
+  </li>
+</ol>
+
+<p>The result, before making some investigation was that the library
+was performing its job, passing all its validation test but doing it
+<b>6 times faster than before!!</b>.
+
+<p>To summarize both results, memory and execution time improvements,
+here is the memory profile result:</p>
+
+<img src="massif.5610.png" />
+
 
 <div class="footer">
 <p>
-<!-- hhmts start -->Last modified: Mon Apr 17 17:45:10 CEST 2006 <!-- hhmts end -->
+<!-- hhmts start -->Last modified: Tue Apr 18 20:41:46 CEST 2006 <!-- hhmts end -->
 </p>
 </div>
 <div> <!-- main-page -->

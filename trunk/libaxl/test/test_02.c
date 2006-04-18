@@ -84,7 +84,7 @@ bool test_01 ()
 		printf ("Exist function have failed\n");
 		return AXL_FALSE;
 	}
-
+	
 	if (axl_list_exists (list, "test 1")) {
 		printf ("Exist function have failed\n");
 		return AXL_FALSE;
@@ -288,6 +288,30 @@ bool test_03 ()
 }
 
 /** 
+ * @brief Intensive axl list implementation.
+ */
+bool test_04 () {
+	int       iterator = 0;
+	axlList * list;
+
+	/* create the list */
+	list = axl_list_new (axl_list_always_return_1, NULL);
+
+	/* add items */
+	while (iterator < 10000) {
+
+		/* add integers */
+		axl_list_add (list, &iterator);
+
+		/* update the iterator */
+		iterator++;
+	}
+	
+	/* true */
+	return AXL_TRUE;
+}
+
+/** 
  * @brief Perform some operations using some interfaces provided by
  * the libaxl library.
  * 
@@ -310,6 +334,12 @@ int main (int argc, char ** argv)
 		printf ("LibAxl string functions    [   OK   ]\n");
 	}else {
 		printf ("LibAxl string functions    [ FAILED ]\n");
+	}
+
+	if (test_04 ()) {
+		printf ("LibAxl list implementation (II) [   OK   ]\n");
+	}else {
+		printf ("LibAxl list implementation (II) [ FAILED ]\n");
 	}
 
 	return 0;

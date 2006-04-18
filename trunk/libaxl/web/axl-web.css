@@ -106,6 +106,14 @@ a {
   text-decoration: none;
 }
 
+pre.code { 
+  border: 1px dashed #626262;
+  color: #556480;
+  background: #cfd8e7;
+  padding: 10px;
+  font-family: monospace, courier;
+}
+
 .right-content { 
    padding-left: 10px;
    width: 380px;
