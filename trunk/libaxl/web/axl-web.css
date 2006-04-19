@@ -198,3 +198,7 @@ ul.list {
 .list  li { 
   margin-bottom: 10px;
 }
+
+.donation { 
+  text-align: center;
+}
