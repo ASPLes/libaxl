@@ -166,3 +166,11 @@ ul.news li.header-news {
    padding-top: 5px;
    margin-left: 150px; 
 }
+
+ul.list { 
+  list-style: square;
+}
+
+.list  li { 
+  margin-bottom: 10px;
+}

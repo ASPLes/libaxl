@@ -21,23 +21,28 @@
 <h3><img src="arrow.png" />1. Introduction</h3>
 
 <p>The following information was gathered through several modifications
-performed to the libaxl library inside a machine with a intel pentium
+performed to the LibAxl library, using a machine with a Intel(R) Pentium(R)
 4. This report covers the memory profile that the library has and compares
-that result with the libxml library.</p>
+that result with the LibXML library. </p>
 
-<p>It is in no way a complete library comparation at all, but provides
+<p>In also contains a brief about improvements done to the library to
+reduce execution time, while supporting the same features.</p>
+
+<p>It is in no way a complete library comparison at all, but provides
 some useful information about the motivations for building LibAxl
-library.</p>
+library and how basic features compares to LibXML.</p>
 
 <p>The implementation reference chosen was <a
-href="http:/www.xmlsoft.org">LibXml-2.0</a> mainly because it is the
+href="http:/www.xmlsoft.org">LibXML-2.0</a> mainly because it is the
 one being used until now within the <a
 href="http://fact.aspl.es">Af-Arch</a> and the <a
 href="http://vortex.aspl.es">Vortex Library</a> projects.
 
-<p>Tool used to make the memory profiling is the <a
-href="http://www.valgrind.org">valgrind</a> tool and its extension to
-profile heap allocation and memory performance, called <b>massif</b>.
+<p>To produce the memory profiling results used on this report it was
+used the <a href="http://www.valgrind.org">valgrind</a> tool and its
+extension to profile heap allocation and memory performance, called
+<b>massif</b>. It was also used <b>callgrind</b> tool which gives
+statistical performance information.</p>
 
 <p>The test used for this memory usage report was the following for
 the case of Axl library results:</p>
@@ -74,7 +79,7 @@ int main (int argc, char ** argv)
 }
 </pre>
 
-<p>For the performance results get for the LibXMl-2.0 library, the
+<p>For the performance results get for the LibXML-2.0 library, the
 test code was:</p>
 
 <pre class="code">
@@ -106,9 +111,9 @@ int main (int argc, char ** argv)
 </pre>
 
 <p>The xml file used is a glade file definition that is 650K sized
-aprox. </p>
+approx. </p>
 
-<p>Test was run using the following commad to get memory usage:</p>
+<p>Test was run using the following command to get memory usage:</p>
 
 <pre class="code">
   bash: ~$ valgrind --leak-check --show-reachable=yes ./test_file
@@ -136,12 +141,12 @@ following:</p>
 
 <p>Once the library reached its base features, XML parsing and DTD
 validation for a enough big validation data set, initial report to get
-current memory usage and memory consuption for the Axl Library without
+current memory usage and memory consumption for the Axl Library without
 any modification was the following:</p>
 
 <img src="massif.11755.png" />
 
-Memory consuption for this initial state is was:
+Memory consumption for this initial state is was:
 
 
 <pre class="code">
@@ -162,39 +167,43 @@ parse and release the same file, results was:</p>
 
 <p>As starting point conclusion we have found the following issues to be considered:</p>
 
-<ul>
+<ul class="list">
   
-  <li>LibXml is an implementation that is unbelievable fast. At the
+  <li>LibXML is an implementation that is unbelievable fast. At the
 moment this report was generated, we can ensure it could be the faster
-xml parser available today.</li>
+xml parser available today.
 
-  <li><p>Initial profiling results shows that Axl library is slower than
-LibXml, but, its memory consumption is lower. Graphics shows how the
-Axl library could perform the test without requiring more memory that
-the initialy assignated on the heap.</p>
+  </li>
 
-  <p>The <b>"head-admin"</b> limit shows how many administration
+  <li>Initial profiling results shows that Axl library is slower than
+LibXML, but, its memory consumption is lower.
+
+  </li>
+
+  <li>The <b>"head-admin"</b> limit shows how many administration
 memory blocks was allocated to control the memory required by the
 program. When a program request memory, an admin block is associated
-to it (for memory administration purposes). </p>
+to it (for memory administration purposes).
 
-</li>
+   <p>The graphic shows that LibAxl requires more heap admin blocks
+  than LibXML. This is not a good symptom (explained below).</p>
+  </li>
 
 </ul>
 
-<p>Previous graphs shows that LibAxl library allows less memory but
+<p>Previous graphs shows that LibAxl library allocates less memory but
 with more small operations than LibXML. This is not good because
 allocating several small pieces of memory is more inefficient than
-allocation fewer but bigger, mainly because it is required for the
+allocation fewer but bigger, mainly because it is required, for the
 same total amount of memory allocated, more administration memory
 (<b>"heap-admin"</b>).</p>
 
 
 <h3><img src="arrow.png" /> 3. Improving the library memory efficiency</h3>
 
-<p>Before seing this results, it was applied a modification to the
+<p>Before seeing this results, it was applied a modification to the
 library to avoid double allocations/deallocations, produced by
-function that was receiving a chunk already allocated, and then making
+functions that were receiving a chunk already allocated, and then making
 another copy. </p>
 
 <p>Before applying this initial patch, results was the following:</p>
@@ -209,7 +218,7 @@ another copy. </p>
 features, up to 60000 fewer allocations/deallocations operations,
 consuming around 3,1 megabytes.</p>
 
-<p>After analize current implementation it was detected that some
+<p>After analyze current implementation it was detected that some
 function, especially axl_stream_get_until was allocating memory that
 was returned as a reference that could be usable from the user space,
 but the axl stream implementation was forcing the user space to
@@ -217,7 +226,9 @@ perform a new allocation to get a copy. </p>
 
 <p>After modifying the library, adding a new API to allow the axl
 stream to nullify the reference returned so the user space could be
-the only owner of the memory returned, new test results was:</p>
+the only owner for the memory returned. </p>
+
+<p>New test results was:</p>
 
 <pre class="code">
  (A) 199962 (F) 199962 (T) 3014631
@@ -228,7 +239,7 @@ the only owner of the memory returned, new test results was:</p>
 <p>On this case, memory usage improvement was not so great. </p>
 
 <p>Then a new change was applied to the axl_stream_get_until function,
-which was creating an array to iterate the chunk set to match to later
+which was creating an array, to iterate the chunk set to match, to later
 free it. After making the library to create for each stream this
 structured and deallocate it once the stream is destroyed, results got
 was: </p>
@@ -239,9 +250,13 @@ was: </p>
 
 <img src="massif.1980.png" />
 
-<p>The change applied was really great, now the library was under the 2
-megabyte limit and memory pairs produced was similar to the libxml
-library. Massif report covering results was: massif.1980</p>
+<p>The change applied was really great, now the library was under the
+2 megabyte limit and memory pairs produced was similar to the LibXML
+library. </p>
+
+<p>However, the heap-admin is still proportional bigger than the
+useful memory allocated (in fact is the bigger memory segment
+producing memory allocations).</p>
 
 <h3><img src="arrow.png" /> 4. Speeding up library execution time</h3>
 
@@ -249,6 +264,29 @@ library. Massif report covering results was: massif.1980</p>
 its initial measures (45000ms >>) to (16000ms >>)). This improvement
 is mainly based on the concept that requiring memory from the kernel
 makes the program slower. </p>
+
+<p>Common causes making a program to be more slower as it requires
+more memory are the following:</p>
+
+<ul>
+  <li>Requiring memory from the system, without using a memory cache
+  system or an object cache system, makes the system really
+  inefficient because malloc operations are extremely
+  inefficient.
+
+  <p><a href="http://developers.sun.com/solaris/articles/multiproc/multiproc.html">[Attardi, Nadgir]</a> shows us how this memory allocator works
+  compared with several memory allocators, and it keeps on getting
+  worst if the program is multi-thread.</p></li>
+
+  <li>The more memory requires a program the bigger are the
+  probabilities of being sent (the entire or) some segment of the
+  program pages to the swap memory, causing strong delays.
+
+  <p>This shows us that a program should consume as low memory as
+possible, improving the overall system performance.</p>
+  </li>
+</ul>
+
 
 <p>So, at this pointer we could say that memory consumption could be
 improved (yes, even more!!) but now it is time to focus on timing
@@ -263,20 +301,20 @@ to check how fast were both test and here was the initial results:</p>
 </pre>
 
 <p>Wow!! Ok, this is not a surprise, we have stated at the begin of this
-report that the LibXml library was really efficient doing its
+report that the LibXML library was really efficient doing its
 job. </p>
 
-<p>Then, we started to use <b>callgrind</b> tool to check were was
-inverted cpu time while runing axl test and we found several
+<p>We started to use <b>callgrind</b> tool to check were was
+inverted cpu time while running axl test and we found several
 issues. Here is a list of improvements and its associated time:</p>
 
 <ol>
   <li>After making some function to not call several times to strlen,
-  but cache the value to be used not only in the function itself but
+  but cache those values to be used not only in the function itself but
   all functions called from it:<br>
       <b>[0.600ms]</b></li>
-  <li>After making inspect serveral to not calculate every time chunk
-      lengths, but cache those lenghts to be used over and over again: <br>
+  <li>After making inspect several to not calculate every time chunk
+      lengths, but cache those lengths to be used over and over again: <br>
       <b>[0.565ms]</b></li>
   <li>After making get until function to not compare with white space strings: <br>
       <b>[0.435ms]</b></li>
@@ -299,7 +337,7 @@ issues. Here is a list of improvements and its associated time:</p>
   </li>
 </ol>
 
-<p>The result, before making some investigation was that the library
+<p>The result was that, before making some investigation, the library
 was performing its job, passing all its validation test but doing it
 <b>6 times faster than before!!</b>.
 
@@ -308,10 +346,55 @@ here is the memory profile result:</p>
 
 <img src="massif.5610.png" />
 
+<h3><img src="arrow.png" /> 4. Conclusion</h3>
+
+<p>This reports shows initial state of the XML 1.0 implementation and
+how it was modified to get better performance results.</p>
+
+<p>These results
+was mainly compared with LibXML because it is an implementation
+reference, it is really fast doing its job and was the library being
+used by internal projects at <a href="http://www.aspl.es">ASPL</a>.</p>
+
+<p>At the end, before doing all modifications, the LibAxl library is
+really efficient while using memory and can be better. A final
+comparison is the following:</p>
+
+<pre class="code">
+ LibAxl:
+ (A) 139088 (F) 139088 (T) 1937471
+
+ LibXML:
+ (A) 127809 (F) 127809 (T) 4201579
+</pre>
+
+<p>It also shows how the LibXML is still faster than LibAxl for XML
+parsing functions. This could be improved as memory consumption is
+improved and the new object cache system <a href="http://www.usenix.org/publications/library/proceedings/bos94/bonwick.html">[Bonwick]</a> is deployed into
+the LibAxl.</p>
+
+<pre class="code">
+  test_01a (axl): 0.106ms
+  test_01b (xml): 0.047ms
+</pre>
+
+<h3><img src="arrow.png" /> 6. References</h3>
+
+<ul class="list">
+  <li><a href="http://www.usenix.org/publications/library/proceedings/bos94/bonwick.html">[Bonwick]</a> The Slab Allocator: An Object-Caching Kernel Memory
+  Allocator</li>
+  <li><a href="http://developers.sun.com/solaris/articles/multiproc/multiproc.html">[Attardi, Nadgir]</a> A comparison of Memory Allocators in
+Multiprocessors.</li>
+   <li><a href="http://valgrind.org">Valgrind</a> Homepage for this profiling tool and its extensions.</li>
+   <li><a href="http://xmlsoft.org">LibXML</a> LibXML homepage, tutorials, references and manuals.</li>
+</ul>
+
+<div class="author">
+</div>
 
 <div class="footer">
 <p>
-<!-- hhmts start -->Last modified: Tue Apr 18 20:41:46 CEST 2006 <!-- hhmts end -->
+<!-- hhmts start -->Last modified: Wed Apr 19 09:30:46 CEST 2006 <!-- hhmts end -->
 </p>
 </div>
 <div> <!-- main-page -->
