@@ -932,6 +932,22 @@ bool      axl_node_is_empty        (axlNode * node)
  * See \ref axl_node_is_empty for more details. This function allows
  * to get current xml node content, which is the free text enclosed by
  * the node.
+ *
+ * Returned value is an internal reference to the content stored. So,
+ * in the case a local copy is desired, you should check \ref
+ * axl_node_get_content_copy. 
+ *
+ * Keep in mind that the content returned could have references like
+ * "&amp;" or "&quot;" which are entities references not translated
+ * into the application level values. 
+ * 
+ * This is done because while using the content, you may be interested
+ * on getting the raw content to be passed to another xml parser which
+ * is also able to process that entities.
+ *
+ * If you don't like this behaviour you can check \ref
+ * axl_node_get_content_trans which returns a copy for the xml node
+ * content with all entities references translated.
  * 
  * @param node The \ref axlDoc node where the content will be retrieved.
  *

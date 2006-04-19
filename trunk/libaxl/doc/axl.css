@@ -133,3 +133,31 @@ h2 a.anchor {
   border: 1px solid #b0b0b0; 
 
 }
+
+.xml-doc { 
+  padding: 10px;
+  border: 1px dashed #b0b0b0;
+  background: #616161; 
+  color: white;
+}
+
+.attr {  
+  color: #5cecc4;
+}
+
+.eblue { 
+  color: #00a2ff;
+}
+
+.content { 
+  color: #97c5eb;
+}
+
+.node { 
+  color: #ebe897;
+}
+
+.red { 
+  color: #ff0000;
+  font-weight: bold;
+}

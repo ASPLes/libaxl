@@ -53,11 +53,62 @@
 
 /**
  * @brief Axl XML document type definition.
+ *
+ * This type represents a reference to an entiry XML document loaded
+ * into memory. Functions to be used to load XML document could be the
+ * following:
+ * 
+ *  - \ref axl_doc_parse
+ *  - \ref axl_doc_parse_strings
+ *  - \ref axl_doc_parse_from_file
+ * 
+ * You can also create an empty document by using \ref axl_doc_create
+ * and fill the initial root node using the \ref axl_doc_set_root
+ * function. Once the document have an initial root node, you can add
+ * more nodes as childs to the root element previously added.
+ * 
+ * Check the \ref axl_doc_module "axlDoc API reference" to get more
+ * information.
  */
 typedef struct _axlDoc axlDoc;
 
 /**
- * @brief Axl XML Node type definition.
+ * @brief Axl XML node type definition.
+ *
+ * This type reference represents a single XML node. To create a xml node you can use:
+ * 
+ * - \ref axl_node_create
+ * 
+ * To get the node name or if the node have childs or if it is empty,
+ * you can use the following functions:
+ *
+ * - \ref axl_node_get_name
+ * - \ref axl_node_is_empty
+ * - \ref axl_node_have_childs
+ *
+ * To get the \ref axlNode content you can use the following
+ * functions:
+ * 
+ * - \ref axl_node_get_content
+ * - \ref axl_node_get_content_copy
+ * - \ref axl_node_get_content_trans
+ *
+ * For attributes manipulation, you can using the following functions
+ * to set them and retrieve them:
+ * 
+ * - \ref axl_node_get_attribute_value
+ * - \ref axl_node_get_attribute_value_copy
+ * - \ref axl_node_get_attribute_value_trans
+ *
+ * To retrive childs number or childs inside the given \ref axlNode
+ * you can use the following function:
+ * 
+ * - \ref axl_node_get_child_num
+ * - \ref axl_node_get_child_nth
+ * 
+ *
+ * 
+ * Check the axlNode \ref axl_node_module "API for more information".
  */
 typedef struct _axlNode axlNode;
 
@@ -241,6 +292,47 @@ typedef struct _axlPI        axlPI;
 
 /** 
  * @brief Axl error reporting variable.
+ *
+ * All Axl interface report errors found, with a textual diagnostic,
+ * to the application level using this variable. You have to know that
+ * it is also optional, so every function that receives an \ref
+ * axlError, will properly handle a NULL reference received.
+ *
+ * Once an error was detected, for that condition you must check the
+ * documentation provided for the function that is failing, you can
+ * get the error code and the error textual diagnostic by using the
+ * following functions:
+ *
+ *  - \ref axl_error_get_code
+ *  - \ref axl_error_get
+ *
+ * If an error is not detected, there is no especial operation to be
+ * done once returned the function that has received the \ref axlError
+ * error reference. However, if an error is detected, the reference
+ * must be deallocated by using the following function:
+ *  
+ *  - \ref axl_error_free
+ * 
+ * Here is an example:
+ * \code
+ * // declare the axlError reference
+ * axlError * error;
+ *
+ * // parse the document, giving a reference to the axlError
+ * // NOTE: you can safely provide a NULL reference.
+ * doc = axl_doc_parse_from_file ("test.xml", &error);
+ * if (doc == NULL) {
+ *     printf ("Parse error: code=%d, message=%s\n", 
+ *             axl_error_get_code (error), axl_error_get (error));
+ *     axl_error_free (error);
+ *     return AXL_FALSE;
+ * }
+ *
+ * // beyond this point, it is not required to do
+ * // any especial task with the axlError reference
+ * \endcode
+ *
+ * To get more information about the \ref axlError check its \ref axl_error_module "API documentation".
  */
 typedef struct _axlError  axlError;
 
@@ -361,7 +453,6 @@ AxlDebugLevel;
 void    axl_free(axlPointer ref);
 
 /** 
- * @internal
  * @brief Allows to check a condition and return if it is not meet.
  * 
  * @param expr The expresion to check.
@@ -371,8 +462,6 @@ if (!(expr)) return;
 
 
 /** 
- * @internal
- *
  * @brief Allows to check a condition and return the given value if it
  * is not meet.
  * 
