@@ -132,6 +132,8 @@
  * - \ref concepts
  * - \ref parsing
  * - \ref iterating
+ * - \ref validation
+ * - \ref futher
  *
  *
  * \section intro Introduction 
@@ -306,6 +308,144 @@
  * }
  * \endcode
  *
+ * \section validation Validating XML documents
+ *
+ * Once you are familiar with the Axl API, or any other XML toolkit,
+ * it turns that it is not a good practice to write lot of source code
+ * to check node names expected or how they are nested. This makes
+ * your program really weak to changes and makes your to write more
+ * code that is not actual work but a simple environment check.
+ *
+ * You may also need to check that some XML document received follows
+ * a defined XML structure, but it is too complex to be done.
+ *
+ * For this purpose, XML 1.0 defines DTD or (Document Type Definition)
+ * which allows to especify the document grammar, how are nested
+ * nodes, which attributes could contain, or if the are allocated to
+ * be empty nodes or nodes that must have another child nodes.
+ *
+ * <i><b>NOTE:</b> At this moment Axl only support <b><!ELEMENT</b> directive,
+ * which only allows to check XML document structure. Future releases
+ * will add <b><!ATTLIST</b> support which allows to configure
+ * restrictions applied to node attributes.</i>
+ *
+ * Let start with the DTD syntax used to configure restrictions about
+ * node structure:
+ *
+ * <pre class="xml-doc">
+ * <span class="red">&lt;!-- sequence specification --></span>
+ * <span class="eblue">&lt;!ELEMENT testA (test1, test2, test3)></span>
+ *
+ * <span class="red">&lt;!-- choice specification --></span>
+ * <span class="eblue">&lt;!ELEMENT testB (test1 | test2 | test3)></span>
+ * </pre>
+ *
+ * DTD <b><!ELEMENT</b> is modeled on top of two concepts which are
+ * later expanded with repetition patterns. We will explain then
+ * later. For now, this two top level concepts are: sequence and choice.
+ *
+ * Sequence especification (elements separated by <b>, (comma)</b>, the
+ * one used to apply restriction to the node <b>testA</b>, are used to
+ * denote that <b>testA</b> have as childs test1, followed by test2
+ * and ended by test3. The order especified must be followed and all
+ * instances must appear. This could be tweaked using repetition
+ * pattern.
+ *
+ * In the other hand, choice especification (elements separated by
+ * <b>| (pipe)</b>, are used to especify that the content of a node is
+ * built using nodes of the choice list. So, in this case,
+ * <b>testB</b> node could have either one instance of test1 or test2
+ * or test3.
+ *
+ * Now you know these to basic elements to model how childs are
+ * organized for a node, what it is need is to keep on adding more
+ * <!ELEMENT directives until all nodes are especified. You will end
+ * your DTD document with final nodes that are either empty ones or
+ * have PCDATA. At this moment MIXED nodes are not supported.
+ *
+ * Suppose that all nodes that are inside testA and testB are final
+ * ones. Then this could be its DTD especification:
+ *
+ * <pre class="xml-doc">
+ * <span class="red">&lt;!-- test1 is a node that only have content --></span>
+ * <span class="blue"><!ELEMENT test1 (\#PCDATA)></span>
+ * <span class="red">&lt;!-- test2 is a node that is always empty --></span>
+ * <span class="blue"><!ELEMENT test1 EMPTY></span>
+ * <span class="red">&lt;!-- test3 is a node that could have either test1 or test2 --></span>
+ * <span class="blue"><!ELEMENT test3 (test1 | test2)></span>
+ * </pre>
+ *
+ * Sequences and choices could be composed to create richer DTD
+ * expresions that combines sequences of choices and so on.
+ * 
+ * At this point all required elements to model choices, sequences and
+ * final nodes are explained, but, we have to talk about repetition
+ * pattern. They are simbols that are appended to elements inside
+ * choices (or sequences) including those list especifications.
+ *
+ * Patterns available are: <b>+</b>, <b>?</b> and <b>*</b>. By
+ * default, if no pattern is applied to the element, it means that the
+ * match should be produced one and only one time.
+ *
+ * The <b>+</b> pattern is used to model that element should be
+ * matched one, and at least one, or more.
+ *
+ * The <b>*</b> pattern is used to model elements that should be
+ * matched zore or any times.
+ *
+ * The <b>?</b> pattern is used to model elements that should be
+ * matched zero or one times.
+ *
+ * For the exampled initially explained, let's suppose we want that
+ * the content inside <b>testA</b> have sequences repeated at leat one
+ * time, being that sequence: test1, test2 and test3. We only need to
+ * add a <b>+</b> repetition pattern as follows:
+ *
+ * <pre class="xml-doc">
+ * <span class="red">&lt;!-- sequence specification --></span>
+ * <span class="eblue">&lt;!ELEMENT testA (test1, test2, test3)+></span>
+ * </pre>
+ *
+ * So, we are saying to our validation engine that the sequence inside
+ * testA could be found one or many times, but the entire sequence
+ * match be found every time.
+ *
+ * Here is an simple example that loads an XML document, then loads an
+ * DTD file, and then validates the XML document:
+ * \code
+ * bool test_12 (axlError ** error) 
+ * {
+ *	axlDoc * doc = NULL;
+ *	axlDtd * dtd = NULL;
+ *
+ *	// parse gmovil file (an af-arch xml chunk) 
+ *	doc = axl_doc_parse_from_file ("channel.xml", error); 
+ *	if (doc == NULL) 
+ *		return AXL_FALSE;
+ *
+ *	// parse af-arch DTD 
+ *	dtd = axl_dtd_parse_from_file ("channel.dtd", error);
+ *	if (dtd == NULL)
+ *		return AXL_FALSE;
+ *
+ *	// perform DTD validation 
+ *	if (! axl_dtd_validate (doc, dtd, error)) {
+ *		return AXL_FALSE;
+ *	}
+ *
+ *	// free doc reference 
+ *	axl_doc_free (doc); 
+ *
+ *      // free dtd reference
+ *      axl_doc_free (dtd);
+ * 
+ *      return AXL_TRUE;
+ * }
+ * \endcode
+ * 
+ *
+ * \section futher Futher reading
+ * 
  * You can also check \ref axl_api "API documentation" for a complete
  * detailed explanation about the library.
  *

@@ -128,7 +128,9 @@ div.navtab a:hover {
 }
 
 h2 a.anchor { 
-  padding: 5px;
+  padding: 2px;
+  padding-top: 1px;
+  padding-bottom: 1px;
   background: #fff url("body_back.gif") repeat-x;
   border: 1px solid #b0b0b0; 
 
@@ -137,7 +139,7 @@ h2 a.anchor {
 .xml-doc { 
   padding: 10px;
   border: 1px dashed #b0b0b0;
-  background: #616161; 
+  background: #4a554a;
   color: white;
 }
 
