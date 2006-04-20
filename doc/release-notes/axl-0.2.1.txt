@@ -9,25 +9,27 @@ Axl Library is an small and efficient XML toolkit, that will allow you
 to produce efficient and clear code that interfaces with XML data. 
 
 The library was produced to support XML requirements needed by
-software developed by Advanced Software Production Line, S.L. At this
-moment the library is being used by Vortex Library and Af-Arch.
+software developed by Advanced Software Production Line, S.L. 
+
+At this moment the library is being used by Vortex Library and
+Af-Arch.
 
 Resources
 ~~~~~~~~~
    Axl Homepage
-   [http://xml.aspl.es]
+   [ http://xml.aspl.es ]
 
    Vortex Library Homepage
-   [http://vortex.aspl.es]
+   [ http://vortex.aspl.es ]
 
    Af-Arch Homepage
-   [http://fact.aspl.es]
+   [ http://fact.aspl.es ]
 
    Advanced Software Production Line, S.L.
-   [http://www.aspl.es]
+   [ http://www.aspl.es ]
 
    Memory report (an interesting report)
-   [http://xml.aspl.es/memory-usage-report-17-04-2006.html]
+   [ http://xml.aspl.es/memory-usage-report-17-04-2006.html ]
 
 
 This release in short
@@ -41,6 +43,657 @@ This release in short
   library before this release was done. Check out the memory report
   from the resources section.
 
+Changes from previous release (initial)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* [fix] uploading initial source code proposal to implement a XML 1.0
+  Third edition compliant implementation.
+
+* [fix] uploading missing autogen.sh file.
+
+* [new] adding a new module axl-stream to implement a streaming
+  concept while padding the xml structure. This will allow to write a
+  higher level code that could open the possibility to implement
+  parsing xml from other sources.  API added:
+
+     - axl_stream_new
+     - axl_stream_inspect
+     - axl_stream_inspect_several
+     - axl_stream_accept
+     - axl_stream_free
+
+* [fix] reorganized axl error module to implement application error
+  reporting using references rather than hiding it.
+
+* [fix] adding initial code to axl_doc_parse. Now we parse the initial
+  xml header [production 23].
+
+* [fix] adding new internal function to get next chunk, inside stream
+  API.
+
+* [fix] making axl_stream_inspect to automatically call to
+  axl_stream_accept if a call is done without accept previous valid
+  inspection. Non valid inspection doesn't produce to accept
+  automatically stream consumed.
+
+* [new] adding new API to move the stream an amount provided.
+  
+   - axl_stream_move
+
+* [new] implemented axl_stream_get_until which returns the all stream
+  available until some chunk (or several chunks) are found.
+
+* [new] adding new API to provide an easy way to consume spaces,
+  tabular line feed and carry return. (\x20, \x9, \x0A and \x0D). API
+  added,
+   
+   - AXL_CONSUME_SPACES
+
+* [fix] uploading axl_doc_parse implementation that is able to mostly
+  parse xml header.
+
+* [new] adding a function to enable API consumers to get the xml
+  encoding value for a given axlDoc reference. API added:
+   
+   - axl_doc_get_encoding.
+
+* [fix] uploading missing VERSION file.
+
+* [new] uploading initial test files and Makefile.am to check the
+  library works.
+
+* [new] adding initial test to check if xml document header is
+  properly parsed.
+
+* [new] Adding new API to dispose axlDoc instances created.
+   
+   - axl_doc_free
+
+* [new] Adding more internal API to axl stream module, to allow
+  associating an axlDoc instance to axlStream instance so the axlDoc
+  instance is deallocated if the stream is done so.
+
+* [new] Adding a top-level type redefinition: bool. This is just a
+  redefinition of the int type to bool value. This allow to make more
+  explicit type semantic for function and variables that only needs to
+  represent the false and true boolean values. Added also macro
+  definitions: AXL_TRUE and AXL_FALSE.
+
+* [fix] include cpp header declarations to be usable from c++.
+
+* [fix] LibAxl know successfully parses the xml header specification,
+  including encoding and stand alone values and it supports any
+  interleaving "white space" the in XML 1.0 sense.  test/test_01.c
+  contains a test that check different situations.
+
+* [new] added new API to the axl doc module to get current stand alone
+  document configuration:
+
+    - axl_doc_get_standalone.
+
+* [new] added new API to the axl node module:
+   
+    - axl_node_free
+    - axl_node_is_empty
+
+* [fix] fixing several bugs at axl_stream_inspect. Now any call to
+  axl_stream_inspect that successfully find the element looked up, the
+  stream will be accepted and move forward.
+
+* [fix] fixing several bugs at axl_stream_inspect_several.
+
+* [new] adding new API to axl stream module to check that a provided
+  chunk contains a "white space" in the sense the XML 1.0 standard
+  defines. Added also API to compare two chunks. A function to get
+  current status for the stream is also added.
+    
+     - axl_stream_is_white_space
+     - axl_stream_cmp
+     - axl_stream_remains
+
+* [new] adding a new module to perform console log reporting. API
+  added:
+
+     - AxlDebugLevel (enum definition)
+     - axl_log_is_enabled
+     - axl_log_color_is_enabled
+     - axl_log
+
+* [fix] fixing a bug in the AXL_CONSUME_SPACES which was causing to
+  not properly detect when an error was found at the stream.
+
+* [new] adding a new macro which allows to check if an string
+  reference is empty either because it is NULL or it has no content.
+
+     - AXL_IS_STR_EMTPY
+
+* [fix,new] making axl_init function to return an bool rather than an
+  int value. Added a new function to the axl module to terminate axl
+  library function. Currently it doesn't make any operation. It is
+  added for future use.
+
+     - axl_end 
+
+* [fix] making axl_error_new function to drop a critical log when it
+  receives a initialization call. This saves the needed to write a
+  console line instruction to report the error received.
+
+* [new] adding more test to check that LibAxl properly detects errors
+  while reading the xml header.
+
+* [new] LibAxl now completely read xml documents with one empty node
+  and full header xml specification.
+
+* [new] making LibAxl error reporting mechanism to report not only the
+  error found but also the stream index, the stream size and a preview
+  of the stream near to the error.  API added:
+
+     - axl_stream_get_index
+     - axl_stream_get_size
+     - axl_stream_get_near_to
+
+* [new] adding more deallocation code to release memory used by
+  axlStream objects.
+
+* [new] implemented supporting function for copying strings and
+  creating them using the printf-like format. API added:
+
+     - axl_stream_strdup
+     - axl_stream_strdup_n
+     - axl_stream_strdup_printf
+
+* [fix] fixing axl_strdup macro definition to point to the
+  axl_stream_strdup function.
+
+* [new] adding a new module, axl list, to implement an ordered,
+  double-linked, list that could support other collections to be built
+  on top of it. API added:
+
+   - axl_list_new
+   - axl_list_equal_string
+   - axl_list_add
+   - axl_list_remove
+   - axl_list_unlink
+   - axl_list_remove_first
+   - axl_list_unlink_first
+   - axl_list_exists
+   - axl_list_exists_at 
+   - axl_list_get_last
+   - axl_list_length
+   - axl_list_destroy
+
+* [new] adding new declarations to the axl decl module. API added:
+
+   - axlEqualFunc
+   - axlDestroyFunc
+
+* [new] adding a new module, axl stack, implemented on top of axl
+  list, implementing an stack interface. API added:
+
+  - axl_stack_new
+  - axl_stack_push
+  - axl_stack_pop
+  - axl_stack_peek
+  - axl_stack_size
+  - axl_stack_is_empty
+  - axl_stack_destroy
+
+* [new] adding more API to the axl do module, to configure new childs
+  to the current parent xml node and to configure which is the current
+  parent xml node. API added:
+
+  - axl_doc_set_child_current_parent
+  - axl_doc_pop_current_parent
+    
+
+* [new] adding more API to the axl node, to configure its content,
+  childs and deallocating memory reserved by them. API added:
+
+   - axl_node_is_empty                                                
+   - axl_node_get_content
+   - axl_node_get_content_copy
+   - axl_node_set_have_childs 
+   - axl_node_have_childs    
+   - axl_node_free
+
+* [new] adding new API to axl stream module to allow performing
+  inspect operation without accepting the stream
+  recognized. Re-implemented axl_stream_inspect to use a common
+  function shared with the new one added. API added:
+
+   - axl_stream_peek
+
+* [fix] extended LibAxl test suite to check functionality for new list
+  and stack implementation, ensure that it not only works but also
+  don't leak memory.
+
+* [fix] making axl_stream_get_until function to report which chunk
+  have been matched.
+
+* [new] adding more internal API to report where we are while reading
+  the stream:
+
+  - axl_stream_get_following
+
+* [fix] fixing axl_doc_parse_node to be able to parse axl nodes that
+  uses the > and /> form but really close to the xml node
+  name. Starting to parse serious xml chunks.
+
+* [fix] making axl error module to also report the stream header being
+  parsed once the error is reported.(using previous function
+  axl_stream_get_following).
+
+* [new] adding new API the to the axl node module which allows to
+  configure node content, check if a given node have a selected name
+  and to get a child node that is selected by a particular name. API
+  added:
+  
+    - axl_node_get_name
+    - axl_node_get_content
+    - axl_node_get_content_copy
+    - NODE_CMP_NAME
+    - axl_node_get_child_called
+
+* [new] updated axl_stream_get_until and splitted the function into two
+  pieces called with normal arguments and stdargs. Added support to
+  configure if the terminator matched should be accepted or not. API
+  added:
+
+    - axl_stream_get_untilv
+
+* [new] implemented a string split operation, that is able to use
+  several strings to split the result. Adding API to get current
+  number of items inside the result returned and to release it.
+   
+    - axl_stream_split
+    - axl_stream_freev
+    - axl_stream_strv_num 
+
+* [fix] renaming axl_list_destroy to axl_list_free (API naming
+  consistency) I hope no one is already using this API X'D.
+
+* [fix] LibAxl is now able to parse xml documents and to detect many
+  errors relationed with proper balancing, node naming, etc. Also added
+  support to get a node on a selected path, implementing a minimal
+  feature that is similar to XPath. Also added API to get the root
+  node. Great!!!
+
+* [fix] adding lot of internal test code to ensure the library works
+  properly and do not leak anything.
+
+* [fix] uploading missing module (axl_decl.c)
+
+* [fix] working on adding doxygen support to axl library.
+
+* [fix] uploading missing files.
+
+* [fix] Adding support to consume xml comments. Modified axl_doc_parse
+  function to support this new feature. Added a new test to check this
+  is working (test_04).  Internal API added:
+
+   - axl_doc_consume_comments
+
+* [fix] Adding support to consume xml node attributes. Test verifying
+  it (test_04).
+  
+* [new] Adding new API to the axl node module to allow setting,
+  querying attribute values for xml nodes. API added:
+
+   - axl_node_set_attribute
+   - axl_node_has_attribute
+   - axl_node_get_attribute_value
+
+* [fix] making axl_stream_move function to use axl_stream_accept
+  before modifying current index.
+
+* [new] Adding a new function to perform string concatenation.
+   
+   - axl_stream_concat
+
+* [new] Adding new function to perform xml document parsing for a set
+  of lines.  API added:
+ 
+   - axl_doc_parse_strings
+
+* [new] Starting PI target support. API added:
+   
+   - axl_doc_has_pi_target
+   - axl_doc_get_pi_target_content
+   - axl_doc_get_pi_target_list
+
+* [new] finished initial LibAxl support to properly parse xml
+  document, including comments, and PI elements. Now, working on
+  adding support for DTD validation.  New module added: axl dtd with
+  initial API:
+
+   - axl_dtd_parse
+   - axl_dtd_free
+
+  Adding new type to represent the kind of element being used inside a
+  DTD definition.
+
+   - AxlDtdElementType
+
+  Adding new type to represent how many times is represented/allowed
+  to use a element type definition:
+
+   - AxlDtdTimes
+
+* [fix] updating project logo, updating axl document center, adding
+  several logo files: axl-logo.xcf, axl-logo-80x80.png
+  axl-logo-200x200.png and axl-logo-600x600.png
+
+* [new] updated axl node API to include support for managing xml PI
+  elements. API added:
+
+   - axl_node_add_pi_target
+   - axl_node_has_pi_target
+   - axl_node_get_pi_target_content
+   - axl_node_get_pi_target_list
+
+* [new] adding new function to make a given string to be upper cased
+  or lower cased:
+
+   - axl_stream_to_upper
+   - axl_stream_to_lower
+
+* [new] adding new API to the axlDoc module to include support for
+  processing PI elements. API added:
+
+   - axl_doc_has_pi_target
+   - axl_doc_get_pi_target_content
+   - axl_pi_create
+   - axl_pi_get_name
+   - axl_pi_get_content
+   - axl_pi_free
+
+* [fix] working on adding support to axl library to be able to parse
+  files, memory chunks and sockets, which contains a xml stream, using
+  the same interface.
+
+* [new] adding initial DTD parsing support. Added initial tests.
+
+* [new] added a new function to allow parsing xml document from
+  files. Modified internal implementation to use the same code for all
+  functions parsing data:
+
+   - axl_doc_parse_from_file.
+
+* [fix] updating current axl stream implementation to be more
+  efficient while reading xml files from buffers that are connected
+  with file descriptors.
+
+* [fix] uploading first fully function libxml parsing library which is
+  able to parse files, sockets, memory chunks, using the same source
+  code, due to its stream abstraction.
+
+* [fix] uploaded initial DTD implementation (which could parse very
+  simple DTD pieces).
+
+* [fix] changing compilation mode to use ANSI features.
+
+* [new] adding new API to perform DTD validation using. Now, the
+  function supports validation for the first root node. Also added a
+  function to the the DTD root node name.
+   
+    - axl_dtd_validate
+    - axl_dtd_get_root
+
+* [new] committing first working version which validates the first root
+  node for xml documents.
+
+* [new] adding a new test to the main test module (to check more
+  extended DTD support).
+
+* [fix] Making NODE_CMP_NAME to use axl_cmp rather than
+  axl_stream_cmp, which fails to check strings that are equal for the
+  elements that beings both.
+
+* [fix] fixing xml document parsing where the defined elements was an
+  empty root node using the short format.
+
+* [new] adding more API to the DTD module which allows to get current
+  dtd element name and its type.
+
+     - axl_dtd_get_element_name
+     - axl_dtd_get_element_type
+
+* [fix] extending LibAxl stream implementation to be able to ref more
+  objects to be destroyed once the stream is deallocated.
+
+* [fix] more code to support DTD content spec.
+
+* [new] Adding a new function to allow getting child nodes for a given
+  xml node representation. API added:
+
+   - axl_node_get_childs.
+
+* [fix] fixing a bug inside axl_stream_get_until function which was
+  making to not properly detect chunk endings while looking for white
+  spaces (it wasn't using the white space in the sense defined by the
+  XML 1.0 standard).
+
+* [new] making axl_free and axl_strdup to be function rather than
+  macros.
+
+* [new] added initial support to fully parse a DTD file, and included
+  API to allow inspecting the DTD content. Great. API added:
+
+   - axlDtdElementList (type def)
+   - axlDtdElementListNode (type def)
+   - AxlDtdNestedType (enum def)
+   - NodeType (enum def) 
+
+   - axl_dtd_get_element
+   - axl_dtd_get_item_list
+   - axl_dtd_element_is_toplevel
+   - axl_dtd_item_list_count
+   - axl_dtd_item_list_type
+   - axl_dtd_item_list_get_node
+   - axl_dtd_item_node_get_type
+   - axl_dtd_item_node_get_list
+   - axl_dtd_item_node_get_value
+   - axl_dtd_item_list_free
+
+* [fix] uploading missing files used to perform library tests.
+
+* [fix] uploading first fully working LibAxl version which is able to
+  parse and validate xml documents against DTD definitions. Currently
+  only xml node structure is implemented, <!ELEMENT
+  declaration. Remains to implement <!ATTLIST declaration.  Great!!
+
+* [fix] fixing LibAxl library to be able to parse huge xml files
+  (using large.xml).  Added regression test to ensure this remains this
+  way in the future.
+
+* [new] adding a new function to the axl node module to enable getting
+  child nodes at a selected position. API added:
+
+    - axl_node_get_child_nth
+
+* [fix] added support to read content spec repetition characters
+  (?,+,*) for content particles and content particle lists. Added
+  API to manage this information:
+    
+    - axl_dtd_item_list_repeat
+    - axl_dtd_item_node_get_repeat
+
+* [fix] making axl list implementation to implement a memory allocator
+  to handle node blocks requests/disposals to be able to reuse nodes
+  that are already allocated.
+
+* [fix] making every axlStream object to have its own temporal buffer
+  to perform string operations to reduce stack activation impact for
+  axl_stream_prebuffer function.
+
+* [fix] making axl node objects to only initialize its internal
+  childs, piTargets and attribute list only once required.
+
+* [new] adding two new test to perform comparative results against
+  LibXML.
+
+* [fix] adding a more complex DTD test (test_09, inside test_01.c
+  file). Adding two new more xml files that are know to be properly
+  formated and defined by the DTD (fact.dtd) which is also added.
+
+* [fix] added support to parse complex DTD nested definitions mixing
+  sequences and choices ( (,..,( |) ).
+
+* [fix] improved support to parse repetition patterns inside nested
+  structures.
+
+* [fix] adding more test to support DTD pattern repetition (*,?,+)
+  while defining content particles.
+
+* [fix] fixing xml document processing to stop reading the stream if a
+  complete xml document was detected.
+
+* [fix] fixing a bug while recognizing mixed content particles
+  specification which was setting repetition patterns with nested item
+  lists.
+
+* [fix] reorganizing DTD validation code to support nested
+  definitions.
+
+* [fix] fixing a bug while parsing DTD element, with repeat
+  characters, separated by sequence or choice indicators.
+
+* [fix] adding support to detect and validate DTD element item list
+  that comes with element repetitions.
+
+* [fix] finally, we have complete DTD validation for sequence
+  separator. Great!  Fixed internal implementation (axl_dtd.c) and
+  included a more extended test to check its functionality.
+
+* [fix] fixing a not proper handling for documents with one empty
+  node.
+
+* [fix] making test file to run all test defined (disabled for initial
+  DTD support).
+
+* [fix] finally, DTD support for <!ELEMENT instruction is now
+  complete. It includes support for any combination and nesting for
+  sequence and choices, including repetition patterns.  Great!
+
+* [fix] added several files to improve parse memory efficiency. This
+  improvements have made LibAxl for 39% more memory efficient than
+  LibXML.  API added:
+
+   - axl_stream_get_until_ref
+   - axl_stream_nullify
+   - axl_node_create_ref
+   - axl_node_set_content_ref
+   - axl_node_set_attribute_ref
+
+* [fix] applying an internal change to the axl stream implementation
+  to not allocate memory required for an array used to store the
+  chunks to match inside the axl_stream_get_until function, making
+  that allocation at the stream initialization code, reusing the same
+  piece of memory between calls. This have improved LibAxl memory
+  usage up to 36%!!!
+
+* [fix] making LibAxl DTD parsing engine to detect and skip <!ENTITY
+  declarations for now.
+
+* [fix] making DTD nodes flagged as PCDATA to accept empty content.
+
+* [fix] disabling top level root node check while performing DTD
+  validation. This concept is implemented using <!DOCTYPE declaration,
+  which is not supported yet.
+
+* [fix] fixing axl_dtd_element_is_toplevel to properly return the
+  right value rather the inverse one.
+
+* [new] adding a new function to support making a local copy from an
+  attribute for a given node. Added a new function to create empty xml
+  documents (axlDoc reference).  Added initial implementation to
+  support dumping an axlDoc reference into a flat xml
+  representation. Also added a function to allow getting the node
+  content at a profiled path. Added a function which allows to set the
+  document root node. API added:
+
+   - axl_node_get_attribute_value_copy
+   - axl_doc_create
+   - axl_doc_dump
+   - axl_doc_get_flat_size
+   - axl_doc_get_content_at
+   - axl_doc_set_root
+
+* [new] adding support to transparently encode and decode entities
+  values (<,>,',", &) to its corresponding entities. Added a new test
+  to ensure that automatic translation works for every release
+  done. API added:
+   
+    - axl_node_get_content_trans
+    - axl_node_attribute_get_value_trans
+
+* [new] added support to performing XML document dumping from an
+  structure into a string representation. The operation is done in an
+  efficient way, allocating only one memory chunk, that was previously
+  calculated. Added a test to ensure dumping functionally. API added:
+
+    - axl_doc_dump
+
+* [new] added a new function to allow comparing two XML
+  documents. Also added a function to compare two nodes. API added:
+   
+    - axl_doc_are_equal
+    - axl_node_are_equal
+
+* [fix] fixing axl_stream_inspect_several to not report an error if
+  there are more chunks left to be matched.
+
+* [fix] several internal library improvements that have made the
+  library to run a regression tests from 0.637ms to 0.106ms
+  (GREAT!!!). LibXML do the same task in 0.047ms. Valgrind and
+  Callgrind RULES!!
+
+  Statistical progression data:
+
+   *) Initial measure: 0.637ms
+
+   1) After making some function to not call several times to strlen:
+      [0.600ms]
+
+   2) After making inspect several to not calculate every time chunk
+      lengths: [0.565ms]
+
+   3) After making get until function to not compare with white space
+      strings: [0.435ms]
+
+   4) After avoiding calling to getenv from axl_log_is_enabled:
+      [0.262ms!!!]
+
+   5) After rewriting AXL_CONSUME_SPACES to for an efficient version:
+      [0.116ms!!!]
+
+   6) After making a function, from inside the axl node module, to not
+      call to initialize an internal list when it is known that the
+      function will do nothing: [0.106!!!]
+
+* [fix] fixing a bug left.
+
+* [fix] general win32 makefiles update to remove previous references
+  to libxml, replacing it with the new LibAxl implementation.
+
+* [new] adding first initial web proposal for the LibAxl
+  implementation.
+
+* [fix] more updates for the LibAxl web page.
+
+* [fix] uploading changes to make it work while building the axl dist.
+
+* [new] adding initial memory report result.
+
+* [fix] adding missing checking to avoid running doxygen tool if not
+  available.
+
+* [fix] mostly finished memory and time execution report.
+
+* [fix] finished memory usage report.
+
+
+
 About Advanced Software Production Line, S.L.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -48,13 +701,13 @@ About Advanced Software Production Line, S.L.
   complete framework to develop distributed application to manage
   enterprise process.
 
-  Af-Arch project relies on Vortex Library to exchange data between
-  its distributed nodes.
+  Af-Arch project relies uses Axl library to support its XML
+  requirements while exchanging data between nodes.
 
   Advanced Software Production Line also provides GNU/Linux support
-  and consulting services on how organization can introduce GNU/Linux
-  inside its process, making other platforms to interact with
-  GNU/Linux.
+  and consulting services to enable organization to introduce
+  GNU/Linux inside its process, making other platforms to interact
+  with GNU/Linux.
 
   Contact us, using English or Spanish, to get commercial support
   and/or XML based development services.
@@ -65,12 +718,7 @@ About Advanced Software Production Line, S.L.
 
   We hope Axl Library help you. Enjoy Axl Library!
 
-Changes from previous release
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 --
 Francis Brosnan Blázquez           - francis@aspl.es
 Advanced Software Production Line  - http://www.aspl.es
-7th Mar 2006, Madrid (Spain)
-
-
+20th Apr 2006, Madrid (Spain)
