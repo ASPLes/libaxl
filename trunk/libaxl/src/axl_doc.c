@@ -1283,7 +1283,7 @@ int __axl_doc_get_file_size (char * file_path)
  * This function works the same way like \ref axl_doc_parse and \ref
  * axl_doc_parse_strings, but using as an input, the selected file
  * provided by the path. In fact, all this function, use the same xml
- * parse engine. This advantage of this function is that it is more
+ * parse engine. The advantage of this function is that it is more
  * efficient while reading huge xml files. 
  *
  * Here is an example:
