@@ -59,7 +59,7 @@ a {
 }
 
 .left-content-25 { 
-   padding: 0;~
+   padding: 0;
    margin: 0;
    width: 100px;
    float: left;
@@ -200,4 +200,15 @@ ul.list {
 
 .donation { 
   text-align: center;
+}
+
+.validation { 
+  padding: 20px;
+  padding-top: 5px;
+  width: 100px;
+  float: left;
+}
+
+.validation img { 
+  border: 0;
 }
