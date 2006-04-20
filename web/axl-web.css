@@ -1,5 +1,5 @@
 body { 
-  font-family: Verdana,Tahoma,Arial,Sans-Serif;
+  font-family: sans, free-sans, arial, helvetica;
   font-weight: normal;
   font-size:   small;
   color: #636363;
@@ -59,7 +59,7 @@ a {
 }
 
 .left-content-25 { 
-   padding: 0;
+   padding: 0;~
    margin: 0;
    width: 100px;
    float: left;
@@ -70,19 +70,18 @@ a {
 }
 
 .pre-menu { 
-  position: relative; left: -53%; top: 85%; z-index: 1;
-  padding: 0;
-  margin: 0;
-  font-weight: lighter;
-  font-size: 120%;
+  position: absolute; left: 25px; top: 120px; z-index: 1;
 }
 
 .pre-menu a { 
+  border: 1px solid #8181a9;
   color: #8181a9;
   text-decoration: none;
-  padding: 1px;
+  padding: 2px;
+  margin: 2px;
   margin-right: 10px;
-  border: 1px dotted #8181a9;
+  font-family: sans, free-sans, arial, helvetica;
+  font-size: 120%;
   font-weight: bold;
 }
 
