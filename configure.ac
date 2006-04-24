@@ -46,6 +46,13 @@ if test x$enable_axl_doc = xyes ; then
 fi
 AM_CONDITIONAL(ENABLE_AF_ARCH_DOC, test "x$DOXYGEN" = "xyes")
 
+##########################
+# Check for doxygen tool #
+##########################
+dnl check for doxygen documentation
+AC_ARG_ENABLE(axl-test, [  --enable-axl-test     Enable building Axl test executables [default=yes]], enable_axl_test="$enableval", enable_axl_test=yes)
+AM_CONDITIONAL(ENABLE_AXL_TESTS, test "x$enable_axl_test" = "xyes")
+
 AC_OUTPUT([
 Makefile
 src/Makefile
@@ -58,6 +65,8 @@ echo "------------------------------------------"
 echo "--       LibAXL LIBRARY SETTINGS        --"
 echo "------------------------------------------"
 echo "   Installation prefix:          [$prefix]"
+echo
+echo "   Build Axl Library tests:      [$enable_axl_test]"
 echo
 if test x$DOXYGEN = xyes ; then
    echo "   Build Axl Library doc:        enabled"

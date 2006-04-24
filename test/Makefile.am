@@ -1,8 +1,8 @@
 EXTRA_DIST      = $(wildcard *.c) $(wildcard *.dtd) $(wildcard *.xml) Makefile.win
 
-INCLUDES = -I../src/ -pg -Wall
+INCLUDES = -I../src/ -Wall
 
-bin_PROGRAMS    = test_01 test_02
+noinst_PROGRAMS = test_01 test_02
 
 test_01_SOURCES = test_01.c
 test_01_LDADD   = ../src/libaxl.la 

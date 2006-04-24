@@ -2,7 +2,11 @@ if ENABLE_AF_ARCH_DOC
 AXL_DOC_DIR = doc
 endif
 
-SUBDIRS = src $(AXL_DOC_DIR) test
+if  ENABLE_AXL_TESTS
+AXL_TEST_DIR = test
+endif
+
+SUBDIRS = src $(AXL_DOC_DIR) $(AXL_TEST_DIR)
 EXTRA_DIST = axl.pc.in VERSION 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = axl.pc
