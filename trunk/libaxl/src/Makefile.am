@@ -1,8 +1,12 @@
 EXTRA_DIST = Makefile.win
 
+if ENABLE_AXL_LOG
+LOG = -DSHOW_DEBUG_LOG
+endif
+
 INCLUDES = -g -I$(top_srcdir) $(LIBRARIES_CFLAGS) -DVERSION=\""$(AXL_VERSION)"\" \
 	-DPACKAGE_DTD_DIR=\""$(datadir)"\" -DPACKAGE_TOP_DIR=\""$(top_srcdir)"\" -Wall -ansi -pedantic \
-	-DVERSION=\"$(AXL_VERSION)\"
+	-DVERSION=\"$(AXL_VERSION)\" $(LOG)
 
 libaxlincludedir = $(includedir)/axl
 
