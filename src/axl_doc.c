@@ -782,6 +782,7 @@ bool __axl_doc_parse_close_node (axlStream * stream, axlDoc * doc, axlNode ** _n
 	/* get the node being closed to check to the current parent */
 	string = axl_stream_get_until_ref (stream, NULL, &matched_chunk, AXL_TRUE, &result_size, 2, " ", ">");
 	if (string == NULL) {
+		
 		axl_error_new (-1, "An error was found while closing the xml node", stream, error);
 		axl_stream_free (stream);
 		return AXL_FALSE;

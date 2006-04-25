@@ -53,6 +53,11 @@ dnl check for doxygen documentation
 AC_ARG_ENABLE(axl-test, [  --enable-axl-test     Enable building Axl test executables [default=yes]], enable_axl_test="$enableval", enable_axl_test=yes)
 AM_CONDITIONAL(ENABLE_AXL_TESTS, test "x$enable_axl_test" = "xyes")
 
+AC_ARG_ENABLE(axl-log, [  --enable-axl-log     Enable building Axl with debug log support [default=yes]], enable_axl_log="$enableval", enable_axl_log=yes)
+AM_CONDITIONAL(ENABLE_AXL_LOG, test "x$enable_axl_log" = "xyes")
+
+
+
 AC_OUTPUT([
 Makefile
 src/Makefile
@@ -67,6 +72,8 @@ echo "------------------------------------------"
 echo "   Installation prefix:          [$prefix]"
 echo
 echo "   Build Axl Library tests:      [$enable_axl_test]"
+echo
+echo "   Build Axl Library debug log:  [$enable_axl_log]"
 echo
 if test x$DOXYGEN = xyes ; then
    echo "   Build Axl Library doc:        enabled"
