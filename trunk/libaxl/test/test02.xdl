@@ -1,0 +1,17 @@
+<xml-rpc-interface>
+<name>test</name>
+<service>
+ <name>sum</name>
+ <returns>int</returns>
+ <params>
+   <param>
+     <name>a</name>
+     <type>int</type>
+   </param>
+   <param>
+     <name>b</name>
+     <type>int</type>
+   </param>
+ </params>
+</service>
+</xml-rpc-interface>
