@@ -5,7 +5,7 @@ LOG = -DSHOW_DEBUG_LOG
 endif
 
 INCLUDES = -g -I$(top_srcdir) $(LIBRARIES_CFLAGS) -DVERSION=\""$(AXL_VERSION)"\" \
-	-DPACKAGE_DTD_DIR=\""$(datadir)"\" -DPACKAGE_TOP_DIR=\""$(top_srcdir)"\" -Wall -ansi -pedantic \
+	-DPACKAGE_DTD_DIR=\""$(datadir)"\" -DPACKAGE_TOP_DIR=\""$(top_srcdir)"\" -Wall -ansi \
 	-DVERSION=\"$(AXL_VERSION)\" $(LOG)
 
 libaxlincludedir = $(includedir)/axl
