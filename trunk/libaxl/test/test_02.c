@@ -283,6 +283,18 @@ bool test_03 ()
 	axl_free (string);
 
 
+	string = axl_strdup ("\t \n   \r  value  \n \r \t \t  ");
+	axl_stream_trim (string);
+
+	if (! axl_cmp (string, "value")) {
+		printf ("failed to trim the string received, expected '%s' == '%s'\n", 
+			string, "value");
+		return AXL_FALSE;
+	}
+
+	/* release memory */
+	axl_free (string);
+
 	
 	return AXL_TRUE;
 }
@@ -306,6 +318,9 @@ bool test_04 () {
 		/* update the iterator */
 		iterator++;
 	}
+
+	/* release the list */
+	axl_list_free (list);
 	
 	/* true */
 	return AXL_TRUE;

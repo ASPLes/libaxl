@@ -125,6 +125,8 @@ bool        axl_stream_remains         (axlStream * stream);
 
 /* string handling interface */
 
+void        axl_stream_trim            (char * chun1);
+
 bool        axl_stream_cmp             (char * chunk1, char * chunk2, int size);
 
 char      * axl_stream_strdup          (char * chunk);
