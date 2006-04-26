@@ -109,6 +109,8 @@ bool axl_log_color_is_enabled ()
  */
 void axl_log (char * domain, AxlDebugLevel level, char * message, ...)
 {
+
+#ifdef SHOW_DEBUG_LOG
 	va_list    args;
 
 	/* check if the log is enabled */
@@ -160,6 +162,7 @@ void axl_log (char * domain, AxlDebugLevel level, char * message, ...)
 
 	/* ensure that the log is droped to the console */
 	fflush (stdout);
+#endif
 
 	/* return */
 	return;

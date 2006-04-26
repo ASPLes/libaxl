@@ -82,6 +82,10 @@ char    * axl_node_get_attribute_value_trans (axlNode * node, char * attribute);
 
 char    * axl_node_get_name           (axlNode * node);
 
+axlNode * axl_node_get_parent         (axlNode * node);
+
+axlNode * axl_node_get_next           (axlNode * node);
+
 void      axl_node_set_child          (axlNode * parent, 
 				       axlNode * child);
 
@@ -93,6 +97,15 @@ bool      axl_node_is_empty           (axlNode * node);
 char    * axl_node_get_content        (axlNode * node, 
 				       int  * content_size);
 
+char    * axl_node_get_content_copy   (axlNode * node, 
+				       int  * content_size);
+
+char    * axl_node_get_content_trans  (axlNode * node, 
+				       int * content_size);
+
+char    * axl_node_get_content_trim   (axlNode * node,
+				       int * content_size);
+
 void      axl_node_set_content        (axlNode * node, 
 				       char * content, 
 				       int content_size);
@@ -101,9 +114,7 @@ void      axl_node_set_content_ref    (axlNode * node,
 				       char * content, 
 				       int content_size);
 
-char    * axl_node_get_content_copy   (axlNode * node, int  * content_size);
 
-char    * axl_node_get_content_trans  (axlNode * node, int * content_size);
 
 void      axl_node_set_have_childs    (axlNode * node, bool childs);
 

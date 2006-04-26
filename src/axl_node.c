@@ -125,6 +125,20 @@ struct _axlNode {
 	 * Pi targets storing.
 	 */
 	axlList       * piTargets;
+
+	/** 
+	 * @internal
+	 * A pointer to the parent node.
+	 */
+	axlNode       * parent;
+
+	/** 
+	 * @internal
+	 *
+	 * A pointer to the brother node, the node that is found on
+	 * the next position.
+	 */
+	axlNode       * next;
 };
 
 /** 
@@ -883,6 +897,57 @@ char    * axl_node_get_name           (axlNode * node)
 }
 
 /** 
+ * @brief Allows to get the parent xml node (\ref axlNode) that is holding
+ * as child the provided xml node reference.
+ *
+ * When a node holds childs, it is also created a parent relation from
+ * the child to the parent. This function allows to return that
+ * reference.
+ * 
+ * @param node The xml node that is requested to return its parent
+ * node.
+ * 
+ * @return An internal reference to the parent node, that must not be
+ * deallocated, or NULL if fails. The function will also return NULL
+ * if the node provided is the document root. The function could only
+ * fail if the provided reference is NULL.
+ */
+axlNode * axl_node_get_parent         (axlNode * node)
+{
+	axl_return_val_if_fail (node, NULL);
+
+	/* returns a reference to the parent */
+	return node->parent;
+}
+
+/** 
+ * @brief Allows to get the node that is located, at the same level,
+ * on the next position of the child list.
+ *
+ * When a parent node holds more node childs, all of them have the
+ * same parent child, and at the same time, all of them have a brother
+ * relation. This relation makes that to nodes that are childs for a
+ * parent node, are positioned sequentially as childs for the parent.
+ *
+ * This function allows to get the next childs that is stored at the
+ * next position, inside the same level, for the given child node.
+ *
+ * @param node The node to get the next xml node reference.
+ * 
+ * @return Returns an internal reference to the next xml node or NULL
+ * if fails. The function will also return NULL if no next xml node is
+ * found starting from the provided reference. The root node will
+ * always returns a NULL reference.
+ */
+axlNode * axl_node_get_next           (axlNode * node)
+{
+	axl_return_val_if_fail (node, NULL);
+
+	/* return the next reference */
+	return node->next;
+}
+
+/** 
  * @brief Allows to get current emptyness configuration for the given
  * \ref axlNode.
  *
@@ -1143,6 +1208,43 @@ char    * axl_node_get_content_copy (axlNode * node, int * content_size)
 }
 
 /** 
+ * @brief Allows to get the content inside the provided node, trimming
+ * the header and trailing white spaces found.
+ *
+ * Note that calling to this function will modify the node content,
+ * removing "white spaces" found. Once the function is called, the
+ * node content will be returned by \ref axl_node_get_content already
+ * trimmed.
+ *
+ * @param node The node where the content will be trimmed and
+ * returned.
+ *
+ * @param content_size The node content size reference where the
+ * content size will be reported.
+ * 
+ * @return The reference returned is an internal copy that must not be
+ * deallocated. 
+ */
+char    * axl_node_get_content_trim   (axlNode * node,
+				       int * content_size)
+{
+	int    trimmed;
+
+	/* trim the content */
+	axl_stream_trim_with_size (node->content, &trimmed);
+
+	/* updates current internal content size */
+	node->content_size -= trimmed;
+
+	/* notify content size to the caller */
+	if (content_size != NULL)
+		*content_size = node->content_size;
+
+	/* return an internal reference to the node content */
+	return node->content;
+}
+
+/** 
  * @brief Allows to the get node content, performing a memory
  * allocation for the returned result, translating default entities
  * values with its replacement text.
@@ -1193,11 +1295,24 @@ char    * axl_node_get_content_trans (axlNode * node, int * content_size)
  */
 void      axl_node_set_child (axlNode * parent, axlNode * child)
 {
+	axlNode * last;
+
 	axl_return_if_fail (parent);
 	axl_return_if_fail (child);
 
 	/* init childs list */
 	__axl_node_init_childs (parent);
+
+	/* establish the parent relation */
+	child->parent = parent;
+
+	/* get the current last child */
+	last = axl_list_get_last (parent->childs);
+	if (last != NULL) {
+		/* establish the next relation for the last node to
+		 * point to the new last node */
+		last->next = child;
+	}
 	
 	/* add the child node to the parent node */
 	axl_list_add (parent->childs, child);

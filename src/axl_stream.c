@@ -1326,8 +1326,26 @@ void axl_stream_consume_white_spaces (axlStream * stream)
  */
 void      axl_stream_trim            (char * chunk)
 {
+	/* call to trim */
+	axl_stream_trim_with_size (chunk, NULL);
+
+	return;
+}
+
+/** 
+ * @brief The function works like \ref axl_stream_trim, but providing
+ * the count of bytes trimmed from the string.
+ *
+ * @param chunk1 The chunk to trim.
+ *
+ * @param size An optional reference that returns the count of bytes
+ * trimmed by the operation.
+ */
+void        axl_stream_trim_with_size  (char * chunk, int * trimmed)
+{
 	int    iterator;
 	int    end;
+	int    total;
 
 	/* perform some environment check */
 	axl_return_if_fail (chunk);
@@ -1346,7 +1364,8 @@ void      axl_stream_trim            (char * chunk)
 
 	/* now get the position for the last valid character in the
 	 * chunk */
-	end = strlen (chunk) - 1;
+	total   = strlen (chunk) -1;
+	end     = total;
 	while (chunk[end] != 0) {
 		
 		/* stop if a white space is found */
@@ -1358,12 +1377,19 @@ void      axl_stream_trim            (char * chunk)
 		end--;
 	}
 
+	/* the number of items trimmed */
+	total -= end;
+	total += iterator;
+	
 	/* copy the exact amount of non white spaces items */
 	memcpy (chunk, chunk + iterator, end - iterator + 1);
 	chunk [ end - iterator + 1] = 0;
 
+	if (trimmed != NULL)
+		*trimmed = total;
+
 	/* return the result reference */
-	return;
+	return;	
 }
 
 /** 
@@ -1910,6 +1936,59 @@ char *     axl_stream_to_lower        (char  * chunk)
 {
 	__axl_stream_common_to (chunk, AXL_FALSE);
 	return chunk;
+}
+
+/** 
+ * @brief Allows to perform a to upper operation, like \ref
+ * axl_stream_to_upper, but returning an new allocated reference.
+ * 
+ * @param chunk The string reference to upper.
+ * 
+ * @return A new reference allocated containing the result or NULL if
+ * it fails.
+ */
+char      * axl_stream_to_upper_copy   (char  * chunk)
+{
+	char * result;
+
+	/* perform some environmental checks */
+	axl_return_val_if_fail (chunk, NULL);
+
+	/* make a copy */
+	result = axl_strdup (chunk);
+
+	/* upper it */
+	__axl_stream_common_to (result, AXL_TRUE);
+
+	/* return the result */
+	return result;
+}
+
+
+/** 
+ * @brief Allows to perform a to lower operation, like \ref
+ * axl_stream_to_upper, but returning an new allocated reference.
+ * 
+ * @param chunk The string reference to lower.
+ * 
+ * @return A new reference allocated containing the result or NULL if
+ * it fails.
+ */
+char      * axl_stream_to_lower_copy   (char  * chunk)
+{
+	char * result;
+
+	/* perform some environmental checks */
+	axl_return_val_if_fail (chunk, NULL);
+
+	/* make a copy */
+	result = axl_strdup (chunk);
+
+	/* lower it */
+	__axl_stream_common_to (result, AXL_FALSE);
+
+	/* return the result */
+	return result;
 }
 
 /* @} */
