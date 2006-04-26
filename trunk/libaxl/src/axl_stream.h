@@ -125,7 +125,9 @@ bool        axl_stream_remains         (axlStream * stream);
 
 /* string handling interface */
 
-void        axl_stream_trim            (char * chun1);
+void        axl_stream_trim            (char * chunk);
+
+void        axl_stream_trim_with_size  (char * chunk, int * trimmed);
 
 bool        axl_stream_cmp             (char * chunk1, char * chunk2, int size);
 
@@ -146,6 +148,10 @@ void        axl_stream_freev           (char ** chunks);
 char      * axl_stream_to_upper        (char  * chunk);
 
 char      * axl_stream_to_lower        (char  * chunk);
+
+char      * axl_stream_to_upper_copy   (char  * chunk);
+
+char      * axl_stream_to_lower_copy   (char  * chunk);
 
 /* @} */
 

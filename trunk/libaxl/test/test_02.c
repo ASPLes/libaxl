@@ -176,6 +176,7 @@ bool test_03 ()
 {
 	char  * string;
 	char ** result;
+	int     trimmed;
 
 	/* check that axl_stream_split works */
 	result = axl_stream_split ("value/value1/value3/value4", 1, "/");
@@ -295,6 +296,16 @@ bool test_03 ()
 	/* release memory */
 	axl_free (string);
 
+	string = axl_strdup ("   value    ");
+	axl_stream_trim_with_size (string, &trimmed);
+	if (trimmed != 7) {
+		printf ("failed, expected to find a trimmed size of 7 but found %d (%s)\n", 
+			trimmed, string);
+		return AXL_FALSE;
+	}
+
+	/* release the memory */
+	axl_free (string);
 	
 	return AXL_TRUE;
 }

@@ -105,8 +105,13 @@ typedef struct _axlDoc axlDoc;
  * 
  * - \ref axl_node_get_child_num
  * - \ref axl_node_get_child_nth
- * 
  *
+ * You can also use the following functions to get the parent node for
+ * a provided xml node child and the next xml node found at the same
+ * level, for a provided xml node reference.
+ *
+ * - \ref axl_node_get_parent
+ * - \ref axl_node_get_next
  * 
  * Check the axlNode \ref axl_node_module "API for more information".
  */
