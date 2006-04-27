@@ -292,6 +292,8 @@ axlStream * axl_stream_new (char * stream_source, int stream_size,
 		if (fd_handler < 0) {
 			/* a file handle */
 			if ((fd = open (file_path, O_RDONLY)) < 0) {
+				axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "unable to open file a the location provided: %s, check location and permissions.", file_path);
+
 				axl_error_new (-1, "unable to read file provided", NULL, error);
 				return NULL;
 			}
