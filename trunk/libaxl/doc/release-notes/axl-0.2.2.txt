@@ -1,0 +1,134 @@
+          ###################################
+          # Axl Library release note: 0.2.2 #
+          ###################################
+
+Advanced Software Production Line is proud to announce the initial
+official release of Axl Library: an Open Source XML toolkit.
+
+Axl Library is an small and efficient XML toolkit, that will allow you
+to produce efficient and clear code that interfaces with XML data. 
+
+The library was produced to support XML requirements needed by
+software developed by Advanced Software Production Line, S.L. 
+
+At this moment the library is being used by Vortex Library and
+Af-Arch.
+
+Resources
+~~~~~~~~~
+   Axl Homepage
+   [ http://xml.aspl.es ]
+
+   Vortex Library Homepage
+   [ http://vortex.aspl.es ]
+
+   Af-Arch Homepage
+   [ http://fact.aspl.es ]
+
+   Advanced Software Production Line, S.L.
+   [ http://www.aspl.es ]
+
+   Memory report (an interesting report)
+   [ http://xml.aspl.es/memory-usage-report-17-04-2006.html ]
+
+
+This release in short
+~~~~~~~~~~~~~~~~~~~~~
+
+  Minor release that adds some missing APIs that makes more
+  confortable to iterate XML documents. Added missing DTD validation
+  for (+) repetition patters not implemented in some circumstances.
+
+Changes from previous release 0.2.1
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* [fix] adding missing checking to avoid running doxygen tool if not
+  available.
+
+* [fix] updated the license to use the LGPL V2.1 rather than the 2.0.
+
+* [fix] adding new options to disable/enable building test files.
+
+* [fix] updated test/Makefile.am to not include the -pg flag (it wasn't used).
+
+* [fix] adding a new compile option to enable/disable debug log to be
+  included into the library produced.
+
+* [fix] fixing a bug that was causing to not properly set the
+  repetition pattern for top level DTD element definitions, that was
+  nested by others. Added a regression test to ensure not fall again.
+
+* [new] added support to perform DTD element validation for sequence
+  element that have a repetition pattern one or many (+). Added a
+  regression test to ensure not fall on this again.
+
+* [new] adding a new log macro __axl_log which removes/enables axl_log
+  declarations according to the log debug configuration.
+
+* [fix] removed -pendantic option from src/Makefile.am.
+
+* [new] adding a new function remove header and trailing white spaces
+  for an string provided without making a new allocation. API added:
+  
+    - axl_stream_trim.
+
+* [fix] added a new regression test for previous API added.
+
+* [fix] fixing the __axl_log macro to properly compile when axl debug
+  log is not defined.
+
+* [new] adding to axl stream module new functions to allow trimming a
+  string, removing whites spaces that starts and ends the string
+  provided without performing any allocation. Added regression test to
+  check future function.  API added:
+ 
+    - axl_stream_trim
+    - axl_stream_trim_with_size
+
+* [new] adding support for two new functions inside the axl node
+  module to allow getting the parent node and the brother node from a
+  provided node.  API added:
+
+   - axl_node_get_parent
+   - axl_node_get_next
+
+* [new] added a new function to enabling getting the node content
+  already trimmed.
+
+   - axl_node_get_content_trim
+
+* [new] added two new functions to enable getting an upper or lower
+  string in an dinamically allocated buffer. API added:
+   
+   - axl_stream_to_upper_copy
+   - axl_stream_to_lower_copy
+
+
+About Advanced Software Production Line, S.L.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Advanced Software Production Line is leading the Af-Arch project: a
+  complete framework to develop distributed application to manage
+  enterprise process.
+
+  Af-Arch project uses Axl library to support its XML requirements
+  while exchanging data between nodes.
+
+  Advanced Software Production Line also provides GNU/Linux support
+  and consulting services to enable organization to introduce
+  GNU/Linux inside its process, making other platforms to interact
+  with GNU/Linux.
+
+  Contact us, using English or Spanish, to get commercial support
+  and/or XML based development services.
+
+  You can reach us:
+
+       http://www.aspl.es - info@aspl.es
+
+  We hope Axl Library help you. Enjoy Axl Library!
+
+--
+Francis Brosnan Blázquez           - francis@aspl.es
+Advanced Software Production Line  - http://www.aspl.es
+28th Apr 2006, Madrid (Spain)

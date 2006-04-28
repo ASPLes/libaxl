@@ -1309,9 +1309,8 @@ void axl_stream_consume_white_spaces (axlStream * stream)
 
 
 /** 
- * @internal
  *
- * Allows to trim the provided chunk, removing all white spaces
+ * @brief Allows to trim the provided chunk, removing all white spaces
  * (returns, white spaces, carry return and tabulars) that comes as
  * preffix and suffix for the string provided, referenced by chunk.
  *
@@ -1323,7 +1322,7 @@ void axl_stream_consume_white_spaces (axlStream * stream)
  *
  * This function is particular useful while getting the content 
  * 
- * @param chun1 The chunk to trim.
+ * @param chunk The chunk to trim.
  *
  */
 void      axl_stream_trim            (char * chunk)
@@ -1338,9 +1337,9 @@ void      axl_stream_trim            (char * chunk)
  * @brief The function works like \ref axl_stream_trim, but providing
  * the count of bytes trimmed from the string.
  *
- * @param chunk1 The chunk to trim.
+ * @param chunk The chunk to trim.
  *
- * @param size An optional reference that returns the count of bytes
+ * @param trimmed An optional reference that returns the count of bytes
  * trimmed by the operation.
  */
 void        axl_stream_trim_with_size  (char * chunk, int * trimmed)
