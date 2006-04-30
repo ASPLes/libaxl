@@ -328,7 +328,7 @@ struct _axlDoc {
 	 * @brief Current standalone configuration of the given \ref
 	 * axlDoc object.
 	 */
-	bool      standalone;
+	aboolean    standalone;
 
 	/** 
 	 * @internal
@@ -355,7 +355,7 @@ struct _axlDoc {
 	 * instruction that are only found inside the root document,
 	 * or after the xml header definition.
 	 */
-	bool       headerProcess;
+	aboolean    headerProcess;
 };
 
 struct _axlPI {
@@ -383,7 +383,7 @@ struct _axlPI {
  * 
  * @return A newly allocated \ref axlDoc reference.
  */
-axlDoc * __axl_doc_new (bool create_parent_stack) 
+axlDoc * __axl_doc_new (aboolean create_parent_stack) 
 {
 	axlDoc    * result = axl_new (axlDoc, 1);
 
@@ -431,7 +431,7 @@ void __axl_doc_clean (axlDoc * doc)
  * with the given stream will be released. If the document is
  * associated, it will also be released.
  */
-bool __axl_doc_parse_xml_header (axlStream * stream, axlDoc * doc, axlError ** error)
+aboolean __axl_doc_parse_xml_header (axlStream * stream, axlDoc * doc, axlError ** error)
 {
 	char      * string_aux;
 
@@ -587,7 +587,7 @@ bool __axl_doc_parse_xml_header (axlStream * stream, axlDoc * doc, axlError ** e
  * AXL_FALSE if not. If the function find something wrong the document
  * is unrefered.
  */
-bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_node, axlError ** error)
+aboolean __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_node, axlError ** error)
 {
 	char    * string_aux;
 	char    * string_aux2;
@@ -772,7 +772,7 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
  * @brief Perform the close node operation.
  *
  */
-bool __axl_doc_parse_close_node (axlStream * stream, axlDoc * doc, axlNode ** _node, axlError ** error)
+aboolean __axl_doc_parse_close_node (axlStream * stream, axlDoc * doc, axlNode ** _node, axlError ** error)
 {
 	char    * string;
 	int       result_size = -1;
@@ -1043,9 +1043,9 @@ axlDoc * __axl_doc_parse_common (char * entity, int entity_size,
  * @return Returns a newly allocated \ref axlDoc instance that must be
  * deallocated by using \ref axl_doc_free.
  */
-axlDoc  * axl_doc_create                   (char * version, 
-					    char * encoding,
-					    bool   standalone)
+axlDoc  * axl_doc_create                   (char     * version, 
+					    char     * encoding,
+					    aboolean   standalone)
 {
 	axlDoc * doc;
 
@@ -1415,7 +1415,7 @@ axlDoc  * axl_doc_parse_strings            (axlError ** error,
  * Internal support function which checks the provided child and its
  * childs are equal.
  */
-bool __axl_doc_are_equal (axlNode * node, axlNode * node2)
+aboolean __axl_doc_are_equal (axlNode * node, axlNode * node2)
 {
 	int       iterator;
 	int       length;
@@ -1467,8 +1467,8 @@ bool __axl_doc_are_equal (axlNode * node, axlNode * node2)
  * @return AXL_TRUE if both documents represents the same document,
  * AXL_FALSE if not.
  */
-bool      axl_doc_are_equal                (axlDoc * doc, 
-					    axlDoc * doc2)
+aboolean      axl_doc_are_equal                (axlDoc * doc, 
+						axlDoc * doc2)
 {
 	axlNode * node;
 	axlNode * node2;
@@ -1789,7 +1789,7 @@ char   * axl_doc_get_encoding (axlDoc * doc)
  * returned. Keep in mind that the function will return an \ref
  * AXL_FALSE value if a null reference is received.
  */
-bool     axl_doc_get_standalone (axlDoc * doc)
+aboolean     axl_doc_get_standalone (axlDoc * doc)
 {
 	axl_return_val_if_fail (doc, AXL_FALSE);
 
@@ -1954,7 +1954,7 @@ void      axl_doc_add_pi_target            (axlDoc * doc,
  * @return AXL_TRUE is the processing instruction is defined,
  * otherwise AXL_FALSE is returned.
  */
-bool      axl_doc_has_pi_target            (axlDoc * doc, char * pi_target)
+aboolean      axl_doc_has_pi_target            (axlDoc * doc, char * pi_target)
 {
 	axlPI * pi;
 	int     iterator = 0;
@@ -2192,10 +2192,10 @@ void     axl_doc_free         (axlDoc * doc)
  *
  * @param error An optional axlError where problem will be reported.
  */
-bool      axl_doc_consume_comments         (axlDoc * doc, axlStream * stream, axlError ** error)
+aboolean      axl_doc_consume_comments         (axlDoc * doc, axlStream * stream, axlError ** error)
 {
 
-	bool found_item;
+	aboolean found_item;
 	
 #ifdef SHOW_DEBUG_LOG
 	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "checking for comemnts");
@@ -2267,8 +2267,8 @@ bool      axl_doc_consume_comments         (axlDoc * doc, axlStream * stream, ax
  * @return AXL_TRUE if not error was found, otherwise AXL_FASLSE is
  * returned.
  */
-bool      axl_doc_consume_pi (axlDoc * doc, axlNode * node, 
-			      axlStream * stream, axlError ** error)
+aboolean      axl_doc_consume_pi (axlDoc * doc, axlNode * node, 
+				  axlStream * stream, axlError ** error)
 {
 	char  * string_aux;
 	char  * string_aux2;

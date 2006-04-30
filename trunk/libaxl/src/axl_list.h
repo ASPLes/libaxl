@@ -62,9 +62,9 @@ void       axl_list_remove_last (axlList * list);
 
 void       axl_list_unlink_last (axlList * list);
 
-bool       axl_list_exists (axlList * list, axlPointer pointer);
+aboolean   axl_list_exists (axlList * list, axlPointer pointer);
 
-bool       axl_list_exists_at (axlList * list, axlPointer pointer, int position);
+aboolean   axl_list_exists_at (axlList * list, axlPointer pointer, int position);
 
 axlPointer axl_list_get_first (axlList * list);
 

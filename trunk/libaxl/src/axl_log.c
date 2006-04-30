@@ -49,8 +49,8 @@
  * @{
  */
 
-bool not_executed  = AXL_TRUE;
-bool debug_enabled = AXL_FALSE;
+aboolean not_executed  = AXL_TRUE;
+aboolean debug_enabled = AXL_FALSE;
 
 /** 
  * @brief Allows to check if the log reporting inside the system is
@@ -58,7 +58,7 @@ bool debug_enabled = AXL_FALSE;
  *
  * @return AXL_TRUE if the log is enabled or AXL_FALSE
  */
-bool axl_log_is_enabled () 
+aboolean axl_log_is_enabled () 
 {
 	if (not_executed) {
 		debug_enabled = (getenv ("AXL_DEBUG") != NULL);
@@ -75,7 +75,7 @@ bool axl_log_is_enabled ()
  * 
  * @return AXL_TRUE if the color log is enabled or AXL_FALSE
  */
-bool axl_log_color_is_enabled ()
+aboolean axl_log_color_is_enabled ()
 {
 	if (getenv ("AXL_DEBUG_COLOR") != NULL)
 		return AXL_TRUE;
