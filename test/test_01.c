@@ -8,7 +8,7 @@
  * 
  * @return AXL_TRUE if the validity test is passed, AXL_FALSE if not.
  */
-bool test_15 (axlError ** error) 
+aboolean test_15 (axlError ** error) 
 {
 	axlDoc  * doc  = NULL;
 	axlDtd  * dtd  = NULL;
@@ -57,7 +57,7 @@ bool test_15 (axlError ** error)
  * 
  * @return AXL_TRUE if the validity test is passed, AXL_FALSE if not.
  */
-bool test_14 (axlError ** error) 
+aboolean test_14 (axlError ** error) 
 {
 	axlDoc  * doc  = NULL;
 	axlNode * node = NULL;
@@ -130,7 +130,7 @@ bool test_14 (axlError ** error)
  * 
  * @return AXL_TRUE if the validity test is passed, AXL_FALSE if not.
  */
-bool test_13 (axlError ** error) 
+aboolean test_13 (axlError ** error) 
 {
 	axlDoc * doc  = NULL;
 	axlDoc * doc2 = NULL;
@@ -173,7 +173,7 @@ bool test_13 (axlError ** error)
  * 
  * @return AXL_TRUE if the validity test is passed, AXL_FALSE if not.
  */
-bool test_12 (axlError ** error) 
+aboolean test_12 (axlError ** error) 
 {
 	axlDoc * doc = NULL;
 	axlDtd * dtd = NULL;
@@ -271,7 +271,7 @@ bool test_12 (axlError ** error)
  * 
  * @return AXL_TRUE if the validity test is passed, AXL_FALSE if not.
  */
-bool test_11 (axlError ** error) 
+aboolean test_11 (axlError ** error) 
 {
 	axlDoc * doc = NULL;
 	axlDtd * dtd = NULL;
@@ -308,7 +308,7 @@ bool test_11 (axlError ** error)
  * 
  * @return AXL_TRUE if the validity test is passed, AXL_FALSE if not.
  */
-bool test_10 (axlError ** error) 
+aboolean test_10 (axlError ** error) 
 {
 	axlDoc                * doc      = NULL;
 	axlDtd                * dtd      = NULL;
@@ -370,7 +370,7 @@ bool test_10 (axlError ** error)
  * 
  * @return AXL_TRUE if the validity test is passed, AXL_FALSE if not.
  */
-bool test_09 (axlError ** error) 
+aboolean test_09 (axlError ** error) 
 {
 	axlDoc                * doc      = NULL;
 	axlDtd                * dtd      = NULL;
@@ -559,7 +559,7 @@ bool test_09 (axlError ** error)
  * 
  * @return AXL_TRUE if the validity test is passed, AXL_FALSE if not.
  */
-bool test_08 (axlError ** error)
+aboolean test_08 (axlError ** error)
 {
 	/* top level definitions */
 	axlDoc            * doc = NULL;
@@ -583,7 +583,7 @@ bool test_08 (axlError ** error)
  * 
  * @return AXL_TRUE if the validity test is passed, AXL_FALSE if not.
  */
-bool test_07 (axlError ** error)
+aboolean test_07 (axlError ** error)
 {
 	/* top level definitions */
 	axlDoc            * doc = NULL;
@@ -621,7 +621,7 @@ bool test_07 (axlError ** error)
  * 
  * @return AXL_TRUE if the validity test is passed, AXL_FALSE if not.
  */
-bool test_06 (axlError ** error)
+aboolean test_06 (axlError ** error)
 {
 	/* top level definitions */
 	axlDoc            * doc = NULL;
@@ -785,7 +785,7 @@ bool test_06 (axlError ** error)
  * 
  * @return AXL_TRUE if the validity test is passed, AXL_FALSE if not.
  */
-bool test_05 (axlError ** error)
+aboolean test_05 (axlError ** error)
 {
 
 	axlDoc * doc;
@@ -846,7 +846,7 @@ bool test_05 (axlError ** error)
  *
  * @return The \ref AXL_TRUE if test is passed, AXL_FALSE if not.
  */
-bool test_04 (axlError ** error)
+aboolean test_04 (axlError ** error)
 {
 	axlDoc  * doc;
 	axlNode * node;
@@ -973,7 +973,7 @@ bool test_04 (axlError ** error)
  * 
  * @return \ref AXL_TRUE if test is passed, AXL_FALSE if not.
  */
-bool test_03 (axlError ** error)
+aboolean test_03 (axlError ** error)
 {
 
 	axlDoc  * doc;
@@ -1050,7 +1050,7 @@ bool test_03 (axlError ** error)
  * 
  * @return AXL_TRUE if test are properly run. AXL_FALSE if not.
  */
-bool test_02 (axlError ** error) 
+aboolean test_02 (axlError ** error) 
 {
 	axlDoc * doc;
 	
@@ -1082,7 +1082,7 @@ bool test_02 (axlError ** error)
  * @return AXL_FALSE if the function fails to parse the
  * document. AXL_TRUE if the test was properly executed.
  */
-bool test_01 (axlError ** error) 
+aboolean test_01 (axlError ** error) 
 {
 	/* axl document representation */
 	axlDoc   * doc;

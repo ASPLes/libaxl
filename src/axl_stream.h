@@ -64,20 +64,20 @@ void        axl_stream_accept          (axlStream * stream);
 
 void        axl_stream_move            (axlStream * stream, int count);
 
-bool        axl_stream_fall_outside    (axlStream * stream, int inspected_size);
+aboolean    axl_stream_fall_outside    (axlStream * stream, int inspected_size);
 
-bool        axl_stream_check           (axlStream * stream, char * chunk, int inspected_size);
+aboolean    axl_stream_check           (axlStream * stream, char * chunk, int inspected_size);
 
 char      * axl_stream_get_until       (axlStream * stream, 
 					char      * valid_chars, 
 					int       * chunk_matched,
-					bool        accept_terminator,
+					aboolean    accept_terminator,
 					int         chunk_num, ...);
 
 char      * axl_stream_get_until_ref   (axlStream * stream, 
 					char      * valid_chars, 
 					int       * chunk_matched,
-					bool        accept_terminator,
+					aboolean    accept_terminator,
 					int       * result_size,
 					int         chunk_num, ...);
 
@@ -94,7 +94,7 @@ void        axl_stream_nullify         (axlStream * stream,
 char      * axl_stream_get_untilv      (axlStream * stream, 
 					char      * valid_chars, 
 					int       * chunk_matched,
-					bool        accept_terminator,
+					aboolean    accept_terminator,
 					int       * result_size,
 					int         chunk_num,
 					va_list args);
@@ -117,11 +117,11 @@ void        axl_stream_unlink          (axlStream * stream);
 
 void        axl_stream_free            (axlStream * stream);
 
-bool        axl_stream_is_white_space  (char * chunk);
+aboolean    axl_stream_is_white_space  (char * chunk);
 
 void        axl_stream_consume_white_spaces (axlStream * stream);
 
-bool        axl_stream_remains         (axlStream * stream);
+aboolean    axl_stream_remains         (axlStream * stream);
 
 /* string handling interface */
 
@@ -129,7 +129,7 @@ void        axl_stream_trim            (char * chunk);
 
 void        axl_stream_trim_with_size  (char * chunk, int * trimmed);
 
-bool        axl_stream_cmp             (char * chunk1, char * chunk2, int size);
+aboolean    axl_stream_cmp             (char * chunk1, char * chunk2, int size);
 
 char      * axl_stream_strdup          (char * chunk);
 

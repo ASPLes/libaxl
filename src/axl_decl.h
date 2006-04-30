@@ -360,18 +360,30 @@ typedef struct _axlStream axlStream;
 #define AXL_FALSE (0)
 
 /** 
- * @brief Alias declaration to bind the <i>int</i> to the <b>bool</b>
- * keyword.
+ * @brief Alias declaration to bind the <i>int</i> to the <b>boolean</b>
+ * concept (TRUE / FALSE states).
  *
  * This is mainly used to emphasize that some integer values that
- * returns some function must be considred to be \ref AXL_TRUE or \ref
+ * returns some function must be considered to be \ref AXL_TRUE or \ref
  * AXL_FALSE, that represents the boolean TRUE and FALSE values.
  *
  * This allows to perform boolean comparations using structure
  * controls like if, while, but also making a differenciation about
  * the boolean values and integer values.
+ *
+ * You are also allowed to use <b>bool</b> as boolean type definition.
  */
+typedef int aboolean;
+
+/**
+ * @internal
+ * 
+ * Internal definition to retain compatibility with programs that
+ * define the bool value but the compiler doesn't provide it.
+ */
+#ifndef __cplusplus
 typedef int bool;
+#endif
 
 /** 
  * @brief Pointer to any structure definition. It should be required
@@ -527,7 +539,7 @@ axl_stream_consume_white_spaces (stream)
 #endif
 
 
-bool axl_cmp (char * string, char * string2);
+aboolean axl_cmp (char * string, char * string2);
 
 #endif
 

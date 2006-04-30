@@ -161,7 +161,7 @@ struct _axlStream {
  * filled or AXL_FALSE if end of file was reached. In that case the
  * stream size is not updated.
  */
-bool axl_stream_prebuffer (axlStream * stream)
+aboolean axl_stream_prebuffer (axlStream * stream)
 {
 	int  bytes_read;
 
@@ -361,7 +361,7 @@ axlStream * axl_stream_new (char * stream_source, int stream_size,
  * 
  * @return See \ref axl_stream_inspect.
  */
-int         axl_stream_common_inspect (axlStream * stream, char * chunk, int inspected_size, bool alsoAccept)
+int         axl_stream_common_inspect (axlStream * stream, char * chunk, int inspected_size, aboolean alsoAccept)
 {
 
 	axl_return_val_if_fail (stream, -2);
@@ -611,7 +611,7 @@ void        axl_stream_move            (axlStream * stream, int index)
 char      * axl_stream_get_until       (axlStream * stream, 
 					char      * valid_chars, 
 					int       * chunk_matched,
-					bool        accept_terminator,
+					aboolean    accept_terminator,
 					int         chunk_num, ...)
 {
 	char * result;
@@ -658,7 +658,7 @@ char      * axl_stream_get_until       (axlStream * stream,
 char      * axl_stream_get_until_ref   (axlStream * stream, 
 					char      * valid_chars, 
 					int       * chunk_matched,
-					bool        accept_terminator,
+					aboolean    accept_terminator,
 					int       * result_size,
 					int         chunk_num, ...)
 {
@@ -745,7 +745,7 @@ void        axl_stream_nullify         (axlStream * stream,
 char      * axl_stream_get_untilv      (axlStream * stream, 
 					char      * valid_chars, 
 					int       * chunk_matched,
-					bool        accept_terminator,
+					aboolean    accept_terminator,
 					int       * result_size,
 					int         chunk_num, 
 					va_list args)
@@ -754,9 +754,9 @@ char      * axl_stream_get_untilv      (axlStream * stream,
 	int          index       = 0;
 	int          length      = 0;
 	int          max_length  = 0;
-	bool         matched;
+	aboolean     matched;
 	char       * string      = NULL;
-	bool         match_empty = AXL_FALSE;
+	aboolean     match_empty = AXL_FALSE;
 	int          empty_index = 0;
 	
 	/* perform some environmental checks */
@@ -1252,7 +1252,7 @@ void axl_stream_free (axlStream * stream)
  * @return AXL_TRUE if the chunk contains a white space or AXL_FALSE
  * if not.
  */
-bool        axl_stream_is_white_space  (char * chunk)
+aboolean        axl_stream_is_white_space  (char * chunk)
 {
 	/* do not complain about receive a null refernce chunk */
 	if (chunk == NULL)
@@ -1408,7 +1408,7 @@ void        axl_stream_trim_with_size  (char * chunk, int * trimmed)
  * some value provided is NULL or the size to compare is not greater
  * than 0 the function will return AXL_FALSE directly.
  */
-bool        axl_stream_cmp             (char * chunk1, char * chunk2, int size)
+aboolean        axl_stream_cmp             (char * chunk1, char * chunk2, int size)
 {
 	/* perform some environmental condition checking */
 	if (chunk1 == NULL)
@@ -1440,7 +1440,7 @@ bool        axl_stream_cmp             (char * chunk1, char * chunk2, int size)
  * stream boundaries, or AXL_FALSE if requested inspected size could
  * be supported.
  */
-bool axl_stream_fall_outside (axlStream * stream, int inspected_size)
+aboolean axl_stream_fall_outside (axlStream * stream, int inspected_size)
 {
 	axl_return_val_if_fail (stream, AXL_TRUE);
 
@@ -1465,7 +1465,7 @@ bool axl_stream_fall_outside (axlStream * stream, int inspected_size)
  * @return Returns AXL_TRUE if the given stream contains the value requested
  * or AXL_FALSE if not.
  */
-bool         axl_stream_check           (axlStream * stream, char * chunk, int inspected_size)
+aboolean         axl_stream_check           (axlStream * stream, char * chunk, int inspected_size)
 {
 
 	axl_return_val_if_fail (stream, AXL_FALSE);
@@ -1490,7 +1490,7 @@ bool         axl_stream_check           (axlStream * stream, char * chunk, int i
  * 
  * @return AXL_TRUE if the stream is exhausted or AXL_FALSE if not.
  */
-bool        axl_stream_remains         (axlStream * stream)
+aboolean        axl_stream_remains         (axlStream * stream)
 {
 	axl_return_val_if_fail (stream, AXL_FALSE);
 
@@ -1881,7 +1881,7 @@ void        axl_stream_freev           (char ** chunks)
  * @param chunk The chunk to modify
  * @param desp Bits to increase.
  */
-void __axl_stream_common_to (char * chunk, bool to_upper)
+void __axl_stream_common_to (char * chunk, aboolean to_upper)
 {
 	int iterator = 0;
 

@@ -49,7 +49,7 @@
  * AXL_FALSE.
  * 
  */
-bool axl_cmp (char * string, char * string2)
+aboolean axl_cmp (char * string, char * string2)
 {
 	axl_return_val_if_fail (string, AXL_FALSE);
 	axl_return_val_if_fail (string2, AXL_FALSE);

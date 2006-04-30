@@ -7,7 +7,7 @@
  * 
  * @return AXL_TRUE if it works properly or AXL_FALSE if not.
  */
-bool test_01 () 
+aboolean test_01 () 
 {
 	axlList * list;
 
@@ -113,7 +113,7 @@ bool test_01 ()
  * @return AXL_TRUE if the stack works properly, otherwise AXL_FALSE
  * is returned.
  */
-bool test_02 () 
+aboolean test_02 () 
 {
 	axlStack * stack;
 	char     * value;
@@ -172,7 +172,7 @@ bool test_02 ()
  * @return The function must return AXL_TRUE if everything is
  * ok. Otherwise AXL_FALSE is returned.
  */
-bool test_03 () 
+aboolean test_03 () 
 {
 	char  * string;
 	char ** result;
@@ -313,7 +313,7 @@ bool test_03 ()
 /** 
  * @brief Intensive axl list implementation.
  */
-bool test_04 () {
+aboolean test_04 () {
 	int       iterator = 0;
 	axlList * list;
 

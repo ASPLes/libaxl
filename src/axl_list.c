@@ -481,7 +481,7 @@ axlListNode * axl_list_internal_get_nth (axlList * list, int position)
  *
  * @param alsoRemove Also call to destroy function.
  */
-void     axl_list_common_remove (axlList * list, axlPointer pointer, bool alsoRemove)
+void     axl_list_common_remove (axlList * list, axlPointer pointer, aboolean alsoRemove)
 {
 	axlListNode * node;
 
@@ -635,7 +635,7 @@ void       axl_list_unlink_first (axlList * list)
  * otherwise AXL_FALSE is returned. The function will fail to lookup
  * if a NULL reference is received, either the list or the pointer.
  */
-bool      axl_list_exists (axlList * list, axlPointer pointer)
+aboolean      axl_list_exists (axlList * list, axlPointer pointer)
 {
 	axl_return_val_if_fail (list, AXL_FALSE);
 	axl_return_val_if_fail (pointer, AXL_FALSE);
@@ -655,7 +655,7 @@ bool      axl_list_exists (axlList * list, axlPointer pointer)
  * @return AXL_TRUE if the given data, referenced by the pointer, is
  * stored on the given position.
  */
-bool       axl_list_exists_at (axlList * list, axlPointer pointer, int position)
+aboolean       axl_list_exists_at (axlList * list, axlPointer pointer, int position)
 {
 	axlListNode * node;
 

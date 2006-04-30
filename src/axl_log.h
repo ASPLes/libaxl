@@ -47,9 +47,9 @@ BEGIN_C_DECLS
  * @{
  */
 
-bool axl_log_is_enabled ();
+aboolean axl_log_is_enabled ();
 
-bool axl_log_color_is_enabled ();
+aboolean axl_log_color_is_enabled ();
 
 
 #ifdef SHOW_DEBUG_LOG

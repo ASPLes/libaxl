@@ -54,7 +54,7 @@ axlDtd             * axl_dtd_parse            (char      * entity,
 axlDtd             * axl_dtd_parse_from_file  (char * file_path,
 					       axlError ** error);
 
-bool                 axl_dtd_validate         (axlDoc * doc, 
+aboolean             axl_dtd_validate         (axlDoc * doc, 
 					       axlDtd * dtd,
 					       axlError ** error);
 
@@ -68,7 +68,7 @@ AxlDtdElementType    axl_dtd_get_element_type (axlDtdElement * element);
 
 axlDtdElementList  * axl_dtd_get_item_list    (axlDtdElement * element);
 
-bool                 axl_dtd_element_is_toplevel (axlDtd * dtd, axlDtdElement * element);
+aboolean             axl_dtd_element_is_toplevel (axlDtd * dtd, axlDtdElement * element);
 
 int                  axl_dtd_item_list_count  (axlDtdElementList * itemList);
 
@@ -97,11 +97,11 @@ void                 axl_dtd_item_list_free   (axlDtdElementList * list);
 
 
 /* DON'T USE THIS FUNCTIONS, PROTOTYPES DECLARATIONS */
-bool __axl_dtd_validate_item_list (axlDtdElementList  * itemList, 
-				   axlNode            * parent, 
-				   int                * child_pos,
-				   axlError          ** error,
-				   bool                 top_level);
+aboolean __axl_dtd_validate_item_list (axlDtdElementList  * itemList, 
+				       axlNode            * parent, 
+				       int                * child_pos,
+				       axlError          ** error,
+				       aboolean             top_level);
 
 
 /* @} */
