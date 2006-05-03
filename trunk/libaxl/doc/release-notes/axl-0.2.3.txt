@@ -1,0 +1,77 @@
+          ###################################
+          # Axl Library release note: 0.2.3 #
+          ###################################
+
+Advanced Software Production Line is proud to announce the initial
+official release of Axl Library: an Open Source XML toolkit.
+
+Axl Library is an small and efficient XML toolkit, that will allow you
+to produce efficient and clear code that interfaces with XML data. 
+
+The library was produced to support XML requirements needed by
+software developed by Advanced Software Production Line, S.L. 
+
+At this moment the library is being used by Vortex Library and
+Af-Arch.
+
+Resources
+~~~~~~~~~
+   Axl Homepage
+   [ http://xml.aspl.es ]
+
+   Vortex Library Homepage
+   [ http://vortex.aspl.es ]
+
+   Af-Arch Homepage
+   [ http://fact.aspl.es ]
+
+   Advanced Software Production Line, S.L.
+   [ http://www.aspl.es ]
+
+   Memory report (an interesting report)
+   [ http://xml.aspl.es/memory-usage-report-17-04-2006.html ]
+
+
+This release in short
+~~~~~~~~~~~~~~~~~~~~~
+
+  Fixed a wrong boolean definition that was causing problems with c++
+  plaforms. 
+
+Changes from previous release 0.2.2
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  * [fix] fixing a bool redefinition that was collitioning with C++
+  bool definition.  Renabled bool type to aboolean and added a cpp
+  define header to add the bool definition is not provided to allow
+  backguard compat.
+
+
+About Advanced Software Production Line, S.L.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Advanced Software Production Line is leading the Af-Arch project: a
+  complete framework to develop distributed application to manage
+  enterprise process.
+
+  Af-Arch project uses Axl library to support its XML requirements
+  while exchanging data between nodes.
+
+  Advanced Software Production Line also provides GNU/Linux support
+  and consulting services to enable organization to introduce
+  GNU/Linux inside its process, making other platforms to interact
+  with GNU/Linux.
+
+  Contact us, using English or Spanish, to get commercial support
+  and/or XML based development services.
+
+  You can reach us:
+
+       http://www.aspl.es - info@aspl.es
+
+  We hope Axl Library help you. Enjoy Axl Library!
+
+--
+Francis Brosnan Blázquez           - francis@aspl.es
+Advanced Software Production Line  - http://www.aspl.es
+28th Apr 2006, Madrid (Spain)

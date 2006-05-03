@@ -99,6 +99,12 @@ struct _axlDtdElement {
 	 * axlDtdElementList.type variable.
 	 */
 	axlDtdElementList   * list;
+
+	/** 
+	 * @brief Minimum item list count to be matched while using
+	 * this DTD element rule.
+	 */
+	int                    minimum_match;
 };
 
 struct _axlDtd {
@@ -942,6 +948,66 @@ aboolean __axl_dtd_read_element_spec (axlStream * stream, axlDtdElement * dtd_el
 	return AXL_TRUE;
 }
 
+/** 
+ * @internal
+ * 
+ * Calculates the number of nodes to be matched at minimum for the
+ * provided DTD element. 
+ * 
+ * @param element The DTD element to configure with its minimum item
+ * count to be matched.
+ */
+int __axl_dtd_parse_element_get_compulsory_num (axlDtdElementList * list)
+{
+	axlDtdElementListNode * itemNode;
+	int                     count    = 0;
+	int                     iterator = 0;
+
+	/* check for null parameters */
+	if (list == NULL)
+		return 0;
+
+	/* only count for repetitiong patterns that makes obligatory
+	 * to have childs */
+	if (list->times == ONE_AND_ONLY_ONE ||
+	    list->times == ONE_OR_MANY) {
+		
+		while (iterator < axl_list_length (list->itemList)) {
+			/* get the reference for the item node */
+			itemNode = axl_list_get_nth (list->itemList, iterator);
+			
+			/* check if the repetitiong patter is
+			 * compulsory */
+			if (itemNode->times == ONE_OR_MANY ||
+			    itemNode->times == ONE_AND_ONLY_ONE) {
+				/* check if we have an itemNode that has an
+				 * Node or a list */
+				if (itemNode->type == NODE) {
+					/* we have an item node */
+					count++;
+					if (list->type == CHOICE) {
+						/* because we have a
+						 * choice list, once
+						 * validated one item,
+						 * it is the minimum
+						 * requirement. */
+						return count;
+					}
+				} else {
+					/* we have a list */
+					count += __axl_dtd_parse_element_get_compulsory_num (itemNode->data);
+				}
+			}
+			
+			/* update the index */
+			iterator++;
+		}
+	}
+		
+	/* return current count */
+	return count;
+}
+
 
 /** 
  * @internal
@@ -1045,7 +1111,14 @@ aboolean __axl_dtd_parse_element (axlDtd * dtd, axlStream * stream, axlError ** 
 		axl_stream_free (stream);
 		return AXL_FALSE;
 	}
-	
+
+	/* now, count the number of obligatory elements, required for
+	 * the validation process */
+	element->minimum_match = __axl_dtd_parse_element_get_compulsory_num (element->list);
+
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found DTD element declaration read complete: minimum matching elements: %d",
+		   element->minimum_match);
+
 	/* element type declaration completely read */
 	return AXL_TRUE;
 }
@@ -1080,20 +1153,18 @@ axlDtd * __axl_dtd_parse_common (char * entity, int entity_size,
 		
 		/* check for element declaration */
 		if (axl_stream_peek (stream, "<!ELEMENT", 9) > 0) {
-#ifdef SHOW_DEBUG_LOG
-			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found DTD element declaration");
-#endif
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found DTD element declaration");
 			/* found element declaration */
 			if (! __axl_dtd_parse_element (dtd, stream, error))
 				return AXL_FALSE;
+			
 			continue;
+
 		}
 
 		/* check for attribute list declarations */
 		if (axl_stream_peek (stream, "<!ATTLIST", 9) > 0) {
-#ifdef SHOW_DEBUG_LOG
-			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found DTD attribute list declaration (NOT SUPPORTED YET)");
-#endif
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found DTD attribute list declaration (NOT SUPPORTED YET)");
 			
 			/* ignore anything until > */
 			axl_stream_get_until (stream, NULL, NULL, AXL_TRUE, 1, ">");
@@ -1102,9 +1173,7 @@ axlDtd * __axl_dtd_parse_common (char * entity, int entity_size,
 
 		/* check for the entity declaration */
 		if (axl_stream_peek (stream, "<!ENTITY", 8) > 0) {
-#ifdef SHOW_DEBUG_LOG
-			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found DTD entity declaration (NOT SUPPORTED YET)");
-#endif
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found DTD entity declaration (NOT SUPPORTED YET)");
 
 			/* ignore anything until > */
 			axl_stream_get_until (stream, NULL, NULL, AXL_TRUE, 1, ">");
@@ -1469,10 +1538,7 @@ aboolean __axl_dtd_validate_choice (axlNode * parent, int * child_position,
 	if (*child_position < axl_node_get_child_num (parent)) {
 		/* get a reference to be matched by the choice list */
 		node = axl_node_get_child_nth (parent, *child_position);
-#ifdef SHOW_DEBUG_LOG
-		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "validated choice list at position: %d=<%s>",
-			 *child_position, axl_node_get_name (node));
-#endif
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "validated choice list at position: %d=<%s>", *child_position, axl_node_get_name (node));
 	} else {
 		/* tried to match a choice list with a child index
 		 * outside the maximum number of childs */
@@ -1589,12 +1655,16 @@ aboolean __axl_dtd_validate_item_list (axlDtdElementList  * itemList,
 				       aboolean             top_level)
 {
 	int      temp_child_pos;
+	int      caller_child_pos;
 	aboolean status;
 	aboolean already_matched;
 
 
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "validating an item list with repeat pattern: %d, at %d, top level=%d",
 		   axl_dtd_item_list_repeat (itemList), *child_position, top_level);
+
+	/* store current caller child position value to check it before */
+	caller_child_pos = *child_position;
 
 	/* now check repetition type */
 	switch (axl_dtd_item_list_repeat (itemList)) {
@@ -1771,13 +1841,15 @@ aboolean __axl_dtd_validate_item_list (axlDtdElementList  * itemList,
 	}
 
 
-	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "validate item list terminated, now check post-conditions");
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "validate item list terminated, now check post-conditions, top_level=%d, item list type=%d, child pos=%d, childs num=%d",
+		   top_level, axl_dtd_item_list_type (itemList), *child_position, axl_node_get_child_num (parent));
 
 	/* check that, in the case that the choice item list is being
 	 * validated, ensure it has validated all nodes, especially if
 	 * we are the top level definition */
 	if (top_level && (axl_dtd_item_list_type (itemList) == CHOICE)) {
 		if (((*child_position) + 1) < axl_node_get_child_num (parent)) {
+		    
 
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "found that the choice list didn't cover all childs (%d), while parent=<%s> has: (%d)",
 				   (*child_position), axl_node_get_name (parent), axl_node_get_child_num (parent));
@@ -1786,7 +1858,7 @@ aboolean __axl_dtd_validate_item_list (axlDtdElementList  * itemList,
 			return AXL_FALSE;
 		}
 	}
-
+	
 	/* element type children validated */
 	return AXL_TRUE;       
 }
@@ -1808,8 +1880,33 @@ aboolean __axl_dtd_validate_element_type_children (axlDtdElement  * element,
 	/* get a reference to the item list */
 	itemList = axl_dtd_get_item_list (element);
 
+	/* check for xml nodes with fewer content than the initially
+	 * expected. */
+	if (axl_node_get_child_num (parent) < element->minimum_match) {
+		axl_error_new (-1, "Found that the parent node received doesn't contains enough xml nodes inside to get a proper validation. This means that the xml document have fewer content than the DTD spec.",
+			       NULL, error);
+		return AXL_FALSE;
+	}
+
 	/* validate the item list, starting from the child 0 */
-	return __axl_dtd_validate_item_list (itemList, parent, &child_pos, error, top_level);
+	if (__axl_dtd_validate_item_list (itemList, parent, &child_pos, error, top_level)) {
+		/* check if, at least, all minimum elements was
+		 * matched */
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "checking minimum node match: (%d < min: %d) (%d < childs: %d) node=<%s>", 
+			   child_pos, element->minimum_match,
+			   child_pos, axl_node_get_child_num (parent),
+			   axl_node_get_name (parent));
+			
+		if (child_pos < axl_node_get_child_num (parent)) {
+			axl_error_new (-1, "Found that the validation process didn't cover all nodes. All xml child nodes inside the parent wasn't covered. This means that the xml document have more content than the DTD spec.",
+				       NULL, error);
+			return AXL_FALSE;
+		}
+		/* seems that the minimum match */
+		return AXL_TRUE;
+	}
+
+	return AXL_FALSE;
 }
 
 /** 
