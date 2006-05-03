@@ -6,7 +6,7 @@
 
 <!ELEMENT column (xpos | ypos | zpos | axis-position) >
 
-<!ELEMENT row (td | pr) >
+<!ELEMENT row (td | pr)+ >
 
 <!ELEMENT td (#PCDATA) >
 

@@ -8,6 +8,55 @@
  * 
  * @return AXL_TRUE if the validity test is passed, AXL_FALSE if not.
  */
+aboolean test_16 (axlError ** error) 
+{
+	axlDoc  * doc  = NULL;
+	axlDtd  * dtd  = NULL;
+
+	/* parse common DTD file */
+	dtd = axl_dtd_parse_from_file ("xml-rpc.dtd", error);
+	if (dtd == NULL)
+		return AXL_FALSE;
+
+	/* parse a file that must not be valid */
+	doc = axl_doc_parse_from_file ("test03.xdl", error);
+	if (doc == NULL)
+		return AXL_FALSE;
+
+	/* the following validation must fail */
+	if (axl_dtd_validate (doc, dtd, error)) {
+		axl_error_new (-1, "A validation was produced when expected a failure", NULL, error);
+		return AXL_FALSE;
+	}
+
+	/* free the document */
+	axl_doc_free (doc);
+
+	/* parse the next file that must be valid */
+	doc = axl_doc_parse_from_file ("test04.xdl", error);
+	if (doc == NULL)
+		return AXL_FALSE;
+
+	/* the following validation should successed */
+	if (! axl_dtd_validate (doc, dtd, error))
+		return AXL_FALSE;
+
+	/* release the document */
+	axl_doc_free (doc);
+	
+	/* release DTD reference */
+	axl_dtd_free (dtd);
+
+	return AXL_TRUE;
+}
+
+/** 
+ * @brief A more complex DTD parsing example
+ * 
+ * @param error The optional axlError to be used to report errors.
+ * 
+ * @return AXL_TRUE if the validity test is passed, AXL_FALSE if not.
+ */
 aboolean test_15 (axlError ** error) 
 {
 	axlDoc  * doc  = NULL;
@@ -330,8 +379,8 @@ aboolean test_10 (axlError ** error)
 
 	/* get the item list inside */
 	itemList = axl_dtd_get_item_list (element);
-	if (axl_dtd_item_list_count (itemList) != 3) {
-		axl_error_new (-1, "expected to receive an item list with 3 item nodes inside", NULL, error);
+	if (axl_dtd_item_list_count (itemList) != 4) {
+		axl_error_new (-1, "expected to receive an item list with 4 item nodes inside", NULL, error);
 		return AXL_FALSE;
 	}
 
@@ -353,6 +402,21 @@ aboolean test_10 (axlError ** error)
 		return AXL_FALSE; 
 	} 
 
+	/* free dtd reference */
+	axl_dtd_free (dtd);
+
+
+	/* parse af-arch DTD */
+	dtd = axl_dtd_parse_from_file ("test5.1.dtd", error);
+	if (dtd == NULL)
+		return AXL_FALSE;
+	
+	/* perform DTD validation */
+	if (axl_dtd_validate (doc, dtd, error)) { 
+		axl_error_new (-1, "A validation failure was expected.", NULL, error);
+		return AXL_FALSE; 
+	} 
+	
 	/* free doc reference */
 	axl_doc_free (doc); 
 	
@@ -1251,6 +1315,7 @@ int main (int argc, char ** argv)
 		return -1;
 	}
 
+
 	if (test_10 (&error)) 
 		printf ("Test 10: Complex DTD validation (II) [   OK   ]\n");
 	else {
@@ -1300,6 +1365,16 @@ int main (int argc, char ** argv)
 		printf ("Test 15: DTD validation fail checks (25/04/2006) [   OK   ]\n");
 	} else {
 		printf ("Test 15: DTD validation fail checks (25/04/2006) [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}	
+
+
+	if (test_16 (&error)) {
+		printf ("Test 16: DTD validation fail checks (03/05/2006) [   OK   ]\n");
+	} else {
+		printf ("Test 16: DTD validation fail checks (03/05/2006) [ FAILED ]\n  (CODE: %d) %s\n",
 			axl_error_get_code (error), axl_error_get (error));
 		axl_error_free (error);
 		return -1;

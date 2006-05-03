@@ -1,4 +1,4 @@
-<!ELEMENT choices (p | ul | table | inside)*>
+<!ELEMENT choices (p | ul | table)*>
 
 <!ELEMENT p (#PCDATA)>
 

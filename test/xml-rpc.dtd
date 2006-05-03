@@ -10,7 +10,7 @@
   -->
 <!ELEMENT struct (name, member+)>
 
-<!ELEMENT member (name, value)>
+<!ELEMENT member (name, type)>
 
 <!ELEMENT name (#PCDATA)>
 
