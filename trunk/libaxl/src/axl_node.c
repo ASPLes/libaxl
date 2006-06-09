@@ -139,6 +139,14 @@ struct _axlNode {
 	 * the next position.
 	 */
 	axlNode       * next;
+
+	/** 
+	 * @internal
+	 *
+	 * Internal reference to the whole xml document where the node
+	 * is contained.
+	 */
+	axlDoc        * doc;
 };
 
 /** 
@@ -476,6 +484,49 @@ axlNode * axl_node_create_ref         (char * name)
 	
 	/* return a reference to a new axlNode */
 	return __axl_node_create_internal (name);
+}
+
+/** 
+ * @brief Allows to get the xml document (\ref axlDoc) where the
+ * provided xml node is stored.
+ * 
+ * @param node The node that is being requested to return is xml
+ * document reference.
+ * 
+ * @return The xml document reference or NULL if it is not already
+ * set. Once a xml node is created, it must be added to the xml
+ * document either because it is the parent node, in that case \ref
+ * axl_doc_set_root must be used, or either because the node is being
+ * added as a child of a xml node that is the already added root node
+ * or a child of it.
+ */
+axlDoc  * axl_node_get_doc                  (axlNode * node)
+{
+	axl_return_val_if_fail (node, NULL);
+	
+	/* return the internal reference */
+	return node->doc;
+}
+
+/** 
+ * @internal
+ *
+ * This function is not provided to the public API because it is used
+ * by the Axl internals to set the root node for a provided xml node,
+ * that is usually the root document xml node.
+ * 
+ * @param node The node that is being configured to have, or being contained in, the provided xml document.
+ *
+ * @param doc The xml document that holds the node.
+ */
+void      axl_node_set_doc                  (axlNode * node, axlDoc * doc)
+{
+	axl_return_if_fail (node);
+	axl_return_if_fail (doc);
+
+	node->doc = doc;
+
+	return;
 }
 
 /** 
@@ -1305,6 +1356,10 @@ void      axl_node_set_child (axlNode * parent, axlNode * child)
 
 	/* establish the parent relation */
 	child->parent = parent;
+
+	/* configure the document that contains the xml node by using
+	 * the one configured at the parent. */
+	child->doc    = parent->doc;
 
 	/* get the current last child */
 	last = axl_list_get_last (parent->childs);
