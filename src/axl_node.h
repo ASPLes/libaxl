@@ -51,6 +51,10 @@ axlNode * axl_node_create                   (char * name);
 
 axlNode * axl_node_create_ref               (char * name);
 
+axlDoc  * axl_node_get_doc                  (axlNode * node);
+
+void      axl_node_set_doc                  (axlNode * node, axlDoc * doc);
+
 void      axl_node_set_attribute            (axlNode * node, char * attribute, char * value);
 
 void      axl_node_set_attribute_ref        (axlNode * node, char * attribute, char * value);

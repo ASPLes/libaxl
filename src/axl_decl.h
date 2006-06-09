@@ -386,6 +386,14 @@ typedef int bool;
 #endif
 
 /** 
+ * @internal
+ * More boolean compatibility declarations.
+ */
+#ifndef boolean
+#define boolean int
+#endif
+
+/** 
  * @brief Pointer to any structure definition. It should be required
  * to use this definition, however, some platforms doesn't support the
  * <b>void *</b> making it necessary to use the <b>char *</b>

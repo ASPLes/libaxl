@@ -635,6 +635,9 @@ aboolean __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** call
 		/* set the node read, the root one, to be the parent */
 		axl_stack_push (doc->parentNode, node);
 
+		/* configure the node */
+		axl_node_set_doc (node, doc);
+
 	} else {
 		/* or set the node as a child of the current parent */
 		axl_doc_set_child_current_parent (doc, node);
