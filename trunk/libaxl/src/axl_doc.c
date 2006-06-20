@@ -1634,7 +1634,7 @@ axlList * axl_doc_get_list                  (axlDoc * doc, char * path_to)
 	}
 
 #ifdef SHOW_DEBUG_LOG
-	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found node: %s", paths[1]);
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found node: %s for path=%s", paths[1], path_to);
 #endif
 
 	/* now the general case */
@@ -1824,6 +1824,9 @@ void    axl_doc_set_root (axlDoc * doc, axlNode * root)
 
 	/* set the new root */
 	doc->rootNode = root;
+
+	/* set a refeference to the document root */
+	axl_node_set_doc (root, doc);
 
 	return;
 }
