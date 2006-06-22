@@ -1158,10 +1158,8 @@ void      axl_node_set_content        (axlNode * node, char * content, int conte
 		memcpy (node->content, content, node->content_size);
 	}
 
-#ifdef SHOW_DEBUG_LOG
-	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "setting xml node (name: %s) content (size: %d) %s",
-		 node->name, node->content_size, node->content);
-#endif
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "setting xml node (name: %s) content (size: %d) %s",
+		   node->name, node->content_size, node->content);
 
 	/* set that the node is not empty */
 	node->is_empty = AXL_FALSE;
@@ -1203,16 +1201,62 @@ void      axl_node_set_content_ref    (axlNode * node,
 	node->content_size = content_size;
 
 	/* set current content */
-	node->content = content;
+	node->content  = content;
+	node->is_empty = AXL_FALSE;
 
-#ifdef SHOW_DEBUG_LOG
-	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "setting xml node (name: %s) content (size: %d) %s",
-		 node->name, node->content_size, node->content);
-#endif
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "setting xml node (name: %s) content (size: %d) %s",
+		   node->name, node->content_size, node->content);
 
 	/* job done */
 	return;	
 }
+
+/** 
+ * @brief Allows to store data as content of the provided noe to be
+ * enclosed as CDATA.
+ *
+ * Some characters are not allowed to be stored "as is" inside a
+ * parseable XML document. The basic set of them are: &, ', ", < or >.
+ *
+ * In order to store content containing previous characters inside an
+ * xml node, and to remain valid, functions like \ref
+ * axl_node_set_content will translate those value, into the accepted
+ * scape sequences. However, in the other hand, the entity parsing the
+ * document produced must perform the translation back to the normal
+ * state.
+ *
+ * As an alternative, the XML node content could be stored enclosed as
+ * a CDATA section: <![CDATA[..]]> allow to store "un-parsed"
+ * characters, including those not allowed.
+ * 
+ * @param node The node where the CDATA will be stored.
+ *
+ * @param content The content to store.
+ *
+ * @param content_size The content size or -1 if required Axl to
+ * figure out current sizes.
+ */
+void      axl_node_set_cdata_content  (axlNode * node,
+				       char * content,
+				       int content_size)
+{
+	char * cdata;
+
+	axl_return_if_fail (node);
+	axl_return_if_fail (content);
+
+	cdata = axl_stream_strdup_printf ("<![CDATA[%s]]>", content);
+	
+	/* calculate the new content size */
+	if (content_size > 0)
+		content_size = content_size + 12;
+	
+	/* call to set node content */	
+	axl_node_set_content_ref (node, cdata, content_size);
+
+	return;
+}
+
 
 /** 
  * @brief Allows to get a copy for the content stored inside the given
@@ -1944,22 +1988,16 @@ int       axl_node_dump_at                  (axlNode * node,
 
 	axl_return_val_if_fail (node, -1);
 
-#ifdef SHOW_DEBUG_LOG
-	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "dumping node=<%s> at %d", 
-		 axl_node_get_name (node), desp);
-#endif
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "dumping node=<%s> at %d", 
+		   axl_node_get_name (node), desp);
 
 	/* check if the node is empty */
 	if (axl_node_is_empty (node)) {
-#ifdef SHOW_DEBUG_LOG
-		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "the node <%s> is empty", 
-			 axl_node_get_name (node));
-#endif
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "the node <%s> is empty", 
+			   axl_node_get_name (node));
 		if (! axl_node_have_childs (node)) {
-#ifdef SHOW_DEBUG_LOG
-			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "dumping an empty node without childs=<%s>",
-				 axl_node_get_name (node));
-#endif
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "dumping an empty node without childs=<%s>",
+				   axl_node_get_name (node));
 			/* "<" + strlen (node-name) + " />" */
 			memcpy (content + desp, "<", 1);
 			desp += 1;
@@ -1981,9 +2019,7 @@ int       axl_node_dump_at                  (axlNode * node,
 	 * has childs 
 	 * "<" + strlen (node-name) + ">" + strlen (node-content) + 
 	 * "</" + strlen (node-name) + ">" */
-#ifdef SHOW_DEBUG_LOG
-	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "getting content for: <%s>", axl_node_get_name (node));
-#endif
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "getting content for: <%s>", axl_node_get_name (node));
 
 	/* dump node start tag */
 	memcpy (content + desp, "<", 1);
@@ -2011,9 +2047,7 @@ int       axl_node_dump_at                  (axlNode * node,
 			iterator++;
 		}
 	}else {
-#ifdef SHOW_DEBUG_LOG
-		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "the node is not empty and have childs");
-#endif
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "the node is not empty and not have childs");
 
 		/* dump node content */
 		memcpy (content + desp, node->content, strlen (node->content));

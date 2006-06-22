@@ -118,7 +118,9 @@ void      axl_node_set_content_ref    (axlNode * node,
 				       char * content, 
 				       int content_size);
 
-
+void      axl_node_set_cdata_content  (axlNode * node,
+				       char * content,
+				       int content_size);
 
 void      axl_node_set_have_childs    (axlNode * node, aboolean childs);
 
