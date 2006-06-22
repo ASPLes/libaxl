@@ -1096,9 +1096,7 @@ void      axl_doc_dump                     (axlDoc  * doc,
 	axl_return_if_fail (content);
 	axl_return_if_fail (size);
 
-#ifdef SHOW_DEBUG_LOG
-	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "getting document size..");
-#endif
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "getting document size..");
 
 	/* get the about of memory to allocate so the whole xml
 	 * document fit in only one memory block */
@@ -1108,9 +1106,7 @@ void      axl_doc_dump                     (axlDoc  * doc,
 	if ((* size) == -1)
 		return;
 
-#ifdef SHOW_DEBUG_LOG
-	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "document dump size: %d", *size);
-#endif
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "document dump size: %d", *size);
 	
 	/* allocate the memory block required */
 	result = axl_new (char, (*size) + 1);
@@ -1146,9 +1142,8 @@ void      axl_doc_dump                     (axlDoc  * doc,
 	index += 2;
 	
 	/* dump node information */
-#ifdef SHOW_DEBUG_LOG
-	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "starting dump at: %d", index);
-#endif
+
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "starting dump at: %d", index);
 	index    = axl_node_dump_at (doc->rootNode, result, index);
 
 	/* set results */
