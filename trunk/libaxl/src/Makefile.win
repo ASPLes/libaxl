@@ -1,5 +1,14 @@
 # Makefile for windows (mingw)
-OBJ  = axl.o axl_decl.o axl_doc.o axl_dtd.o axl_error.o axl_list.o axl_log.o axl_node.o axl_stack.o axl_stream.o
+OBJ  = axl.o \
+       axl_decl.o \
+       axl_doc.o \
+       axl_dtd.o \
+       axl_error.o \
+       axl_list.o \
+       axl_log.o \
+       axl_node.o \
+       axl_stack.o \
+       axl_stream.o
 
 DLL        = $(axl_dll).dll
 IMPORT_DLL = $(DLL).a
