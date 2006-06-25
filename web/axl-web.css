@@ -1,5 +1,5 @@
 body { 
-  font-family: sans, free-sans, arial, helvetica;
+  font-family: Sans-Serif,Free-Sans,Arial,Helvetica;
   font-weight: normal;
   font-size:   small;
   color: #636363;
@@ -80,7 +80,6 @@ a {
   padding: 2px;
   margin: 2px;
   margin-right: 10px;
-  font-family: sans, free-sans, arial, helvetica;
   font-size: 120%;
   font-weight: bold;
 }
