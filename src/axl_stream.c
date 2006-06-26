@@ -35,15 +35,8 @@
  *      Email address:
  *         info@aspl.es - http://fact.aspl.es
  */
-#include <string.h>
-#include <stdio.h>
-#include <stdarg.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+
 #include <axl.h>
-#include <ctype.h>
-#include <unistd.h>
 
 #define LOG_DOMAIN "axl-stream"
 
@@ -1588,15 +1581,22 @@ int vsnprintf(char *str, size_t size, const char *format, va_list ap);
  */
 char      * axl_stream_strdup_printf   (char * chunk, ...)
 {
+#ifndef __GNUC__
 	int       size;
-	int       new_size;
-	char    * result;
+#endif
+	int       new_size = -1;
+	char    * result   = NULL;
 	va_list   args;
 	
 	axl_return_val_if_fail (chunk, NULL);
 
+	/* open std args */
 	va_start (args, chunk);
 
+#ifdef __GNUC__
+	/* do the operation using the GNU extension */
+	new_size = vasprintf (&result, chunk, args);
+#else
 	/* get current buffer size to copy */
 	size     = vsnprintf (NULL, 0, chunk, args);
 
@@ -1605,9 +1605,64 @@ char      * axl_stream_strdup_printf   (char * chunk, ...)
 
 	/* copy current size */
 	new_size = vsnprintf (result, size + 1, chunk, args);
+#endif
 
+	/* close std args */
 	va_end (args);
 	
+	return result;
+}
+
+/** 
+ * @brief Allows to create a newly allocated chunk, providing its
+ * values as a printf call function, but also returning the chunk
+ * size.
+ *
+ * This function works like \ref axl_stream_strdup_printf, but
+ * providing an integer reference where the result chunk length will
+ * be returned. 
+ * 
+ * @param chunk The printf chunk format to allocate.
+ *
+ * @param chunk_size A reference to fill the chunk lenght.
+ * 
+ * @return A newly allocated chunk.
+ */
+char    * axl_stream_strdup_printf_len (char * chunk, int * chunk_size, ...)
+{
+#ifndef __GNUC__
+	int       size;
+#endif
+	int       new_size;
+	char    * result;
+	va_list   args;
+	
+	axl_return_val_if_fail (chunk, NULL);
+
+	/* open std args */
+	va_start (args, chunk_size);
+
+#ifdef __GNUC__
+	/* do the operation using the GNU extension */
+	new_size = vasprintf (&result, chunk, args);
+#else
+	/* get current buffer size to copy */
+	size     = vsnprintf (NULL, 0, chunk, args);
+
+	/* allocate memory */
+	result   = axl_new (char, size + 2);
+
+	/* copy current size */
+	new_size = vsnprintf (result, size + 1, chunk, args);
+#endif
+	
+	/* close std args */
+	va_end (args);
+
+	/* fill the chunk size result */
+	if (chunk_size != NULL)
+		*chunk_size = new_size;
+
 	return result;
 }
 

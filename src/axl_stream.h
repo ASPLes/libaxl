@@ -39,7 +39,6 @@
 #define __AXL_STREAM_H__
 
 #include <axl_decl.h>
-#include <stdarg.h>
 
 BEGIN_C_DECLS
 
@@ -125,17 +124,20 @@ aboolean    axl_stream_remains         (axlStream * stream);
 
 /* string handling interface */
 
-void        axl_stream_trim            (char * chunk);
+void        axl_stream_trim              (char * chunk);
 
-void        axl_stream_trim_with_size  (char * chunk, int * trimmed);
+void        axl_stream_trim_with_size    (char * chunk, int * trimmed);
 
-aboolean    axl_stream_cmp             (char * chunk1, char * chunk2, int size);
+aboolean    axl_stream_cmp               (char * chunk1, char * chunk2, int size);
 
-char      * axl_stream_strdup          (char * chunk);
+char      * axl_stream_strdup            (char * chunk);
 
-char      * axl_stream_strdup_n        (char * chunk, int n);
+char      * axl_stream_strdup_n          (char * chunk, int n);
 
-char      * axl_stream_strdup_printf   (char * chunk, ...);
+char      * axl_stream_strdup_printf     (char * chunk, ...);
+
+char      * axl_stream_strdup_printf_len (char * chunk, 
+					  int  * chunk_size, ...);
 
 char     ** axl_stream_split           (char * chunk, int separator_num, ...);
 
