@@ -38,8 +38,6 @@
  *         info@aspl.es - http://fact.aspl.es
  */
 #include <axl.h>
-#include <stdarg.h>
-#include <stdio.h>
 
 /** 
  * \mainpage AXL: Another XML Library implementation (XML 1.0 standard)

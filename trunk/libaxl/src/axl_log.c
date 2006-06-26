@@ -36,9 +36,6 @@
  *         info@aspl.es - http://fact.aspl.es
  */
 #include <axl_log.h>
-#include <stdio.h>
-#include <stdarg.h>
-#include <unistd.h>
 
 /**
  * \defgroup axl_log_module Axl Log: Console log reporting for AXL library

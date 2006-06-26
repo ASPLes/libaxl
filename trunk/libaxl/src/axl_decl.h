@@ -38,8 +38,22 @@
 #ifndef __AXL_DECL_H__
 #define __AXL_DECL_H__
 
+
+/* include this at this place to load GNU extensions */
+#ifdef __GNUC__
+#define _GNU_SOURCE
+#endif
+#include <stdio.h>
+
 #include <stdlib.h>
+#include <stdarg.h>
 #include <string.h>
+#include <unistd.h>
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <ctype.h>
 
 /**
  * \defgroup axl_decl_module Axl Declarations: Common Axl declarations, Types, macros, and support functions.
@@ -545,7 +559,6 @@ axl_stream_consume_white_spaces (stream)
 # define BEGIN_C_DECLS /* empty */
 # define END_C_DECLS /* empty */
 #endif
-
 
 aboolean axl_cmp (char * string, char * string2);
 
