@@ -34,7 +34,7 @@
 
 <!ELEMENT resource (#PCDATA)>
 
-<!ELEMENT params (param)+>
+<!ELEMENT params (param)*>
 
 <!ELEMENT param (name, type)>
 
