@@ -22,7 +22,7 @@ all-before:
 
 all-after:
 
-clean: clean-custom
+clean: 
 	${RM} $(OBJ) $(PROGRAMS) *.dll
 
 test_01.exe: test_01.o

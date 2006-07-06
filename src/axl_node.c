@@ -1072,16 +1072,20 @@ aboolean      axl_node_is_empty        (axlNode * node)
  * function will not report the content size.
  * 
  * @return Current xml node content. You must not deallocate reference
- * returned. If you want a permanet copy you should use \ref axl_node_get_content_copy.
+ * returned. If you want a permanet copy you should use \ref
+ * axl_node_get_content_copy. Keep in mind that the function will always
+ * return an string reference. In the case the node has no content, an
+ * empty string will be returned, not NULL.
  */
 char    * axl_node_get_content     (axlNode * node, int * content_size)
 {
 	axl_return_val_if_fail (node, NULL);
 
-	if (content_size != NULL)
+        if (content_size != NULL)
 		*content_size = node->content_size;
 
-	return node->content;
+        /* return the node content or empty string */
+	return (node->content != NULL) ? node->content : "";
 }
 
 /** 
@@ -1287,7 +1291,7 @@ char    * axl_node_get_content_copy (axlNode * node, int * content_size)
 
 	/* check result */
 	if (content == NULL)
-		return NULL;
+		return axl_strdup ("");
 
 	/* allocate enough memory for the result */
 	if (content_size) {
@@ -1318,7 +1322,9 @@ char    * axl_node_get_content_copy (axlNode * node, int * content_size)
  * content size will be reported.
  * 
  * @return The reference returned is an internal copy that must not be
- * deallocated. 
+ * deallocated. The function always return content. If the node has no
+ * content, the function will return an empty string (but never a NULL
+ * value).
  */
 char    * axl_node_get_content_trim   (axlNode * node,
 				       int * content_size)
@@ -1336,7 +1342,7 @@ char    * axl_node_get_content_trim   (axlNode * node,
 		*content_size = node->content_size;
 
 	/* return an internal reference to the node content */
-	return node->content;
+	return (node->content != NULL) ? node->content : "";
 }
 
 /** 
@@ -1368,7 +1374,8 @@ char    * axl_node_get_content_trans (axlNode * node, int * content_size)
 		result = axl_node_get_content_copy (node, &_content_size);
 
 	/* check result returned */
-	axl_return_val_if_fail (result, NULL);
+        if (result == NULL)
+                return "";;
 
 	/* translate all references that performs the entities to the
 	 * replacement text. */

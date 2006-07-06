@@ -321,6 +321,10 @@ axlStream * axl_stream_new (char * stream_source, int stream_size,
 		/* copy source */
 		stream->stream       = axl_new (char, stream_size + 1);
 		memcpy (stream->stream, stream_source, stream_size);
+		/* nullify the last entry to avoid problems with
+		   printing functions and other APIs relaying on
+		   finding \0 at the end of the string */
+		stream->stream[stream_size] = 0;
 		
 		/* set initial indicators */
 		stream->stream_size  = stream_size;
@@ -1581,7 +1585,8 @@ int vsnprintf(char *str, size_t size, const char *format, va_list ap);
  */
 char      * axl_stream_strdup_printf   (char * chunk, ...)
 {
-#ifndef __GNUC__
+
+#if ! defined (__GNUC__) || defined (__G_OS_WIN32__)
 	int       size;
 #endif
 	int       new_size = -1;
@@ -1593,7 +1598,7 @@ char      * axl_stream_strdup_printf   (char * chunk, ...)
 	/* open std args */
 	va_start (args, chunk);
 
-#ifdef __GNUC__
+#if defined (__GNUC__) && ! defined (__G_OS_WIN32__)
 	/* do the operation using the GNU extension */
 	new_size = vasprintf (&result, chunk, args);
 #else
@@ -1630,7 +1635,7 @@ char      * axl_stream_strdup_printf   (char * chunk, ...)
  */
 char    * axl_stream_strdup_printf_len (char * chunk, int * chunk_size, ...)
 {
-#ifndef __GNUC__
+#if ! defined (__GNUC__) || defined (__G_OS_WIN32__)
 	int       size;
 #endif
 	int       new_size;
@@ -1642,7 +1647,7 @@ char    * axl_stream_strdup_printf_len (char * chunk, int * chunk_size, ...)
 	/* open std args */
 	va_start (args, chunk_size);
 
-#ifdef __GNUC__
+#if defined (__GNUC__) && ! defined (__G_OS_WIN32__)
 	/* do the operation using the GNU extension */
 	new_size = vasprintf (&result, chunk, args);
 #else
