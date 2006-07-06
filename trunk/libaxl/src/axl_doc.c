@@ -856,8 +856,8 @@ aboolean __axl_doc_parse_close_node (axlStream * stream, axlDoc * doc, axlNode *
  * that parse XML documents from different inputs.
  */
 axlDoc * __axl_doc_parse_common (char * entity, int entity_size, 
-			       char * file_path, int fd_handle, 
-			       axlError ** error)
+                                 char * file_path, int fd_handle, 
+			         axlError ** error)
 {
 	axlStream * stream        = NULL;
 	axlDoc    * doc           = NULL;

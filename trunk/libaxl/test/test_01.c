@@ -1267,6 +1267,8 @@ int main (int argc, char ** argv)
 		return -1;
 	}
 
+goto test;
+
 	if (test_01 (&error))
 		printf ("Test 01: basic xml parsing [   OK   ]\n");
 	else {
@@ -1417,6 +1419,7 @@ int main (int argc, char ** argv)
 		return -1;
 	}	
 
+test:
 	if (test_17 (&error)) {
 		printf ("Test 17: DTD validation fail checks (02/07/2006) [   OK   ]\n");
 	} else {
