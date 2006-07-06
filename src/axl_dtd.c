@@ -1314,7 +1314,7 @@ aboolean __axl_dtd_validate_sequence (axlNode            * parent,
 				/* check if we were working with a
 				 * list, which have matched at least
 				 * one item */
-				if (times == ONE_OR_MANY && status && 
+				if (times == ONE_OR_MANY && one_matched && status && 
 				    ((iterator + 1) == axl_dtd_item_list_count (itemList))) {
 					*child_position = child_pos;
 					__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "sequence validated with child position (III): %d", child_pos);
