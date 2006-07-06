@@ -8,6 +8,10 @@ body {
    background: #c9c9c9;
 }
 
+.thepage, body, h1, h2, h3, a, b, span, p, li, ul, b {
+   font-family: sans-serif,sans,arial,helvetica;
+}
+
 h1, h2, h3, a { 
        color: #00568d;
 }
@@ -162,4 +166,10 @@ h2 a.anchor {
 .red { 
   color: #ff0000;
   font-weight: bold;
+}
+
+.fragment {
+  font-size: 100%;
+  font-weight: normal;
+  font-family: monospace,fixed,courier;
 }
