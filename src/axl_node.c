@@ -2054,11 +2054,13 @@ int       axl_node_dump_at                  (axlNode * node,
 			iterator++;
 		}
 	}else {
-		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "the node is not empty and not have childs");
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "the node is not empty and have no childs");
 
 		/* dump node content */
-		memcpy (content + desp, node->content, strlen (node->content));
-		desp += strlen (node->content);
+		if (node->content != NULL) {
+			memcpy (content + desp, node->content, strlen (node->content));
+			desp += strlen (node->content);
+		}
 	}
 
 	/* dump close tag */

@@ -29,6 +29,10 @@ aboolean test_17 (axlError ** error)
 		return AXL_FALSE;
 	}
 
+	/* because a failure was expected, release memory allocated by
+	 * axl_error_new */
+	axl_error_free (*error);
+
 	/* free the document */
 	axl_doc_free (doc);
 
@@ -65,6 +69,10 @@ aboolean test_16 (axlError ** error)
 		axl_error_new (-1, "A validation was produced when expected a failure", NULL, error);
 		return AXL_FALSE;
 	}
+
+	/* because a failure was expected, release memory allocated by
+	 * axl_error_new */
+	axl_error_free (*error);
 
 	/* free the document */
 	axl_doc_free (doc);
@@ -114,6 +122,10 @@ aboolean test_15 (axlError ** error)
 		axl_error_new (-1, "A validation was produced when expected a failure", NULL, error);
 		return AXL_FALSE;
 	}
+
+	/* because a failure was expected, release memory allocated by
+	 * axl_error_new */
+	axl_error_free (*error);
 
 	/* free the document */
 	axl_doc_free (doc);
@@ -453,6 +465,10 @@ aboolean test_10 (axlError ** error)
 		axl_error_new (-1, "A validation failure was expected.", NULL, error);
 		return AXL_FALSE; 
 	} 
+
+	/* because a failure was expected, release memory allocated by
+	 * axl_error_new */
+	axl_error_free (*error);
 	
 	/* free doc reference */
 	axl_doc_free (doc); 
@@ -1267,8 +1283,6 @@ int main (int argc, char ** argv)
 		return -1;
 	}
 
-goto test;
-
 	if (test_01 (&error))
 		printf ("Test 01: basic xml parsing [   OK   ]\n");
 	else {
@@ -1419,7 +1433,6 @@ goto test;
 		return -1;
 	}	
 
-test:
 	if (test_17 (&error)) {
 		printf ("Test 17: DTD validation fail checks (02/07/2006) [   OK   ]\n");
 	} else {

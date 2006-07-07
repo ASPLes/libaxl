@@ -8,7 +8,3 @@
      <value3 action="value" tecnical="peter"><value4>40</value4><value5>40</value5><value6><test value='1' value2='2' /></value6></value3>
   </internal>
 </complex>
-
-<?xml version='1.0' standalone='yes' ?>
-<complex>
-  <data><a>10<a><b>20<b><c>30<c><d>40<d><data><value><int>-20<int><test>asdfasdf<test><value><internal><value /><value2 /><value3><value4>40<value4><value5>40<value5><value6><test /><value6><value3><internal><complex>
