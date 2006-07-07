@@ -2,8 +2,8 @@
           # Axl Library release note: 0.2.4 #
           ###################################
 
-Advanced Software Production Line is proud to announce a new release
-of Axl Library: an Open Source XML toolkit.
+Advanced Software Production Line is proud to announce a new Axl
+Library release.
 
 Axl Library is an small and efficient XML toolkit, that will allow you
 to produce efficient and clear code that interfaces with XML data.
@@ -112,4 +112,4 @@ About Advanced Software Production Line, S.L.
 --
 Francis Brosnan Blázquez           - francis@aspl.es
 Advanced Software Production Line  - http://www.aspl.es
-6th Jule 2006, Madrid (Spain)
+7th Jule 2006, Madrid (Spain)

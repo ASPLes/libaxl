@@ -169,7 +169,6 @@ h2 a.anchor {
 }
 
 .fragment {
-  font-size: 100%;
-  font-weight: normal;
-  font-family: monospace,fixed,courier;
+  font-size: 90%;
+  font-family: Monospace,Fixed,Courier; 
 }
