@@ -41,7 +41,9 @@
 
 /* include this at this place to load GNU extensions */
 #ifdef __GNUC__
-#define _GNU_SOURCE
+#  ifndef _GNU_SOURCE
+#  define _GNU_SOURCE
+#  endif
 #endif
 #include <stdio.h>
 
