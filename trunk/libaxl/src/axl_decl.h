@@ -44,7 +44,12 @@
 #  ifndef _GNU_SOURCE
 #  define _GNU_SOURCE
 #  endif
+#define __AXL_PRETTY_FUNCTION__ __PRETTY_FUNCTION__
+#else
+/* non gnu compiler */
+#define __AXL_PRETTY_FUNCTION__ ""
 #endif
+
 #include <stdio.h>
 
 #include <stdlib.h>
@@ -499,8 +504,7 @@ void    axl_free(axlPointer ref);
  * @param expr The expresion to check.
  */
 #define axl_return_if_fail(expr) \
-if (!(expr)) return;
-
+if (!(expr)) {axl_log ("", AXL_LEVEL_CRITICAL, "Expresion '%s' have failed at %s", #expr, __AXL_PRETTY_FUNCTION__); return;}
 
 /** 
  * @brief Allows to check a condition and return the given value if it
@@ -511,7 +515,7 @@ if (!(expr)) return;
  * @param val The value to return if the expression is not meet.
  */
 #define axl_return_val_if_fail(expr, val) \
-if (!(expr)) { axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "Expresion '%s' have failed, returning: %s", #expr, #val); return val;}
+if (!(expr)) { axl_log ("", AXL_LEVEL_CRITICAL, "Expresion '%s' have failed, returning: %s at %s", #expr, #val, __AXL_PRETTY_FUNCTION__); return val;}
 
 
 char * axl_strdup (char * string);
