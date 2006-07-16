@@ -1585,11 +1585,6 @@ int vsnprintf(char *str, size_t size, const char *format, va_list ap);
  */
 char      * axl_stream_strdup_printf   (char * chunk, ...)
 {
-
-#if ! defined (__GNUC__) || defined (__G_OS_WIN32__)
-	int       size;
-#endif
-	int       new_size = -1;
 	char    * result   = NULL;
 	va_list   args;
 	
@@ -1597,6 +1592,35 @@ char      * axl_stream_strdup_printf   (char * chunk, ...)
 
 	/* open std args */
 	va_start (args, chunk);
+
+	/* get the string */
+	result = axl_stream_strdup_printfv (chunk, args);
+	
+	/* close std args */
+	va_end (args);
+	
+	return result;
+}
+
+/** 
+ * @brief Allows to produce an string representing the message hold by
+ * chunk with the parameters provided.
+ * 
+ * @param chunk The message chunk to print.
+ * @param args The arguments for the chunk.
+ * 
+ * @return A newly allocated string.
+ */
+char  * axl_stream_strdup_printfv    (char * chunk, va_list args)
+{
+
+#if ! defined (__GNUC__) || defined (__G_OS_WIN32__)
+	int       size;
+#endif
+	char    * result   = NULL;
+	int       new_size = -1;
+
+	axl_return_val_if_fail (chunk, NULL);
 
 #if defined (__GNUC__) && ! defined (__G_OS_WIN32__)
 	/* do the operation using the GNU extension */
@@ -1611,10 +1635,7 @@ char      * axl_stream_strdup_printf   (char * chunk, ...)
 	/* copy current size */
 	new_size = vsnprintf (result, size + 1, chunk, args);
 #endif
-
-	/* close std args */
-	va_end (args);
-	
+	/* return the result */
 	return result;
 }
 

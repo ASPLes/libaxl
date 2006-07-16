@@ -136,6 +136,8 @@ char      * axl_stream_strdup_n          (char * chunk, int n);
 
 char      * axl_stream_strdup_printf     (char * chunk, ...);
 
+char      * axl_stream_strdup_printfv    (char * chunk, va_list args);
+
 char      * axl_stream_strdup_printf_len (char * chunk, 
 					  int  * chunk_size, ...);
 
