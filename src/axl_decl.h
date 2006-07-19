@@ -38,17 +38,21 @@
 #ifndef __AXL_DECL_H__
 #define __AXL_DECL_H__
 
-
 /* include this at this place to load GNU extensions */
 #ifdef __GNUC__
 #  ifndef _GNU_SOURCE
 #  define _GNU_SOURCE
 #  endif
-#define __AXL_PRETTY_FUNCTION__ __PRETTY_FUNCTION__
+#  define __AXL_PRETTY_FUNCTION__ __PRETTY_FUNCTION__
+#  define __AXL_LINE__            __LINE__
+#  define __AXL_FILE__            __FILE__
 #else
 /* non gnu compiler */
 #define __AXL_PRETTY_FUNCTION__ ""
+#define __AXL_LINE__            ""
+#define __AXL_FILE__            ""
 #endif
+
 
 #include <stdio.h>
 
@@ -404,6 +408,17 @@ typedef int aboolean;
  */
 #ifndef __cplusplus
 typedef int bool;
+
+/** 
+ * @brief Common definition to have false value (which is defined to 0
+ * integer value).
+ */
+#define false (0)
+/** 
+ * @brief Common definition to have true value (which is defined to 1
+ * integer value).
+ */
+#define true  (1)
 #endif
 
 /** 
@@ -504,7 +519,7 @@ void    axl_free(axlPointer ref);
  * @param expr The expresion to check.
  */
 #define axl_return_if_fail(expr) \
-if (!(expr)) {axl_log ("", AXL_LEVEL_CRITICAL, "Expresion '%s' have failed at %s", #expr, __AXL_PRETTY_FUNCTION__); return;}
+if (!(expr)) {axl_log ("", AXL_LEVEL_CRITICAL, "Expresion '%s' have failed at %s (%s:lineno=%d)", #expr, __AXL_PRETTY_FUNCTION__, __AXL_FILE__, __AXL_LINE__); return;}
 
 /** 
  * @brief Allows to check a condition and return the given value if it
@@ -515,10 +530,10 @@ if (!(expr)) {axl_log ("", AXL_LEVEL_CRITICAL, "Expresion '%s' have failed at %s
  * @param val The value to return if the expression is not meet.
  */
 #define axl_return_val_if_fail(expr, val) \
-if (!(expr)) { axl_log ("", AXL_LEVEL_CRITICAL, "Expresion '%s' have failed, returning: %s at %s", #expr, #val, __AXL_PRETTY_FUNCTION__); return val;}
+if (!(expr)) { axl_log ("", AXL_LEVEL_CRITICAL, "Expresion '%s' have failed, returning: %s at %s (%s:lineno=%d)", #expr, #val, __AXL_PRETTY_FUNCTION__, __AXL_FILE__, __AXL_LINE__); return val;}
 
 
-char * axl_strdup (char * string);
+char * axl_strdup (const char * string);
 
 /** 
  * @brief Alias definition for \ref axl_stream_strdup_printf.

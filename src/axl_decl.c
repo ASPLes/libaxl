@@ -88,7 +88,7 @@ void axl_free (axlPointer ref)
  * 
  * @return A newly allocated value or NULL.
  */
-char * axl_strdup (char * string)
+char * axl_strdup (const char * string)
 {
 	return (string != NULL) ? (char *) axl_stream_strdup ((char *) string) : NULL;
 }
