@@ -59,7 +59,7 @@ void      axl_node_set_attribute            (axlNode * node, char * attribute, c
 
 void      axl_node_set_attribute_ref        (axlNode * node, char * attribute, char * value);
 
-aboolean  axl_node_has_attribute            (axlNode * node, char * attribute);
+bool      axl_node_has_attribute            (axlNode * node, char * attribute);
 
 char    * axl_node_get_attribute_value      (axlNode * node, char * attribute);
 
@@ -94,9 +94,9 @@ void      axl_node_set_child          (axlNode * parent,
 				       axlNode * child);
 
 void      axl_node_set_is_empty       (axlNode  * node, 
-				       aboolean   empty);
+				       bool       empty);
 
-aboolean  axl_node_is_empty           (axlNode * node);
+bool      axl_node_is_empty           (axlNode * node);
 
 char    * axl_node_get_content        (axlNode * node, 
 				       int  * content_size);
@@ -122,9 +122,9 @@ void      axl_node_set_cdata_content  (axlNode * node,
 				       char * content,
 				       int content_size);
 
-void      axl_node_set_have_childs    (axlNode * node, aboolean childs);
+void      axl_node_set_have_childs    (axlNode * node, bool     childs);
 
-aboolean  axl_node_have_childs        (axlNode * node);
+bool      axl_node_have_childs        (axlNode * node);
 
 axlNode * axl_node_get_child_called   (axlNode * parent, char * name);
 
@@ -134,13 +134,13 @@ int       axl_node_get_child_num      (axlNode * parent);
 
 axlList * axl_node_get_childs         (axlNode * node);
 
-aboolean  axl_node_are_equal          (axlNode * node, axlNode * node2);
+bool      axl_node_are_equal          (axlNode * node, axlNode * node2);
 
 void      axl_node_add_pi_target            (axlNode * node, 
 					     char * target, 
 					     char * content);
 
-aboolean  axl_node_has_pi_target            (axlNode * node, 
+bool      axl_node_has_pi_target            (axlNode * node, 
 					     char * pi_target);
 
 char    * axl_node_get_pi_target_content    (axlNode * node, 

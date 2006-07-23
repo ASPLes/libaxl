@@ -55,11 +55,6 @@ struct _axlList {
 	axlListNode    * first_node;
 	axlListNode    * last_node;
 
-	/* simple cache implementation */
-	axlListNode    * cache1;
-	axlListNode    * cache2;
-	axlListNode    * cache3;
-
 	/* list length */
 	int              length;
 
@@ -209,6 +204,61 @@ axlList * axl_list_new    (axlEqualFunc are_equal, axlDestroyFunc destroy_data)
 
 	/* preallocate memory for nodes */
 	__axl_list_allocate_nodes (result);
+
+	return result;
+}
+
+/** 
+ * @brief Allows to copy the provided list, returning a newly
+ * allocated structure. 
+ *
+ * The copy process can also perform a deep copy for all data stored
+ * inside the \ref axlList. However, for this purpose it is required
+ * to provide a duplication function that is able to implement the
+ * duplication operation over the data received. 
+ * 
+ * This handler is optional, and in the case it is not provided, the
+ * list returned will be a copy having reference to the content
+ * stored.
+ * 
+ * @param list The list to copy.
+ * @param func The duplication function used to perform a deep copy (optional handler).
+ * 
+ * @return A newly allocated \ref axlList with the same configuration
+ * as the one provided.
+ */
+axlList  * axl_list_copy   (axlList * list, axlDuplicateFunc func)
+{
+	axlList   * result;
+	int         iterator;
+	axlPointer  data;
+
+	axl_return_val_if_fail (list, NULL);
+
+	/* create a new axl list */
+	result = axl_list_new (list->are_equal, list->destroy_data);
+
+	/* if the duplicate function is NULL, remove the destroy
+	 * function */
+	if (func == NULL)
+		result->destroy_data = NULL;
+
+	/* add all elements */
+	iterator = 0;
+	while (iterator < axl_list_length (list)) {
+		/* get data pointer from the list */
+		data = axl_list_get_nth (list, iterator);
+
+		/* try to make a copy */
+		if (func != NULL)
+			data = func (data);
+		
+		/* add the data to the new list */
+		axl_list_add (result, data);
+
+		/* update index */
+		iterator++;
+	}
 
 	return result;
 }
@@ -366,6 +416,43 @@ void      axl_list_add    (axlList * list, axlPointer pointer)
 }
 
 /** 
+ * @brief Allows to add a node to the provided list, at the first
+ * position, without taking into consideration current \ref axlList
+ * configuration (\ref axlEqualFunc at \ref axl_list_new). 
+ * 
+ * @param list The list where the data will be added at the first
+ * position.
+ *
+ * @param pointer The pointer to add.
+ */
+void       axl_list_prepend (axlList * list, axlPointer pointer)
+{
+	axlListNode * new_node;
+
+	axl_return_if_fail (list);
+	axl_return_if_fail (pointer);
+	
+	/* simulate adding the node at the first position */
+	new_node         = __axl_list_get_next_node_available (list); 
+	new_node->data   = pointer;
+
+	/* make the new node the be the first one */
+	if (list->first_node == NULL) {
+		list->first_node = new_node;
+		list->last_node  = new_node;
+	}else {
+		list->first_node->previous = new_node;
+		new_node->next             = list->first_node;
+		list->first_node           = new_node;
+	}
+
+	/* update number of items inside */
+	list->length++;
+	
+	return;
+}
+
+/** 
  * @internal
  * @brief Internal lookup function to locate the axlListNode that contains the pointer.
  *
@@ -481,7 +568,7 @@ axlListNode * axl_list_internal_get_nth (axlList * list, int position)
  *
  * @param alsoRemove Also call to destroy function.
  */
-void     axl_list_common_remove (axlList * list, axlPointer pointer, aboolean alsoRemove)
+void     axl_list_common_remove (axlList * list, axlPointer pointer, bool     alsoRemove)
 {
 	axlListNode * node;
 
@@ -635,7 +722,7 @@ void       axl_list_unlink_first (axlList * list)
  * otherwise AXL_FALSE is returned. The function will fail to lookup
  * if a NULL reference is received, either the list or the pointer.
  */
-aboolean      axl_list_exists (axlList * list, axlPointer pointer)
+bool          axl_list_exists (axlList * list, axlPointer pointer)
 {
 	axl_return_val_if_fail (list, AXL_FALSE);
 	axl_return_val_if_fail (pointer, AXL_FALSE);
@@ -655,7 +742,7 @@ aboolean      axl_list_exists (axlList * list, axlPointer pointer)
  * @return AXL_TRUE if the given data, referenced by the pointer, is
  * stored on the given position.
  */
-aboolean       axl_list_exists_at (axlList * list, axlPointer pointer, int position)
+bool           axl_list_exists_at (axlList * list, axlPointer pointer, int position)
 {
 	axlListNode * node;
 
@@ -728,7 +815,8 @@ axlPointer axl_list_get_nth   (axlList * list, int position)
  * 
  * @param list The list to operate.
  * 
- * @return The list length or -1 if fail.
+ * @return The list length or -1 if fail (the list reference received
+ * is null).
  */
 int       axl_list_length (axlList * list)
 {

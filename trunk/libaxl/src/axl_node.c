@@ -40,7 +40,7 @@
 #define LOG_DOMAIN "axl-node"
 
 /**
- * \defgroup axl_node_module Axl XML Node interface: Functions to use and manipulate xml nodes inside documents.
+ * \defgroup axl_node_module Axl Node: Xml node interface functions to use and manipulate xml nodes inside documents.
  */
 
 /** 
@@ -89,7 +89,7 @@ struct _axlNode {
 	 * considered to be empty. This is because we have is_empty
 	 * and have_childs.
 	 */
-	aboolean        is_empty;
+	bool            is_empty;
 
 	/** 
 	 * @internal
@@ -98,7 +98,7 @@ struct _axlNode {
 	 * the node. This value is set by the axl doc module to advise
 	 * that the module must have or not a xml child nodes.
 	 */
-	aboolean        have_childs;
+	bool            have_childs;
 
 	/** 
 	 * @internal
@@ -208,12 +208,12 @@ axlNode * __axl_node_create_internal (char * name)
  * @return AXL_TRUE if the string contains non valid sequences that
  * must be escaped using entity references.
  */
-aboolean __axl_node_content_have_not_valid_sequences (char * content, 
+bool     __axl_node_content_have_not_valid_sequences (char * content, 
 						      int    content_size,
 						      int * additional_size)
 {
 	int      iterator = 0;
-	aboolean result   = AXL_FALSE;
+	bool     result   = AXL_FALSE;
 	axl_return_val_if_fail (content, AXL_FALSE);
 
 	/* reset additional size value */
@@ -590,7 +590,7 @@ void __axl_node_init_childs (axlNode * node)
  * Internal function to perform common checks for setting attribute
  * code.
  */
-aboolean     __axl_node_set_attribute_common_check (axlNode * node, char * attribute, char * value)
+bool         __axl_node_set_attribute_common_check (axlNode * node, char * attribute, char * value)
 {
 	/* checks values received */
 	axl_return_val_if_fail (node, AXL_FALSE);
@@ -789,7 +789,7 @@ axlAttribute * __axl_node_common_attr_get (axlNode * node, char * attribute)
  * @return A \ref AXL_TRUE if the attribute value is set, otherwise
  * \ref AXL_FALSE is returned.
  */
-aboolean      axl_node_has_attribute      (axlNode * node, char * attribute)
+bool          axl_node_has_attribute      (axlNode * node, char * attribute)
 {
 	/* attribute not found */
 	return (__axl_node_common_attr_get (node, attribute) != NULL);
@@ -900,7 +900,7 @@ char    * axl_node_get_attribute_value_trans (axlNode * node, char * attribute)
  * @param empty The value for emptyness to be used. AXL_FALSE will
  * mean that the node is not empty.
  */
-void      axl_node_set_is_empty (axlNode * node, aboolean empty)
+void      axl_node_set_is_empty (axlNode * node, bool     empty)
 {
 	axl_return_if_fail (node);
 	
@@ -1035,7 +1035,7 @@ axlNode * axl_node_get_next           (axlNode * node)
  * @return \ref AXL_TRUE if the node is empty or \ref AXL_FALSE if
  * not.
  */
-aboolean      axl_node_is_empty        (axlNode * node)
+bool          axl_node_is_empty        (axlNode * node)
 {
 	axl_return_val_if_fail (node, AXL_FALSE);
 
@@ -1437,7 +1437,7 @@ void      axl_node_set_child (axlNode * parent, axlNode * child)
  * @param childs The child configuration, AXL_TRUE to notify that the
  * node have childs, otherwise, AXL_FALSE is returned.
  */
-void      axl_node_set_have_childs (axlNode * node, aboolean childs)
+void      axl_node_set_have_childs (axlNode * node, bool     childs)
 {
 	/* */
 	return;
@@ -1457,7 +1457,7 @@ void      axl_node_set_have_childs (axlNode * node, aboolean childs)
  * @return An \ref AXL_TRUE if the \ref axlNode have childs or \ref
  * AXL_FALSE if not.
  */
-aboolean      axl_node_have_childs        (axlNode * node)
+bool          axl_node_have_childs        (axlNode * node)
 {
 	axl_return_val_if_fail (node, AXL_FALSE);
 
@@ -1591,7 +1591,7 @@ axlList * axl_node_get_childs         (axlNode * node)
  * 
  * @return AXL_TRUE if both nodes are equivalent or AXL_FALSE if not.
  */
-aboolean      axl_node_are_equal          (axlNode * node, axlNode * node2)
+bool          axl_node_are_equal          (axlNode * node, axlNode * node2)
 {
 	int             iterator = 0;
 	int             length;
@@ -1705,7 +1705,7 @@ void      axl_node_add_pi_target            (axlNode * node,
  * @return AXL_TRUE is the processing instruction is defined,
  * otherwise AXL_FALSE is returned.
  */
-aboolean      axl_node_has_pi_target            (axlNode * node, 
+bool          axl_node_has_pi_target            (axlNode * node, 
 						 char * pi_target)
 {
 	axlPI * pi;

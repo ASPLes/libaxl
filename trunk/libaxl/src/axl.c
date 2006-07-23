@@ -557,7 +557,7 @@
  * @return The function returns AXL_TRUE if it was properly
  * initialized or AXL_FALSE if something fails.  if fails.
  */
-aboolean axl_init ()
+bool axl_init ()
 {
 	/* nothing to initialize dude */
 	return AXL_TRUE;

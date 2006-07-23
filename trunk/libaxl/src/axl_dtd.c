@@ -119,7 +119,7 @@ struct _axlDtd {
 };
 
 /**
- * \defgroup axl_dtd_module Axl DTD Functions: Document type declaration functions, validation, and DTD parsing
+ * \defgroup axl_dtd_module Axl DTD: Document type declaration interface (functions, validation, and DTD parsing)
  */
 
 
@@ -253,7 +253,7 @@ void __axl_dtd_queue_items (axlStack * stack, axlList * list)
  * @return AXL_TRUE if the function can confirm that the parent-child
  * relation exists, AXL_FALSE if not or it could be proved.
  */
-aboolean __axl_dtd_get_is_parent (axlDtdElement * dtd_element_parent,
+bool     __axl_dtd_get_is_parent (axlDtdElement * dtd_element_parent,
 				  axlDtdElement * dtd_element_child)
 {
 	axlStack               * stack;
@@ -332,7 +332,7 @@ aboolean __axl_dtd_get_is_parent (axlDtdElement * dtd_element_parent,
 axlDtdElement * __axl_dtd_get_new_root (axlDtd * dtd) 
 {
 	int             iterator;
-	aboolean        change_detected;
+	bool            change_detected;
 
 	axlDtdElement * dtd_element_aux;
 	axlDtdElement * dtd_element_the_root_is_on_fire;
@@ -386,7 +386,7 @@ axlDtdElement * __axl_dtd_get_new_root (axlDtd * dtd)
  * @return AXL_TRUE if the given axlDtdElement is compatible inside
  * the axlDtd declaration or AXL_FALSE if a error is found.
  */
-aboolean __axl_dtd_add_element (axlDtd * dtd, axlDtdElement * element, 
+bool     __axl_dtd_add_element (axlDtd * dtd, axlDtdElement * element, 
 			    axlStream * stream, axlError ** error)
 {
 	int             iterator        = 0;
@@ -430,7 +430,7 @@ aboolean __axl_dtd_add_element (axlDtd * dtd, axlDtdElement * element,
  * adding the element and configuring current element list.
  *
  */
-aboolean __axl_dtd_element_content_particule_add (axlDtdElementList  * dtd_item_list, 
+bool     __axl_dtd_element_content_particule_add (axlDtdElementList  * dtd_item_list, 
 						  char               * string_aux, 
 						  int                  chunk_matched, 
 						  axlStream          * stream, 
@@ -618,7 +618,7 @@ void __axl_dtd_element_spec_update_chunk_matched (axlStream * stream,
  * repeat pattern was found 
  * 
  */
-aboolean __axl_dtd_element_spec_update_chunk_matched_for_cp_separator (axlStream * stream, 
+bool     __axl_dtd_element_spec_update_chunk_matched_for_cp_separator (axlStream * stream, 
 								   int * chunk_matched)
 {
 	/* consume previous white spaces */
@@ -710,14 +710,14 @@ char * __axl_dtd_read_content_particule (axlStream  * stream,
  * @return \ref AXL_TRUE if the content spec was properly read or \ref
  * AXL_FALSE if not.
  */
-aboolean __axl_dtd_read_element_spec (axlStream * stream, axlDtdElement * dtd_element, axlError ** error)
+bool     __axl_dtd_read_element_spec (axlStream * stream, axlDtdElement * dtd_element, axlError ** error)
 {
 	char              * string_aux;
-	aboolean            is_pcdata;
+	bool                is_pcdata;
 	int                 chunk_matched = -1;
 	axlStack          * dtd_item_stack;
 	axlDtdElementList * dtd_item_list;
-	aboolean            is_empty;
+	bool                is_empty;
 	
 	
 	/* create the stack used to control which is
@@ -1026,7 +1026,7 @@ int __axl_dtd_parse_element_get_compulsory_num (axlDtdElementList * list)
  * not. The stream associated will be unrefered and the axlError
  * provided will be filled if an error is found.
  */
-aboolean __axl_dtd_parse_element (axlDtd * dtd, axlStream * stream, axlError ** error)
+bool     __axl_dtd_parse_element (axlDtd * dtd, axlStream * stream, axlError ** error)
 {
 	char              * string_aux;
 	int                 matched_chunk = -1;
@@ -1259,19 +1259,19 @@ axlDtd   * axl_dtd_parse_from_file (char * file_path,
  * if something have failed. It also creates an error, using the
  * optional axlError reference received.
  */
-aboolean __axl_dtd_validate_sequence (axlNode            * parent, 
+bool     __axl_dtd_validate_sequence (axlNode            * parent, 
 				      int                * child_position,
 				      axlDtdElementList  * itemList, 
 				      axlError          ** error,
-				      aboolean             try_match,
-				      aboolean             top_level)
+				      bool                 try_match,
+				      bool                 top_level)
 {
 	int                      iterator        = 0;
 	int                      child_pos       = *child_position;
 	axlNode                * node;
 	axlDtdElementListNode  * itemNode;
-	aboolean                 status          = AXL_FALSE;
-	aboolean                 one_matched;
+	bool                     status          = AXL_FALSE;
+	bool                     one_matched;
 	AxlDtdTimes              times;
 	
 
@@ -1522,17 +1522,17 @@ aboolean __axl_dtd_validate_sequence (axlNode            * parent,
  * 
  * Internal support function to validate the choice list.
  */
-aboolean __axl_dtd_validate_choice (axlNode * parent, int * child_position, 
+bool     __axl_dtd_validate_choice (axlNode * parent, int * child_position, 
 				    axlDtdElementList * itemList, 
 				    axlError  ** error,
-				    aboolean try_match, aboolean top_level)
+				    bool     try_match, bool     top_level)
 {
 	axlNode               * node;
 	axlDtdElementListNode * itemNode;
 	int                     iterator;
-	aboolean                status;
+	bool                    status;
 	AxlDtdTimes             times;
-	aboolean                one_match;
+	bool                    one_match;
 
 	
 	if (*child_position < axl_node_get_child_num (parent)) {
@@ -1648,16 +1648,16 @@ aboolean __axl_dtd_validate_choice (axlNode * parent, int * child_position,
  * @return AXL_TRUE if the validation was ok, otherwise AXL_FALSE is
  * returned.
  */
-aboolean __axl_dtd_validate_item_list (axlDtdElementList  * itemList,
+bool     __axl_dtd_validate_item_list (axlDtdElementList  * itemList,
 				       axlNode            * parent, 
 				       int                * child_position,
 				       axlError          ** error,
-				       aboolean             top_level)
+				       bool                 top_level)
 {
 	int      temp_child_pos;
 	int      caller_child_pos;
-	aboolean status;
-	aboolean already_matched;
+	bool     status;
+	bool     already_matched;
 
 
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "validating an item list with repeat pattern: %d, at %d, top level=%d",
@@ -1869,9 +1869,9 @@ aboolean __axl_dtd_validate_item_list (axlDtdElementList  * itemList,
  * Support function validate parent nodes which are element type
  * children ones.
  */
-aboolean __axl_dtd_validate_element_type_children (axlDtdElement  * element, 
+bool     __axl_dtd_validate_element_type_children (axlDtdElement  * element, 
 						   axlNode        * parent, 
-						   aboolean         top_level,
+						   bool             top_level,
 						   axlError      ** error)
 {
 	axlDtdElementList * itemList;
@@ -1913,7 +1913,7 @@ aboolean __axl_dtd_validate_element_type_children (axlDtdElement  * element,
  * @internal
  * Internal support function to validate #PCDATA nodes.
  */
-aboolean __axl_dtd_validate_element_type_pcdata (axlDtdElement  * element, 
+bool     __axl_dtd_validate_element_type_pcdata (axlDtdElement  * element, 
 						 axlNode        * parent, 
 						 axlStack       * stack, 
 						 axlError      ** error)
@@ -1939,7 +1939,7 @@ aboolean __axl_dtd_validate_element_type_pcdata (axlDtdElement  * element,
  * 
  * Support function to validate empty nodes.
  */
-aboolean __axl_dtd_validate_element_type_empty (axlDtdElement  * element,
+bool     __axl_dtd_validate_element_type_empty (axlDtdElement  * element,
 						axlNode        * parent,
 						axlStack       * stack,
 						axlError      ** error)
@@ -1987,14 +1987,14 @@ aboolean __axl_dtd_validate_element_type_empty (axlDtdElement  * element,
  *
  * @return AXL_TRUE if the document is valid, AXL_FALSE if not.
  */
-aboolean       axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
+bool           axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 					axlError ** error)
 {
 	axlNode            * parent;
 	axlList            * childs;
 	axlStack           * stack;
 	axlDtdElement      * element;
-	aboolean             top_level;
+	bool                 top_level;
 	
 	/* perform some checkings */
 	axl_return_val_if_fail (doc, AXL_FALSE);
@@ -2276,7 +2276,7 @@ axlDtdElementList  * axl_dtd_get_item_list    (axlDtdElement * element)
  * \ref AXL_FALSE if not. The function returns \ref AXL_FALSE if the
  * provided reference is NULL.
  */
-aboolean                axl_dtd_element_is_toplevel (axlDtd * dtd, axlDtdElement * element)
+bool                    axl_dtd_element_is_toplevel (axlDtd * dtd, axlDtdElement * element)
 {
 	/* support several top level definitions */
 	int             iterator;

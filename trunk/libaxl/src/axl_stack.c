@@ -194,7 +194,7 @@ int        axl_stack_size (axlStack * stack)
  * 
  * @return \ref AXL_TRUE if the stack is empty or AXL_FALSE if not.
  */
-aboolean       axl_stack_is_empty (axlStack * stack)
+bool       axl_stack_is_empty (axlStack * stack)
 {
 	axl_return_val_if_fail (stack, AXL_FALSE);
 

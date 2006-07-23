@@ -48,7 +48,11 @@ int        axl_list_equal_string (axlPointer a, axlPointer b);
 
 int        axl_list_always_return_1 (axlPointer a, axlPointer b);
 
+axlList  * axl_list_copy   (axlList * list, axlDuplicateFunc func);
+
 void       axl_list_add    (axlList * list, axlPointer pointer);
+
+void       axl_list_prepend (axlList * list, axlPointer pointer);
 
 void       axl_list_remove (axlList * list, axlPointer pointer);
 
@@ -62,9 +66,9 @@ void       axl_list_remove_last (axlList * list);
 
 void       axl_list_unlink_last (axlList * list);
 
-aboolean   axl_list_exists (axlList * list, axlPointer pointer);
+bool       axl_list_exists (axlList * list, axlPointer pointer);
 
-aboolean   axl_list_exists_at (axlList * list, axlPointer pointer, int position);
+bool       axl_list_exists_at (axlList * list, axlPointer pointer, int position);
 
 axlPointer axl_list_get_first (axlList * list);
 
