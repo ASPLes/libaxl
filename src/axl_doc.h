@@ -49,7 +49,7 @@ BEGIN_C_DECLS
 
 axlDoc  * axl_doc_create                   (char     * version, 
 					    char     * encoding,
-					    aboolean   standalone);
+					    bool   standalone);
 
 axlDoc  * axl_doc_parse                    (char * entity, 
 					    int entity_size, 
@@ -67,7 +67,7 @@ void      axl_doc_dump                     (axlDoc  * doc,
 
 int       axl_doc_get_flat_size            (axlDoc * doc);
 
-aboolean  axl_doc_are_equal                (axlDoc * doc, 
+bool      axl_doc_are_equal                (axlDoc * doc, 
 					    axlDoc * doc2);
 
 axlNode * axl_doc_get_root                 (axlDoc * doc);
@@ -87,7 +87,7 @@ char    * axl_doc_get_content_at           (axlDoc * doc,
 
 char    * axl_doc_get_encoding             (axlDoc * doc);
 
-aboolean  axl_doc_get_standalone           (axlDoc * doc);
+bool      axl_doc_get_standalone           (axlDoc * doc);
 
 void      axl_doc_free                     (axlDoc * doc);
 
@@ -100,7 +100,7 @@ void      axl_doc_add_pi_target            (axlDoc * doc,
 					    char * target, 
 					    char * content);
 
-aboolean  axl_doc_has_pi_target            (axlDoc * doc, 
+bool      axl_doc_has_pi_target            (axlDoc * doc, 
 					    char * pi_target);
 
 char    * axl_doc_get_pi_target_content    (axlDoc * doc, 
@@ -117,13 +117,18 @@ char    * axl_pi_get_content               (axlPI  * pi);
 
 void      axl_pi_free                      (axlPI  * pi);
 
+void      axl_doc_iterate                  (axlDoc           * doc,
+					    AxlIterationMode   mode,
+					    AxlIterationFunc   func,
+					    axlPointer         ptr);
+
 /* private API starts from here, do not use this API */
 
-aboolean  axl_doc_consume_comments         (axlDoc    * doc,
+bool  axl_doc_consume_comments             (axlDoc    * doc,
 					    axlStream * stream, 
 					    axlError ** error);
 
-aboolean  axl_doc_consume_pi               (axlDoc     * doc, 
+bool  axl_doc_consume_pi                   (axlDoc     * doc, 
 					    axlNode    * node,
 					    axlStream  * stream, 
 					    axlError  ** error);

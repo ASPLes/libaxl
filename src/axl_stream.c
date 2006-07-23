@@ -154,7 +154,7 @@ struct _axlStream {
  * filled or AXL_FALSE if end of file was reached. In that case the
  * stream size is not updated.
  */
-aboolean axl_stream_prebuffer (axlStream * stream)
+bool axl_stream_prebuffer (axlStream * stream)
 {
 	int  bytes_read;
 
@@ -170,18 +170,14 @@ aboolean axl_stream_prebuffer (axlStream * stream)
 	if (stream->fd == -1)
 		return AXL_FALSE;
 
-#ifdef SHOW_DEBUG_LOG
-	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "prebuffering the stream..");
-#endif
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "prebuffering the stream..");
 
 	/* displace memory only if there were data already consumed */
 	if (stream->stream_index > 0 && ((stream->stream_size - stream->stream_index) > 0)) {
 
-#ifdef SHOW_DEBUG_LOG
-		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "   moving previous content at the begining of the buffer, current index: %d, size: %d, current status: %s",
-			 stream->stream_index, stream->stream_size - stream->stream_index,
-			 stream->stream + stream->stream_index);
-#endif
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "   moving previous content at the begining of the buffer, current index: %d, size: %d, current status: %s",
+			   stream->stream_index, stream->stream_size - stream->stream_index,
+			   stream->stream + stream->stream_index);
 
 		/* clear the memory */
 		memset (stream->temp, 0, STREAM_BUFFER_SIZE);
@@ -202,33 +198,25 @@ aboolean axl_stream_prebuffer (axlStream * stream)
 		 * available on the buffer */
 		stream->stream_size  = STREAM_BUFFER_SIZE - stream->stream_index;
 	}else {
-#ifdef SHOW_DEBUG_LOG
-		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "   nothing to prebuffer on the tail");
-#endif
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "   nothing to prebuffer on the tail");
 		stream->stream_size  = 0;
 	}
 
 	/* reset current index */
 	stream->stream_index = 0;
 
-#ifdef SHOW_DEBUG_LOG
-	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "   reading on buffer index: %d, size: %d",
-		 stream->stream_index, stream->stream_size);
-#endif
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "   reading on buffer index: %d, size: %d",
+		   stream->stream_index, stream->stream_size);
 
 	/* read current content */
 	bytes_read = read (stream->fd, stream->stream + stream->stream_size,
 			   STREAM_BUFFER_SIZE - stream->stream_size);
 
-#ifdef SHOW_DEBUG_LOG
-	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "   bytes read from the file: %d", bytes_read);
-#endif
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "   bytes read from the file: %d", bytes_read);
 
 	/* check for end of file reached */
 	if (bytes_read == 0) {
-#ifdef SHOW_DEBUG_LOG
-		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "end of file reached");
-#endif
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "end of file reached");
 		close (stream->fd);
 		stream->fd = -1;
 		return AXL_FALSE;
@@ -238,35 +226,82 @@ aboolean axl_stream_prebuffer (axlStream * stream)
 	 * read, and the bytes already read */
 	stream->stream_size += bytes_read;
 
-#ifdef SHOW_DEBUG_LOG
-	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "   (before read) current buffer size: %d",
-		 stream->stream_size);
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "   (before read) current buffer size: %d",
+		   stream->stream_size);
 
-	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "   prebuffered data: stream size: %d",
-		 stream->stream_size);
-#endif
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "   prebuffered data: stream size: %d",
+		   stream->stream_size);
 
 	return AXL_TRUE;
 }
 
 /** 
- * @internal
- * 
  * @brief Creates a new byte stream using as data the string pointer
  * and the size.
+ * 
+ * The \ref axlStream object is an abstraction that allows to
+ * interface with a memory chunk, a file descriptor (or a socket) or a
+ * direct path, with a contenience API that allows inspecting and
+ * accepting the streamed content.
  *
+ *
+ * Here is an example on how to create an stream from a memory chunk:
+ * \code
+ * axlStream * stream;
+ * axlError  * error;
+ *
+ * // create the stream and check result 
+ * stream = axl_stream_new (source_content, size_content, -1, NULL, &error);
+ * if (stream == NULL) {
+ *     printf ("An error was found: %s\n", axl_error_get (error));
+ *     axl_error_free (error);
+ *     return;
+ * }
+ * 
+ * // stream created
+ * \endcode
+ *
+ * In the case an stream is required to parse a file descriptor
+ * (including a socket):
+ * 
+ * \code
+ * stream = axl_stream_new (NULL, -1, fd, NULL, &error);
+ * \endcode
+ *
+ * You can also provide a file path to let the axl stream module to
+ * open the file and buffer it as it requires to consume characters:
+ *
+ * \code
+ * stream = axl_stream_new (NULL, -1, -1, "c:/myFiles/document.xml", &error);
+ * \endcode
+ * 
+ *
+ * Once initialized the \ref axlStream object, you can use the
+ * following function to check and consume characters:
+ * 
+ * - \ref axl_stream_inspect
+ * - \ref axl_stream_peek
+ * - \ref axl_stream_accept
+ * 
+ * There alternatives APIs that allows to get the content until some
+ * patter is found (or a set of patterns):
+ * 
+ * - \ref axl_stream_get_until
  * 
  * @param stream_source A pointer to the memory where the data to be
  * streamed is located.
  *
  * @param stream_size How many bytes are available to perform
- * streaming.
+ * streaming. You can pass a -1 value to allow the function to
+ * calculate the stream source size (stream_source param).
  *
  * @param file_path Optional parameter to allow reading the stream
  * from a file using the open API.
  *
  * @param fd_handler Optional parameter to allow reading the stream
  * from a file descriptor, that could be a file, a socket, etc..
+ *
+ * @param error Optional \ref axlError reference where errors will be reported.
  * 
  * @return A newly allocated stream instance that should be
  * deallocated by using \ref axl_stream_free. The function could
@@ -358,7 +393,7 @@ axlStream * axl_stream_new (char * stream_source, int stream_size,
  * 
  * @return See \ref axl_stream_inspect.
  */
-int         axl_stream_common_inspect (axlStream * stream, char * chunk, int inspected_size, aboolean alsoAccept)
+int         axl_stream_common_inspect (axlStream * stream, char * chunk, int inspected_size, bool alsoAccept)
 {
 
 	axl_return_val_if_fail (stream, -2);
@@ -394,15 +429,19 @@ int         axl_stream_common_inspect (axlStream * stream, char * chunk, int ins
 }
 
 /** 
- * @internal
- * @brief Allows to perform an inspection of the given chunk on the given stream.
+ * @brief Allows to perform an inspection of the given chunk on the
+ * given stream.
  *
  * The <i>chunk</i> will be checked to apper inside the stream. This
  * means that, having the stream as its state, the chunk should be
  * found the very begining of the stream.
  * 
- * @param stream 
- * @param chunk 
+ * @param stream The \ref axlStream where the operation will be
+ * performed.
+ * 
+ * @param chunk The chunk that is expected to be found at the begin of the stream.
+ * 
+ * @param inspected_size The size of the chunk provided to be inspected.
  * 
  * @return The function returns the following values according to the result: 
  *
@@ -423,8 +462,6 @@ int         axl_stream_inspect (axlStream * stream, char * chunk, int inspected_
 }
 
 /** 
- * @internal
- *
  * @brief Allows to perform a stream inspection without automatically
  * accept content properly inspected.
  * 
@@ -432,6 +469,9 @@ int         axl_stream_inspect (axlStream * stream, char * chunk, int inspected_
  * performed.
  *
  * @param chunk The chunk to lookup.
+ *
+ * @param inspected_size The size of the chunk provided to be
+ * inspected.
  * 
  * @return See \ref axl_stream_inspect.
  */
@@ -442,8 +482,6 @@ int         axl_stream_peek            (axlStream * stream, char * chunk, int in
 }
 
 /** 
- * @internal 
- *
  * @brief Allows to perform several, not excluyen inspect operations,
  * over the given stream.
  *
@@ -518,8 +556,6 @@ int         axl_stream_inspect_several (axlStream * stream, int chunk_num, ...)
 }
 
 /** 
- * @internal
- *
  * @brief Accept previous inspected chunk to be consumed and moves
  * current stream current the size equal to the chunk inspected.
  * 
@@ -543,8 +579,6 @@ void axl_stream_accept (axlStream * stream)
 }
 
 /** 
- * @internal
- *
  * @brief Allows to configure current index to be accepted by the
  * stream. 
  * 
@@ -563,7 +597,6 @@ void        axl_stream_move            (axlStream * stream, int index)
 }
 
 /** 
- * @internal
  * @brief Returns the next chunk available on the stream.
  *
  * This function allows to get next available chunk, validating it
@@ -577,14 +610,22 @@ void        axl_stream_move            (axlStream * stream, int index)
  * could do the next call:
  * 
  * \code
+ * // reference to the allocated result
  * char * result;
  * 
- * // get the next chunk until a " or ' is found
- * result = axl_stream_get_until (stream, NULL, 2, "\"", "'");
+ * // chunk matched variable
+ * int chunk_matched;
  * 
+ * // get the next chunk until a " or ' is found
+ * result = axl_stream_get_until (stream, NULL, &chunk_matched, TRUE, 2, "\"", "'");
  * \endcode
  *
- * Value returned from this function mustn't be deallocated.
+ * Value returned from this function mustn't be deallocated. However,
+ * because the value returned is dinamically allocated by the
+ * function, you can avoid doing a double allocation operation by
+ * nullifying the internal reference to the result returned, making
+ * the caller the only owner of the reference returned. To do this
+ * use: \ref axl_stream_nullify with \ref LAST_CHUNK.
  * 
  * 
  * @param stream The stream were the chunk will be extracted.
@@ -593,7 +634,9 @@ void        axl_stream_move            (axlStream * stream, int index)
  * to be returned. Currently this is not implemented, so, you can
  * provide a NULL value.
  *
- * @param chunk_num The number of chunks to be checked as a valid terminators.
+ * @param chunk_matched An optional pointer to an integer to notify
+ * the chunk matched by the function. Chunk matching notification
+ * starts from 0 up to number of chunks to match - 1.
  * 
  * @param accept_terminator While calling to this function, the
  * terminator detected to stop the operation could also be accepted by
@@ -601,6 +644,8 @@ void        axl_stream_move            (axlStream * stream, int index)
  * the function have ended. However, this could be a problem while
  * performing peeking code. You can provide a FALSE value to make the
  * function to not accept the terminator found as to be consumed.
+ *
+ * @param chunk_num The number of chunks to be checked as a valid terminators.
  * 
  * @return The chunk recognizied, not including the terminator that
  * have made this operation to stop. 
@@ -608,7 +653,7 @@ void        axl_stream_move            (axlStream * stream, int index)
 char      * axl_stream_get_until       (axlStream * stream, 
 					char      * valid_chars, 
 					int       * chunk_matched,
-					aboolean    accept_terminator,
+					bool    accept_terminator,
 					int         chunk_num, ...)
 {
 	char * result;
@@ -628,11 +673,9 @@ char      * axl_stream_get_until       (axlStream * stream,
 }
 
 /** 
- * @internal
- * 
- * Works the same way like axl_strteam_get_until but wihtout allocated
- * the memory returned, and filling the size for the chunk returned
- * in result_size reference.
+ * @brief Works the same way like axl_strteam_get_until but wihtout
+ * allocated the memory returned, and filling the size for the chunk
+ * returned in result_size reference.
  * 
  * @param stream The stream where the operation will be performed.
  *
@@ -655,7 +698,7 @@ char      * axl_stream_get_until       (axlStream * stream,
 char      * axl_stream_get_until_ref   (axlStream * stream, 
 					char      * valid_chars, 
 					int       * chunk_matched,
-					aboolean    accept_terminator,
+					bool    accept_terminator,
 					int       * result_size,
 					int         chunk_num, ...)
 {
@@ -676,14 +719,13 @@ char      * axl_stream_get_until_ref   (axlStream * stream,
 }
 
 /** 
- * @internal
- *
- * Allows to nullify the internal reference of the stream, making that
- * reference to be not deallocated once the stream is moving.
+ * @brief Allows to nullify the internal reference of the stream,
+ * making that reference to be not deallocated once the stream is
+ * moving.
  *
  * This is mainly used to reduce the malloc/free round trip while
  * using the stream abstraction, making the stream received from the
- * memory chunk to be allocated only once, avoiding the allocate-free,
+ * memory chunk to be allocated only once, avoiding the double
  * allocate-free cycle.
  * 
  * @param stream The \ref axlStream where the operation will be
@@ -714,8 +756,6 @@ void        axl_stream_nullify         (axlStream * stream,
 }
 
 /** 
- * @internal
- *
  * @brief Allows to perform the same operation like \ref
  * axl_stream_get_untilv but providing an already initialized and
  * opened std arg.
@@ -733,6 +773,9 @@ void        axl_stream_nullify         (axlStream * stream,
  * @param accept_terminator Configure if terminator read should be
  * accepted or only the chunk read.
  *
+ * @param result_size Allows to notify the caller with the chunk size
+ * that is being returned by the function.
+ *
  * @param chunk_num How many terminators are configured.
  *
  * @param args The list of terminators.
@@ -742,7 +785,7 @@ void        axl_stream_nullify         (axlStream * stream,
 char      * axl_stream_get_untilv      (axlStream * stream, 
 					char      * valid_chars, 
 					int       * chunk_matched,
-					aboolean    accept_terminator,
+					bool        accept_terminator,
 					int       * result_size,
 					int         chunk_num, 
 					va_list args)
@@ -751,9 +794,9 @@ char      * axl_stream_get_untilv      (axlStream * stream,
 	int          index       = 0;
 	int          length      = 0;
 	int          max_length  = 0;
-	aboolean     matched;
+	bool         matched;
 	char       * string      = NULL;
-	aboolean     match_empty = AXL_FALSE;
+	bool         match_empty = AXL_FALSE;
 	int          empty_index = 0;
 	
 	/* perform some environmental checks */
@@ -784,9 +827,7 @@ char      * axl_stream_get_untilv      (axlStream * stream,
 			stream->lengths [iterator] = strlen (stream->chunks [iterator]);
 		}
 
-#ifdef SHOW_DEBUG_LOG		
-		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "looking for: '%s'", stream->chunks[iterator]);
-#endif
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "looking for: '%s'", stream->chunks[iterator]);
 		
 		/* get current length */
 		if (stream->lengths [iterator] > max_length)
@@ -803,17 +844,13 @@ char      * axl_stream_get_untilv      (axlStream * stream,
 
 		/* check if the index is falling out side the buffer boundaries */
 		if (fall_out_side_checking (stream, index)) {
-#ifdef SHOW_DEBUG_LOG
-			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "prebuffering from get-until (requested %d, starting from: %d): current status: %s", 
-				 index, stream->stream_index, 
-				 axl_stream_get_following (stream, 10));
-#endif
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "prebuffering from get-until (requested %d, starting from: %d): current status: %s", 
+				   index, stream->stream_index, 
+				   axl_stream_get_following (stream, 10));
 			
 			
 			if (! axl_stream_prebuffer (stream)) {
-#ifdef SHOW_DEBUG_LOG
-				axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "failed while prebuffer");
-#endif
+				__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "failed while prebuffer");
 				return NULL;
 			}
 
@@ -823,11 +860,9 @@ char      * axl_stream_get_untilv      (axlStream * stream,
 			 * a prebuffer operation happens */
 			index--;
 
-#ifdef SHOW_DEBUG_LOG
-			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "before prebuffering (requested: %d, starting from: %d): %s", 
-				 index, stream->stream_index, 
-				 axl_stream_get_following (stream, 10));
-#endif
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "before prebuffering (requested: %d, starting from: %d): %s", 
+				   index, stream->stream_index, 
+				   axl_stream_get_following (stream, 10));
 		} /* end if */
 		
 		/* compare chunks received for each index increased
@@ -878,9 +913,7 @@ char      * axl_stream_get_untilv      (axlStream * stream,
 			 * terminal than a general */
 			if ((length < max_length) && 
 			    ((index + stream->stream_index + length) == stream->stream_size)) {
-#ifdef SHOW_DEBUG_LOG
-				axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "detected possible false positive");
-#endif
+				__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "detected possible false positive");
 				
 				/* do a prebuffer operation,
 				 * and if success, try to
@@ -921,16 +954,12 @@ char      * axl_stream_get_untilv      (axlStream * stream,
 			
 			
 			if (result_size == NULL) {
-#ifdef SHOW_DEBUG_LOG
-				axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "returning (last chunk): '%s' (chunk num: %d) (index: %d, stream index: %d, stream_size: %d)", 
-					 stream->last_chunk, iterator, index, stream->stream_index, stream->stream_size);
-#endif
+				__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "returning (last chunk): '%s' (chunk num: %d) (index: %d, stream index: %d, stream_size: %d)", 
+					   stream->last_chunk, iterator, index, stream->stream_index, stream->stream_size);
 				return stream->last_chunk;
 			}
-#ifdef SHOW_DEBUG_LOG			
-			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "returning: (internal ref) (chunk num: %d) (index: %d, stream index: %d, stream_size: %d)", 
-				 iterator, index, stream->stream_index, stream->stream_size);
-#endif
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "returning: (internal ref) (chunk num: %d) (index: %d, stream index: %d, stream_size: %d)", 
+				   iterator, index, stream->stream_index, stream->stream_size);
 			return string;
 		} /* end if */
 		
@@ -945,7 +974,6 @@ char      * axl_stream_get_untilv      (axlStream * stream,
 
 
 /** 
- * @internal
  * @brief Returns current index status for the given stream.
  *
  * This function could be used to get current index being read for the
@@ -963,7 +991,6 @@ int         axl_stream_get_index       (axlStream * stream)
 }
 
 /** 
- * @internal
  * @brief Returns current global index for the device being streamed.
  * 
  * @param stream The stream where the data is being requested.
@@ -978,7 +1005,6 @@ int         axl_stream_get_global_index (axlStream * stream)
 }
 
 /** 
- * @internal
  * @brief Allows to get current stream size.
  * 
  * @param stream The stream where the stream size will be returned.
@@ -993,11 +1019,9 @@ int         axl_stream_get_size        (axlStream * stream)
 }
 
 /** 
- * @internal
- *
  * @brief Allows to get current status of the given stream, taking the
- * current index, getting an amount of <b>count</b> bytes before
- * and after the given index.
+ * current index, getting an amount of <b>count</b> bytes before and
+ * after the given index.
  *
  * This function is mainly used to get a piece of the stream at the
  * given position while reporting errors. This allows to show the
@@ -1046,8 +1070,8 @@ char      * axl_stream_get_near_to     (axlStream * stream, int count)
 }
 
 /** 
- * @internal
- * @brief Allows to get the following <b>count</b> bytes read from the stream.
+ * @brief Allows to get the following <b>count</b> bytes read from the
+ * stream.
  * 
  * @param stream The stream where the operation will be performed.
  * @param count How many bytes to get from the stream.
@@ -1106,9 +1130,7 @@ void __stream_associated_data_free (AxlStreamAssociatedData * data)
 }
 
 /** 
- * @internal
- *
- * @brief Associates the given axlPointer with the given stream to be
+ * @brief Associates the given \ref axlPointer with the given stream to be
  * life-time dependant.
  *
  * While performing the XML parsing, errors will be produced. This
@@ -1154,8 +1176,6 @@ void        axl_stream_link            (axlStream  *   stream,
 }
 
 /** 
- * @internal
- *
  * @brief Unlinks the associated \ref axlDoc instance.
  * 
  * @param stream The stream where the operation will be performed.
@@ -1183,8 +1203,6 @@ void axl_stream_unlink (axlStream * stream)
 }
 
 /** 
- * @internal
- *
  * @brief Allows to deallocate memory used by the \ref axlStream
  * received.
  * 
@@ -1232,14 +1250,12 @@ void axl_stream_free (axlStream * stream)
 
 
 /** 
- * @internal
- *
  * @brief Allows to check if the given chunk is a white space in the
  * same of the XML 1.0 Third edition.
  *
  * The XML standard understand the "white space", also reffered as S,
- * as the following characters: \x20 (the white space itself), \n, \r
- * and \t.
+ * as the following characters: \\x20 (the white space itself), \\n, \\r
+ * and \\t.
  *
  * This function allows to check if the given chunk contains a white
  * space, in the previous sense.
@@ -1249,7 +1265,7 @@ void axl_stream_free (axlStream * stream)
  * @return AXL_TRUE if the chunk contains a white space or AXL_FALSE
  * if not.
  */
-aboolean        axl_stream_is_white_space  (char * chunk)
+bool        axl_stream_is_white_space  (char * chunk)
 {
 	/* do not complain about receive a null refernce chunk */
 	if (chunk == NULL)
@@ -1269,9 +1285,7 @@ aboolean        axl_stream_is_white_space  (char * chunk)
 }
 
 /** 
- * @internal
- *
- * Internal function to support consuming white spaces in the W3C
+ * @brief Support function which consumes white spaces in the W3C
  * sense.
  * 
  * @param stream The stream where the operation will be performed.
@@ -1405,7 +1419,7 @@ void        axl_stream_trim_with_size  (char * chunk, int * trimmed)
  * some value provided is NULL or the size to compare is not greater
  * than 0 the function will return AXL_FALSE directly.
  */
-aboolean        axl_stream_cmp             (char * chunk1, char * chunk2, int size)
+bool        axl_stream_cmp             (char * chunk1, char * chunk2, int size)
 {
 	/* perform some environmental condition checking */
 	if (chunk1 == NULL)
@@ -1437,7 +1451,7 @@ aboolean        axl_stream_cmp             (char * chunk1, char * chunk2, int si
  * stream boundaries, or AXL_FALSE if requested inspected size could
  * be supported.
  */
-aboolean axl_stream_fall_outside (axlStream * stream, int inspected_size)
+bool axl_stream_fall_outside (axlStream * stream, int inspected_size)
 {
 	axl_return_val_if_fail (stream, AXL_TRUE);
 
@@ -1462,7 +1476,7 @@ aboolean axl_stream_fall_outside (axlStream * stream, int inspected_size)
  * @return Returns AXL_TRUE if the given stream contains the value requested
  * or AXL_FALSE if not.
  */
-aboolean         axl_stream_check           (axlStream * stream, char * chunk, int inspected_size)
+bool         axl_stream_check           (axlStream * stream, char * chunk, int inspected_size)
 {
 
 	axl_return_val_if_fail (stream, AXL_FALSE);
@@ -1487,7 +1501,7 @@ aboolean         axl_stream_check           (axlStream * stream, char * chunk, i
  * 
  * @return AXL_TRUE if the stream is exhausted or AXL_FALSE if not.
  */
-aboolean        axl_stream_remains         (axlStream * stream)
+bool        axl_stream_remains         (axlStream * stream)
 {
 	axl_return_val_if_fail (stream, AXL_FALSE);
 
@@ -1693,13 +1707,21 @@ char    * axl_stream_strdup_printf_len (char * chunk, int * chunk_size, ...)
 }
 
 /** 
- * @internal
- *
  * @brief Allows to split the provided chunk, into several pieces that
  * are separated by the separator (or separators) provided.
  *
  * The function will try to split the chunk provide using the
  * separator provided, and optionally, all separators provided.
+ *
+ * Here is an example:
+ * \code
+ * char ** result;
+ *
+ * // split the provided value using the ':', ';' and ',' as separators.
+ * result = axl-stream_split (value, 3, ":", ";", ",");
+ * \endcode
+ *
+ * The value returned must be deallocated using \ref axl_stream_freev.
  *
  * @param chunk The chunk to split.
  *
@@ -1926,11 +1948,8 @@ int         axl_stream_strv_num        (char ** chunks)
 }
 
 /** 
- * @internal
- *
  * @brief Allows to release memory used by elements returned by \ref
- * axl_stream_split and other function that return a pointer to a char
- * **.
+ * axl_stream_split and other function that return a pointer to a char **.
  * 
  * @param chunks The chunk to release.
  */
@@ -1962,7 +1981,7 @@ void        axl_stream_freev           (char ** chunks)
  * @param chunk The chunk to modify
  * @param desp Bits to increase.
  */
-void __axl_stream_common_to (char * chunk, aboolean to_upper)
+void __axl_stream_common_to (char * chunk, bool to_upper)
 {
 	int iterator = 0;
 

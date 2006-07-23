@@ -367,8 +367,8 @@ typedef struct _axlPI        axlPI;
 typedef struct _axlError  axlError;
 
 /** 
- * @internal
- * @brief Axl XML stream representation.
+ * @brief Axl Stream representation (an abstraction API to manage
+ * source of data with convenience functions).
  */
 typedef struct _axlStream axlStream;
 
@@ -386,7 +386,7 @@ typedef struct _axlStream axlStream;
 
 /** 
  * @brief Alias declaration to bind the <i>int</i> to the <b>boolean</b>
- * concept (TRUE / FALSE states).
+ * concept (TRUE / FALSE states) (DEPRECATED).
  *
  * This is mainly used to emphasize that some integer values that
  * returns some function must be considered to be \ref AXL_TRUE or \ref
@@ -519,7 +519,7 @@ void    axl_free(axlPointer ref);
  * @param expr The expresion to check.
  */
 #define axl_return_if_fail(expr) \
-if (!(expr)) {axl_log ("", AXL_LEVEL_CRITICAL, "Expresion '%s' have failed at %s (%s:lineno=%d)", #expr, __AXL_PRETTY_FUNCTION__, __AXL_FILE__, __AXL_LINE__); return;}
+if (!(expr)) {axl_log ("", AXL_LEVEL_CRITICAL, "Expresion '%s' have failed at %s (%s:%d)", #expr, __AXL_PRETTY_FUNCTION__, __AXL_FILE__, __AXL_LINE__); return;}
 
 /** 
  * @brief Allows to check a condition and return the given value if it
@@ -530,7 +530,7 @@ if (!(expr)) {axl_log ("", AXL_LEVEL_CRITICAL, "Expresion '%s' have failed at %s
  * @param val The value to return if the expression is not meet.
  */
 #define axl_return_val_if_fail(expr, val) \
-if (!(expr)) { axl_log ("", AXL_LEVEL_CRITICAL, "Expresion '%s' have failed, returning: %s at %s (%s:lineno=%d)", #expr, #val, __AXL_PRETTY_FUNCTION__, __AXL_FILE__, __AXL_LINE__); return val;}
+if (!(expr)) { axl_log ("", AXL_LEVEL_CRITICAL, "Expresion '%s' have failed, returning: %s at %s (%s:%d)", #expr, #val, __AXL_PRETTY_FUNCTION__, __AXL_FILE__, __AXL_LINE__); return val;}
 
 
 char * axl_strdup (const char * string);
@@ -546,8 +546,6 @@ char * axl_strdup (const char * string);
 #define axl_strdup_printfv axl_stream_strdup_printfv
 
 /** 
- * @internal
- * 
  * @brief Consumes all spaces found and tabulars on the given stream
  * until a different char is found.
  *
@@ -591,7 +589,73 @@ axl_stream_consume_white_spaces (stream)
 # define END_C_DECLS /* empty */
 #endif
 
-aboolean axl_cmp (char * string, char * string2);
+bool axl_cmp (char * string, char * string2);
+
+/** 
+ * @brief Allows to configure how is performed the iteration other the xml document.
+ *
+ * An xml document could be considered as a tree structure, where the
+ * root document node is the root of the tree. This enumerator allows
+ * to configure how is visited each node of the tree. 
+ */
+typedef enum {
+	/** 
+	 * @brief Makes a deep iteration, visiting first childs of a
+	 * visited node instead of brother nodes at the same level. 
+	 */
+	DEEP_ITERATION, 
+	/** 
+	 * @brief Makes a wide iteration, visiting first all nodes for
+	 * a given level, after visiting nodes for the next level.
+	 */
+	WIDE_ITERATION
+} AxlIterationMode;
+
+/** 
+ * @brief Axl iteration function definition.
+ *
+ * This handler definition is used by \ref axl_doc_iterate as the
+ * function definition that will be called for each node found in the
+ * document.
+ *
+ * The function provides a pointer to the node found, the first
+ * paramenter, and additionally, provides a pointer to the parent node
+ * for the node found, the document where the node is found and an
+ * optional user defined pointer provided at the function calling
+ * (\ref axl_doc_iterate).
+ *
+ * The function returns a boolean value to signal the library to stop
+ * iterating over the XML structure if \ref false is returned. So, to
+ * continue the iteration, you must always return \ref true.
+ * 
+ * @param node The node found inside the document.
+ *
+ * @param parent The parent node for the node found (first parameter).
+ *
+ * @param doc The document that contains the node found.
+ * 
+ * @param ptr A user defined pointer that the user provided at \ref
+ * axl_doc_iterate.
+ * 
+ * @return The callback must return false in the case the iteration
+ * must be stopped. Otherwise, true must be returned.
+ */
+typedef bool (*AxlIterationFunc) (axlNode * node, axlNode * parent, axlDoc * doc, axlPointer ptr);
+
+/** 
+ * @brief Defines a signature for a set of function that are used to
+ * duplicate the content provided at the first parameter, returning a
+ * copy.
+ *
+ * This handler definition is used by: 
+ *
+ * - \ref axl_list_copy
+ * 
+ * @param ptr The data to duplicate.
+ * 
+ * @return A newly allocated data duplicated.
+ */
+typedef axlPointer (*axlDuplicateFunc) (axlPointer ptr);
 
 #endif
 

@@ -55,7 +55,7 @@ BEGIN_C_DECLS
  * @{
  */
 
-aboolean  axl_init ();
+bool  axl_init ();
 
 void  axl_end ();
 
