@@ -27,7 +27,7 @@ RM = rm -f
 all: $(DLL)
 
 clean: 
-	${RM} $(OBJ) $(DLL) *.a *.dll.a *.lib *.def *.dll
+	${RM} $(OBJ) $(DLL) *.a *.dll.a *.lib *.dll
 
 install: all
 
@@ -38,6 +38,7 @@ $(DLL): $(OBJ)
 # -Wl,--out-implib,libaxl.lib
 	$(CC) -m$(MODE) -shared -Wl,--out-implib,$(IMPORT_DLL) --export-all-symbols \
 		  $(OBJ) -o $(DLL)        $(LIBS)
+	lib.exe /def:libaxl.def
 
 %.o: %.c
 	$(CC) -c $< -o $@ $(CFLAGS)
