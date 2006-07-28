@@ -169,6 +169,92 @@ typedef struct _axlDtdElementListNode axlDtdElementListNode;
 
 
 /** 
+ * @brief Axl DTD attribute declaration (<!ATTLIST..>)
+ */
+typedef struct _axlDtdAttribute axlDtdAttribute;
+
+/** 
+ * @brief Axl DTD attribute list decleration inside \ref axlDtdAttribute.
+ */
+typedef struct _axlDtdAttributeDecl axlDtdAttributeDecl;
+
+
+/** 
+ * @brief Attribute type declaration (the type of the attribute
+ * constrain). This type is used to identifier the attribute contains
+ * applied to the node selected.
+ */
+typedef enum { 
+	/** 
+	 * @brief The attribute type is defined but its content is
+	 * CDATA (any string value is allowed), activated when used 'CDATA'.
+	 */
+	CDATA_ATTRIBUTE, 
+	/** 
+	 * @brief Especific token declaration that implicitly contrain
+	 * the node attribute value, activated when used 'ID'.
+	 */
+	TOKENIZED_TYPE_ID, 
+	/** 
+	 * @brief Especific token declaration that implicitly contrain
+	 * the node attribute value, activated when used 'IDREF'.
+	 */
+	TOKENIZED_TYPE_IDREF,
+	/** 
+	 * @brief Especific token declaration that implicitly contrain
+	 * the node attribute value, activated when used 'ENTITY'.
+	 */
+	TOKENIZED_TYPE_ENTITY,
+	/** 
+	 * @brief Especific token declaration that implicitly contrain
+	 * the node attribute value, activated when used 'ENTITIES'.
+	 */
+	TOKENIZED_TYPE_ENTITIES,
+	/** 
+	 * @brief Especific token declaration that implicitly contrain
+	 * the node attribute value, activated when used 'NMTOKEN'.
+	 */
+	TOKENIZED_TYPE_NMTOKEN,
+	/** 
+	 * @brief Especific token declaration that implicitly contrain
+	 * the node attribute value, activated when used 'NMTOKENS'.
+	 */
+	TOKENIZED_TYPE_NMTOKENS,
+	/** 
+	 * @brief The attribute type declaration is constrained to a
+	 * set of values. This values are considered as an
+	 * enumeration.
+	 */
+	ENUMERATION_TYPE, 
+	/** 
+	 * @brief Attribute type not supported yet (although defined).
+	 */
+	NOTATION_TYPE
+} AxlDtdAttributeType;
+
+/** 
+ * @brief Defines the DTD attribute declaration default state.
+ */
+typedef enum {
+	/** 
+	 * @brief The attribute is required as especified by the
+	 * attribute declaration.
+	 */
+	ATT_REQUIRED,
+	/** 
+	 * @brief The attribute is not requried, however, if it
+	 * appears it must follow the attribute type declaration.
+	 */
+	ATT_IMPLIED,
+	/** 
+	 * @brief The attribute must appear and have the value
+	 * provided as the default.
+	 */
+	ATT_FIXED
+}AxlDtdAttributeDefaults;
+
+
+/** 
  * @brief The type of the DTD sequences stored by the \ref
  * axlDtdElementList.
  */
@@ -355,7 +441,7 @@ typedef struct _axlPI        axlPI;
  *     printf ("Parse error: code=%d, message=%s\n", 
  *             axl_error_get_code (error), axl_error_get (error));
  *     axl_error_free (error);
- *     return AXL_FALSE;
+ *     return false;
  * }
  *
  * // beyond this point, it is not required to do
@@ -373,14 +459,14 @@ typedef struct _axlError  axlError;
 typedef struct _axlStream axlStream;
 
 /** 
- * @brief Type definition to represent a boolean true value, that is
- * equal to 1. 
+ * @brief (DEPRECATED use \ref true) Type definition to represent a
+ * boolean true value, that is equal to 1.
  */
 #define AXL_TRUE  (1)
 
 /** 
- * @brief Type definition to represent a boolean false value, that is
- * equal to 0.
+ * @brief (DEPRECATED use \ref false) Type definition to represent a
+ * boolean false value, that is equal to 0.
  */
 #define AXL_FALSE (0)
 
@@ -389,8 +475,8 @@ typedef struct _axlStream axlStream;
  * concept (TRUE / FALSE states) (DEPRECATED).
  *
  * This is mainly used to emphasize that some integer values that
- * returns some function must be considered to be \ref AXL_TRUE or \ref
- * AXL_FALSE, that represents the boolean TRUE and FALSE values.
+ * returns some function must be considered to be \ref true or \ref
+ * false, that represents the boolean TRUE and FALSE values.
  *
  * This allows to perform boolean comparations using structure
  * controls like if, while, but also making a differenciation about
@@ -564,10 +650,10 @@ axl_stream_consume_white_spaces (stream)
  * 
  * @param str The string to check for emptyness.
  * 
- * @return Returns AXL_TRUE if the string is empty and AXL_FALSE if
+ * @return Returns true if the string is empty and false if
  * not.
  */
-#define AXL_IS_STR_EMPTY(str) (((str == NULL) || strlen (str) == 0) ? AXL_TRUE : AXL_FALSE)
+#define AXL_IS_STR_EMPTY(str) (((str == NULL) || strlen (str) == 0) ? true : false)
 
 /** 
  * @internal

@@ -424,9 +424,9 @@ void __axl_doc_clean (axlDoc * doc)
  * @param error An optional error that will be filled in the case an
  * error is found.
  *
- * @return It is supposed that the function return \ref AXL_TRUE, an
+ * @return It is supposed that the function return \ref true, an
  * not deallocation is performed, and all elements were parsed
- * properly. In the case \ref AXL_FALSE is returned, memory associated
+ * properly. In the case \ref false is returned, memory associated
  * with the given stream will be released. If the document is
  * associated, it will also be released.
  */
@@ -438,7 +438,7 @@ bool __axl_doc_parse_xml_header (axlStream * stream, axlDoc * doc, axlError ** e
 	if (doc->headerProcess) {
 		axl_error_new (-1, "Found a new xml header expecification. Only one header is allowed for each xml document.", stream, error);
 		axl_stream_free (stream);
-		return AXL_FALSE;
+		return false;
 	}
 
 #ifdef SHOW_DEBUG_LOG
@@ -456,7 +456,7 @@ bool __axl_doc_parse_xml_header (axlStream * stream, axlDoc * doc, axlError ** e
 		if (! (axl_stream_inspect (stream, "xml", 3) > 0)) {
 			axl_error_new (-2, "expected initial <?xml declaration, not found.", stream, error);
 			axl_stream_free (stream);
-			return AXL_FALSE;
+			return false;
 		}
 		
 		/* consume spaces */
@@ -465,7 +465,7 @@ bool __axl_doc_parse_xml_header (axlStream * stream, axlDoc * doc, axlError ** e
 		if (! axl_stream_inspect (stream, "version=", 8)) {
 			axl_error_new (-2, "expected to find 'version=' declaration, not found.", stream, error);
 			axl_stream_free (stream);
-			return AXL_FALSE;
+			return false;
 		}
 
 		/* consume spaces */
@@ -475,7 +475,7 @@ bool __axl_doc_parse_xml_header (axlStream * stream, axlDoc * doc, axlError ** e
 		if (! axl_stream_inspect_several (stream, 2, "\"1.0\"", 5, "'1.0'", 5)) {
 			axl_error_new (-2, "expected to find either \" or ' while procesing version number, not found.", stream, error);
 			axl_stream_free (stream);
-			return AXL_FALSE;
+			return false;
 		}
 
 		/* check for an space */
@@ -488,11 +488,11 @@ bool __axl_doc_parse_xml_header (axlStream * stream, axlDoc * doc, axlError ** e
 #endif
 
 			/* found encoding instruction */
-			string_aux = axl_stream_get_until (stream, NULL, NULL, AXL_TRUE, 2, "'", "\"");
+			string_aux = axl_stream_get_until (stream, NULL, NULL, true, 2, "'", "\"");
 			if (string_aux == NULL) {
 				axl_error_new (-2, "expected encoding value, not found.", stream, error);
 				axl_stream_free (stream);
-				return AXL_FALSE;
+				return false;
 			}
 #ifdef SHOW_DEBUG_LOG			
 			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "encoding found=%s", string_aux);
@@ -514,18 +514,18 @@ bool __axl_doc_parse_xml_header (axlStream * stream, axlDoc * doc, axlError ** e
 		if ((axl_stream_inspect_several (stream, 2, "standalone=\"", 12, "standalone='", 12) > 0)) {
 			
 			/* found standalone instruction */
-			string_aux = axl_stream_get_until (stream, NULL, NULL, AXL_TRUE, 2, "'", "\"");
+			string_aux = axl_stream_get_until (stream, NULL, NULL, true, 2, "'", "\"");
 			if (string_aux == NULL) {
 				axl_error_new (-2, "expected to receive standalone value, not found.", stream, error);
 				axl_stream_free (stream);
-				return AXL_FALSE;
+				return false;
 			}
 
 			/* set standalone configuration */
 			if (memcmp ("yes", string_aux, 3))
-				doc->standalone = AXL_FALSE;
+				doc->standalone = false;
 			else
-				doc->standalone = AXL_TRUE;
+				doc->standalone = true;
 		}
 		
 		/* check for an space */
@@ -535,16 +535,16 @@ bool __axl_doc_parse_xml_header (axlStream * stream, axlDoc * doc, axlError ** e
 		if (! (axl_stream_inspect (stream, "?>", 2) > 0)) {
 			axl_error_new (-2, "expected to receive the xml trailing header ?>, not found.", stream, error);
 			axl_stream_free (stream);
-			return AXL_FALSE;
+			return false;
 		}
 
 		/* consume a possible comment */
 		if (! axl_doc_consume_comments (doc, stream, error))
-			return AXL_FALSE;
+			return false;
 	}
 
 	/* return TRUE value */
-	return AXL_TRUE;
+	return true;
 }
 
 /** 
@@ -582,8 +582,8 @@ bool __axl_doc_parse_xml_header (axlStream * stream, axlDoc * doc, axlError ** e
  * @param error An optional error reporting variable to used to report
  * upper level the error found.
  * 
- * @return AXL_TRUE if the first node was successfully parsed or
- * AXL_FALSE if not. If the function find something wrong the document
+ * @return true if the first node was successfully parsed or
+ * false if not. If the function find something wrong the document
  * is unrefered.
  */
 bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_node, axlError ** error)
@@ -594,12 +594,12 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 	int       matched_chunk;
 	int       iterator;
 	
-	axl_return_val_if_fail (stream, AXL_FALSE);
-	axl_return_val_if_fail (doc, AXL_FALSE);
+	axl_return_val_if_fail (stream, false);
+	axl_return_val_if_fail (doc, false);
 	
 	/* consume a possible comment */
 	if (! axl_doc_consume_comments (doc, stream, error))
-		return AXL_FALSE;
+		return false;
 
 	/* check for initial < definition */
 	if (! (axl_stream_inspect (stream, "<", 1) > 0)  && ! axl_stream_remains (stream)) {
@@ -610,15 +610,15 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 		else
 			axl_error_new (-2, "expected initial < for a node definition, not found.", stream, error);
 		axl_stream_free (stream);
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* get node name */
-	string_aux = axl_stream_get_until (stream, NULL, &matched_chunk, AXL_TRUE, 3, "/>", ">", " ");
+	string_aux = axl_stream_get_until (stream, NULL, &matched_chunk, true, 3, "/>", ">", " ");
 	if (AXL_IS_STR_EMPTY (string_aux)) {
 		axl_error_new (-2, "expected an non empty content for the node name not found.", stream, error);
 		axl_stream_free (stream);
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* create the node and associate it */
@@ -675,13 +675,13 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found end xml node definition '/>'");
 #endif
 			/* empty node configuration found */
-			axl_node_set_is_empty (node, AXL_TRUE);
-			axl_node_set_have_childs (node, AXL_FALSE);
+			axl_node_set_is_empty (node, true);
+			axl_node_set_have_childs (node, false);
 
 			/* make this node to be completed and no child
 			 * could be set. */
 			axl_doc_pop_current_parent (doc);
-			return AXL_TRUE;
+			return true;
 		}
 		
 		/* check if we have an attribute for the node, or the node
@@ -699,18 +699,18 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found [end] xml node definition '>', for node: [%s]",
 				 axl_node_get_name (node));
 #endif
-			axl_node_set_have_childs (node, AXL_TRUE);
-			axl_node_set_is_empty (node, AXL_FALSE);
+			axl_node_set_have_childs (node, true);
+			axl_node_set_is_empty (node, false);
 			/* this node is ended */
-			return AXL_TRUE;
+			return true;
 		}
 		
 		/* get rid from spaces */
 		AXL_CONSUME_SPACES (stream);
 
 		/* found attribute declaration, try to read it */
-		/* string_aux = axl_stream_get_until (stream, NULL, NULL, AXL_TRUE, 3, "='", "=\"", "="); */
-		string_aux = axl_stream_get_until (stream, NULL, NULL, AXL_TRUE, 1, "=");
+		/* string_aux = axl_stream_get_until (stream, NULL, NULL, true, 3, "='", "=\"", "="); */
+		string_aux = axl_stream_get_until (stream, NULL, NULL, true, 1, "=");
 		if (string_aux != NULL) {
 #ifdef SHOW_DEBUG_LOG
 			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "attribute found: [%s]", string_aux);
@@ -726,11 +726,11 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 					axl_error_new (-2, "Expected to find an attribute value initiator (\") or ('), every attribute value must start with them", 
 						       stream, error);
 					axl_stream_free (stream);
-					return AXL_FALSE;
+					return false;
 				}
 			
 			/* now get the attribute value */
-			string_aux2 = axl_stream_get_until (stream, NULL, NULL, AXL_TRUE, 2, "'", "\"");
+			string_aux2 = axl_stream_get_until (stream, NULL, NULL, true, 2, "'", "\"");
 #ifdef SHOW_DEBUG_LOG
 			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "value found: [%s]", string_aux2);
 #endif
@@ -756,7 +756,7 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 		if (iterator == 3) {
 			axl_error_new (-2, "Parse error while reading a node being opened", stream, error);
 			axl_stream_free (stream);
-			return AXL_FALSE;
+			return false;
 		}
 		iterator++;
 	} while (axl_stream_remains (stream));
@@ -766,7 +766,7 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 #endif
 	
 	/* document properly parsed */
-	return AXL_TRUE;
+	return true;
 }
 
 /** 
@@ -782,12 +782,12 @@ bool __axl_doc_parse_close_node (axlStream * stream, axlDoc * doc, axlNode ** _n
 	axlNode * node;
 
 	/* get the node being closed to check to the current parent */
-	string = axl_stream_get_until_ref (stream, NULL, &matched_chunk, AXL_TRUE, &result_size, 2, " ", ">");
+	string = axl_stream_get_until_ref (stream, NULL, &matched_chunk, true, &result_size, 2, " ", ">");
 	if (string == NULL) {
 		
 		axl_error_new (-1, "An error was found while closing the xml node", stream, error);
 		axl_stream_free (stream);
-		return AXL_FALSE;
+		return false;
 	}
 
 	if (matched_chunk == 0) {
@@ -799,7 +799,7 @@ bool __axl_doc_parse_close_node (axlStream * stream, axlDoc * doc, axlNode ** _n
 			axl_error_new (-1, "An error was found while closing the xml node, with white spaces between the node name and the node terminator (>)", 
 				       stream, error);
 			axl_stream_free (stream);
-			return AXL_FALSE;
+			return false;
 		}
 	}
 
@@ -809,7 +809,7 @@ bool __axl_doc_parse_close_node (axlStream * stream, axlDoc * doc, axlNode ** _n
 		axl_error_new (-1, "Found that the stack doesn't have any node opened, this means either an libaxl error or the xml being read is closing a node not opened",
 			       stream, error);
 		axl_stream_free (stream);
-		return AXL_FALSE;
+		return false;
 	}
 	
 	if (axl_stream_cmp (axl_node_get_name (node), string, strlen (axl_node_get_name (node))) &&
@@ -817,14 +817,14 @@ bool __axl_doc_parse_close_node (axlStream * stream, axlDoc * doc, axlNode ** _n
 
 		/* update emptyness configuration */
 		if (axl_node_get_content (node, NULL) == NULL && (! axl_node_is_empty (node)))
-			axl_node_set_is_empty (node, AXL_TRUE);
+			axl_node_set_is_empty (node, true);
 
 
 		/* ok, axl node to be closed is the one expected */
 #ifdef SHOW_DEBUG_LOG
 		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "closing xml node, that matched with parent opened");
 #endif
-		return AXL_TRUE;
+		return true;
 	}
 
 	/* seems that the node being closed doesn't match */
@@ -845,7 +845,7 @@ bool __axl_doc_parse_close_node (axlStream * stream, axlDoc * doc, axlNode ** _n
 		       stream, error);
 	axl_stream_free (stream);
 
-	return AXL_FALSE;
+	return false;
 }
 
 
@@ -870,7 +870,7 @@ axlDoc * __axl_doc_parse_common (char * entity, int entity_size,
 	axl_return_val_if_fail (stream, NULL);
 
 	/* create a document reference */
-	doc            = __axl_doc_new (AXL_TRUE);
+	doc            = __axl_doc_new (true);
 	axl_stream_link (stream, doc, (axlDestroyFunc) axl_doc_free);
 
 	/* parse initial xml header */
@@ -878,7 +878,7 @@ axlDoc * __axl_doc_parse_common (char * entity, int entity_size,
 		return NULL;
 
 	/* signal that this document have processed its header */
-	doc->headerProcess = AXL_TRUE;
+	doc->headerProcess = true;
 	
 	/* parse the rest of the document */
 	if (!__axl_doc_parse_node (stream, doc, &node, error))
@@ -903,7 +903,7 @@ axlDoc * __axl_doc_parse_common (char * entity, int entity_size,
 
 			/* consume a possible comment */
 			if (! axl_doc_consume_comments (doc, stream, error))
-				return AXL_FALSE;
+				return false;
 			
 			if ((axl_stream_peek (stream, "</", 2) > 0)) {
 				/* accept previous peek */
@@ -940,7 +940,7 @@ axlDoc * __axl_doc_parse_common (char * entity, int entity_size,
 				axl_stream_accept (stream);
 
 				/* found CDATA section, get current content */
-				string = axl_stream_get_until (stream, NULL, NULL, AXL_TRUE, 1, "]]>");
+				string = axl_stream_get_until (stream, NULL, NULL, true, 1, "]]>");
 				if (string == NULL) {
 					axl_error_new (-1, "Unable to get CDATA content. There was an error.", stream, error);
 					axl_stream_free (stream);
@@ -980,7 +980,7 @@ axlDoc * __axl_doc_parse_common (char * entity, int entity_size,
 			}
 			
 			/* found node content */
-			string = axl_stream_get_until (stream, NULL, NULL, AXL_FALSE, 1, "<");
+			string = axl_stream_get_until (stream, NULL, NULL, false, 1, "<");
 			/* check for a null content found */
 			if (string == NULL) {
 				axl_error_new (-1, "an error was found while reading the xml node content", stream, error);
@@ -1040,7 +1040,7 @@ axlDoc * __axl_doc_parse_common (char * entity, int entity_size,
  * used.
  *
  * @param standalone Standalone configuration flag. By default, use
- * AXL_FALSE.
+ * false.
  * 
  * @return Returns a newly allocated \ref axlDoc instance that must be
  * deallocated by using \ref axl_doc_free.
@@ -1052,7 +1052,7 @@ axlDoc  * axl_doc_create                   (char     * version,
 	axlDoc * doc;
 
 	/* create a new reference, without creating  */
-	doc = __axl_doc_new (AXL_FALSE);
+	doc = __axl_doc_new (false);
 	
 	/* save the version */
 	if (version != NULL)
@@ -1217,7 +1217,7 @@ int axl_doc_get_flat_size (axlDoc * doc)
  * if (doc == NULL) {
  *      printf ("Error found: %s\n", axl_error_get (error));
  *      axl_error_free (error);
- *      return AXL_FALSE;
+ *      return false;
  * }
  *
  * // release document parsed 
@@ -1422,7 +1422,7 @@ bool __axl_doc_are_equal (axlNode * node, axlNode * node2)
 
 	/* check if parent nodes are equal */
 	if (! axl_node_are_equal (node, node2))
-		return AXL_FALSE;
+		return false;
 
 #ifdef SHOW_DEBUG_LOG
 	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "<%s>=<%s>", 
@@ -1440,18 +1440,18 @@ bool __axl_doc_are_equal (axlNode * node, axlNode * node2)
 
 		/* check if these nodes are also equal */
 		if (! axl_node_are_equal (child, child2)) 
-			return AXL_FALSE;
+			return false;
 
 		/* check its childs */
 		if (! __axl_doc_are_equal (child, child2))
-			return AXL_FALSE;
+			return false;
 
 		/* update iterator count */
 		iterator++;
 	}
 
 	/* the nodes recieved are equal */
-	return AXL_TRUE;
+	return true;
 }
 
 /** 
@@ -1461,8 +1461,8 @@ bool __axl_doc_are_equal (axlNode * node, axlNode * node2)
  * @param doc The first XML document to check.
  * @param doc2 The second XML document to check.
  * 
- * @return AXL_TRUE if both documents represents the same document,
- * AXL_FALSE if not.
+ * @return true if both documents represents the same document,
+ * false if not.
  */
 bool      axl_doc_are_equal                (axlDoc * doc, 
 						axlDoc * doc2)
@@ -1470,8 +1470,8 @@ bool      axl_doc_are_equal                (axlDoc * doc,
 	axlNode * node;
 	axlNode * node2;
 
-	axl_return_val_if_fail (doc, AXL_FALSE);
-	axl_return_val_if_fail (doc, AXL_FALSE);
+	axl_return_val_if_fail (doc, false);
+	axl_return_val_if_fail (doc, false);
 
 	/* first, check the document root */
 #ifdef SHOW_DEBUG_LOG
@@ -1781,14 +1781,14 @@ char   * axl_doc_get_encoding (axlDoc * doc)
  * @param doc The \ref axlDoc document where the standalone value will
  * be retreived.
  * 
- * @return \ref AXL_TRUE if the standalone configuration, found inside
- * the xml header is set to TRUE. Otherwise \ref AXL_FALSE is
+ * @return \ref true if the standalone configuration, found inside
+ * the xml header is set to TRUE. Otherwise \ref false is
  * returned. Keep in mind that the function will return an \ref
- * AXL_FALSE value if a null reference is received.
+ * false value if a null reference is received.
  */
 bool     axl_doc_get_standalone (axlDoc * doc)
 {
-	axl_return_val_if_fail (doc, AXL_FALSE);
+	axl_return_val_if_fail (doc, false);
 
 	/* return current configuration */
 	return doc->standalone;
@@ -1951,8 +1951,8 @@ void      axl_doc_add_pi_target            (axlDoc * doc,
  *
  * @param pi_target The process instruction name.
  * 
- * @return AXL_TRUE is the processing instruction is defined,
- * otherwise AXL_FALSE is returned.
+ * @return true is the processing instruction is defined,
+ * otherwise false is returned.
  */
 bool      axl_doc_has_pi_target            (axlDoc * doc, char * pi_target)
 {
@@ -1961,8 +1961,8 @@ bool      axl_doc_has_pi_target            (axlDoc * doc, char * pi_target)
 	int     length   = 0;
 
 	
-	axl_return_val_if_fail (doc,       AXL_FALSE);
-	axl_return_val_if_fail (pi_target, AXL_FALSE);
+	axl_return_val_if_fail (doc,       false);
+	axl_return_val_if_fail (pi_target, false);
 
 	/* get the length for the items inserted */
 	length = axl_list_length (doc->piTargets);
@@ -1971,12 +1971,12 @@ bool      axl_doc_has_pi_target            (axlDoc * doc, char * pi_target)
 		pi = axl_list_get_nth (doc->piTargets, iterator);
 		/* only check the first ocurrency */
 		if (axl_cmp (pi->name, pi_target))
-			return AXL_TRUE;
+			return true;
 
 		iterator++;
 	}
 	
-	return AXL_FALSE;
+	return false;
 }
 
 /** 
@@ -2325,7 +2325,7 @@ bool      axl_doc_consume_comments         (axlDoc * doc, axlStream * stream, ax
 	do {
 		/* flag the loop to end, and only end if both,
 		 * comments matching and PI matching fails. */
-		found_item = AXL_FALSE;
+		found_item = false;
 		
 		/* get rid from spaces */
 		AXL_CONSUME_SPACES(stream);
@@ -2333,15 +2333,15 @@ bool      axl_doc_consume_comments         (axlDoc * doc, axlStream * stream, ax
 		/* check for comments */
 		if (axl_stream_inspect (stream, "<!--", 4) > 0) {
 			
-			if (! axl_stream_get_until_ref (stream, NULL, NULL, AXL_TRUE, NULL, 1, "-->")) {
+			if (! axl_stream_get_until_ref (stream, NULL, NULL, true, NULL, 1, "-->")) {
 				axl_error_new (-1, "detected an opened comment but not found the comment ending",
 					       stream, error);
 				axl_stream_free (stream);
-				return AXL_FALSE;
+				return false;
 			} 
 			
 			/* flag that we have found a comment */
-			found_item = AXL_TRUE;
+			found_item = true;
 		}
 #ifdef SHOW_DEBUG_LOG
 		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "now see for process instructions");
@@ -2353,8 +2353,8 @@ bool      axl_doc_consume_comments         (axlDoc * doc, axlStream * stream, ax
 		/* check for PI, only once the xml header have been processed */
 		if ((doc != NULL) && doc->headerProcess && (axl_stream_peek (stream, "<?", 2) > 0)) {
 			if (! axl_doc_consume_pi (doc, axl_stack_peek (doc->parentNode), stream, error))
-				return AXL_FALSE;
-			found_item = AXL_TRUE;
+				return false;
+			found_item = true;
 		}
 
 		/* get rid from spaces */
@@ -2366,7 +2366,7 @@ bool      axl_doc_consume_comments         (axlDoc * doc, axlStream * stream, ax
 
 
 	/* true value */
-	return AXL_TRUE;
+	return true;
 }
 
 /** 
@@ -2382,7 +2382,7 @@ bool      axl_doc_consume_comments         (axlDoc * doc, axlStream * stream, ax
  * @param error An optional axlError where the information will be
  * reported.
  * 
- * @return AXL_TRUE if not error was found, otherwise AXL_FASLSE is
+ * @return true if not error was found, otherwise AXL_FASLSE is
  * returned.
  */
 bool      axl_doc_consume_pi (axlDoc * doc, axlNode * node, 
@@ -2406,13 +2406,13 @@ bool      axl_doc_consume_pi (axlDoc * doc, axlNode * node,
 		/* found a pi target initialization */
 		axl_stream_accept (stream);
 		
-		string_aux = axl_stream_get_until (stream, NULL, &matched_chunk, AXL_TRUE, 3, 
+		string_aux = axl_stream_get_until (stream, NULL, &matched_chunk, true, 3, 
 						   " ?>", "?>", " ");
 		/* check error reported */
 		if (string_aux == NULL) {
 			axl_error_new (-1, "Found a error while reading the PI target name", stream, error);
 			axl_stream_free (stream);
-			return AXL_FALSE;
+			return false;
 		}
 
 		/* check that the reserved xml word is not used for the PI target */
@@ -2421,7 +2421,7 @@ bool      axl_doc_consume_pi (axlDoc * doc, axlNode * node,
 			axl_free (string_aux2);
 			axl_error_new (-1, "Using a reserved PI target name (xml), not allowed", stream, error);
 			axl_stream_free (stream);
-			return AXL_FALSE;
+			return false;
 		}
 		axl_free (string_aux2);
 
@@ -2435,12 +2435,12 @@ bool      axl_doc_consume_pi (axlDoc * doc, axlNode * node,
 			/* seems that the PI target doesn't have more data associated, craete and return */
 			if (node != NULL) {
 				axl_node_add_pi_target (node, string_aux, NULL);
-				return AXL_TRUE;
+				return true;
 			}
 			
 			if (doc != NULL)
 				axl_doc_add_pi_target (doc, string_aux, NULL);
-			return AXL_TRUE;
+			return true;
 		}
 
 		/* seems that we have additional content to be read */
@@ -2450,14 +2450,14 @@ bool      axl_doc_consume_pi (axlDoc * doc, axlNode * node,
 			string_aux  = axl_strdup (string_aux);
 			
 			/* get the PI content */
-			string_aux2 = axl_stream_get_until (stream, NULL, NULL, AXL_TRUE, 2, " ?>", "?>");
+			string_aux2 = axl_stream_get_until (stream, NULL, NULL, true, 2, " ?>", "?>");
 
 			/* check error reported */
 			if (string_aux2 == NULL) {
 				axl_free (string_aux);
 				axl_error_new (-1, "Found a error while reading the PI content", stream, error);
 				axl_stream_free (stream);
-				return AXL_FALSE;
+				return false;
 			}
 
 			/* check the destination for the pi */			
@@ -2468,7 +2468,7 @@ bool      axl_doc_consume_pi (axlDoc * doc, axlNode * node,
 
 				axl_node_add_pi_target (node, string_aux, string_aux2);
 				axl_free (string_aux);
-				return AXL_TRUE;
+				return true;
 			}
 
 
@@ -2478,7 +2478,7 @@ bool      axl_doc_consume_pi (axlDoc * doc, axlNode * node,
 #endif
 				axl_doc_add_pi_target (doc, string_aux, string_aux2);
 				axl_free (string_aux);
-				return AXL_TRUE;
+				return true;
 			}
 
 		}
@@ -2486,14 +2486,14 @@ bool      axl_doc_consume_pi (axlDoc * doc, axlNode * node,
 		/* check error reported */
 		axl_error_new (-1, "Found a error while reading the PI target name, unable to find PI terminator ?>", stream, error);
 		axl_stream_free (stream);
-		return AXL_FALSE;
+		return false;
 	}
 
 #ifdef SHOW_DEBUG_LOG
 	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "PI processing finished");
 #endif
 
-	return AXL_TRUE;
+	return true;
 }
 
 /* @} */

@@ -150,8 +150,8 @@ struct _axlStream {
  * @param stream The stream where the pre-buffering operation will be
  * performed.
  * 
- * @return AXL_TRUE if the requested padding and buffer size were
- * filled or AXL_FALSE if end of file was reached. In that case the
+ * @return true if the requested padding and buffer size were
+ * filled or false if end of file was reached. In that case the
  * stream size is not updated.
  */
 bool axl_stream_prebuffer (axlStream * stream)
@@ -159,16 +159,16 @@ bool axl_stream_prebuffer (axlStream * stream)
 	int  bytes_read;
 
 	/* check some environment conditions */
-	axl_return_val_if_fail (stream, AXL_FALSE);
+	axl_return_val_if_fail (stream, false);
 
 	/* no prebuffering is the stream type is not a file descriptor
 	 * source */
 	if (stream->type != STREAM_FD)
-		return AXL_FALSE;
+		return false;
 
 	/* no prebuffering operation if the socket is closed */
 	if (stream->fd == -1)
-		return AXL_FALSE;
+		return false;
 
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "prebuffering the stream..");
 
@@ -219,7 +219,7 @@ bool axl_stream_prebuffer (axlStream * stream)
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "end of file reached");
 		close (stream->fd);
 		stream->fd = -1;
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* set the new size, that is the padding, the content already
@@ -232,7 +232,7 @@ bool axl_stream_prebuffer (axlStream * stream)
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "   prebuffered data: stream size: %d",
 		   stream->stream_size);
 
-	return AXL_TRUE;
+	return true;
 }
 
 /** 
@@ -388,8 +388,8 @@ axlStream * axl_stream_new (char * stream_source, int stream_size,
  * @param inspected_size The size for the chunk to be checked or -1 if
  * a chunk size calculation is required.
  *
- * @param alsoAccept AXL_TRUE to make the function to accept stream
- * that is properly inspected, AXL_FALSE if not.
+ * @param alsoAccept true to make the function to accept stream
+ * that is properly inspected, false if not.
  * 
  * @return See \ref axl_stream_inspect.
  */
@@ -458,7 +458,7 @@ int         axl_stream_common_inspect (axlStream * stream, char * chunk, int ins
 int         axl_stream_inspect (axlStream * stream, char * chunk, int inspected_size)
 {
 	/* call to common implementation */
-	return axl_stream_common_inspect (stream, chunk, inspected_size, AXL_TRUE);
+	return axl_stream_common_inspect (stream, chunk, inspected_size, true);
 }
 
 /** 
@@ -478,7 +478,7 @@ int         axl_stream_inspect (axlStream * stream, char * chunk, int inspected_
 int         axl_stream_peek            (axlStream * stream, char * chunk, int inspected_size)
 {
 	/* call to common implementation */
-	return axl_stream_common_inspect (stream, chunk, inspected_size, AXL_FALSE);
+	return axl_stream_common_inspect (stream, chunk, inspected_size, false);
 }
 
 /** 
@@ -796,7 +796,7 @@ char      * axl_stream_get_untilv      (axlStream * stream,
 	int          max_length  = 0;
 	bool         matched;
 	char       * string      = NULL;
-	bool         match_empty = AXL_FALSE;
+	bool         match_empty = false;
 	int          empty_index = 0;
 	
 	/* perform some environmental checks */
@@ -816,7 +816,7 @@ char      * axl_stream_get_untilv      (axlStream * stream,
 		/* check if we have to match the emtpy string, and
 		 * don't install the value to be matched */
 		if (axl_cmp (stream->chunks[iterator], " ")) {
-			match_empty = AXL_TRUE;
+			match_empty = true;
 
 			/* reset the length size to detect an emtpy
 			 * string */
@@ -868,7 +868,7 @@ char      * axl_stream_get_untilv      (axlStream * stream,
 		/* compare chunks received for each index increased
 		 * one step */
 	init_get_until:
-		matched  = AXL_FALSE;
+		matched  = false;
 		iterator = 0;
 		
 		/* before iterating, check if we have to match the
@@ -877,7 +877,7 @@ char      * axl_stream_get_untilv      (axlStream * stream,
 			if (axl_stream_is_white_space (stream->stream + index + stream->stream_index)) {
 				/* string matched */
 				length         = 1;
-				matched        = AXL_TRUE;
+				matched        = true;
 				iterator       = empty_index;
 			}
 		} /* end if */
@@ -898,7 +898,7 @@ char      * axl_stream_get_untilv      (axlStream * stream,
 				 * 1.0, that is \r \n \t " " */
 				matched = !memcmp (stream->chunks[iterator], stream->stream + index + stream->stream_index, length);
 			}else
-				matched = AXL_FALSE;
+				matched = false;
 			
 			/* check if we have found the chunk we were looking */
 			if (! matched) {
@@ -966,7 +966,7 @@ char      * axl_stream_get_untilv      (axlStream * stream,
 		/* it seems that the chunk wasn't found */
 		index++;
 
-	}while (AXL_TRUE);
+	}while (true);
 
 	/* return a NULL chunk. */
 	return NULL;	
@@ -1262,26 +1262,26 @@ void axl_stream_free (axlStream * stream)
  * 
  * @param chunk The chunk to check
  * 
- * @return AXL_TRUE if the chunk contains a white space or AXL_FALSE
+ * @return true if the chunk contains a white space or false
  * if not.
  */
 bool        axl_stream_is_white_space  (char * chunk)
 {
 	/* do not complain about receive a null refernce chunk */
 	if (chunk == NULL)
-		return AXL_FALSE;
+		return false;
 	
 	if (! memcmp (chunk, " ", 1)) 
-		return AXL_TRUE;
+		return true;
 	if (! memcmp (chunk, "\n", 1)) 
-		return AXL_TRUE;
+		return true;
 	if (! memcmp (chunk, "\t", 1)) 
-		return AXL_TRUE;
+		return true;
 	if (! memcmp (chunk, "\r", 1)) 
-		return AXL_TRUE;
+		return true;
 
 	/* no white space was found */
-	return AXL_FALSE;
+	return false;
 }
 
 /** 
@@ -1290,7 +1290,7 @@ bool        axl_stream_is_white_space  (char * chunk)
  * 
  * @param stream The stream where the operation will be performed.
  * 
- * @return AXL_TRUE if more white spaces could be consumed, AXL_FALSE
+ * @return true if more white spaces could be consumed, false
  * if not.
  */
 void axl_stream_consume_white_spaces (axlStream * stream)
@@ -1312,7 +1312,7 @@ void axl_stream_consume_white_spaces (axlStream * stream)
 		stream->global_index++;
 		stream->previous_inspect  = 0;
 
-	}while (AXL_TRUE);
+	}while (true);
 
 	return;
 }
@@ -1415,24 +1415,24 @@ void        axl_stream_trim_with_size  (char * chunk, int * trimmed)
  * @param size The amount of bytes to be compared for the two incoming
  * values.
  * 
- * @return AXL_TRUE if both string are equal, AXL_FALSE if not. If
+ * @return true if both string are equal, false if not. If
  * some value provided is NULL or the size to compare is not greater
- * than 0 the function will return AXL_FALSE directly.
+ * than 0 the function will return false directly.
  */
 bool        axl_stream_cmp             (char * chunk1, char * chunk2, int size)
 {
 	/* perform some environmental condition checking */
 	if (chunk1 == NULL)
-		return AXL_FALSE;
+		return false;
 	if (chunk2 == NULL)
-		return AXL_FALSE;
+		return false;
 	if (size < 0)
-		return AXL_FALSE;
+		return false;
 	
 	/* report current comparation status */
 	if (!memcmp (chunk1, chunk2, size))
-		return AXL_TRUE;
-	return AXL_FALSE;
+		return true;
+	return false;
 }
 
 /** 
@@ -1447,13 +1447,13 @@ bool        axl_stream_cmp             (char * chunk1, char * chunk2, int size)
  * @param inspected_size The size to inspected, that is being
  * requested to be checked on the given stream.
  * 
- * @return \ref AXL_TRUE if the provided chunk falls out side the
- * stream boundaries, or AXL_FALSE if requested inspected size could
+ * @return \ref true if the provided chunk falls out side the
+ * stream boundaries, or false if requested inspected size could
  * be supported.
  */
 bool axl_stream_fall_outside (axlStream * stream, int inspected_size)
 {
-	axl_return_val_if_fail (stream, AXL_TRUE);
+	axl_return_val_if_fail (stream, true);
 
 	/* if the content is inside memory, check it */
 	if (fall_out_side_checking (stream, inspected_size)) {
@@ -1461,7 +1461,7 @@ bool axl_stream_fall_outside (axlStream * stream, int inspected_size)
 	}
 	
 	/* otherwise, false is returned */
-	return AXL_FALSE;
+	return false;
 }
 
 /** 
@@ -1473,21 +1473,21 @@ bool axl_stream_fall_outside (axlStream * stream, int inspected_size)
  * @param stream The stream where the operation will be performed.
  * @param chunk The chunk to check
  * 
- * @return Returns AXL_TRUE if the given stream contains the value requested
- * or AXL_FALSE if not.
+ * @return Returns true if the given stream contains the value requested
+ * or false if not.
  */
 bool         axl_stream_check           (axlStream * stream, char * chunk, int inspected_size)
 {
 
-	axl_return_val_if_fail (stream, AXL_FALSE);
-	axl_return_val_if_fail (chunk, AXL_FALSE);
+	axl_return_val_if_fail (stream, false);
+	axl_return_val_if_fail (chunk, false);
 
 	/* get current size to inspect */
 	if (inspected_size == -1)
 		inspected_size = strlen (chunk);
 
 	/* check current chunk against current stream status */
-	return (memcmp (chunk, stream->stream + stream->stream_index, inspected_size) == 0) ? AXL_TRUE : AXL_FALSE;
+	return (memcmp (chunk, stream->stream + stream->stream_index, inspected_size) == 0) ? true : false;
 }
 
 /** 
@@ -1499,11 +1499,11 @@ bool         axl_stream_check           (axlStream * stream, char * chunk, int i
  * 
  * @param stream 
  * 
- * @return AXL_TRUE if the stream is exhausted or AXL_FALSE if not.
+ * @return true if the stream is exhausted or false if not.
  */
 bool        axl_stream_remains         (axlStream * stream)
 {
-	axl_return_val_if_fail (stream, AXL_FALSE);
+	axl_return_val_if_fail (stream, false);
 
 #ifdef SHOW_DEBUG_LOG	
 	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "checking for stream status with stream index=%d and stream size=%d",
@@ -1519,7 +1519,7 @@ bool        axl_stream_remains         (axlStream * stream)
 		 * more content from the streaming */
 		return axl_stream_prebuffer (stream);
 	}
-	return AXL_TRUE;
+	return true;
 }
 
 /** 
@@ -2018,7 +2018,7 @@ void __axl_stream_common_to (char * chunk, bool to_upper)
  */
 char *    axl_stream_to_upper        (char  * chunk)
 {
-	__axl_stream_common_to (chunk, AXL_TRUE);
+	__axl_stream_common_to (chunk, true);
 	return chunk;
 }
 
@@ -2035,7 +2035,7 @@ char *    axl_stream_to_upper        (char  * chunk)
  */
 char *     axl_stream_to_lower        (char  * chunk)
 {
-	__axl_stream_common_to (chunk, AXL_FALSE);
+	__axl_stream_common_to (chunk, false);
 	return chunk;
 }
 
@@ -2059,7 +2059,7 @@ char      * axl_stream_to_upper_copy   (char  * chunk)
 	result = axl_strdup (chunk);
 
 	/* upper it */
-	__axl_stream_common_to (result, AXL_TRUE);
+	__axl_stream_common_to (result, true);
 
 	/* return the result */
 	return result;
@@ -2086,7 +2086,7 @@ char      * axl_stream_to_lower_copy   (char  * chunk)
 	result = axl_strdup (chunk);
 
 	/* lower it */
-	__axl_stream_common_to (result, AXL_FALSE);
+	__axl_stream_common_to (result, false);
 
 	/* return the result */
 	return result;

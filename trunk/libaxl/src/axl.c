@@ -241,7 +241,7 @@
  *    doc = axl_doc_parse_from_file ("large.xml", error);
  *    if (doc == NULL) {
  *        axl_error_free (error);
- *        return AXL_FALSE;
+ *        return false;
  *    }
  *
  *    // DO SOME WORK WITH THE DOCUMENT HERE
@@ -252,7 +252,7 @@
  *    // cleanup axl library 
  *    axl_end ();
  *
- *    return AXL_TRUE;
+ *    return true;
  * }
  * \endcode
  *
@@ -419,16 +419,16 @@
  *	// parse gmovil file (an af-arch xml chunk) 
  *	doc = axl_doc_parse_from_file ("channel.xml", error); 
  *	if (doc == NULL) 
- *		return AXL_FALSE;
+ *		return false;
  *
  *	// parse af-arch DTD 
  *	dtd = axl_dtd_parse_from_file ("channel.dtd", error);
  *	if (dtd == NULL)
- *		return AXL_FALSE;
+ *		return false;
  *
  *	// perform DTD validation 
  *	if (! axl_dtd_validate (doc, dtd, error)) {
- *		return AXL_FALSE;
+ *		return false;
  *	}
  *
  *	// free doc reference 
@@ -437,7 +437,7 @@
  *      // free dtd reference
  *      axl_doc_free (dtd);
  * 
- *      return AXL_TRUE;
+ *      return true;
  * }
  * \endcode
  * 
@@ -554,13 +554,13 @@
  *
  * However the API is provided for future usage.
  * 
- * @return The function returns AXL_TRUE if it was properly
- * initialized or AXL_FALSE if something fails.  if fails.
+ * @return The function returns true if it was properly
+ * initialized or false if something fails.  if fails.
  */
 bool axl_init ()
 {
 	/* nothing to initialize dude */
-	return AXL_TRUE;
+	return true;
 }
 
 /** 

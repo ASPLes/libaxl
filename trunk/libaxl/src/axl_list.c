@@ -626,7 +626,7 @@ void     axl_list_common_remove (axlList * list, axlPointer pointer, bool     al
 void      axl_list_remove (axlList * list, axlPointer pointer)
 {
 	/* perform a complete removing */
-	axl_list_common_remove (list, pointer, AXL_TRUE);
+	axl_list_common_remove (list, pointer, true);
 
 	return;
 }
@@ -642,7 +642,7 @@ void      axl_list_remove (axlList * list, axlPointer pointer)
 void       axl_list_unlink (axlList * list, axlPointer pointer)
 {
 	/* perform a complete removing */
-	axl_list_common_remove (list, pointer, AXL_FALSE);
+	axl_list_common_remove (list, pointer, false);
 
 	return;
 }
@@ -671,7 +671,7 @@ void       axl_list_remove_first (axlList * list)
 	previous_func   = list->are_equal;
 	list->are_equal = __axl_list_always_true;
 
-	axl_list_common_remove (list, pointer, AXL_TRUE);
+	axl_list_common_remove (list, pointer, true);
 
 	/* restore previous equal func */
 	list->are_equal = previous_func;
@@ -703,7 +703,7 @@ void       axl_list_unlink_first (axlList * list)
 	previous_func   = list->are_equal;
 	list->are_equal = __axl_list_always_true;
 
-	axl_list_common_remove (list, pointer, AXL_FALSE);
+	axl_list_common_remove (list, pointer, false);
 
 	/* restore previous equal func */
 	list->are_equal = previous_func;
@@ -718,18 +718,18 @@ void       axl_list_unlink_first (axlList * list)
  *
  * @param pointer The pointer to lookup.
  * 
- * @return \ref AXL_TRUE if the element is stored on the list,
- * otherwise AXL_FALSE is returned. The function will fail to lookup
+ * @return \ref true if the element is stored on the list,
+ * otherwise false is returned. The function will fail to lookup
  * if a NULL reference is received, either the list or the pointer.
  */
 bool          axl_list_exists (axlList * list, axlPointer pointer)
 {
-	axl_return_val_if_fail (list, AXL_FALSE);
-	axl_return_val_if_fail (pointer, AXL_FALSE);
+	axl_return_val_if_fail (list, false);
+	axl_return_val_if_fail (pointer, false);
 
 	if (axl_list_internal_lookup (list, pointer) != NULL)
-		return AXL_TRUE;
-	return AXL_FALSE;
+		return true;
+	return false;
 }
 
 /** 
@@ -739,7 +739,7 @@ bool          axl_list_exists (axlList * list, axlPointer pointer)
  * @param pointer The pointer to check.
  * @param position The position where is expected to find the pointer.
  * 
- * @return AXL_TRUE if the given data, referenced by the pointer, is
+ * @return true if the given data, referenced by the pointer, is
  * stored on the given position.
  */
 bool           axl_list_exists_at (axlList * list, axlPointer pointer, int position)
@@ -749,9 +749,9 @@ bool           axl_list_exists_at (axlList * list, axlPointer pointer, int posit
 	node = axl_list_internal_get_nth (list, position);
 	if (node != NULL) {
 		if (! list->are_equal (node->data, pointer))
-			return AXL_TRUE;
+			return true;
 	}
-	return AXL_FALSE;
+	return false;
 }
 
 /** 

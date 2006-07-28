@@ -46,20 +46,20 @@
  * @{
  */
 
-bool     not_executed  = AXL_TRUE;
-bool     debug_enabled = AXL_FALSE;
+bool     not_executed  = true;
+bool     debug_enabled = false;
 
 /** 
  * @brief Allows to check if the log reporting inside the system is
  * enabled.
  *
- * @return AXL_TRUE if the log is enabled or AXL_FALSE
+ * @return true if the log is enabled or false
  */
 bool      axl_log_is_enabled () 
 {
 	if (not_executed) {
 		debug_enabled = (getenv ("AXL_DEBUG") != NULL);
-		not_executed  = AXL_FALSE;
+		not_executed  = false;
 	}
 
 	/* return current value */
@@ -70,13 +70,13 @@ bool      axl_log_is_enabled ()
  *
  * @brief Allows to get current log configuration, to use colors.
  * 
- * @return AXL_TRUE if the color log is enabled or AXL_FALSE
+ * @return true if the color log is enabled or false
  */
 bool    axl_log_color_is_enabled ()
 {
 	if (getenv ("AXL_DEBUG_COLOR") != NULL)
-		return AXL_TRUE;
-	return AXL_FALSE;
+		return true;
+	return false;
 }
 
 /** 

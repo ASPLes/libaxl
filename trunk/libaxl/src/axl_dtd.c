@@ -107,11 +107,70 @@ struct _axlDtdElement {
 	int                    minimum_match;
 };
 
+struct _axlDtdAttributeDecl {
+	/** 
+	 * @brief Attribute name. This is the attribute value defined
+	 * for the node.
+	 */
+	char                     * name;
+	
+	/** 
+	 * @brief This is the attribute declaration type. It shows if 
+	 */
+	AxlDtdAttributeType        type;
+
+	/** 
+	 * @brief Allows to model whoe is 
+	 */
+	AxlDtdAttributeDefaults    defaults;
+	
+	/** 
+	 * @brief This is a default value for the <!ATTLIST
+	 * declaration received, in the case a FIXED value is required
+	 * or a default value is declarted.
+	 */
+	char                     * default_value;
+
+	/** 
+	 * @brief Internal declaration for enum values defined for
+	 * this rule. This list is only initialized in the case enum
+	 * values are defined.
+	 */
+	axlList                  * enumvalues;
+	
+	
+};
+
+struct _axlDtdAttribute {
+	/** 
+	 * @brief The document attribute list declaration name. This
+	 * is the name of the node that will receive the constrain
+	 * defined.
+	 */
+	char           * name;
+	
+	/** 
+	 * @brief This is the list of constrains defined for the
+	 * node. It as list of \ref axlDtdAttributeDecl which defines
+	 * the attribute that is declarted, if it is required, and the
+	 * type of its content.
+	 */
+	axlList        * list;
+};
+
 struct _axlDtd {
 	/** 
-	 * @brief All elements inside the DTD declaration.
+	 * @brief All elements inside the DTD declaration
+	 * (<!ELEMENT..> ).
 	 */
 	axlList       * elements;
+	
+	
+	/** 
+	 * @brief All attribute type declerations inside the DTD
+	 * (<!ATTLIST..>)
+	 */
+	axlList       * attributes;
 	/** 
 	 * @brief The element root, for the given DTD declaration.
 	 */
@@ -250,8 +309,8 @@ void __axl_dtd_queue_items (axlStack * stack, axlList * list)
  * @param dtd_element_parent The supposed DTD parent element.
  * @param dtd_element_child  The supposedd DTD child element.
  * 
- * @return AXL_TRUE if the function can confirm that the parent-child
- * relation exists, AXL_FALSE if not or it could be proved.
+ * @return true if the function can confirm that the parent-child
+ * relation exists, false if not or it could be proved.
  */
 bool     __axl_dtd_get_is_parent (axlDtdElement * dtd_element_parent,
 				  axlDtdElement * dtd_element_child)
@@ -263,7 +322,7 @@ bool     __axl_dtd_get_is_parent (axlDtdElement * dtd_element_parent,
 	/* check for leaf nodes, that, by definition, could be a
 	 * parent of nothing. */
 	if (dtd_element_parent->list == NULL || dtd_element_parent->list->itemList == NULL) {
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* prepare all elements inside the stack to be checked */
@@ -293,7 +352,7 @@ bool     __axl_dtd_get_is_parent (axlDtdElement * dtd_element_parent,
 				 * specification makes a reference to
 				 * the child node. */
 				axl_stack_free (stack);
-				return AXL_TRUE;
+				return true;
 			}
 			break;
 		case ELEMENT_LIST:
@@ -319,7 +378,7 @@ bool     __axl_dtd_get_is_parent (axlDtdElement * dtd_element_parent,
 	axl_stack_free (stack);
 	
 	/* either it isn't the parent or it can't be proved. */
-	return AXL_FALSE;
+	return false;
 }
 
 
@@ -343,7 +402,7 @@ axlDtdElement * __axl_dtd_get_new_root (axlDtd * dtd)
 	do {
 		/* check which is the top */
 		iterator        = 0;
-		change_detected = AXL_FALSE;
+		change_detected = false;
 		while (iterator < axl_list_length (dtd->elements)) {
 			
 			/* get the next reference */
@@ -355,7 +414,7 @@ axlDtdElement * __axl_dtd_get_new_root (axlDtd * dtd)
 				/* it seems that the new element is the root
 				 * one, update the reference */
 				dtd_element_the_root_is_on_fire = dtd_element_aux;
-				change_detected = AXL_TRUE;
+				change_detected = true;
 			}
 			
 			/* update inner loop iterator */
@@ -383,8 +442,8 @@ axlDtdElement * __axl_dtd_get_new_root (axlDtd * dtd)
  * @param element The axlDtdElement to be added to the give axlDtd
  * object.
  * 
- * @return AXL_TRUE if the given axlDtdElement is compatible inside
- * the axlDtd declaration or AXL_FALSE if a error is found.
+ * @return true if the given axlDtdElement is compatible inside
+ * the axlDtd declaration or false if a error is found.
  */
 bool     __axl_dtd_add_element (axlDtd * dtd, axlDtdElement * element, 
 			    axlStream * stream, axlError ** error)
@@ -404,7 +463,7 @@ bool     __axl_dtd_add_element (axlDtd * dtd, axlDtdElement * element,
 			axl_error_new (-1, "Find that an DTD element was defined twice (no more than one time is allowed)", 
 				       stream, error);
 			axl_stream_free (stream);
-			return AXL_FALSE;
+			return false;
 		}
 
 		/* update current iterator */
@@ -413,7 +472,7 @@ bool     __axl_dtd_add_element (axlDtd * dtd, axlDtdElement * element,
 	
 	/* add the new DTD element to the list */
 	axl_list_add (dtd->elements, element);
-	return AXL_TRUE;
+	return true;
 }
 
 /** 
@@ -482,7 +541,7 @@ bool     __axl_dtd_element_content_particule_add (axlDtdElementList  * dtd_item_
 	}
 
 	/* return that all is ok */
-	return AXL_TRUE;
+	return true;
 }
 
 
@@ -629,22 +688,22 @@ bool     __axl_dtd_element_spec_update_chunk_matched_for_cp_separator (axlStream
 		/* flag that we have found a , (choice)
 		 * separator */
 		(*chunk_matched) = 1;
-		return AXL_TRUE;
+		return true;
 		
 	} else if (axl_stream_inspect (stream, "|", 1) > 0) {
 		/* flag that we have found a | (sequence)
 		 * separator */
 		(*chunk_matched) = 2;
-		return AXL_TRUE;
+		return true;
 
 	} else if (axl_stream_inspect (stream, ")", 1) > 0) {
 		/* flag that we have found a | (sequence)
 		 * separator */
 		(*chunk_matched) = 3;
-		return AXL_TRUE;
+		return true;
 	}
 	
-	return AXL_FALSE;
+	return false;
 }
 
 /** 
@@ -661,7 +720,7 @@ char * __axl_dtd_read_content_particule (axlStream  * stream,
 
 	/* read the spec particule stopping when a white space
 	 * or other character is found */
-	string_aux = axl_stream_get_until (stream, NULL, chunk_matched, AXL_TRUE, 8, 
+	string_aux = axl_stream_get_until (stream, NULL, chunk_matched, true, 8, 
 					   /* basic, default delimiters: 0, 1, 2, 3 */
 					   " ", ",", "|", ")",
 					   /* repetition configuration: 4, 5, 6 */
@@ -707,8 +766,8 @@ char * __axl_dtd_read_content_particule (axlStream  * stream,
  * @param error An optional \ref axlError, where errors will be
  * reported.
  * 
- * @return \ref AXL_TRUE if the content spec was properly read or \ref
- * AXL_FALSE if not.
+ * @return \ref true if the content spec was properly read or \ref
+ * false if not.
  */
 bool     __axl_dtd_read_element_spec (axlStream * stream, axlDtdElement * dtd_element, axlError ** error)
 {
@@ -749,7 +808,7 @@ bool     __axl_dtd_read_element_spec (axlStream * stream, axlDtdElement * dtd_el
 			       stream, error);
 		axl_stack_free (dtd_item_stack);
 		axl_stream_free (stream);		
-		return AXL_FALSE;
+		return false;
 	}
 	
 	do {
@@ -788,7 +847,7 @@ bool     __axl_dtd_read_element_spec (axlStream * stream, axlDtdElement * dtd_el
 		 * 8 -> "(" */
 		string_aux = __axl_dtd_read_content_particule (stream, &chunk_matched, dtd_item_stack, error);
 		if (string_aux == NULL)
-			return AXL_FALSE;
+			return false;
 		
 		/* check, and record, that the string read is
 		 * PCDATA */
@@ -830,7 +889,7 @@ bool     __axl_dtd_read_element_spec (axlStream * stream, axlDtdElement * dtd_el
 		 * already detect that a white space was found and
 		 * consumes all white spaces found */
 		if (!__axl_dtd_element_content_particule_add (dtd_item_list, string_aux, chunk_matched, stream, error))
-			return AXL_FALSE;
+			return false;
 
 		if (chunk_matched == 4 || chunk_matched == 5 || chunk_matched == 6) {
 			/* found a repetition pattern */
@@ -839,7 +898,7 @@ bool     __axl_dtd_read_element_spec (axlStream * stream, axlDtdElement * dtd_el
 					       stream, error);
 				axl_stack_free (dtd_item_stack);
 				axl_stream_free (stream);		
-				return AXL_FALSE;
+				return false;
 			}
 		}
 
@@ -852,7 +911,7 @@ bool     __axl_dtd_read_element_spec (axlStream * stream, axlDtdElement * dtd_el
 					       stream, error);
 				axl_stack_free (dtd_item_stack);
 				axl_stream_free (stream);		
-				return AXL_FALSE;
+				return false;
 			}
 			dtd_item_list->type = SEQUENCE;
 			break;
@@ -862,7 +921,7 @@ bool     __axl_dtd_read_element_spec (axlStream * stream, axlDtdElement * dtd_el
 					       stream, error);
 				axl_stack_free (dtd_item_stack);
 				axl_stream_free (stream);		
-				return AXL_FALSE;
+				return false;
 			}
 			dtd_item_list->type = CHOICE;
 			break;
@@ -945,7 +1004,7 @@ bool     __axl_dtd_read_element_spec (axlStream * stream, axlDtdElement * dtd_el
 
 
 	/* content spec readed properly */
-	return AXL_TRUE;
+	return true;
 }
 
 /** 
@@ -1022,7 +1081,7 @@ int __axl_dtd_parse_element_get_compulsory_num (axlDtdElementList * list)
  * @param error An axlError, optional, reference where error will be
  * reported.
  * 
- * @return AXL_TRUE if the element was parsed properly, AXL_FALSE if
+ * @return true if the element was parsed properly, false if
  * not. The stream associated will be unrefered and the axlError
  * provided will be filled if an error is found.
  */
@@ -1039,25 +1098,25 @@ bool     __axl_dtd_parse_element (axlDtd * dtd, axlStream * stream, axlError ** 
 	if (! (axl_stream_inspect (stream, "<!ELEMENT", 9) > 0)) {
 		axl_error_new (-1, "Expected to receive a <!ELEMENT, but it wasn't found", stream, error);
 		axl_stream_free (stream);
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* consume previous white spaces */
 	AXL_CONSUME_SPACES (stream);
 	
 	/* get the element name */
-	string_aux = axl_stream_get_until (stream, NULL, &matched_chunk, AXL_FALSE, 3, ">", "(", " ", "<!ELEMENT");
+	string_aux = axl_stream_get_until (stream, NULL, &matched_chunk, false, 3, ">", "(", " ", "<!ELEMENT");
 	if (string_aux == NULL) {
 		axl_error_new (-1, "Expected to receive a DTD element name for <!ELEMENT declaration, but not found", stream, error);
 		axl_stream_free (stream);
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* check that the DTD have an element name and an element type */
 	if ((matched_chunk == 0) || (matched_chunk == 3)) {
 		axl_error_new (-1, "Found a DTD <!ELEMENT declaration, without content specification. Missing value, examples: EMPTY, ANY, (..)", stream, error);
 		axl_stream_free (stream);
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* nullify internal stream content */
@@ -1095,12 +1154,12 @@ bool     __axl_dtd_parse_element (axlDtd * dtd, axlStream * stream, axlError ** 
 		 * PcData */
 		element->type = ELEMENT_TYPE_CHILDREN;
 		if (!__axl_dtd_read_element_spec (stream, element, error))
-			return AXL_FALSE;
+			return false;
 	}
 
 	/* add element found */
 	if (! __axl_dtd_add_element (dtd, element, stream, error))
-		return AXL_FALSE;
+		return false;
 	
 	/* consume previous white spaces */
 	AXL_CONSUME_SPACES (stream);
@@ -1109,7 +1168,7 @@ bool     __axl_dtd_parse_element (axlDtd * dtd, axlStream * stream, axlError ** 
 	if (! (axl_stream_inspect (stream, ">", 1))) {
 		axl_error_new (-1, "Unable to find last, > terminator for the DTD <!ELEMENT declaration", stream, error);
 		axl_stream_free (stream);
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* now, count the number of obligatory elements, required for
@@ -1120,7 +1179,129 @@ bool     __axl_dtd_parse_element (axlDtd * dtd, axlStream * stream, axlError ** 
 		   element->minimum_match);
 
 	/* element type declaration completely read */
-	return AXL_TRUE;
+	return true;
+}
+
+/** 
+ * @internal
+ * 
+ * Destroy the provided reference and its associated data.
+ * 
+ * @param decl The reference declaration.
+ */
+void axl_dtd_attribute_decl_free (axlDtdAttributeDecl * decl)
+{
+	/* check data before releasing */
+	axl_return_if_fail (decl);
+
+	/* free the rule name */
+	if (decl->name != NULL)
+		axl_free (decl->name);
+
+	/* free the default value */
+	if (decl->default_value != NULL)
+		axl_free (decl->default_value);
+
+	/* free enum declaration list if defined */
+	if (decl->enumvalues != NULL)
+		axl_list_free (decl->enumvalues);
+	
+	/* nothing more to do */
+	return;
+}
+
+/** 
+ * @internal
+ * 
+ * Parse the <!ATTLIST decleration, registering it into the provided
+ * dtd element.
+ */
+bool __axl_dtd_parse_attlist (axlDtd * dtd, axlStream * stream, axlError ** error)
+{
+	char                * string_aux    = NULL;
+	int                   matched_chunk = -1;
+	axlDtdAttribute     * attribute     = NULL;
+	axlDtdAttributeDecl * decl          = NULL;
+
+	/* consume previous white spaces */
+	AXL_CONSUME_SPACES (stream);
+
+	/* get for the first element declaration */
+	if (! (axl_stream_inspect (stream, "<!ATTLIST", 9) > 0)) {
+		axl_error_new (-1, "Expected to receive a <!ATTLIST, but it wasn't found", stream, error);
+		axl_stream_free (stream);
+		return false;
+	}
+
+	/* consume previous white spaces */
+	AXL_CONSUME_SPACES (stream);
+
+	/* get the element name */
+	string_aux = axl_stream_get_until (stream, NULL, &matched_chunk, false, 1, " ");
+	if (string_aux == NULL) {
+		axl_error_new (-1, "Expected to receive a DTD attribute name for <!ATTLIST declaration, but not found", stream, error);
+		axl_stream_free (stream);
+		return false;
+	}
+
+	/* create the axlDtdAttribute holder */
+	attribute        = axl_new (axlDtdAttribute, 1);
+
+	/* record the node to which the list of rules applies */
+	axl_stream_nullify (stream, LAST_CHUNK);
+	attribute->name  = string_aux;
+
+	/* init the attribute rule list */
+	attribute->list  = axl_list_new (axl_list_always_return_1, (axlDestroyFunc) axl_dtd_attribute_decl_free);
+	
+	/* now get the list of attributes */
+	while (1) {
+		/* consume previous white spaces */
+		AXL_CONSUME_SPACES (stream);
+
+		/* check if we have finished */
+		if (axl_stream_inspect (stream, ">", 1) > 0)
+			break;
+
+		/* get the attribute name the rules applies */
+		string_aux = axl_stream_get_until (stream, NULL, &matched_chunk, false, 1, " ");
+		if (string_aux == NULL) {
+			axl_error_new (-1, "Expected to receive a DTD attribute name for <!ATTLIST declaration, but not found", stream, error);
+			axl_stream_free (stream);
+			return false;
+		}
+
+		/* nully the string and store it new rule created */
+		axl_stream_nullify (stream, LAST_CHUNK);
+		decl       = axl_new (axlDtdAttributeDecl, 1);
+		decl->name = string_aux;
+
+		/* consume previous white spaces */
+		AXL_CONSUME_SPACES (stream);
+
+		/* get the rule type */
+		string_aux = axl_stream_get_until (stream, NULL, &matched_chunk, false, 1, " ");
+		if (string_aux == NULL) {
+			axl_error_new (-1, "Expected to receive a DTD attribute name for <!ATTLIST declaration, but not found", stream, error);
+			axl_stream_free (stream);
+			return false;
+		}
+		
+		if (axl_cmp (string_aux, "CDATA"))
+			decl->type = CDATA_ATTRIBUTE;
+		if (axl_cmp (string_aux, "ID"))
+			decl->type = TOKENIZED_TYPE_ID;
+		/* FOLLOW HERE */
+		
+		
+
+		
+	}
+	
+	
+	
+	/* properly parsed */
+	return true;
 }
 
 
@@ -1149,14 +1330,14 @@ axlDtd * __axl_dtd_parse_common (char * entity, int entity_size,
 	while (axl_stream_remains (stream)) {
 		/* get rid from comments found */
 		if (! axl_doc_consume_comments (NULL, stream, error))
-			return AXL_FALSE;
+			return false;
 		
 		/* check for element declaration */
 		if (axl_stream_peek (stream, "<!ELEMENT", 9) > 0) {
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found DTD element declaration");
 			/* found element declaration */
 			if (! __axl_dtd_parse_element (dtd, stream, error))
-				return AXL_FALSE;
+				return false;
 			
 			continue;
 
@@ -1164,10 +1345,12 @@ axlDtd * __axl_dtd_parse_common (char * entity, int entity_size,
 
 		/* check for attribute list declarations */
 		if (axl_stream_peek (stream, "<!ATTLIST", 9) > 0) {
-			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found DTD attribute list declaration (NOT SUPPORTED YET)");
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found DTD attribute list declaration");
 			
-			/* ignore anything until > */
-			axl_stream_get_until (stream, NULL, NULL, AXL_TRUE, 1, ">");
+			/* parse it */
+			if (! __axl_dtd_parse_attlist (dtd, stream, error))
+				return false;
+			
 			continue;
 		}
 
@@ -1176,7 +1359,7 @@ axlDtd * __axl_dtd_parse_common (char * entity, int entity_size,
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found DTD entity declaration (NOT SUPPORTED YET)");
 
 			/* ignore anything until > */
-			axl_stream_get_until (stream, NULL, NULL, AXL_TRUE, 1, ">");
+			axl_stream_get_until (stream, NULL, NULL, true, 1, ">");
 			continue;
 		}
 
@@ -1255,7 +1438,7 @@ axlDtd   * axl_dtd_parse_from_file (char * file_path,
  * parent have its childs configuration according to the values
  * expresed on the sequenced represented by the itemList.
  *
- * The function return AXL_TRUE if the validation was ok, or AXL_FALSE
+ * The function return true if the validation was ok, or false
  * if something have failed. It also creates an error, using the
  * optional axlError reference received.
  */
@@ -1270,13 +1453,13 @@ bool     __axl_dtd_validate_sequence (axlNode            * parent,
 	int                      child_pos       = *child_position;
 	axlNode                * node;
 	axlDtdElementListNode  * itemNode;
-	bool                     status          = AXL_FALSE;
+	bool                     status          = false;
 	bool                     one_matched;
 	AxlDtdTimes              times;
 	
 
-	axl_return_val_if_fail (parent, AXL_FALSE);
-	axl_return_val_if_fail (itemList, AXL_FALSE);
+	axl_return_val_if_fail (parent, false);
+	axl_return_val_if_fail (itemList, false);
 
 
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "validating a sequence list: iterator=%d, item list count=%d, at child position=%d",
@@ -1290,7 +1473,7 @@ bool     __axl_dtd_validate_sequence (axlNode            * parent,
 		
 		/* get the item node specification */
 		itemNode    = axl_dtd_item_list_get_node (itemList, iterator);
-		one_matched = AXL_FALSE;
+		one_matched = false;
 		times       = axl_dtd_item_node_get_repeat (itemNode);
 
 		do {
@@ -1318,20 +1501,20 @@ bool     __axl_dtd_validate_sequence (axlNode            * parent,
 				    ((iterator + 1) == axl_dtd_item_list_count (itemList))) {
 					*child_position = child_pos;
 					__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "sequence validated with child position (III): %d", child_pos);
-					return AXL_TRUE;
+					return true;
 				}
 				
 				/* check that the reset of the
 				 * specification item is optional,
 				 * including the one used */
-				status = AXL_TRUE;
+				status = true;
 				do {
 					if (times != ZERO_OR_MANY &&
 					    times != ZERO_OR_ONE) {
 
 						__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found item, inside the DTD item list, that is not optional: %d (repeat value: %d)", 
 							   iterator, times);
-						status = AXL_FALSE;
+						status = false;
 						break;
 					}
 
@@ -1347,7 +1530,7 @@ bool     __axl_dtd_validate_sequence (axlNode            * parent,
 
 					__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "sequence validated with child position (II): %d", child_pos);
 
-					return AXL_TRUE;
+					return true;
 				}
 				
 				/* check if a try match is being runned */
@@ -1358,7 +1541,7 @@ bool     __axl_dtd_validate_sequence (axlNode            * parent,
 
 				__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found that no nodes left to satisfy DTD validation operation");
 				*child_position = child_pos;
-				return AXL_FALSE;
+				return false;
 			}
 
 			/* check node type */
@@ -1369,7 +1552,7 @@ bool     __axl_dtd_validate_sequence (axlNode            * parent,
 
 				/* element list found, validate its content */
 				if (! __axl_dtd_validate_item_list (axl_dtd_item_node_get_list (itemNode),
-								    parent, &child_pos, error, AXL_FALSE)) {
+								    parent, &child_pos, error, false)) {
 					__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "sub item list validation have failed (not critical)");
 					/* check if we are the top
 					 * level list and the itemNode
@@ -1381,7 +1564,7 @@ bool     __axl_dtd_validate_sequence (axlNode            * parent,
 					}
 
 					*child_position = child_pos;
-					return AXL_FALSE;
+					return false;
 				}
 
 				__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "validated item list, child position after: %d",
@@ -1405,7 +1588,7 @@ bool     __axl_dtd_validate_sequence (axlNode            * parent,
 
 			/* check previous status */
 			if ((times == ONE_AND_ONLY_ONE) || 
-			    (times == ONE_OR_MANY && one_matched == AXL_FALSE)) {
+			    (times == ONE_OR_MANY && one_matched == false)) {
 				if (! status) {
 					/* only report an upper level
 					 * error if we are not running
@@ -1422,7 +1605,7 @@ bool     __axl_dtd_validate_sequence (axlNode            * parent,
 					}
 					/* return that a match wasn't possible */
 					*child_position = child_pos;
-					return AXL_FALSE;			
+					return false;			
 				}
 			}
 
@@ -1449,11 +1632,11 @@ bool     __axl_dtd_validate_sequence (axlNode            * parent,
 				 * previous matches was ok, it seems
 				 * we have reached the next
 				 * items. Just break the loop */
-				if (status == AXL_FALSE && one_matched == AXL_TRUE) 
+				if (status == false && one_matched == true) 
 					break;
 
 				child_pos++;
-				one_matched = AXL_TRUE;
+				one_matched = true;
 				continue; /* don't break the loop */
 			}
 
@@ -1464,15 +1647,15 @@ bool     __axl_dtd_validate_sequence (axlNode            * parent,
 				 * character. In that case, move the
 				 * index to the following value. If
 				 * not, just break the loop. */
-				if (status == AXL_TRUE)
+				if (status == true)
 					child_pos++;
 				break;
 			}
 
 			/* zero or many items to match */
 			if (times == ZERO_OR_MANY) {
-				if (status == AXL_TRUE) {
-					one_matched = AXL_TRUE;
+				if (status == true) {
+					one_matched = true;
 					child_pos++;
 					continue;
 				}
@@ -1481,7 +1664,7 @@ bool     __axl_dtd_validate_sequence (axlNode            * parent,
 
 
 			/* until break the loop */
-		}while (AXL_TRUE);
+		}while (true);
 
 		/* update iterator index */
 		iterator++;
@@ -1506,7 +1689,7 @@ bool     __axl_dtd_validate_sequence (axlNode            * parent,
 		}
 		/* return that the match wasn't possible */
 		*child_position = child_pos;
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* return that the sequence has been validated */
@@ -1514,7 +1697,7 @@ bool     __axl_dtd_validate_sequence (axlNode            * parent,
 
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "sequence validated with child position (I): %d", child_pos);
 
-	return AXL_TRUE;
+	return true;
 }
 
 /** 
@@ -1546,7 +1729,7 @@ bool     __axl_dtd_validate_choice (axlNode * parent, int * child_position,
 			axl_error_new (-1, "Unable to match choice list, it seems that the are not enough childs to validate the choice list",
 				       NULL, error);
 		}
-		return AXL_FALSE;
+		return false;
 	}
 
 	iterator = 0; 
@@ -1557,7 +1740,7 @@ bool     __axl_dtd_validate_choice (axlNode * parent, int * child_position,
 
 		if (axl_dtd_item_node_get_type (itemNode) == NODE) {
 			/* reset match configuration */
-			one_match = AXL_FALSE;
+			one_match = false;
 		repeat_for_node:
 			/* a node was found */
 			status    = NODE_CMP_NAME (node, axl_dtd_item_node_get_value (itemNode));
@@ -1574,7 +1757,7 @@ bool     __axl_dtd_validate_choice (axlNode * parent, int * child_position,
 					 * only one configuration,
 					 * just return that the choice
 					 * list was matched */
-					return AXL_TRUE;
+					return true;
 				}
 				if (times == ONE_OR_MANY || times == ZERO_OR_MANY) {
 					/* because the node was matched, but the repetition
@@ -1585,10 +1768,10 @@ bool     __axl_dtd_validate_choice (axlNode * parent, int * child_position,
 						/* because we already matched at least one item, 
 						 * we can assume that the itemNode was successfully 
 						 * matched for both cases (*) and (+). */
-						return AXL_TRUE;
+						return true;
 					}
 					/* flag the one match */
-					one_match = AXL_TRUE;
+					one_match = true;
 					
 					/* if the node reference is
 					 * not NULL, try to match the
@@ -1601,16 +1784,16 @@ bool     __axl_dtd_validate_choice (axlNode * parent, int * child_position,
 			 * previously, at least, one node for
 			 * one-to-many and zero-to-many pattern */
 			if ((times == ONE_OR_MANY || times == ZERO_OR_MANY) && one_match) {
-				return AXL_TRUE;
+				return true;
 			}
 
 		} else if (axl_dtd_item_node_get_type (itemNode) == ELEMENT_LIST) {
 			/* an element list was found, call to validate it */
 			/* element list found, validate its content */
 			if (__axl_dtd_validate_item_list (axl_dtd_item_node_get_list (itemNode),
-							  parent, child_position, error, AXL_FALSE)) {
+							  parent, child_position, error, false)) {
 				/* item list matched */
-				return AXL_TRUE;
+				return true;
 			}
 		}
 
@@ -1623,7 +1806,7 @@ bool     __axl_dtd_validate_choice (axlNode * parent, int * child_position,
 		axl_error_new (-1, "Unable to match choice list, after checking all posibilities, choice list wasn't validated", 
 			       NULL, error);
 	}
-	return AXL_FALSE;
+	return false;
 }
 
 /** 
@@ -1645,7 +1828,7 @@ bool     __axl_dtd_validate_choice (axlNode * parent, int * child_position,
  * @param error An optional axlError reference containing the error
  * textual diagnostic if found.
  * 
- * @return AXL_TRUE if the validation was ok, otherwise AXL_FALSE is
+ * @return true if the validation was ok, otherwise false is
  * returned.
  */
 bool     __axl_dtd_validate_item_list (axlDtdElementList  * itemList,
@@ -1676,8 +1859,8 @@ bool     __axl_dtd_validate_item_list (axlDtdElementList  * itemList,
 			/* it is a choice, so the item list specifies
 			 * the nodes that could appear */
 			if (!__axl_dtd_validate_sequence (parent, child_position, itemList, error, 
-							  AXL_FALSE, top_level)) {
-				return AXL_FALSE;
+							  false, top_level)) {
+				return false;
 			}
 		}else {
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "using a CHOICE form");
@@ -1685,8 +1868,8 @@ bool     __axl_dtd_validate_item_list (axlDtdElementList  * itemList,
 			 * specification represents the nodes, in the
 			 * order they must appear */
 			if (!__axl_dtd_validate_choice (parent, child_position, itemList, error,
-							AXL_FALSE, top_level)) {
-				return AXL_FALSE;
+							false, top_level)) {
+				return false;
 			}
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "choice list was properly validated");
 		}
@@ -1707,7 +1890,7 @@ bool     __axl_dtd_validate_item_list (axlDtdElementList  * itemList,
 			 * pattern allow to not match */
 			temp_child_pos = *child_position;
 			if (!__axl_dtd_validate_sequence (parent, child_position, itemList, error, 
-							  AXL_TRUE, top_level)) {
+							  true, top_level)) {
 				/* check that the match wasn't
 				 * produced, at any level */
 				if (temp_child_pos != *child_position) {
@@ -1715,10 +1898,10 @@ bool     __axl_dtd_validate_item_list (axlDtdElementList  * itemList,
 						   temp_child_pos, *child_position);
 					axl_error_new (-1, "Found an DTD item list definition, that should be matched entirely or not, zero or one time, but it was matched partially",
 						       NULL, error);
-					return AXL_FALSE;
+					return false;
 				}
 
-				return AXL_FALSE;
+				return false;
 			}
 			
 		}else {
@@ -1728,7 +1911,7 @@ bool     __axl_dtd_validate_item_list (axlDtdElementList  * itemList,
 			 * specification represents the nodes, in the
 			 * order they must appear */
 			__axl_dtd_validate_choice (parent, child_position, itemList, error,
-						   AXL_TRUE, top_level);
+						   true, top_level);
 		}
 		break;
 	case ZERO_OR_MANY:
@@ -1743,7 +1926,7 @@ bool     __axl_dtd_validate_item_list (axlDtdElementList  * itemList,
 			do {
 				temp_child_pos = *child_position;
 				status         = __axl_dtd_validate_sequence (parent, child_position, itemList, error, 
-									      AXL_TRUE, top_level);
+									      true, top_level);
 
 				__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "sequence match status=%d", status);
 				if (! status) {
@@ -1755,7 +1938,7 @@ bool     __axl_dtd_validate_item_list (axlDtdElementList  * itemList,
 							   temp_child_pos, *child_position);
 						axl_error_new (-1, "Found an DTD item list definition, that should be matched entirely or not, zero or many times, but it was matched partially",
 							       NULL, error);
-						return AXL_FALSE;
+						return false;
 					}
 				}
 			}while (status);
@@ -1767,7 +1950,7 @@ bool     __axl_dtd_validate_item_list (axlDtdElementList  * itemList,
 			 * order they must appear */
 			do {
 				status = __axl_dtd_validate_choice (parent, child_position, itemList, error,
-								    AXL_TRUE, top_level);
+								    true, top_level);
 			}while (status);
 		}
 		break;
@@ -1781,7 +1964,7 @@ bool     __axl_dtd_validate_item_list (axlDtdElementList  * itemList,
 
 			/* one this case, several matches must be
 			 * tried, until the validation fails */
-			already_matched = AXL_FALSE;
+			already_matched = false;
 			do {
 				temp_child_pos = *child_position;
 				/* try to match the one or many
@@ -1801,11 +1984,11 @@ bool     __axl_dtd_validate_item_list (axlDtdElementList  * itemList,
 						axl_error_new (-1, 
 							       "Found an DTD item list definition, that should be matched entirely or not, one or many times, but it was matched partially",
 							       NULL, error);
-						return AXL_FALSE;
+						return false;
 					}
 				}else {
 					/* set that we have matched, at least, one item */
-					already_matched = AXL_TRUE;
+					already_matched = true;
 				}
 
 				
@@ -1817,7 +2000,7 @@ bool     __axl_dtd_validate_item_list (axlDtdElementList  * itemList,
 			/* it is a sequence, so, item list
 			 * specification represents the nodes, in the
 			 * order they must appear */
-			already_matched = AXL_FALSE;
+			already_matched = false;
 			do {
 				/* the next choice matching is done
 				 * according to the value stored in
@@ -1828,7 +2011,7 @@ bool     __axl_dtd_validate_item_list (axlDtdElementList  * itemList,
 				 * that next matched are not required
 				 * to be successful ones */
 				if (status)
-					already_matched = AXL_TRUE;
+					already_matched = true;
 			}while (status);
 		}
 		break;
@@ -1837,7 +2020,7 @@ bool     __axl_dtd_validate_item_list (axlDtdElementList  * itemList,
 #define INTERNAL_ERROR_01 "critical error reached a place that shows the dtd parser is not properly defining the repetition pattern for the current itemList."
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, INTERNAL_ERROR_01);
 		axl_error_new (-1, INTERNAL_ERROR_01, NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 
 
@@ -1855,12 +2038,12 @@ bool     __axl_dtd_validate_item_list (axlDtdElementList  * itemList,
 				   (*child_position), axl_node_get_name (parent), axl_node_get_child_num (parent));
 			axl_error_new (-1, "Found that the validation process didn't cover all nodes, while using a choice list. This means that the xml document have more content than the DTD spec",
 				       NULL, error);
-			return AXL_FALSE;
+			return false;
 		}
 	}
 	
 	/* element type children validated */
-	return AXL_TRUE;       
+	return true;       
 }
 
 /** 
@@ -1885,7 +2068,7 @@ bool     __axl_dtd_validate_element_type_children (axlDtdElement  * element,
 	if (axl_node_get_child_num (parent) < element->minimum_match) {
 		axl_error_new (-1, "Found that the parent node received doesn't contains enough xml nodes inside to get a proper validation. This means that the xml document have fewer content than the DTD spec.",
 			       NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* validate the item list, starting from the child 0 */
@@ -1900,13 +2083,13 @@ bool     __axl_dtd_validate_element_type_children (axlDtdElement  * element,
 		if (child_pos < axl_node_get_child_num (parent)) {
 			axl_error_new (-1, "Found that the validation process didn't cover all nodes. All xml child nodes inside the parent wasn't covered. This means that the xml document have more content than the DTD spec.",
 				       NULL, error);
-			return AXL_FALSE;
+			return false;
 		}
 		/* seems that the minimum match */
-		return AXL_TRUE;
+		return true;
 	}
 
-	return AXL_FALSE;
+	return false;
 }
 
 /** 
@@ -1927,11 +2110,11 @@ bool     __axl_dtd_validate_element_type_pcdata (axlDtdElement  * element,
 		axl_error_new (-1, 
 			       "Found a node for which its espeficiation makes it to be a node with only data and no childs, and it currently contains childs",
 			       NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* return that the validation was ok */
-	return AXL_TRUE;
+	return true;
 }
 
 /** 
@@ -1948,18 +2131,18 @@ bool     __axl_dtd_validate_element_type_empty (axlDtdElement  * element,
 	if (! axl_node_is_empty (parent)) {
 		axl_error_new (-1, "Found a node that it is especified that must be empty, but it isn't",
 			       NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* check the node doesn't have childs */
 	if (axl_node_have_childs (parent)) {
 		axl_error_new (-1, "Found a node that it is especified that must be empty, but it has childs",
 			       NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 	
 	/* return that the validation was ok */
-	return AXL_TRUE;
+	return true;
 }
 
 /** 
@@ -1985,7 +2168,7 @@ bool     __axl_dtd_validate_element_type_empty (axlDtdElement  * element,
  * @param error An optional reference to a \ref axlError object where
  * validation errors are reported.
  *
- * @return AXL_TRUE if the document is valid, AXL_FALSE if not.
+ * @return true if the document is valid, false if not.
  */
 bool           axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 					axlError ** error)
@@ -1997,8 +2180,8 @@ bool           axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 	bool                 top_level;
 	
 	/* perform some checkings */
-	axl_return_val_if_fail (doc, AXL_FALSE);
-	axl_return_val_if_fail (dtd, AXL_FALSE);
+	axl_return_val_if_fail (doc, false);
+	axl_return_val_if_fail (dtd, false);
 
 #ifdef SHOW_DEBUG_LOG
 	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "starting DTD validation");
@@ -2015,7 +2198,7 @@ bool           axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 		if (element == NULL) { /*  || ! axl_dtd_element_is_toplevel (dtd, element)) { */
 			/* root node doesn't match */
 			axl_error_new (-1, "Found that root node doesn't match!", NULL, error);
-			return AXL_FALSE;
+			return false;
 
 		} /* end if */
 	} /* end if */
@@ -2030,7 +2213,7 @@ bool           axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 	stack     = axl_stack_new (NULL);
 
 	/* set that the only top level node is the first one */
-	top_level = AXL_TRUE;
+	top_level = true;
 
 	do {
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "doing a DTD iteration: <%s>...",
@@ -2056,7 +2239,7 @@ bool           axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 			 * that is, it is not empty  */
 			if (!__axl_dtd_validate_element_type_pcdata (element, parent, stack, error)) {
 				axl_stack_free (stack);
-				return AXL_FALSE;
+				return false;
 			}
 			break;
 		case ELEMENT_TYPE_CHILDREN:
@@ -2065,7 +2248,7 @@ bool           axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 			/* ok, a parent node that have childs */
 			if (!__axl_dtd_validate_element_type_children (element, parent, top_level, error)) {
 				axl_stack_free (stack);
-				return AXL_FALSE;
+				return false;
 			}
 			break;
 		case ELEMENT_TYPE_EMPTY:
@@ -2075,7 +2258,7 @@ bool           axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 			 * same */
 			if (!__axl_dtd_validate_element_type_empty (element, parent, stack, error)) {
 				axl_stack_free (stack);
-				return AXL_FALSE;
+				return false;
 			}
 			break;
 		case ELEMENT_TYPE_ANY:
@@ -2130,12 +2313,12 @@ bool           axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 					   axl_node_get_name (parent));
 				axl_error_new (-1, "Found a node that doesn't have a DTD element espefication to validate it, DTD validation failed", NULL, error);
 				axl_stack_free (stack);
-				return AXL_FALSE;
+				return false;
 			}
 		}
 
 		/* set the top level status */
-		top_level = AXL_FALSE;
+		top_level = false;
 		
 		/* until the stack is empty */
 	}while (parent != NULL);
@@ -2147,7 +2330,7 @@ bool           axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "DTD validation, ok");
 
 	/* the document is valid */
-	return AXL_TRUE;
+	return true;
 }
 
 /** 
@@ -2272,8 +2455,8 @@ axlDtdElementList  * axl_dtd_get_item_list    (axlDtdElement * element)
  * @param dtd The DTD document where the operation will be performed.
  * @param element The \ref axlDtdElement to check.
  * 
- * @return \ref AXL_TRUE if the dtd element is a top level element or
- * \ref AXL_FALSE if not. The function returns \ref AXL_FALSE if the
+ * @return \ref true if the dtd element is a top level element or
+ * \ref false if not. The function returns \ref false if the
  * provided reference is NULL.
  */
 bool                    axl_dtd_element_is_toplevel (axlDtd * dtd, axlDtdElement * element)
@@ -2282,8 +2465,8 @@ bool                    axl_dtd_element_is_toplevel (axlDtd * dtd, axlDtdElement
 	int             iterator;
 	axlDtdElement * dtd_element_aux;
 
-	axl_return_val_if_fail (dtd,     AXL_FALSE);
-	axl_return_val_if_fail (element, AXL_FALSE);
+	axl_return_val_if_fail (dtd,     false);
+	axl_return_val_if_fail (element, false);
 
 	/* check which is the top */
 	iterator        = 0;
@@ -2295,7 +2478,7 @@ bool                    axl_dtd_element_is_toplevel (axlDtd * dtd, axlDtdElement
 		/* check which is the top */
 		if (__axl_dtd_get_is_parent (dtd_element_aux, element)) {
 			/* the element provided have a parent */
-			return AXL_FALSE;
+			return false;
 		}
 			
 		/* update inner loop iterator */
@@ -2303,7 +2486,7 @@ bool                    axl_dtd_element_is_toplevel (axlDtd * dtd, axlDtdElement
 	} /* while end */
 
 	/* return that the provided node doesn't have a parent node */
-	return AXL_TRUE;
+	return true;
 }
 
 /** 

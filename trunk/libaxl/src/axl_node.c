@@ -186,7 +186,7 @@ axlNode * __axl_node_create_internal (char * name)
 	axl_return_val_if_fail (name, NULL);
 	
 	node           = axl_new (axlNode, 1);
-	node->is_empty = AXL_TRUE;
+	node->is_empty = true;
 	node->name     = name;
 
 	return node;
@@ -205,7 +205,7 @@ axlNode * __axl_node_create_internal (char * name)
  * @param additional_size An integer reference where the additional
  * size variable will be added.
  * 
- * @return AXL_TRUE if the string contains non valid sequences that
+ * @return true if the string contains non valid sequences that
  * must be escaped using entity references.
  */
 bool     __axl_node_content_have_not_valid_sequences (char * content, 
@@ -213,8 +213,8 @@ bool     __axl_node_content_have_not_valid_sequences (char * content,
 						      int * additional_size)
 {
 	int      iterator = 0;
-	bool     result   = AXL_FALSE;
-	axl_return_val_if_fail (content, AXL_FALSE);
+	bool     result   = false;
+	axl_return_val_if_fail (content, false);
 
 	/* reset additional size value */
 	*additional_size = 0;
@@ -227,31 +227,31 @@ bool     __axl_node_content_have_not_valid_sequences (char * content,
 	while (iterator < content_size) {
 		/* check for &apos; */
 		if (content [iterator] == '\'') {
-			result = AXL_TRUE;
+			result = true;
 			(*additional_size) += 5;
 		}
 
 		/* check for &quot; */
 		if (content [iterator] == '"') {
-			result = AXL_TRUE;
+			result = true;
 			(*additional_size) += 5;
 		}
 
 		/* check for &amp; */
 		if (content [iterator] == '&') {
-			result = AXL_TRUE;
+			result = true;
 			(*additional_size) += 4;
 		}
 
 		/* check for &gt; */
 		if (content [iterator] == '>') {
-			result = AXL_TRUE;
+			result = true;
 			(*additional_size) += 3;
 		}
 
 		/* check for &lt; */
 		if (content [iterator] == '<') {
-			result = AXL_TRUE;
+			result = true;
 			(*additional_size) += 3;
 		}
 
@@ -281,7 +281,7 @@ char * __axl_node_content_copy_and_escape (char * content,
 	int    iterator  = 0;
 	int    iterator2 = 0;
 	char * result;
-	axl_return_val_if_fail (content, AXL_FALSE);
+	axl_return_val_if_fail (content, false);
 
 	/* allocate the memory to be returned */
 	result = axl_new (char, content_size + additional_size + 1);
@@ -359,7 +359,7 @@ char * __axl_node_content_translate_defaults (char * content,
 	int    iterator  = 0;
 	int    iterator2 = 0;
 	
-	axl_return_val_if_fail (content, AXL_FALSE);
+	axl_return_val_if_fail (content, false);
 
 	/* iterate over all content defined */
 	while (iterator < (*content_size)) {
@@ -593,15 +593,15 @@ void __axl_node_init_childs (axlNode * node)
 bool         __axl_node_set_attribute_common_check (axlNode * node, char * attribute, char * value)
 {
 	/* checks values received */
-	axl_return_val_if_fail (node, AXL_FALSE);
-	axl_return_val_if_fail (attribute, AXL_FALSE);
-	axl_return_val_if_fail (value, AXL_FALSE);
+	axl_return_val_if_fail (node, false);
+	axl_return_val_if_fail (attribute, false);
+	axl_return_val_if_fail (value, false);
 
 	/* attribute could be added twice */
-	axl_return_val_if_fail (! axl_node_has_attribute (node, attribute), AXL_FALSE);
+	axl_return_val_if_fail (! axl_node_has_attribute (node, attribute), false);
 
 	/* check ok */
-	return AXL_TRUE;
+	return true;
 }
 
 /** 
@@ -748,8 +748,8 @@ axlAttribute * __axl_node_common_attr_get (axlNode * node, char * attribute)
 	axlAttribute * attr;
 	int            iterator = 0;
 
-	axl_return_val_if_fail (node, AXL_FALSE);
-	axl_return_val_if_fail (attribute, AXL_FALSE);
+	axl_return_val_if_fail (node, false);
+	axl_return_val_if_fail (attribute, false);
 
 	/* assume the attribute requested doesn't exist because the
 	 * attribute list is not initialized  */
@@ -786,8 +786,8 @@ axlAttribute * __axl_node_common_attr_get (axlNode * node, char * attribute)
  *
  * @param attribute The attribute to check.
  * 
- * @return A \ref AXL_TRUE if the attribute value is set, otherwise
- * \ref AXL_FALSE is returned.
+ * @return A \ref true if the attribute value is set, otherwise
+ * \ref false is returned.
  */
 bool          axl_node_has_attribute      (axlNode * node, char * attribute)
 {
@@ -897,7 +897,7 @@ char    * axl_node_get_attribute_value_trans (axlNode * node, char * attribute)
  *
  * @param node The node to configure as empty.
  *
- * @param empty The value for emptyness to be used. AXL_FALSE will
+ * @param empty The value for emptyness to be used. false will
  * mean that the node is not empty.
  */
 void      axl_node_set_is_empty (axlNode * node, bool     empty)
@@ -1013,7 +1013,7 @@ axlNode * axl_node_get_next           (axlNode * node)
  * \endcode
  * 
  * If a node have content, this function will return \ref
- * AXL_FALSE. The content must not be confused with the node childs. A
+ * false. The content must not be confused with the node childs. A
  * xml node (\ref axlNode) could be empty but have childs at the same
  * time (\ref axl_node_have_childs).
  *
@@ -1032,12 +1032,12 @@ axlNode * axl_node_get_next           (axlNode * node)
  * 
  * @param node The node to check for its empty status. 
  * 
- * @return \ref AXL_TRUE if the node is empty or \ref AXL_FALSE if
+ * @return \ref true if the node is empty or \ref false if
  * not.
  */
 bool          axl_node_is_empty        (axlNode * node)
 {
-	axl_return_val_if_fail (node, AXL_FALSE);
+	axl_return_val_if_fail (node, false);
 
 	return node->is_empty;
 }
@@ -1166,7 +1166,7 @@ void      axl_node_set_content        (axlNode * node, char * content, int conte
 		   node->name, node->content_size, node->content);
 
 	/* set that the node is not empty */
-	node->is_empty = AXL_FALSE;
+	node->is_empty = false;
 
 	/* job done */
 	return;
@@ -1206,7 +1206,7 @@ void      axl_node_set_content_ref    (axlNode * node,
 
 	/* set current content */
 	node->content  = content;
-	node->is_empty = AXL_FALSE;
+	node->is_empty = false;
 
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "setting xml node (name: %s) content (size: %d) %s",
 		   node->name, node->content_size, node->content);
@@ -1434,8 +1434,8 @@ void      axl_node_set_child (axlNode * parent, axlNode * child)
  * 
  * @param node The node to configure.
  *
- * @param childs The child configuration, AXL_TRUE to notify that the
- * node have childs, otherwise, AXL_FALSE is returned.
+ * @param childs The child configuration, true to notify that the
+ * node have childs, otherwise, false is returned.
  */
 void      axl_node_set_have_childs (axlNode * node, bool     childs)
 {
@@ -1454,17 +1454,17 @@ void      axl_node_set_have_childs (axlNode * node, bool     childs)
  * 
  * @param node The \ref axlNode reference.
  * 
- * @return An \ref AXL_TRUE if the \ref axlNode have childs or \ref
- * AXL_FALSE if not.
+ * @return An \ref true if the \ref axlNode have childs or \ref
+ * false if not.
  */
 bool          axl_node_have_childs        (axlNode * node)
 {
-	axl_return_val_if_fail (node, AXL_FALSE);
+	axl_return_val_if_fail (node, false);
 
 	/* if childs list is NULL, assume the node doesn't have
 	 * childs */
 	if (node->childs == NULL)
-		return AXL_FALSE;
+		return false;
 	
 	/* return current configuration */
 	return (axl_list_length (node->childs) > 0);
@@ -1589,7 +1589,7 @@ axlList * axl_node_get_childs         (axlNode * node)
  * @param node The node to check.
  * @param node2 The second node to check.
  * 
- * @return AXL_TRUE if both nodes are equivalent or AXL_FALSE if not.
+ * @return true if both nodes are equivalent or false if not.
  */
 bool          axl_node_are_equal          (axlNode * node, axlNode * node2)
 {
@@ -1599,33 +1599,33 @@ bool          axl_node_are_equal          (axlNode * node, axlNode * node2)
 	axlAttribute  * attr;
 	axlAttribute  * attr2;
 	
-	axl_return_val_if_fail (node,  AXL_FALSE);
-	axl_return_val_if_fail (node2, AXL_FALSE);
+	axl_return_val_if_fail (node,  false);
+	axl_return_val_if_fail (node2, false);
 
 	/* check document root name */
 	if (! axl_cmp (axl_node_get_name (node), axl_node_get_name (node2))) {
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* check empty ness configuration */
 	if (axl_node_is_empty (node) != axl_node_is_empty (node2)) {
-		return AXL_FALSE;
+		return false;
 	}
 	
 	/* check childs configuration */
 	if (axl_node_have_childs (node) != axl_node_have_childs (node2)) {
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* check childs number */
 	if (axl_node_get_child_num (node) != axl_node_get_child_num (node2)) {
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* check attribute values */
 	if (node->attributes != NULL) {
 		if (axl_list_length (node->attributes) != axl_list_length (node2->attributes)) {
-			return AXL_FALSE;
+			return false;
 		}
 		
 		length = axl_list_length (node->attributes);
@@ -1636,11 +1636,11 @@ bool          axl_node_are_equal          (axlNode * node, axlNode * node2)
 			
 			/* check attribute name */
 			if (! axl_cmp (attr->name, attr2->name))
-				return AXL_FALSE;
+				return false;
 			
 			/* check attribute name */
 			if (! axl_cmp (attr->value, attr2->value))
-				return AXL_FALSE;
+				return false;
 			
 			/* update the iterator index */
 			iterator++;
@@ -1649,7 +1649,7 @@ bool          axl_node_are_equal          (axlNode * node, axlNode * node2)
 
 
 	/* both nodes seems to be equal */
-	return AXL_TRUE;
+	return true;
 }
 
 /** 
@@ -1702,8 +1702,8 @@ void      axl_node_add_pi_target            (axlNode * node,
  *
  * @param pi_target The process instruction name.
  * 
- * @return AXL_TRUE is the processing instruction is defined,
- * otherwise AXL_FALSE is returned.
+ * @return true is the processing instruction is defined,
+ * otherwise false is returned.
  */
 bool          axl_node_has_pi_target            (axlNode * node, 
 						 char * pi_target)
@@ -1713,13 +1713,13 @@ bool          axl_node_has_pi_target            (axlNode * node,
 	int     length   = 0;
 
 	
-	axl_return_val_if_fail (node,      AXL_FALSE);
-	axl_return_val_if_fail (pi_target, AXL_FALSE);
+	axl_return_val_if_fail (node,      false);
+	axl_return_val_if_fail (pi_target, false);
 
 	/* assume the pi target doesn't exist if it is not
 	 * initialized */
 	if (node->piTargets == NULL)
-		return AXL_FALSE;
+		return false;
 
 #ifdef SHOW_DEBUG_LOG
 	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "checking it target element: %s is defined on the node", pi_target);
@@ -1735,13 +1735,13 @@ bool          axl_node_has_pi_target            (axlNode * node,
 #ifdef SHOW_DEBUG_LOG
 			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "element %s found, %s", pi_target, axl_pi_get_name (pi));
 #endif
-			return AXL_TRUE;
+			return true;
 		}
 
 		iterator++;
 	}
 	
-	return AXL_FALSE;
+	return false;
 }
 
 /** 
