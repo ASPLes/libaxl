@@ -45,19 +45,19 @@
  * @brief Allows to compare two strings provided, s1 and s1 to be
  * equal.
  *
- * In the case both are equal, AXL_TRUE is returned. Otherwise
- * AXL_FALSE.
+ * In the case both are equal, true is returned. Otherwise
+ * false.
  * 
  */
 bool axl_cmp (char * string, char * string2)
 {
-	axl_return_val_if_fail (string, AXL_FALSE);
-	axl_return_val_if_fail (string2, AXL_FALSE);
+	axl_return_val_if_fail (string, false);
+	axl_return_val_if_fail (string2, false);
 	
 	if (! axl_stream_cmp ((string != NULL) ? string : "s1",
 			      (string2 != NULL) ? string2 : "s2",
 			      (string != NULL) ? strlen (string) : 2))
-		return AXL_FALSE;
+		return false;
 
 	return axl_stream_cmp ((string != NULL) ? string : "s1",
 			       (string2 != NULL) ? string2 : "s2",
