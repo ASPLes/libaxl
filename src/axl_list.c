@@ -1,4 +1,4 @@
-/**
+/*
  *  LibAxl:  Another XML library
  *  Copyright (C) 2006 Advanced Software Production Line, S.L.
  *
@@ -110,7 +110,7 @@ void  __axl_list_allocate_nodes (axlList * list)
 	if (list->preallocated == NULL)
 		list->preallocated  = axl_new (axlListNode *, list->allocated);
 	else
-		list->preallocated  = realloc (list->preallocated, sizeof (axlListNode *) * list->allocated);
+		list->preallocated  = realloc (list->preallocated, (sizeof (axlListNode *)) * list->allocated);
 
 	/* allocate a node for each available position */
 	for (iterator = 0; iterator < list->available; iterator++) {

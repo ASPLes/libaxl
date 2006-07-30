@@ -51,6 +51,14 @@ axlNode * axl_node_create                   (char * name);
 
 axlNode * axl_node_create_ref               (char * name);
 
+typedef struct _axlNodeFactory axlNodeFactory;
+
+axlNode * axl_node_create_from_factory      (char * name, 
+					     axlNodeFactory * factory);
+
+axlNode * axl_node_create_from_factory_ref  (char * name, 
+					     axlNodeFactory * factory);
+
 axlDoc  * axl_node_get_doc                  (axlNode * node);
 
 void      axl_node_set_doc                  (axlNode * node, axlDoc * doc);
@@ -155,6 +163,14 @@ int       axl_node_dump_at                  (axlNode * node,
 					     int       desp);
 
 void      axl_node_free            (axlNode * node);
+
+axlNodeFactory * axl_node_factory_create  (int steps);
+
+axlNode        * axl_node_factory_get     (axlNodeFactory * factory);
+
+void             axl_node_factory_release (axlNodeFactory * factory, axlNode * node);
+
+void             axl_node_factory_free    (axlNodeFactory * factory); 
 
 /* @} */
 

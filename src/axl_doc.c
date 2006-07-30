@@ -1,4 +1,4 @@
-/**
+/*
  *  LibAxl:  Another XML library
  *  Copyright (C) 2006 Advanced Software Production Line, S.L.
  *
@@ -355,6 +355,14 @@ struct _axlDoc {
 	 * or after the xml header definition.
 	 */
 	bool    headerProcess;
+
+	/** 
+	 * @internal
+	 * 
+	 * A reference to the factory node (a factory to create nodes
+	 * in a memory efficient way).
+	 */
+	axlNodeFactory * nodeFactory;
 };
 
 struct _axlPI {
@@ -386,8 +394,12 @@ axlDoc * __axl_doc_new (bool create_parent_stack)
 {
 	axlDoc    * result = axl_new (axlDoc, 1);
 
+	/* default container lists */
 	result->parentNode = axl_stack_new (NULL);
 	result->piTargets  = axl_list_new (axl_list_always_return_1, (axlDestroyFunc) axl_pi_free);
+
+	/* node factory */
+	result->nodeFactory = axl_node_factory_create (10);
 
 	return result;
 }
@@ -441,16 +453,12 @@ bool __axl_doc_parse_xml_header (axlStream * stream, axlDoc * doc, axlError ** e
 		return false;
 	}
 
-#ifdef SHOW_DEBUG_LOG
-	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "looking for an xml header declaration");
-#endif
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "looking for an xml header declaration");
 
 	/* check for initial XMLDec (production 23) */
 	if (axl_stream_inspect (stream, "<?", 2)) {
 		
-#ifdef SHOW_DEBUG_LOG
-		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found xml declaration");
-#endif
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found xml declaration");
 
 		/* check initial <?xml xml header */
 		if (! (axl_stream_inspect (stream, "xml", 3) > 0)) {
@@ -483,9 +491,8 @@ bool __axl_doc_parse_xml_header (axlStream * stream, axlDoc * doc, axlError ** e
 
 		/* now check for encoding */
 		if (axl_stream_inspect_several (stream, 2, "encoding=\"", 10, "encoding='", 10) > 0) {
-#ifdef SHOW_DEBUG_LOG
-			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found encoding declaration");
-#endif
+
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found encoding declaration");
 
 			/* found encoding instruction */
 			string_aux = axl_stream_get_until (stream, NULL, NULL, true, 2, "'", "\"");
@@ -494,9 +501,8 @@ bool __axl_doc_parse_xml_header (axlStream * stream, axlDoc * doc, axlError ** e
 				axl_stream_free (stream);
 				return false;
 			}
-#ifdef SHOW_DEBUG_LOG			
-			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "encoding found=%s", string_aux);
-#endif
+
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "encoding found=%s", string_aux);
 
 			/* set document encoding: do not allocate
 			 * twice the string returned, just nullify
@@ -623,12 +629,12 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 
 	/* create the node and associate it */
 	axl_stream_nullify (stream, LAST_CHUNK);
-	node           = axl_node_create_ref (string_aux);
+	node  = axl_node_create_ref (string_aux); 
+	/* node   = axl_node_create_from_factory_ref (string_aux, doc->nodeFactory); */
 
 	if (doc->rootNode == NULL) {
-#ifdef SHOW_DEBUG_LOG
-		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "setting as first node found, the root node: <%s>", string_aux);
-#endif
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "setting as first node found, the root node: <%s>", string_aux);
+
 		doc->rootNode  = node;
 		
 		/* set the node read, the root one, to be the parent */
@@ -653,9 +659,7 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 		AXL_CONSUME_SPACES (stream);
 	}
 
-#ifdef SHOW_DEBUG_LOG
-	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "node found: [%s]", string_aux);
-#endif
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "node found: [%s]", string_aux);
 
 	/* know, until the node ends, we have to find the node
 	 * attributes or the node defintion end */
@@ -671,9 +675,9 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 		 * are on "/>" case */
 		if ((matched_chunk == 0) ||
 		    axl_stream_inspect (stream, "/>", 2) > 0) {
-#ifdef SHOW_DEBUG_LOG
-			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found end xml node definition '/>'");
-#endif
+
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found end xml node definition '/>'");
+
 			/* empty node configuration found */
 			axl_node_set_is_empty (node, true);
 			axl_node_set_have_childs (node, false);
@@ -695,10 +699,9 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 		if ((matched_chunk == 1) ||
 		    (axl_stream_inspect (stream, ">", 1) > 0)) {
 			
-#ifdef SHOW_DEBUG_LOG
-			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found [end] xml node definition '>', for node: [%s]",
-				 axl_node_get_name (node));
-#endif
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found [end] xml node definition '>', for node: [%s]",
+				   axl_node_get_name (node));
+
 			axl_node_set_have_childs (node, true);
 			axl_node_set_is_empty (node, false);
 			/* this node is ended */
@@ -709,12 +712,11 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 		AXL_CONSUME_SPACES (stream);
 
 		/* found attribute declaration, try to read it */
-		/* string_aux = axl_stream_get_until (stream, NULL, NULL, true, 3, "='", "=\"", "="); */
 		string_aux = axl_stream_get_until (stream, NULL, NULL, true, 1, "=");
 		if (string_aux != NULL) {
-#ifdef SHOW_DEBUG_LOG
-			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "attribute found: [%s]", string_aux);
-#endif
+
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "attribute found: [%s]", string_aux);
+
 			/* nullify internal reference to the stream:
 			 * now we have inside string_aux the attribute
 			 * name */
@@ -731,9 +733,8 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 			
 			/* now get the attribute value */
 			string_aux2 = axl_stream_get_until (stream, NULL, NULL, true, 2, "'", "\"");
-#ifdef SHOW_DEBUG_LOG
-			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "value found: [%s]", string_aux2);
-#endif
+
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "value found: [%s]", string_aux2);
 			
 			/* nullify internal reference so we have the
 			 * only one reference to attribute value
@@ -743,9 +744,8 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 			/* set a new attribute for the given node */
 			axl_node_set_attribute_ref (node, string_aux, string_aux2);
 
-#ifdef SHOW_DEBUG_LOG
-			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "attribute installed..");
-#endif
+
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "attribute installed..");
 
 			/* get rid from spaces */
 			AXL_CONSUME_SPACES (stream);
@@ -761,9 +761,9 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 		iterator++;
 	} while (axl_stream_remains (stream));
 
-#ifdef SHOW_DEBUG_LOG
-	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found end xml node definition (2)");
-#endif
+
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found end xml node definition (2)");
+
 	
 	/* document properly parsed */
 	return true;
@@ -821,23 +821,19 @@ bool __axl_doc_parse_close_node (axlStream * stream, axlDoc * doc, axlNode ** _n
 
 
 		/* ok, axl node to be closed is the one expected */
-#ifdef SHOW_DEBUG_LOG
-		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "closing xml node, that matched with parent opened");
-#endif
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "closing xml node, that matched with parent opened");
+
 		return true;
 	}
 
 	/* seems that the node being closed doesn't match */
-#ifdef SHOW_DEBUG_LOG
-	axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "xml node names to be closed doesn't matched (%s != %s), current node stack status:",
+
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "xml node names to be closed doesn't matched (%s != %s), current node stack status:",
 		 axl_node_get_name (node), string);
-#endif
 
 	node = axl_stack_pop (doc->parentNode);
 	while (node != NULL) {
-#ifdef SHOW_DEBUG_LOG
-		axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "<%s>", axl_node_get_name (node));
-#endif
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "<%s>", axl_node_get_name (node));
 		node = axl_stack_pop (doc->parentNode);
 	}
 
@@ -887,19 +883,16 @@ axlDoc * __axl_doc_parse_common (char * entity, int entity_size,
 	/* if the node returned is not empty */
 	if (! axl_node_is_empty (node)) {
 
-#ifdef SHOW_DEBUG_LOG
-		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "the first node ready, have content, reading it");
-#endif
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "the first node ready, have content, reading it");
 
 		/* while the stream have data */
 		while (axl_stream_remains (stream)) {
 
 			/* get current index */
 			index = axl_stream_get_index (stream);
-#ifdef SHOW_DEBUG_LOG
-			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "current index: %d (global: %d)", index,
-				 axl_stream_get_global_index (stream));
-#endif
+
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "current index: %d (global: %d)", index,
+				   axl_stream_get_global_index (stream));
 
 			/* consume a possible comment */
 			if (! axl_doc_consume_comments (doc, stream, error))
@@ -909,9 +902,8 @@ axlDoc * __axl_doc_parse_common (char * entity, int entity_size,
 				/* accept previous peek */
 				axl_stream_accept (stream);
 
-#ifdef SHOW_DEBUG_LOG
-				axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found a node termination signal");
-#endif
+				__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found a node termination signal");
+
 				/* seems that a node is being closed */
 				if (! __axl_doc_parse_close_node (stream, doc, &node, error))
 					return NULL;
@@ -921,10 +913,8 @@ axlDoc * __axl_doc_parse_common (char * entity, int entity_size,
 				 * previous one */
 				axl_stack_pop (doc->parentNode);
 
-#ifdef SHOW_DEBUG_LOG
-				axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "node properly closed, current parent node stack size: %d",
-					 axl_stack_size (doc->parentNode));
-#endif
+				__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "node properly closed, current parent node stack size: %d",
+					   axl_stack_size (doc->parentNode));
 
 				if (axl_stack_size (doc->parentNode) > 0)
 					continue;
@@ -963,9 +953,8 @@ axlDoc * __axl_doc_parse_common (char * entity, int entity_size,
 				/* accept previous peek */
 				axl_stream_accept (stream);
 
-#ifdef SHOW_DEBUG_LOG
-				axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found a new node being opened");
-#endif
+				__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found a new node being opened");
+
 				/* seems that another node is being opened */
 				if (!__axl_doc_parse_node (stream, doc, &node, error))
 					return NULL;
@@ -1001,11 +990,11 @@ axlDoc * __axl_doc_parse_common (char * entity, int entity_size,
 
 	/* pop axl parent */
 	if (! axl_stack_is_empty (doc->parentNode)) {
-#ifdef SHOW_DEBUG_LOG
-		axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, 
-			 "current parent stack size shows that not all opened nodes were closed. This means that the XML document is not properly balanced (stack size: %d)",
-			 axl_stack_size (doc->parentNode));
-#endif
+
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, 
+			   "current parent stack size shows that not all opened nodes were closed. This means that the XML document is not properly balanced (stack size: %d)",
+			   axl_stack_size (doc->parentNode));
+
 		axl_error_new (-1, "XML document is not balanced, still remains xml nodes", stream, error);
 		axl_stream_free (stream);
 		return NULL;
@@ -1018,9 +1007,7 @@ axlDoc * __axl_doc_parse_common (char * entity, int entity_size,
 	/* clean document internal variables */
 	__axl_doc_clean (doc);
 
-#ifdef SHOW_DEBUG_LOG
-	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "xml document parse COMPLETED"); 
-#endif
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "xml document parse COMPLETED"); 
 
 	return doc;
 }
@@ -1393,9 +1380,7 @@ axlDoc  * axl_doc_parse_strings            (axlError ** error,
 	if (stream == NULL)
 		return NULL;
 
-#ifdef SHOW_DEBUG_LOG
-	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "string to parse: %s", stream);
-#endif
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "string to parse: %s", stream);
 
 	/* parse the string */
 	doc = axl_doc_parse (stream, -1, error);
@@ -1424,10 +1409,9 @@ bool __axl_doc_are_equal (axlNode * node, axlNode * node2)
 	if (! axl_node_are_equal (node, node2))
 		return false;
 
-#ifdef SHOW_DEBUG_LOG
-	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "<%s>=<%s>", 
-		 axl_node_get_name (node), axl_node_get_name (node2));
-#endif
+
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "<%s>=<%s>", 
+		   axl_node_get_name (node), axl_node_get_name (node2));
 
 	/* iterate over all childs inside the node */
 	iterator = 0;
@@ -1474,9 +1458,8 @@ bool      axl_doc_are_equal                (axlDoc * doc,
 	axl_return_val_if_fail (doc, false);
 
 	/* first, check the document root */
-#ifdef SHOW_DEBUG_LOG
-	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "checking that both documents are equal");
-#endif
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "checking that both documents are equal");
+
 	node  = axl_doc_get_root (doc);
 	node2 = axl_doc_get_root (doc2);
 
@@ -1617,33 +1600,25 @@ axlList * axl_doc_get_list                  (axlDoc * doc, char * path_to)
 	if (strlen (paths[1]) != 0) {
 		/* check the node is the one requested */
 		if (! NODE_CMP_NAME (node, paths[1])) {
-#ifdef SHOW_DEBUG_LOG
-			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "requested root node = %s wasn't found, current root %s", paths[1],
-				 axl_node_get_name (doc->rootNode));
-#endif
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "requested root node = %s wasn't found, current root %s", paths[1],
+				   axl_node_get_name (doc->rootNode));
 			axl_list_free (nodes);
 			axl_stream_freev (paths);
 			return NULL;
 		}
 	}
 
-#ifdef SHOW_DEBUG_LOG
-	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found node: %s for path=%s", paths[1], path_to);
-#endif
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found node: %s for path=%s", paths[1], path_to);
 
 	/* now the general case */
 	iterator = 2;
 	while ((paths[iterator] != NULL) && (strlen (paths[iterator]) > 0)) {
-#ifdef SHOW_DEBUG_LOG
-		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "checking path item %s", paths[iterator]);
-#endif
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "checking path item %s", paths[iterator]);
 		
 		/* check that the last path is used */
 		if (axl_cmp (paths[iterator], "*") && 
 		    (axl_stream_strv_num (paths) != iterator + 1)) {
-#ifdef SHOW_DEBUG_LOG
-			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "using the '*' at that path different from the last one.", paths[iterator]);
-#endif
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "using the '*' at that path different from the last one.", paths[iterator]);
 			axl_list_free (nodes);
 			axl_stream_freev (paths);
 			return NULL;
@@ -1652,16 +1627,13 @@ axlList * axl_doc_get_list                  (axlDoc * doc, char * path_to)
 		/* get a reference to the node searched */
 		node = axl_node_get_child_called (node, paths[iterator]);
 		if (node == NULL) {
-#ifdef SHOW_DEBUG_LOG
-			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "the node located at %s wasn't found.", path_to);
-#endif
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "the node located at %s wasn't found.", path_to);
+
 			axl_list_free (nodes);
 			axl_stream_freev (paths);
 			return NULL;
 		}
-#ifdef SHOW_DEBUG_LOG
-		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found node: %s", paths[iterator]);
-#endif
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found node: %s", paths[iterator]);
 
 		/* update iterator value */
 		iterator++;
@@ -1853,11 +1825,10 @@ void     axl_doc_set_child_current_parent (axlDoc * doc, axlNode * node)
 
 	/* set the new parent */
 	axl_stack_push (doc->parentNode, node);
-#ifdef SHOW_DEBUG_LOG
-	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "pushed a new parent into the stack <%s>, current status after operatoin: %d",
-		 axl_node_get_name (node), axl_stack_size (doc->parentNode));
-#endif
 
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "pushed a new parent into the stack <%s>, current status after operatoin: %d",
+		   axl_node_get_name (node), axl_stack_size (doc->parentNode));
+	
 	return;
 }
 
@@ -1874,11 +1845,9 @@ void     axl_doc_pop_current_parent       (axlDoc * doc)
 
 	/* pop current parent */
 	axl_stack_pop (doc->parentNode);
-#ifdef SHOW_DEBUG_LOG
-	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "pop current parent node, status after operation: %d",
-		 axl_stack_size (doc->parentNode));
-#endif
 
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "pop current parent node, status after operation: %d",
+		   axl_stack_size (doc->parentNode));
 	return;
 }
 
@@ -2294,6 +2263,10 @@ void     axl_doc_free         (axlDoc * doc)
 		axl_free (doc->version);
 	}
 
+	if (doc->nodeFactory != NULL) {
+		/* free node factory */
+		axl_node_factory_free (doc->nodeFactory);
+	}
 
 	/* free document allocated */
 	axl_free (doc);
@@ -2315,9 +2288,8 @@ bool      axl_doc_consume_comments         (axlDoc * doc, axlStream * stream, ax
 
 	bool found_item;
 	
-#ifdef SHOW_DEBUG_LOG
-	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "checking for comemnts");
-#endif
+
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "checking for comemnts");
 
 	/* know, try to read comments a process instructions.  Do this
 	 * until both fails. Do this until one of them find
@@ -2343,9 +2315,7 @@ bool      axl_doc_consume_comments         (axlDoc * doc, axlStream * stream, ax
 			/* flag that we have found a comment */
 			found_item = true;
 		}
-#ifdef SHOW_DEBUG_LOG
-		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "now see for process instructions");
-#endif
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "now see for process instructions");
 	
 		/* get rid from spaces */
 		AXL_CONSUME_SPACES(stream);
@@ -2394,14 +2364,13 @@ bool      axl_doc_consume_pi (axlDoc * doc, axlNode * node,
 	
 	
 	/* check if a PI target was found */
-#ifdef SHOW_DEBUG_LOG
-	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "calling to consume PI..");
-#endif
+
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "calling to consume PI..");
+
 
 	if (axl_stream_peek (stream, "<?", 2) > 0) {
-#ifdef SHOW_DEBUG_LOG
-		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found a process instruction initialization");
-#endif
+
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found a process instruction initialization");
 
 		/* found a pi target initialization */
 		axl_stream_accept (stream);
@@ -2425,10 +2394,9 @@ bool      axl_doc_consume_pi (axlDoc * doc, axlNode * node,
 		}
 		axl_free (string_aux2);
 
-#ifdef SHOW_DEBUG_LOG
-		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found PI target name: %s (terminator matched: %d)", 
-			 string_aux, matched_chunk);
-#endif
+
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found PI target name: %s (terminator matched: %d)", 
+			   string_aux, matched_chunk);
 
 		/* check which was the matched string */
 		if (matched_chunk == 0 || matched_chunk == 1) {
@@ -2462,9 +2430,7 @@ bool      axl_doc_consume_pi (axlDoc * doc, axlNode * node,
 
 			/* check the destination for the pi */			
 			if (node != NULL) {
-#ifdef SHOW_DEBUG_LOG
-				axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "PI processing finished, adding PI (node) and its content");
-#endif
+				__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "PI processing finished, adding PI (node) and its content");
 
 				axl_node_add_pi_target (node, string_aux, string_aux2);
 				axl_free (string_aux);
@@ -2473,9 +2439,7 @@ bool      axl_doc_consume_pi (axlDoc * doc, axlNode * node,
 
 
 			if (doc != NULL) {
-#ifdef SHOW_DEBUG_LOG
-				axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "PI processing finished, adding PI (doc) and its content");
-#endif
+				__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "PI processing finished, adding PI (doc) and its content");
 				axl_doc_add_pi_target (doc, string_aux, string_aux2);
 				axl_free (string_aux);
 				return true;
@@ -2489,9 +2453,9 @@ bool      axl_doc_consume_pi (axlDoc * doc, axlNode * node,
 		return false;
 	}
 
-#ifdef SHOW_DEBUG_LOG
-	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "PI processing finished");
-#endif
+	
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "PI processing finished");
+
 
 	return true;
 }

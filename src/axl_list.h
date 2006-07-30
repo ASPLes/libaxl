@@ -1,4 +1,4 @@
-/**
+/*
  *  LibAxl:  Another XML library
  *  Copyright (C) 2006 Advanced Software Production Line, S.L.
  *
@@ -43,7 +43,7 @@
 BEGIN_C_DECLS
 
 axlList  * axl_list_new    (axlEqualFunc are_equal, axlDestroyFunc destroy_data);
- 
+
 int        axl_list_equal_string (axlPointer a, axlPointer b);
 
 int        axl_list_always_return_1 (axlPointer a, axlPointer b);

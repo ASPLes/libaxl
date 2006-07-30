@@ -3,7 +3,7 @@
 
 int main (int argc, char ** argv)
 {
-	axlError ** error;
+	axlError ** error = NULL;
 
 	/* top level definitions */
 	axlDoc * doc = NULL;

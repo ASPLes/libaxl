@@ -178,6 +178,36 @@ typedef struct _axlDtdAttribute axlDtdAttribute;
  */
 typedef struct _axlDtdAttributeDecl axlDtdAttributeDecl;
 
+/** 
+ * @brief Axl DTD entity declaration (<!ENTITY support>)
+ */
+typedef struct _axlDtdEntity axlDtdEntity;
+
+/** 
+ * @brief Support type definition for \ref axlDtdEntity, which holds
+ * information about external resource pointed by the \ref
+ * axlDtdEntity instance.
+ */
+typedef struct _axlDtdEntityExternalData axlDtdEntityExternalData;
+
+/** 
+ * @brief Declares the entity type for a provided \ref axlDtdEntity.
+ */
+typedef enum {
+	/** 
+	 * @brief The \ref axlDtdEntity definition represents a
+	 * general entity definition (that comes without % before the
+	 * entity name).
+	 */
+	GENERAL_ENTITY,
+	/** 
+	 * @brief The \ref axlDtdEntity definition represents a
+	 * parameter entity definition (that comes with a % before the
+	 * entity name, making this entity definition to be only
+	 * usable from a DTD definition).
+	 */
+	PARAMETER_ENTITY,
+}axlDtdEntityType;
 
 /** 
  * @brief Attribute type declaration (the type of the attribute
@@ -200,6 +230,11 @@ typedef enum {
 	 * the node attribute value, activated when used 'IDREF'.
 	 */
 	TOKENIZED_TYPE_IDREF,
+	/** 
+	 * @brief Especific token declaration that implicitly contrain
+	 * the node attribute value, activated when used 'IDREFS'.
+	 */
+	TOKENIZED_TYPE_IDREFS,
 	/** 
 	 * @brief Especific token declaration that implicitly contrain
 	 * the node attribute value, activated when used 'ENTITY'.
