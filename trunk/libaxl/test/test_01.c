@@ -2,13 +2,70 @@
 #include <stdio.h>
 
 /** 
+ * @brief Test entity support (basic entity support).
+ * 
+ * @param error The optional axlError to be used to report errors.
+ * 
+ * @return true if the validity test is passed, false if not.
+ */
+bool test_18 (axlError ** error)
+{
+	axlDtd * dtd = NULL;
+	char   * content;
+
+	/* parse af-arch DTD */
+	dtd = axl_dtd_parse_from_file ("channel.dtd", error);
+	if (dtd == NULL)
+		return false;
+
+	/* lookup for entity definitions */
+	if (axl_dtd_entity_exists (dtd, "TEST", GENERAL_ENTITY)) {
+		axl_error_new (-1, "Expected to not find an entity value which was found (TEST)..", NULL, error);
+		return false;
+	}
+	
+	if (axl_dtd_entity_exists (dtd, "URI", GENERAL_ENTITY)) {
+		axl_error_new (-1, "Expected to not find an entity value which was found (URI)..", NULL, error);
+		return false;
+	}
+	
+	/* lookup for entity definitions that are expected to be found */
+	if (! axl_dtd_entity_exists (dtd, "URI", PARAMETER_ENTITY)) {
+		axl_error_new (-1, "Expected to find an entity value which wasn't found (% URI)..", NULL, error);
+		return false;
+	}
+
+	if (! axl_dtd_entity_exists (dtd, "LOCS", PARAMETER_ENTITY)) {
+		axl_error_new (-1, "Expected to find an entity value which wasn' found (% LOCS)..", NULL, error);
+		return false;
+	}
+
+	/* now get the content inside */
+	content = axl_dtd_entity_value (dtd, "CHAN", PARAMETER_ENTITY);
+	if (content == NULL) {
+		axl_error_new (-1, "Expected to find parameter entity content for (% CHAN) but it wasn't found", NULL, error);
+		return false;
+	}
+	
+	if (! axl_cmp (content, "CDATA")) {
+		axl_error_new (-1, "Expected to find parameter entity content for (% CHAN) it doesn't match", NULL, error);
+		return false;	
+	}
+
+	/* free the dtd */
+	axl_dtd_free (dtd);
+
+	return true;
+}
+
+/** 
  * @brief A more complex DTD parsing example
  * 
  * @param error The optional axlError to be used to report errors.
  * 
- * @return AXL_TRUE if the validity test is passed, AXL_FALSE if not.
+ * @return true if the validity test is passed, false if not.
  */
-aboolean test_17 (axlError ** error) 
+bool test_17 (axlError ** error) 
 {
 	axlDoc  * doc  = NULL;
 	axlDtd  * dtd  = NULL;
@@ -16,17 +73,17 @@ aboolean test_17 (axlError ** error)
 	/* parse common DTD file */
 	dtd = axl_dtd_parse_from_file ("xml-rpc.dtd", error);
 	if (dtd == NULL)
-		return AXL_FALSE;
+		return false;
 
 	/* parse a file that must not be valid */
 	doc = axl_doc_parse_from_file ("test17.xdl", error);
 	if (doc == NULL)
-		return AXL_FALSE;
+		return false;
 
 	/* the following validation must fail */
 	if (axl_dtd_validate (doc, dtd, error)) {
 		axl_error_new (-1, "A validation was produced when expected a failure", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* because a failure was expected, release memory allocated by
@@ -39,7 +96,7 @@ aboolean test_17 (axlError ** error)
 	/* release DTD reference */
 	axl_dtd_free (dtd);
 
-	return AXL_TRUE;
+	return true;
 }
 
 /** 
@@ -47,9 +104,9 @@ aboolean test_17 (axlError ** error)
  * 
  * @param error The optional axlError to be used to report errors.
  * 
- * @return AXL_TRUE if the validity test is passed, AXL_FALSE if not.
+ * @return true if the validity test is passed, false if not.
  */
-aboolean test_16 (axlError ** error) 
+bool test_16 (axlError ** error) 
 {
 	axlDoc  * doc  = NULL;
 	axlDtd  * dtd  = NULL;
@@ -57,17 +114,17 @@ aboolean test_16 (axlError ** error)
 	/* parse common DTD file */
 	dtd = axl_dtd_parse_from_file ("xml-rpc.dtd", error);
 	if (dtd == NULL)
-		return AXL_FALSE;
+		return false;
 
 	/* parse a file that must not be valid */
 	doc = axl_doc_parse_from_file ("test03.xdl", error);
 	if (doc == NULL)
-		return AXL_FALSE;
+		return false;
 
 	/* the following validation must fail */
 	if (axl_dtd_validate (doc, dtd, error)) {
 		axl_error_new (-1, "A validation was produced when expected a failure", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* because a failure was expected, release memory allocated by
@@ -80,11 +137,11 @@ aboolean test_16 (axlError ** error)
 	/* parse the next file that must be valid */
 	doc = axl_doc_parse_from_file ("test04.xdl", error);
 	if (doc == NULL)
-		return AXL_FALSE;
+		return false;
 
 	/* the following validation should successed */
 	if (! axl_dtd_validate (doc, dtd, error))
-		return AXL_FALSE;
+		return false;
 
 	/* release the document */
 	axl_doc_free (doc);
@@ -92,7 +149,7 @@ aboolean test_16 (axlError ** error)
 	/* release DTD reference */
 	axl_dtd_free (dtd);
 
-	return AXL_TRUE;
+	return true;
 }
 
 /** 
@@ -100,9 +157,9 @@ aboolean test_16 (axlError ** error)
  * 
  * @param error The optional axlError to be used to report errors.
  * 
- * @return AXL_TRUE if the validity test is passed, AXL_FALSE if not.
+ * @return true if the validity test is passed, false if not.
  */
-aboolean test_15 (axlError ** error) 
+bool test_15 (axlError ** error) 
 {
 	axlDoc  * doc  = NULL;
 	axlDtd  * dtd  = NULL;
@@ -110,17 +167,17 @@ aboolean test_15 (axlError ** error)
 	/* parse common DTD file */
 	dtd = axl_dtd_parse_from_file ("xml-rpc.dtd", error);
 	if (dtd == NULL)
-		return AXL_FALSE;
+		return false;
 
 	/* parse a file that must not be valid */
 	doc = axl_doc_parse_from_file ("test01.xdl", error);
 	if (doc == NULL)
-		return AXL_FALSE;
+		return false;
 
 	/* the following validation must fail */
 	if (axl_dtd_validate (doc, dtd, error)) {
 		axl_error_new (-1, "A validation was produced when expected a failure", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* because a failure was expected, release memory allocated by
@@ -133,11 +190,11 @@ aboolean test_15 (axlError ** error)
 	/* parse the next file that must be valid */
 	doc = axl_doc_parse_from_file ("test02.xdl", error);
 	if (doc == NULL)
-		return AXL_FALSE;
+		return false;
 
 	/* the following validation should successed */
 	if (! axl_dtd_validate (doc, dtd, error))
-		return AXL_FALSE;
+		return false;
 
 	/* release the document */
 	axl_doc_free (doc);
@@ -145,7 +202,7 @@ aboolean test_15 (axlError ** error)
 	/* release DTD reference */
 	axl_dtd_free (dtd);
 
-	return AXL_TRUE;
+	return true;
 }
 
 /** 
@@ -153,9 +210,9 @@ aboolean test_15 (axlError ** error)
  * 
  * @param error The optional axlError to be used to report errors.
  * 
- * @return AXL_TRUE if the validity test is passed, AXL_FALSE if not.
+ * @return true if the validity test is passed, false if not.
  */
-aboolean test_14 (axlError ** error) 
+bool test_14 (axlError ** error) 
 {
 	axlDoc  * doc  = NULL;
 	axlNode * node = NULL;
@@ -167,7 +224,7 @@ aboolean test_14 (axlError ** error)
 	
 
 	/* create an emtpy document */
-	doc = axl_doc_create ("1.0", NULL, AXL_FALSE);
+	doc = axl_doc_create ("1.0", NULL, false);
 
 	/* create the root node */
 	node = axl_node_create ("test");
@@ -181,7 +238,7 @@ aboolean test_14 (axlError ** error)
 	if (!axl_cmp ("<?xml version='1.0' ?><test>This is a test (&apos;) (&quot;) (&gt;) (&lt;) (&amp;), more data###</test>",
 		      xml_document)) {
 		axl_error_new (-1, "Found dump mismatch that shows entities are not handled properly", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* free memory dump */
@@ -192,7 +249,7 @@ aboolean test_14 (axlError ** error)
 
 	if (size != 68) {
 		axl_error_new (-1, "Found a document size mismatch while dumping entity content", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 	
 	/* free the content received */
@@ -203,13 +260,13 @@ aboolean test_14 (axlError ** error)
 
 	if (size != 48) {
 		axl_error_new (-1, "Found a document size mismatch while dumping entity content (already translated)", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* check node content returned */
 	if (!axl_cmp (value, "This is a test (\') (\") (>) (<) (&), more data###")) {
 		axl_error_new (-1, "Found an string mismatch while checking a node content which was translated", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* free the content translated */
@@ -218,7 +275,7 @@ aboolean test_14 (axlError ** error)
 	/* free document */
 	axl_doc_free (doc);
 	
-	return AXL_TRUE;
+	return true;
 }
 
 /** 
@@ -226,9 +283,9 @@ aboolean test_14 (axlError ** error)
  * 
  * @param error The optional axlError to be used to report errors.
  * 
- * @return AXL_TRUE if the validity test is passed, AXL_FALSE if not.
+ * @return true if the validity test is passed, false if not.
  */
-aboolean test_13 (axlError ** error) 
+bool test_13 (axlError ** error) 
 {
 	axlDoc * doc  = NULL;
 	axlDoc * doc2 = NULL;
@@ -237,19 +294,19 @@ aboolean test_13 (axlError ** error)
 	
 	doc = axl_doc_parse_from_file ("test13.xml", error);
 	if (doc == NULL)
-		return AXL_FALSE;
+		return false;
 
 	/* dump xml document */
 	axl_doc_dump (doc, &content, &size);
 
 	doc2 = axl_doc_parse (content, size, error);
 	if (doc2 == NULL)
-		return AXL_FALSE;
+		return false;
 
 	/* check if both documents are equals */
 	if (! axl_doc_are_equal (doc, doc2)) {
 		axl_error_new (-1, "Expected to dump an equivalent xml document, but found an error", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* free dump */
@@ -261,7 +318,7 @@ aboolean test_13 (axlError ** error)
 	/* free axl document */
 	axl_doc_free (doc2);
 	
-	return AXL_TRUE;
+	return true;
 }
 
 /** 
@@ -269,9 +326,9 @@ aboolean test_13 (axlError ** error)
  * 
  * @param error The optional axlError to be used to report errors.
  * 
- * @return AXL_TRUE if the validity test is passed, AXL_FALSE if not.
+ * @return true if the validity test is passed, false if not.
  */
-aboolean test_12 (axlError ** error) 
+bool test_12 (axlError ** error) 
 {
 	axlDoc * doc = NULL;
 	axlDtd * dtd = NULL;
@@ -279,16 +336,16 @@ aboolean test_12 (axlError ** error)
 	/* parse gmovil file (an af-arch xml chunk) */
 	doc = axl_doc_parse_from_file ("channel.xml", error); 
 	if (doc == NULL) 
-		return AXL_FALSE;
+		return false;
 
 	/* parse af-arch DTD */
 	dtd = axl_dtd_parse_from_file ("channel.dtd", error);
 	if (dtd == NULL)
-		return AXL_FALSE;
+		return false;
 
 	/* perform DTD validation */
 	if (! axl_dtd_validate (doc, dtd, error)) {
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* free doc reference */
@@ -297,11 +354,11 @@ aboolean test_12 (axlError ** error)
 	/* parse gmovil file (an af-arch xml chunk) */
 	doc = axl_doc_parse_from_file ("channel2.xml", error); 
 	if (doc == NULL) 
-		return AXL_FALSE;
+		return false;
 
 	/* perform DTD validation */
 	if (! axl_dtd_validate (doc, dtd, error)) {
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* free doc reference */
@@ -310,11 +367,11 @@ aboolean test_12 (axlError ** error)
 	/* parse gmovil file (an af-arch xml chunk) */
 	doc = axl_doc_parse_from_file ("channel3.xml", error); 
 	if (doc == NULL) 
-		return AXL_FALSE;
+		return false;
 
 	/* perform DTD validation */
 	if (! axl_dtd_validate (doc, dtd, error)) {
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* free doc reference */
@@ -323,11 +380,11 @@ aboolean test_12 (axlError ** error)
 	/* parse gmovil file (an af-arch xml chunk) */
 	doc = axl_doc_parse_from_file ("channel4.xml", error); 
 	if (doc == NULL) 
-		return AXL_FALSE;
+		return false;
 
 	/* perform DTD validation */
 	if (! axl_dtd_validate (doc, dtd, error)) {
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* free doc reference */
@@ -339,16 +396,16 @@ aboolean test_12 (axlError ** error)
 	/* parse a BEEP greetins example */
 	doc = axl_doc_parse_from_file ("channel5.xml", error);
 	if (doc == NULL)
-		return AXL_FALSE;
+		return false;
 
 	/* parse the TLS dtd file */
 	dtd = axl_dtd_parse_from_file ("channel.dtd", error);
 	if (dtd == NULL)
-		return AXL_FALSE;
+		return false;
 
 	/* perform DTD validation */
 	if (! axl_dtd_validate (doc, dtd, error)) {
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* free doc reference */
@@ -359,7 +416,7 @@ aboolean test_12 (axlError ** error)
 	
 
 	/* test end */
-	return AXL_TRUE;
+	return true;
 }
 
 /** 
@@ -367,9 +424,9 @@ aboolean test_12 (axlError ** error)
  * 
  * @param error The optional axlError to be used to report errors.
  * 
- * @return AXL_TRUE if the validity test is passed, AXL_FALSE if not.
+ * @return true if the validity test is passed, false if not.
  */
-aboolean test_11 (axlError ** error) 
+bool test_11 (axlError ** error) 
 {
 	axlDoc * doc = NULL;
 	axlDtd * dtd = NULL;
@@ -377,16 +434,16 @@ aboolean test_11 (axlError ** error)
 	/* parse gmovil file (an af-arch xml chunk) */
 	doc = axl_doc_parse_from_file ("gmovil2.xml", error); 
 	if (doc == NULL) 
-		return AXL_FALSE;
+		return false;
 
 	/* parse af-arch DTD */
 	dtd = axl_dtd_parse_from_file ("fact.dtd", error);
 	if (dtd == NULL)
-		return AXL_FALSE;
+		return false;
 
 	/* perform DTD validation */
 	if (! axl_dtd_validate (doc, dtd, error)) {
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* free doc reference */
@@ -396,7 +453,7 @@ aboolean test_11 (axlError ** error)
 	axl_dtd_free (dtd);
 
 	/* test end */
-	return AXL_TRUE;
+	return true;
 }
 
 /** 
@@ -404,9 +461,9 @@ aboolean test_11 (axlError ** error)
  * 
  * @param error The optional axlError to be used to report errors.
  * 
- * @return AXL_TRUE if the validity test is passed, AXL_FALSE if not.
+ * @return true if the validity test is passed, false if not.
  */
-aboolean test_10 (axlError ** error) 
+bool test_10 (axlError ** error) 
 {
 	axlDoc                * doc      = NULL;
 	axlDtd                * dtd      = NULL;
@@ -416,12 +473,12 @@ aboolean test_10 (axlError ** error)
 	/* parse gmovil file (an af-arch xml chunk) */
 	doc = axl_doc_parse_from_file ("test5.xml", error); 
 	if (doc == NULL) 
-		return AXL_FALSE;
+		return false;
 
 	/* parse af-arch DTD */
 	dtd = axl_dtd_parse_from_file ("test5.dtd", error);
 	if (dtd == NULL)
-		return AXL_FALSE;
+		return false;
 
 	/* get the dtd element representation */
 	element = axl_dtd_get_element (dtd, "choices");
@@ -430,25 +487,25 @@ aboolean test_10 (axlError ** error)
 	itemList = axl_dtd_get_item_list (element);
 	if (axl_dtd_item_list_count (itemList) != 4) {
 		axl_error_new (-1, "expected to receive an item list with 4 item nodes inside", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 
 	if (axl_dtd_item_list_type (itemList) != CHOICE) {
 		axl_error_new (-1, "expected to receive a choice item list", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 
 	if (axl_dtd_item_list_repeat (itemList) != ZERO_OR_MANY) {
 		axl_log ("test-01", AXL_LEVEL_DEBUG, "received a different repeat configuration: %d != %d",
 			 ZERO_OR_MANY, axl_dtd_item_list_repeat (itemList));
 		axl_error_new (-1, "expected to receive an item list with (*) zero or many spec", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 	
 
 	/* perform DTD validation */
 	if (! axl_dtd_validate (doc, dtd, error)) { 
-		return AXL_FALSE; 
+		return false; 
 	} 
 
 	/* free dtd reference */
@@ -458,12 +515,12 @@ aboolean test_10 (axlError ** error)
 	/* parse af-arch DTD */
 	dtd = axl_dtd_parse_from_file ("test5.1.dtd", error);
 	if (dtd == NULL)
-		return AXL_FALSE;
+		return false;
 	
 	/* perform DTD validation */
 	if (axl_dtd_validate (doc, dtd, error)) { 
 		axl_error_new (-1, "A validation failure was expected.", NULL, error);
-		return AXL_FALSE; 
+		return false; 
 	} 
 
 	/* because a failure was expected, release memory allocated by
@@ -477,7 +534,7 @@ aboolean test_10 (axlError ** error)
 	axl_dtd_free (dtd);
 
 	/* test end */
-	return AXL_TRUE;
+	return true;
 }
 
 /** 
@@ -485,9 +542,9 @@ aboolean test_10 (axlError ** error)
  * 
  * @param error The optional axlError to be used to report errors.
  * 
- * @return AXL_TRUE if the validity test is passed, AXL_FALSE if not.
+ * @return true if the validity test is passed, false if not.
  */
-aboolean test_09 (axlError ** error) 
+bool test_09 (axlError ** error) 
 {
 	axlDoc                * doc      = NULL;
 	axlDtd                * dtd      = NULL;
@@ -499,19 +556,19 @@ aboolean test_09 (axlError ** error)
 	/* parse gmovil file (an af-arch xml chunk) */
 	doc = axl_doc_parse_from_file ("test4.xml", error); 
 	if (doc == NULL) 
-		return AXL_FALSE;
+		return false;
 
 	/* parse af-arch DTD */
 	dtd = axl_dtd_parse_from_file ("test4.dtd", error);
 	if (dtd == NULL)
-		return AXL_FALSE;
+		return false;
 
 	
 	/* get dtd element */
 	element = axl_dtd_get_element (dtd, "nodes");
 	if (element == NULL) {
 		axl_error_new (-1, "unable to find expected DTD element", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* get the item list */
@@ -520,143 +577,143 @@ aboolean test_09 (axlError ** error)
 		axl_log ("test-01", AXL_LEVEL_CRITICAL, "found item list size: %d != 8",
 			 axl_dtd_item_list_count (itemList));
 		axl_error_new (-1, "expected to find an item list definition with 8 elements", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* check <first> node spec */
 	itemNode = axl_dtd_item_list_get_node (itemList, 0);
 	if (axl_dtd_item_node_get_type (itemNode) != NODE) {
 		axl_error_new (-1, "expected to find an item node definition, not found", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 	
 	if (! axl_cmp (axl_dtd_item_node_get_value (itemNode), "first")) {
 		axl_error_new (-1, "expected to find an item node name (first) definition, not found", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 
 	if (axl_dtd_item_node_get_repeat (itemNode) != ONE_OR_MANY) {
 		axl_error_new (-1, "expected to find an item node definition with one or many repeat def (+), not found", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* check <second> node spec */
 	itemNode = axl_dtd_item_list_get_node (itemList, 1);
 	if (axl_dtd_item_node_get_type (itemNode) != NODE) {
 		axl_error_new (-1, "expected to find an item node definition, not found", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 	
 	if (! axl_cmp (axl_dtd_item_node_get_value (itemNode), "second")) {
 		axl_error_new (-1, "expected to find an item node name (second) definition, not found", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 
 	if (axl_dtd_item_node_get_repeat (itemNode) != ONE_AND_ONLY_ONE) {
 		axl_error_new (-1, "expected to find an item node definition with one and only one repeat def (), not found", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* check <third> node spec */
 	itemNode = axl_dtd_item_list_get_node (itemList, 2);
 	if (axl_dtd_item_node_get_type (itemNode) != NODE) {
 		axl_error_new (-1, "expected to find an item node definition, not found", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 	
 	if (! axl_cmp (axl_dtd_item_node_get_value (itemNode), "third")) {
 		axl_error_new (-1, "expected to find an item node name (third) definition, not found", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 
 	if (axl_dtd_item_node_get_repeat (itemNode) != ZERO_OR_ONE) {
 		axl_error_new (-1, "expected to find an item node definition with zero or one repeat def (?), not found", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* check <fourth> node spec */
 	itemNode = axl_dtd_item_list_get_node (itemList, 3);
 	if (axl_dtd_item_node_get_type (itemNode) != NODE) {
 		axl_error_new (-1, "expected to find an item node definition, not found", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 	
 	if (! axl_cmp (axl_dtd_item_node_get_value (itemNode), "fourth")) {
 		axl_error_new (-1, "expected to find an item node name (fourth) definition, not found", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 
 	if (axl_dtd_item_node_get_repeat (itemNode) != ONE_AND_ONLY_ONE) {
 		axl_error_new (-1, "expected to find an item node definition with one and only one repeat def (), not found", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* check <fifth> node spec */
 	itemNode = axl_dtd_item_list_get_node (itemList, 4);
 	if (axl_dtd_item_node_get_type (itemNode) != NODE) {
 		axl_error_new (-1, "expected to find an item node definition, not found", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 	
 	if (! axl_cmp (axl_dtd_item_node_get_value (itemNode), "fifth")) {
 		axl_error_new (-1, "expected to find an item node name (fifth) definition, not found", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 
 	if (axl_dtd_item_node_get_repeat (itemNode) != ZERO_OR_MANY) {
 		axl_error_new (-1, "expected to find an item node definition with zero to many repeat def (*), not found", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* check <fourth> node spec */
 	itemNode = axl_dtd_item_list_get_node (itemList, 5);
 	if (axl_dtd_item_node_get_type (itemNode) != NODE) {
 		axl_error_new (-1, "expected to find an item node definition, not found", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 	
 	if (! axl_cmp (axl_dtd_item_node_get_value (itemNode), "fourth")) {
 		axl_error_new (-1, "expected to find an item node name (fourth) definition, not found", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 
 	if (axl_dtd_item_node_get_repeat (itemNode) != ZERO_OR_MANY) {
 		axl_error_new (-1, "expected to find an item node definition with zero to many repeat def (*), not found", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* check repetition pattern for node spec 6 */
 	itemNode = axl_dtd_item_list_get_node (itemList, 6);
 	if (axl_dtd_item_node_get_type (itemNode) != ELEMENT_LIST) {
 		axl_error_new (-1, "expected to find an item node definition, not found", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 	
 	if (axl_dtd_item_node_get_repeat (itemNode) != ZERO_OR_ONE) {
 		axl_log ("test-01", AXL_LEVEL_DEBUG, "repeat configuration was different: %d != %d",
 			 axl_dtd_item_node_get_repeat (itemNode), ZERO_OR_ONE);
 		axl_error_new (-1, "expected to find an item node definition with zero or one repeat def (?), not found", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* check repetition pattern for node spec 7 */
 	itemNode = axl_dtd_item_list_get_node (itemList, 7);
 	if (axl_dtd_item_node_get_type (itemNode) != ELEMENT_LIST) {
 		axl_error_new (-1, "expected to find an item node definition, not found", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 	
 	if (axl_dtd_item_node_get_repeat (itemNode) != ZERO_OR_MANY) {
 		axl_log ("test-01", AXL_LEVEL_DEBUG, "repeat configuration was different: %d != %d",
 			 axl_dtd_item_node_get_repeat (itemNode), ZERO_OR_MANY);
 		axl_error_new (-1, "expected to find an item node definition with zero or one repeat def (*), not found", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 
 
 	/* perform DTD validation */
 	if (! axl_dtd_validate (doc, dtd, error)) { 
-		return AXL_FALSE; 
+		return false; 
 	} 
 
 	/* free doc reference */
@@ -666,7 +723,7 @@ aboolean test_09 (axlError ** error)
 	axl_dtd_free (dtd);
 
 	/* test end */
-	return AXL_TRUE;
+	return true;
 }
 
 /** 
@@ -674,9 +731,9 @@ aboolean test_09 (axlError ** error)
  * 
  * @param error The optional axlError to be used to report errors.
  * 
- * @return AXL_TRUE if the validity test is passed, AXL_FALSE if not.
+ * @return true if the validity test is passed, false if not.
  */
-aboolean test_08 (axlError ** error)
+bool test_08 (axlError ** error)
 {
 	/* top level definitions */
 	axlDoc            * doc = NULL;
@@ -684,12 +741,12 @@ aboolean test_08 (axlError ** error)
 	/* get current doc reference */
 	doc = axl_doc_parse_from_file ("large.xml", error);
 	if (doc == NULL)
-		return AXL_FALSE;
+		return false;
 
 	/* release the document */
 	axl_doc_free (doc);
 
-	return AXL_TRUE;
+	return true;
 }
 
 
@@ -698,9 +755,9 @@ aboolean test_08 (axlError ** error)
  * 
  * @param error The optional axlError to be used to report errors.
  * 
- * @return AXL_TRUE if the validity test is passed, AXL_FALSE if not.
+ * @return true if the validity test is passed, false if not.
  */
-aboolean test_07 (axlError ** error)
+bool test_07 (axlError ** error)
 {
 	/* top level definitions */
 	axlDoc            * doc = NULL;
@@ -709,16 +766,16 @@ aboolean test_07 (axlError ** error)
 	/* get current doc reference */
 	doc = axl_doc_parse_from_file ("test3.xml", error);
 	if (doc == NULL)
-		return AXL_FALSE;
+		return false;
 
 	/* load DTD */
 	dtd = axl_dtd_parse_from_file ("test3.dtd", error);
 	if (dtd == NULL)
-		return AXL_FALSE;
+		return false;
 
 	/* validate the xml document */
 	if (! axl_dtd_validate (doc, dtd, error)) {
-		return  AXL_FALSE;
+		return  false;
 	}
 	
 	
@@ -728,7 +785,7 @@ aboolean test_07 (axlError ** error)
 	/* free dtd document */
 	axl_dtd_free (dtd);
 
-	return AXL_TRUE;
+	return true;
 }
 
 /** 
@@ -736,9 +793,9 @@ aboolean test_07 (axlError ** error)
  * 
  * @param error The optional axlError to be used to report errors.
  * 
- * @return AXL_TRUE if the validity test is passed, AXL_FALSE if not.
+ * @return true if the validity test is passed, false if not.
  */
-aboolean test_06 (axlError ** error)
+bool test_06 (axlError ** error)
 {
 	/* top level definitions */
 	axlDoc            * doc = NULL;
@@ -752,29 +809,29 @@ aboolean test_06 (axlError ** error)
 	/* get current doc reference */
 	doc = axl_doc_parse_from_file ("test3.xml", error);
 	if (doc == NULL)
-		return AXL_FALSE;
+		return false;
 
 	/* load DTD */
 	dtd = axl_dtd_parse_from_file ("test3.dtd", error);
 	if (dtd == NULL)
-		return AXL_FALSE;
+		return false;
 
 	/* get the DTD element reference and check it */
 	element = axl_dtd_get_root (dtd);
 	if (element == NULL) {
 		axl_error_new (-1, "Expected to receive a root DTD node, not found", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* check expected DTD root content */
 	if (! axl_cmp (axl_dtd_get_element_name (element), "complex")) {
 		axl_error_new (-1, "Expected to receive a root DTD node name, not found", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 
 	if (axl_dtd_get_element_type (element) != ELEMENT_TYPE_CHILDREN) {
 		axl_error_new (-1, "Expected to receive a root DTD node selection type (Children), not found", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* get content specification */
@@ -783,13 +840,13 @@ aboolean test_06 (axlError ** error)
 		axl_log ("test-01", AXL_LEVEL_DEBUG, "item count %d != %d item spected",
 			 axl_dtd_item_list_count (itemList), 1);
 		axl_error_new (-1, "Expected to receive an item list specification with only one node, not found", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* get times configuration */
 	if (axl_dtd_item_list_repeat (itemList) != ONE_AND_ONLY_ONE) {
 		axl_error_new (-1, "Expected to receive a repetition configuration (one and only one) but not found", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* get the child node reference */
@@ -798,14 +855,14 @@ aboolean test_06 (axlError ** error)
 		axl_log ("test-01", AXL_LEVEL_CRITICAL, "found item name: '%s' != data",
 			 axl_dtd_item_node_get_value (itemNode));
 		axl_error_new (-1, "Expected to receive an item node but, not found", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* get the DTD element which represents the provided data */
 	element = axl_dtd_get_element (dtd, "data");
 	if ((element == NULL) || (!axl_cmp (axl_dtd_get_element_name (element), "data"))) {
 		axl_error_new (-1, "Expected to receive a DTD element definition but NULL was found or a different DTD name, not found", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 	
 	/* get content specification */
@@ -814,7 +871,7 @@ aboolean test_06 (axlError ** error)
 		axl_log ("test-01", AXL_LEVEL_DEBUG, "item count %d != %d item spected",
 			 axl_dtd_item_list_count (itemList), 3);
 		axl_error_new (-1, "Expected to receive an item list specification with only one node, not found", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* get item list especification */
@@ -822,28 +879,28 @@ aboolean test_06 (axlError ** error)
 		axl_log ("test-01", AXL_LEVEL_DEBUG, "item count %d != %d item spected",
 			 axl_dtd_item_list_count (itemList), 3);
 		axl_error_new (-1, "Expected to receive an item list specification as a sequence type, not found", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* check item nodes found inside the item list */
 	itemNode = axl_dtd_item_list_get_node (itemList, 0);
 	if (! axl_cmp (axl_dtd_item_node_get_value (itemNode), "row")) {
 		axl_error_new (-1, "Expected to receive an item node (row) but, not found", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* get the child node reference */
 	itemNode = axl_dtd_item_list_get_node (itemList, 1);
 	if (! axl_cmp (axl_dtd_item_node_get_value (itemNode), "column")) {
 		axl_error_new (-1, "Expected to receive an item node (column) but, not found", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* get current configuration for repetition value for the
 	 * provided content particule */
 	if (axl_dtd_item_node_get_repeat (itemNode) != ONE_AND_ONLY_ONE) {
 		axl_error_new (-1, "Expected to receive an item node repeat configuration but, not found", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 		
 
@@ -851,14 +908,14 @@ aboolean test_06 (axlError ** error)
 	itemNode = axl_dtd_item_list_get_node (itemList, 2);
 	if (! axl_cmp (axl_dtd_item_node_get_value (itemNode), "value")) {
 		axl_error_new (-1, "Expected to receive an item node (value) but, not found", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* now work with the choice element */
 	element = axl_dtd_get_element (dtd, "column");
 	if ((element == NULL) || (!axl_cmp (axl_dtd_get_element_name (element), "column"))) {
 		axl_error_new (-1, "Expected to receive a DTD element definition but NULL was found or a different DTD name (column), not found", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 	
 	/* get content specification */
@@ -867,20 +924,20 @@ aboolean test_06 (axlError ** error)
 		axl_log ("test-01", AXL_LEVEL_DEBUG, "item count %d != %d item spected",
 			 axl_dtd_item_list_count (itemList), 4);
 		axl_error_new (-1, "Expected to receive an item list specification with only one node, not found", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* get item list especification */
 	if (axl_dtd_item_list_type (itemList) != CHOICE) {
 		axl_error_new (-1, "Expected to receive an item list specification as a CHOICE type, not found", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* get the DTD element which represents the provided data */
 	element = axl_dtd_get_element (dtd, "data");
 	if ((element == NULL) || (!axl_cmp (axl_dtd_get_element_name (element), "data"))) {
 		axl_error_new (-1, "Expected to receive a DTD element definition but NULL was found or a different DTD name, not found", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 
 
@@ -890,7 +947,7 @@ aboolean test_06 (axlError ** error)
 	/* free dtd document */
 	axl_dtd_free (dtd);
 
-	return AXL_TRUE;
+	return true;
 }
 
 /** 
@@ -898,11 +955,11 @@ aboolean test_06 (axlError ** error)
  * simple DTD definitions, and ensuring elements are properly read.
  * 
  * @param error The axlError reference to be filled if the function
- * returns AXL_FALSE.
+ * returns false.
  * 
- * @return AXL_TRUE if the validity test is passed, AXL_FALSE if not.
+ * @return true if the validity test is passed, false if not.
  */
-aboolean test_05 (axlError ** error)
+bool test_05 (axlError ** error)
 {
 
 	axlDoc * doc;
@@ -912,19 +969,19 @@ aboolean test_05 (axlError ** error)
 	/* parse the document found */
 	doc = axl_doc_parse_from_file ("test.xml", error);
 	if (doc == NULL)
-		return AXL_FALSE;
+		return false;
 
 	node = axl_doc_get (doc, "/complex/data/row/td");
 	if (node == NULL) {
 		axl_error_new (-1, "Expected to receive a node, not found", NULL, error);
 		axl_doc_free (doc);
-		return AXL_FALSE;
+		return false;
 	}
 
 	if (! axl_cmp (axl_node_get_content (node, NULL), "10")) {
 		axl_error_new (-1, "Expected to receive a node content, not found", NULL, error);
 		axl_doc_free (doc);
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* free previous document */
@@ -933,16 +990,16 @@ aboolean test_05 (axlError ** error)
 	/* parse the document found */
 	doc = axl_doc_parse_from_file ("test2.xml", error);
 	if (doc == NULL)
-		return AXL_FALSE;
+		return false;
 	
 	
 	dtd = axl_dtd_parse_from_file ("test.dtd", error);
 	if (dtd == NULL)
-		return AXL_FALSE;
+		return false;
 
 	/* now validate the document */
 	if (! axl_dtd_validate (doc, dtd, error)) {
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* release memory used by the parser */
@@ -951,7 +1008,7 @@ aboolean test_05 (axlError ** error)
 	/* release memory used by the DTD element */
 	axl_dtd_free (dtd);
 
-	return AXL_TRUE;
+	return true;
 	
 }
 
@@ -961,9 +1018,9 @@ aboolean test_05 (axlError ** error)
  *
  * @param error The axlError where failures will be reported 
  *
- * @return The \ref AXL_TRUE if test is passed, AXL_FALSE if not.
+ * @return The \ref true if test is passed, false if not.
  */
-aboolean test_04 (axlError ** error)
+bool test_04 (axlError ** error)
 {
 	axlDoc  * doc;
 	axlNode * node;
@@ -1010,7 +1067,7 @@ aboolean test_04 (axlError ** error)
 				     NULL);
 	/* check the result returned */
 	if (doc == NULL)
-		return AXL_FALSE;
+		return false;
 
 	/* get the node <td> value */
 	node = axl_doc_get (doc, "/complex/data/row/td");
@@ -1018,69 +1075,69 @@ aboolean test_04 (axlError ** error)
 		axl_log ("test-04", AXL_LEVEL_DEBUG, "found a different content than the expected ('10' != '%s')",
 			 axl_node_get_content (node, NULL));
 		axl_error_new (-1, "Expected to receive a 10 value, but not found", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* get a reference to the test2 node */
 	node = axl_doc_get (doc, "/complex/data/row/more/test3");
 	if (node == NULL) {
 		axl_error_new (-1, "Expected to find a test3 node at the given location", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* check the attribute */
 	if (! axl_node_has_attribute (node, "attr")) {
 		axl_error_new (-1, "Expected to find an attribute called 'attr' inside test3 node at the given location", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* check the attribute value */
 	if (! axl_cmp (axl_node_get_attribute_value (node, "attr"), "2.0")) {
 		axl_error_new (-1, "Expected to find an attribute value equal '2.0' inside test2 node at the given location", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* add here Pi instruction checking */
 	if (! axl_doc_has_pi_target (doc, "test")) {
 		axl_error_new (-1, "failed to get expected PI target 'test'", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 
 	if (! axl_cmp (axl_doc_get_pi_target_content (doc, "test"), "\"my content\"")) {
 		axl_error_new (-1, "expected to receive a PI content not found", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 
 	node = axl_doc_get (doc, "/complex/data/row");
 	if (node == NULL) {
 		axl_error_new (-1, "unable to get expected node to check node PI support", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 
 	if (! axl_node_has_pi_target (node, "test")) {
 		axl_error_new (-1, "failed to get expected PI target 'test' for the node", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 
 	
 	node = axl_doc_get (doc, "/complex/data/non-xml-document");
 	if (node == NULL) {
 		axl_error_new (-1, "Expected to receive the CDATA node, not found", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 
 	if (! axl_cmp (axl_node_get_content (node, NULL), "<xml><<<<<<>>>>>><<<>>>><<<<<<>>>")) {
 		printf ("Content doesn't match: %s != %s\n", 
 			axl_node_get_content (node, NULL), "<xml><<<<<<>>>>>><<<>>>><<<<<<>>>");
 		axl_error_new (-1, "Expected to recevie CDATA content, not found or not match", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 
 				     
 	/* free the memory */
 	axl_doc_free (doc);
 	
-	return AXL_TRUE;
+	return true;
 }
 
 /** 
@@ -1088,9 +1145,9 @@ aboolean test_04 (axlError ** error)
  * 
  * @param error The axlError where failures will be reported.
  * 
- * @return \ref AXL_TRUE if test is passed, AXL_FALSE if not.
+ * @return \ref true if test is passed, false if not.
  */
-aboolean test_03 (axlError ** error)
+bool test_03 (axlError ** error)
 {
 
 	axlDoc  * doc;
@@ -1107,14 +1164,14 @@ aboolean test_03 (axlError ** error)
   </data2>\n\
 </complex>", -1, error);
 	if (doc == NULL)
-		return AXL_FALSE;
+		return false;
 
 	/* get the root node */
 	node = axl_doc_get_root (doc);
 	if (! NODE_CMP_NAME (node, "complex")) {
 		axl_error_new (-2, "Root node returned from the document is not the one excepted", NULL, error);
 		axl_doc_free (doc);
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* test get node function */
@@ -1122,14 +1179,14 @@ aboolean test_03 (axlError ** error)
 	if (node == NULL) {
 		axl_error_new (-2, "Unable to find a node due to a path selection", NULL, error);
 		axl_doc_free (doc);
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* check the node returned */
 	if (! NODE_CMP_NAME (node, "td")) {
 		axl_error_new (-2, "The node for the node looked up doesn't match ", NULL, error);
 		axl_doc_free (doc);
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* check for returning bad nodes */
@@ -1137,7 +1194,7 @@ aboolean test_03 (axlError ** error)
 	if (node != NULL) {
 		axl_error_new (-2, "Returned a node that should be NULL", NULL, error);
 		axl_doc_free (doc);
-		return AXL_FALSE;
+		return false;
 	}
 
 	node = axl_doc_get (doc, "/complex/data2/td");
@@ -1145,19 +1202,19 @@ aboolean test_03 (axlError ** error)
 		axl_log ("test-03", AXL_LEVEL_DEBUG, "expected to receive a node content: ' 23  ' but received '%s'",
 			 axl_node_get_content (node, NULL));
 		axl_error_new (-2, "Node content have failed, expected a different value", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 
 	node = axl_doc_get (doc, "complex/data3/td");
 	if (node != NULL) {
 		axl_error_new (-2, "Parsed a path that is invalid", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 	
 	/* release memory allocated by the document */
 	axl_doc_free (doc);
 
-	return AXL_TRUE;
+	return true;
 }
 
 /** 
@@ -1165,16 +1222,16 @@ aboolean test_03 (axlError ** error)
  * 
  * @param error The axlError where failures are returned.
  * 
- * @return AXL_TRUE if test are properly run. AXL_FALSE if not.
+ * @return true if test are properly run. false if not.
  */
-aboolean test_02 (axlError ** error) 
+bool test_02 (axlError ** error) 
 {
 	axlDoc * doc;
 	
 	doc = axl_doc_parse ("<? xml >", 8, error);
 	if (doc != NULL) {
 		axl_error_new (-1, "Failed to detect wrong xml header", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 	axl_error_free (* error);
 
@@ -1182,12 +1239,12 @@ aboolean test_02 (axlError ** error)
 	if (doc != NULL) {
 		
 		axl_error_new (-1, "Failed to detect wrong xml trailing header", NULL, error);
-		return AXL_FALSE;
+		return false;
 	}
 	axl_error_free (* error);
 
 
-	return AXL_TRUE;
+	return true;
 }
 
 
@@ -1196,10 +1253,10 @@ aboolean test_02 (axlError ** error)
  * version=1.0 and no more header.
  * 
  * 
- * @return AXL_FALSE if the function fails to parse the
- * document. AXL_TRUE if the test was properly executed.
+ * @return false if the function fails to parse the
+ * document. true if the test was properly executed.
  */
-aboolean test_01 (axlError ** error) 
+bool test_01 (axlError ** error) 
 {
 	/* axl document representation */
 	axlDoc   * doc;
@@ -1208,16 +1265,13 @@ aboolean test_01 (axlError ** error)
 	/* parse the given string */
 	doc = axl_doc_parse ("<?xml version='1.0' ?><axldoc />", 32, error);
 	if (doc == NULL) {
-		return AXL_FALSE;
+		return false;
 	}
-
-	/* release document parsed */
-	axl_doc_free (doc);	
-	return AXL_TRUE;
+	axl_doc_free (doc);
 
 	doc = axl_doc_parse ("<?xml      version='1.0'            ?>      <another />", 55, error);
 	if (doc == NULL) {
-		return AXL_FALSE;
+		return false;
 	}
 	
 	/* release document parsed */
@@ -1225,7 +1279,7 @@ aboolean test_01 (axlError ** error)
 
 	doc = axl_doc_parse ("<?xml    \n   \t \n \r version='1.0' ?>    <doc />", 50, error);
 	if (doc == NULL) {
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* release document parsed */
@@ -1233,7 +1287,7 @@ aboolean test_01 (axlError ** error)
 
 	doc = axl_doc_parse ("<?xml  version=\"1.0\"        ?>   \r \t \n<another />", 54, error);
 	if (doc == NULL) {
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* release document parsed */
@@ -1241,13 +1295,13 @@ aboolean test_01 (axlError ** error)
 
 	doc = axl_doc_parse ("<?xml  version=\"1.0\" \t \n \r encoding='utf-8\"   ?> <data />", 63, error);
 	if (doc == NULL) {
-		return AXL_FALSE;
+		return false;
 	}
 
 	if (strcmp ("utf-8", axl_doc_get_encoding (doc))) {
 		printf ("ERROR: encoding read from the document differs from the expected (got %s, expected %s)!\n",
 			axl_doc_get_encoding (doc), "utf-8");
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* release document parsed */
@@ -1255,19 +1309,19 @@ aboolean test_01 (axlError ** error)
 
 	doc = axl_doc_parse ("<?xml version='1.0' encoding='utf-8' standalone='yes' ?>  <data/>", 65, error);
 	if (doc == NULL) {
-		return AXL_FALSE;
+		return false;
 	}
 
 	if (!axl_doc_get_standalone (doc)) {
 		printf ("ERROR: Expected to receive a true standalone configuration but false was found\n");
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* release document parsed */
 	axl_doc_free (doc);
 	
 
-	return AXL_TRUE;
+	return true;
 }
 
 /** 
@@ -1346,8 +1400,6 @@ int main (int argc, char ** argv)
 		return -1;
 	}	
 
-
-
 	if (test_08 (&error)) 
 		printf ("Test 08: Large XML file loading [   OK   ]\n");
 	else {
@@ -1395,7 +1447,7 @@ int main (int argc, char ** argv)
 		axl_error_free (error);
 		return -1;
 	}	
-	
+
 	if (test_13 (&error)) 
 		printf ("Test 13: XML memory dumping [   OK   ]\n");
 	else {
@@ -1437,6 +1489,15 @@ int main (int argc, char ** argv)
 		printf ("Test 17: DTD validation fail checks (02/07/2006) [   OK   ]\n");
 	} else {
 		printf ("Test 17: DTD validation fail checks (02/07/2006) [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}	
+
+	if (test_18 (&error)) {
+		printf ("Test 18: DTD ENTITY support [   OK   ]\n");
+	} else {
+		printf ("Test 18: DTD ENTITY support [ FAILED ]\n  (CODE: %d) %s\n",
 			axl_error_get_code (error), axl_error_get (error));
 		axl_error_free (error);
 		return -1;

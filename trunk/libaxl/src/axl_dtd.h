@@ -87,7 +87,13 @@ char               * axl_dtd_item_node_get_value (axlDtdElementListNode * node);
 
 AxlDtdTimes          axl_dtd_item_node_get_repeat (axlDtdElementListNode * node);
 
+bool                 axl_dtd_entity_exists    (axlDtd            * dtd, 
+					       char              * name,
+					       axlDtdEntityType    type);
 
+char               * axl_dtd_entity_value     (axlDtd            * dtd, 
+					       char              * name,
+					       axlDtdEntityType    type);
 
 void                 axl_dtd_free             (axlDtd * dtd);
 

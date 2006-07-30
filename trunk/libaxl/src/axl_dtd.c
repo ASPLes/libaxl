@@ -158,19 +158,68 @@ struct _axlDtdAttribute {
 	axlList        * list;
 };
 
+struct _axlDtdEntityExternalData {
+	/** 
+	 * @brief Contains the system literal reference. This is a URI
+	 * reference to the resource pointed by the \ref axlDtdEntity
+	 * definition.
+	 */
+	char * system_literal;
+	/** 
+	 * @brief Contains the public literal information associated
+	 * to the entity definition.
+	 */
+	char * public_literal;
+	/** 
+	 * @brief Contains the NDATA information (a notation name
+	 * reference).
+	 */
+	char * ndata;
+};
+
+struct _axlDtdEntity {
+	/** 
+	 * @brief Contains the entity name.
+	 */
+	char           * name;
+	
+	/** 
+	 * @brief Contains the entity type.
+	 */
+	axlDtdEntityType type;
+
+	/** 
+	 * @brief Content of the entity definition ([9] EntityValue).
+	 */
+	char           * content;
+	
+	/** 
+	 * @brief An entity definition can have a reference to a
+	 * external resource. The following pointer contains
+	 * information for the external resource pointed.
+	 */
+	axlDtdEntityExternalData * data;
+};
+
 struct _axlDtd {
+	/** 
+	 * @brief Holds all entity definitions inside the DTD
+	 * declaration (<!ENTITY..>).
+	 */
+	axlList       * entities;
+
 	/** 
 	 * @brief All elements inside the DTD declaration
 	 * (<!ELEMENT..> ).
 	 */
 	axlList       * elements;
-	
-	
+
 	/** 
 	 * @brief All attribute type declerations inside the DTD
 	 * (<!ATTLIST..>)
 	 */
 	axlList       * attributes;
+
 	/** 
 	 * @brief The element root, for the given DTD declaration.
 	 */
@@ -261,9 +310,10 @@ void __destroy_axl_dtd_element_list (axlDtdElementListNode * node)
 axlDtd * __axl_dtd_new ()
 {
 	axlDtd * dtd;
-	
+
+	/* create the DTD element and nothing else. The rest of items
+	 * created on demand */
 	dtd           = axl_new (axlDtd, 1);
-	dtd->elements = axl_list_new (axl_list_always_return_1, (axlDestroyFunc) axl_dtd_element_free);
 
 	return dtd;
 }
@@ -329,11 +379,10 @@ bool     __axl_dtd_get_is_parent (axlDtdElement * dtd_element_parent,
 	stack = axl_stack_new (NULL);
 	__axl_dtd_queue_items (stack, dtd_element_parent->list->itemList);
 	
-#ifdef SHOW_DEBUG_LOG
-	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "stack size to operate: %d, list: %d", 
-		 axl_stack_size (stack),
-		 axl_list_length (dtd_element_parent->list->itemList));
-#endif
+
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "stack size to operate: %d, list: %d", 
+		   axl_stack_size (stack),
+		   axl_list_length (dtd_element_parent->list->itemList));
 
 	/* now search for a content particule that makes are reference
 	 * to the child DTD element */
@@ -342,9 +391,7 @@ bool     __axl_dtd_get_is_parent (axlDtdElement * dtd_element_parent,
 		switch (node->type) {
 		case NODE:
 			/* leaf node case */
-#ifdef SHOW_DEBUG_LOG
-			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found a leaf node, checking it");
-#endif
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found a leaf node, checking it");
 
 			/* seems this is a final node */
 			if (axl_cmp (node->data, dtd_element_child->name)) {
@@ -357,10 +404,8 @@ bool     __axl_dtd_get_is_parent (axlDtdElement * dtd_element_parent,
 			break;
 		case ELEMENT_LIST:
 			/* a nested list case */
-#ifdef SHOW_DEBUG_LOG
-			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found a complex node queuing its internal elements, while checking parent=%s for child=%s",
-				 dtd_element_parent->name, dtd_element_child->name);
-#endif
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found a complex node queuing its internal elements, while checking parent=%s for child=%s",
+				   dtd_element_parent->name, dtd_element_child->name);
 			/* the item list read, is a complex value,
 			 * queue all items inside to be inspected */
 			list = node->data;
@@ -456,10 +501,9 @@ bool     __axl_dtd_add_element (axlDtd * dtd, axlDtdElement * element,
 	while (iterator < axl_list_length (dtd->elements)) {
 		dtd_element_aux = axl_list_get_nth (dtd->elements, iterator);
 		if (axl_cmp (dtd_element_aux->name, element->name)) {
-#ifdef SHOW_DEBUG_LOG
-			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "DTD element for <%s> == <%s> was defined twice", 
-				 dtd_element_aux->name, element->name);
-#endif
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "DTD element for <%s> == <%s> was defined twice", 
+				   dtd_element_aux->name, element->name);
+
 			axl_error_new (-1, "Find that an DTD element was defined twice (no more than one time is allowed)", 
 				       stream, error);
 			axl_stream_free (stream);
@@ -513,30 +557,22 @@ bool     __axl_dtd_element_content_particule_add (axlDtdElementList  * dtd_item_
 	switch (chunk_matched) {
 	case 4:
 		/* one or many times */
-#ifdef SHOW_DEBUG_LOG
-		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "setting one to many repeat pattern: (+)");
-#endif
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "setting one to many repeat pattern: (+)");
 		node->times = ONE_OR_MANY;
 		break;
 	case 5:
 		/* zero or many times */
-#ifdef SHOW_DEBUG_LOG
-		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "setting zero to many repeat pattern: (*)");
-#endif
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "setting zero to many repeat pattern: (*)");
 		node->times = ZERO_OR_MANY;
 		break;
 	case 6:
 		/* zero or one time */
-#ifdef SHOW_DEBUG_LOG
-		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "setting one to one repeat pattern: (?)");
-#endif
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "setting one to one repeat pattern: (?)");
 		node->times = ZERO_OR_ONE;
 		break;
 	default:
 		/* one and only one time */
-#ifdef SHOW_DEBUG_LOG
-		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "setting one and only one repeat pattern: ()");
-#endif
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "setting one and only one repeat pattern: ()");
 		node->times = ONE_AND_ONLY_ONE;
 	}
 
@@ -1091,6 +1127,10 @@ bool     __axl_dtd_parse_element (axlDtd * dtd, axlStream * stream, axlError ** 
 	int                 matched_chunk = -1;
 	axlDtdElement     * element;
 
+	/* init the dtd element list */
+	if (dtd->elements == NULL)
+		dtd->elements = axl_list_new (axl_list_always_return_1, (axlDestroyFunc) axl_dtd_element_free);
+
 	/* consume previous white spaces */
 	AXL_CONSUME_SPACES (stream);
 
@@ -1280,18 +1320,41 @@ bool __axl_dtd_parse_attlist (axlDtd * dtd, axlStream * stream, axlError ** erro
 		AXL_CONSUME_SPACES (stream);
 
 		/* get the rule type */
-		string_aux = axl_stream_get_until (stream, NULL, &matched_chunk, false, 1, " ");
-		if (string_aux == NULL) {
-			axl_error_new (-1, "Expected to receive a DTD attribute name for <!ATTLIST declaration, but not found", stream, error);
-			axl_stream_free (stream);
-			return false;
+		if (axl_stream_inspect (stream, "NOTATION", 8) > 0) {
+			/* parse notation declaration */
+		}else if (axl_stream_inspect (stream, "(", 1) > 0) {
+			/* parse enum declaration */
+		}else {
+			/* tokenized and string type */
+			string_aux = axl_stream_get_until (stream, NULL, &matched_chunk, false, 1, " ");
+			axl_stream_nullify (stream, LAST_CHUNK);
+			if (string_aux == NULL) {
+				axl_error_new (-1, "Expected to receive a DTD attribute name for <!ATTLIST declaration, but not found", stream, error);
+				axl_stream_free (stream);
+				return false;
+			}
+
+			/* set the attribute type */
+			if (axl_cmp (string_aux, "CDATA"))
+				decl->type = CDATA_ATTRIBUTE;
+			if (axl_cmp (string_aux, "ID"))
+				decl->type = TOKENIZED_TYPE_ID;
+			if (axl_cmp (string_aux, "IDREF"))
+				decl->type = TOKENIZED_TYPE_IDREF;
+			if (axl_cmp (string_aux, "IDREFS"))
+				decl->type = TOKENIZED_TYPE_IDREFS;
+			if (axl_cmp (string_aux, "ENTITY"))
+				decl->type = TOKENIZED_TYPE_ENTITY;
+			if (axl_cmp (string_aux, "ENTITIES"))
+				decl->type = TOKENIZED_TYPE_ENTITIES;
+			if (axl_cmp (string_aux, "NMTOKEN"))
+				decl->type = TOKENIZED_TYPE_NMTOKEN;
+			if (axl_cmp (string_aux, "NMTOKENS"))
+				decl->type = TOKENIZED_TYPE_NMTOKENS;
+			
+			/* free value */
+			axl_free (string_aux);
 		}
-		
-		if (axl_cmp (string_aux, "CDATA"))
-			decl->type = CDATA_ATTRIBUTE;
-		if (axl_cmp (string_aux, "ID"))
-			decl->type = TOKENIZED_TYPE_ID;
-		/* FOLLOW HERE */
 		
 		
 
@@ -1301,6 +1364,160 @@ bool __axl_dtd_parse_attlist (axlDtd * dtd, axlStream * stream, axlError ** erro
 	
 	
 	/* properly parsed */
+	return true;
+}
+
+/** 
+ * @internal
+ * 
+ * Destroy the provided entity reference and all allocated memory.
+ * 
+ * @param entity The entity the deallocate.
+ */
+void axl_dtd_entity_free (axlDtdEntity * entity)
+{
+	/* the entity reference */
+	axl_return_if_fail (entity);
+
+	/* free the entity name */
+	if (entity->name)
+		axl_free (entity->name);
+	
+	/* free the content */
+	if (entity->content)
+		axl_free (entity->content);
+
+	/* free external data if defined */
+	if (entity->data) {
+		/* free system literal */
+		if (entity->data->system_literal)
+			axl_free (entity->data->system_literal);
+		
+		/* free public literal */
+		if (entity->data->public_literal)
+			axl_free (entity->data->public_literal);
+
+		/* free ndata literal */
+		if (entity->data->ndata)
+			axl_free (entity->data->ndata);
+
+		/* free the node itself */
+		axl_free (entity->data);
+	}
+
+	/* free the node */
+	axl_free (entity);
+
+	return;
+}
+
+/** 
+ * @internal
+ *
+ * Parses an entity definition from the current status of the stream
+ * provided.
+ */
+bool __axl_dtd_parse_entity (axlDtd * dtd, axlStream * stream, axlError ** error)
+{
+	char         * string_aux;
+	int            matched_chunk;
+	axlDtdEntity * entity;
+
+	/* init the dtd element list */
+	if (dtd->entities == NULL)
+		dtd->entities = axl_list_new (axl_list_always_return_1, (axlDestroyFunc) axl_dtd_entity_free);
+	
+	/* consume previous white spaces */
+	AXL_CONSUME_SPACES (stream);
+
+	/* get for the first element declaration */
+	if (! (axl_stream_inspect (stream, "<!ENTITY", 8) > 0)) {
+		axl_error_new (-1, "Expected to receive a <!ENTITY, but it wasn't found", stream, error);
+		axl_stream_free (stream);
+		return false;
+	}
+
+	/* consume previous white spaces */
+	AXL_CONSUME_SPACES (stream);
+
+	/* create a new entity */
+	entity = axl_new (axlDtdEntity, 1);
+
+	/* link the element to the stream */
+	axl_stream_link (stream, entity, (axlDestroyFunc) axl_dtd_entity_free);
+
+	/* check for parameter entity definition */
+	if (axl_stream_inspect (stream, "%", 1) > 0) {
+		/* set the entity type */
+		entity->type = PARAMETER_ENTITY;
+		
+		/* consume previous white spaces */
+		AXL_CONSUME_SPACES (stream);
+
+	} else
+		entity->type = GENERAL_ENTITY;
+
+	/* get the element name */
+	string_aux = axl_stream_get_until (stream, NULL, &matched_chunk, false, 1, " ");
+	if (string_aux == NULL) {
+		axl_error_new (-1, "Expected to receive a DTD entity name for <!ENTITY declaration, but not found", stream, error);
+		axl_stream_free (stream);
+		return false;
+	}
+
+	/* set the name */
+	axl_stream_nullify (stream, LAST_CHUNK);
+	entity->name = string_aux;
+
+	/* consume previous white spaces */
+	AXL_CONSUME_SPACES (stream);
+
+	/* now check if we have an external reference */
+	if (axl_stream_inspect (stream, "PUBLIC", 6) > 0) {
+		/* we have a public external resource definition */
+		
+	}else if (axl_stream_inspect (stream, "SYSTEM", 6) > 0) {
+		/* we have a system definition */
+		
+	}else {
+		/* we have a plain value get the content remove next "
+		   and ' if defined */
+		if (! ((axl_stream_inspect (stream, "\"", 1) > 0)))
+			if (! (axl_stream_inspect (stream, "\'", 1) > 0)) {
+				axl_error_new (-2, "Expected to find entity value initiator (\") or ('), every entity value must start with them", 
+					       stream, error);
+				axl_stream_free (stream);
+				return false;
+			}
+		
+		/* now get the attribute value */
+		string_aux = axl_stream_get_until (stream, NULL, NULL, true, 2, "'", "\"");
+		
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "entity value found: [%s]", string_aux);
+		
+		/* nullify internal reference so we have the
+		 * only one reference to entity content value
+		 * inside string_aux */
+		axl_stream_nullify (stream, LAST_CHUNK);
+
+		/* set the value */
+		entity->content = string_aux;
+	}
+
+	/* consume previous white spaces */
+	AXL_CONSUME_SPACES (stream);
+
+	/* check last item to parse */
+	if (! (axl_stream_inspect (stream, ">", 1) > 0)) {
+		axl_error_new (-2, "Expected to find entity definition terminator (>), but it wasn't found", 
+			       stream, error);
+		axl_stream_free (stream);
+		return false;
+	}
+
+	/* set the entity and return true */
+	axl_list_add (dtd->entities, entity);
+
 	return true;
 }
 
@@ -1346,6 +1563,12 @@ axlDtd * __axl_dtd_parse_common (char * entity, int entity_size,
 		/* check for attribute list declarations */
 		if (axl_stream_peek (stream, "<!ATTLIST", 9) > 0) {
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found DTD attribute list declaration");
+
+			/* ignore anything until > */
+			axl_stream_get_until (stream, NULL, NULL, true, 1, ">");
+			
+			/* first entity support */
+			continue;
 			
 			/* parse it */
 			if (! __axl_dtd_parse_attlist (dtd, stream, error))
@@ -1356,10 +1579,12 @@ axlDtd * __axl_dtd_parse_common (char * entity, int entity_size,
 
 		/* check for the entity declaration */
 		if (axl_stream_peek (stream, "<!ENTITY", 8) > 0) {
-			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found DTD entity declaration (NOT SUPPORTED YET)");
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found DTD entity declaration");
 
-			/* ignore anything until > */
-			axl_stream_get_until (stream, NULL, NULL, true, 1, ">");
+			/* parse the entity definition */
+			if (! __axl_dtd_parse_entity (dtd, stream, error))
+				return false;
+
 			continue;
 		}
 
@@ -1372,17 +1597,15 @@ axlDtd * __axl_dtd_parse_common (char * entity, int entity_size,
 		iterator++;
 	}
 
-#ifdef SHOW_DEBUG_LOG
-	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "DTD elements totally loaded, building references..");
-#endif
+
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "DTD elements totally loaded, building references..");
 
 	/* update current root reference, the DTD root for the DTD
 	 * document already parsed */
 	dtd->root = __axl_dtd_get_new_root (dtd);
 
-#ifdef SHOW_DEBUG_LOG
-	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "DTD load COMPLETE");
-#endif
+
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "DTD load COMPLETE");
 
 	axl_stream_unlink (stream);
 	axl_stream_free (stream);
@@ -2103,10 +2326,8 @@ bool     __axl_dtd_validate_element_type_pcdata (axlDtdElement  * element,
 {
 	/* check for childs */
 	if (axl_node_have_childs (parent)) {
-#ifdef SHOW_DEBUG_LOG
-		axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "node <%s> should be #PCDATA and it contains childs",
-			 axl_node_get_name (parent));
-#endif
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "node <%s> should be #PCDATA and it contains childs",
+			   axl_node_get_name (parent));
 		axl_error_new (-1, 
 			       "Found a node for which its espeficiation makes it to be a node with only data and no childs, and it currently contains childs",
 			       NULL, error);
@@ -2183,9 +2404,7 @@ bool           axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 	axl_return_val_if_fail (doc, false);
 	axl_return_val_if_fail (dtd, false);
 
-#ifdef SHOW_DEBUG_LOG
-	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "starting DTD validation");
-#endif
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "starting DTD validation");
 
 	/* validate the very first root node */
 	parent  = axl_doc_get_root (doc);
@@ -2355,9 +2574,7 @@ axlDtdElement  * axl_dtd_get_root        (axlDtd * dtd)
 	
 	/* return current status for the root node */
 	if (dtd->root == NULL) {
-#ifdef SHOW_DEBUG_LOG
-		axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "dtd root element not defined");
-#endif
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "dtd root element not defined");
 		return NULL;
 	}
 	return dtd->root;
@@ -2656,6 +2873,96 @@ AxlDtdTimes          axl_dtd_item_node_get_repeat (axlDtdElementListNode * node)
 	return DTD_TIMES_UNKNOWN;
 }
 
+
+/** 
+ * @internal
+ *
+ * Internal function which allows to lookup the DTD entity reference
+ * provided the name and the type.
+ */
+axlDtdEntity * __axl_dtd_entity_lookup (axlDtd            * dtd, 
+					char              * name,
+					axlDtdEntityType    type)
+{
+	axlDtdEntity  * entity;
+	int             iterator;
+	int             length;
+
+	/* check values received */
+	axl_return_val_if_fail (dtd,  NULL);
+	axl_return_val_if_fail (name, NULL);
+
+	/* lookup for the item */
+	iterator = 0;
+	length   = axl_list_length (dtd->entities);
+	while (iterator < length) {
+
+		/* get the entity at the provided position */
+		entity = axl_list_get_nth (dtd->entities, iterator);
+
+		/* check the type and the name */
+		if ((entity->type == type) && axl_cmp (entity->name, name))
+			return entity;
+		
+		/* update iterator */
+		iterator++;
+	} /* end while */
+
+	return NULL;
+}
+
+/** 
+ * @brief Allows to check if the provided entity name, with the
+ * provided type is defined on the given DTD object.
+ * 
+ * @param dtd The \ref axlDtd instance where the entity lookup will be
+ * performed.
+ *
+ * @param name The entity name to lookup.
+ *
+ * @param type The entity type to lookup.
+ * 
+ * @return true if an entity is found named as provided with the type
+ * provided. Othewise, false is returned.
+ */
+bool                 axl_dtd_entity_exists    (axlDtd            * dtd, 
+					       char              * name,
+					       axlDtdEntityType    type)
+{
+	/* return if the entity exists */
+	return (__axl_dtd_entity_lookup (dtd, name, type) != NULL);
+}
+
+/** 
+ * @brief Allows to get the content configured inside the entity that
+ * is identified by the provided name and the provided type.
+ * 
+ * @param dtd The DTD where the lookup will be performed.
+ *
+ * @param name The entity name to lookup for its content.
+ *
+ * @param type The entity type to match.
+ * 
+ * @return An internal reference to the content associated to the
+ * entity found or NULL. In case the content is defined (as return
+ * value) it must not be deallocated.
+ */
+char               * axl_dtd_entity_value     (axlDtd            * dtd, 
+					       char              * name,
+					       axlDtdEntityType    type)
+{
+	axlDtdEntity * entity;
+
+	/* get the entity reference */
+	entity = __axl_dtd_entity_lookup (dtd, name, type);
+	
+	/* check the entity reference */
+	axl_return_val_if_fail (entity, NULL);
+
+	/* return the content */
+	return entity->content;
+}
+
 /** 
  * @brief Allows to destroy the provided \ref axlDtd  document.
  * 
@@ -2664,16 +2971,20 @@ AxlDtdTimes          axl_dtd_item_node_get_repeat (axlDtdElementListNode * node)
 void       axl_dtd_free  (axlDtd * dtd)
 {
 	if (dtd == NULL) {
-#ifdef SHOW_DEBUG_LOG
-		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "received a null DTD reference, doing nothing");
-#endif
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "received a null DTD reference, doing nothing");
 		return;
 	}
 	
-#ifdef SHOW_DEBUG_LOG
-	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "releasing the DTD reference");
-#endif
-	axl_list_free (dtd->elements);
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "releasing the DTD reference");
+	/* free dtd elements */
+	if (dtd->elements)
+		axl_list_free (dtd->elements);
+
+	/* free entities */
+	if (dtd->entities)
+		axl_list_free (dtd->entities);
+
+	/* free the node itself */
 	axl_free (dtd);
 
 	return;
