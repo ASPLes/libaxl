@@ -355,14 +355,6 @@ struct _axlDoc {
 	 * or after the xml header definition.
 	 */
 	bool    headerProcess;
-
-	/** 
-	 * @internal
-	 * 
-	 * A reference to the factory node (a factory to create nodes
-	 * in a memory efficient way).
-	 */
-	axlNodeFactory * nodeFactory;
 };
 
 struct _axlPI {
@@ -397,9 +389,6 @@ axlDoc * __axl_doc_new (bool create_parent_stack)
 	/* default container lists */
 	result->parentNode = axl_stack_new (NULL);
 	result->piTargets  = axl_list_new (axl_list_always_return_1, (axlDestroyFunc) axl_pi_free);
-
-	/* node factory */
-	result->nodeFactory = axl_node_factory_create (10);
 
 	return result;
 }
@@ -599,6 +588,8 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 	axlNode * node;
 	int       matched_chunk;
 	int       iterator;
+	int       length;
+	bool      delim;
 	
 	axl_return_val_if_fail (stream, false);
 	axl_return_val_if_fail (doc, false);
@@ -619,18 +610,43 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 		return false;
 	}
 
-	/* get node name */
-	string_aux = axl_stream_get_until (stream, NULL, &matched_chunk, true, 3, "/>", ">", " ");
+	/* get node name, keeping in mind the following:
+	   chunk_matched
+	   >: 0
+	   />: 1
+	   " ": 2
+	 */
+	string_aux = axl_stream_get_until (stream, NULL, &matched_chunk, true, 2, ">", " ");
 	if (AXL_IS_STR_EMPTY (string_aux)) {
 		axl_error_new (-2, "expected an non empty content for the node name not found.", stream, error);
 		axl_stream_free (stream);
 		return false;
 	}
+	
+	/* if found a '/', it is matched as 1 */
+	if (matched_chunk == 1)
+		matched_chunk = 2;
+	else {
+		/* get the string length */
+		length = strlen (string_aux);
+
+		/* if matched / it means that it was readed />, remove
+		 * it and all white spaces */
+		if (string_aux[length - 1] == '/') {
+			/* flag as matched /> */
+			matched_chunk          = 1;
+			string_aux[length - 1] = 0;
+
+			/* clear all white spaces */
+			iterator               = 2;
+			while (axl_stream_is_white_space (string_aux + length - iterator))
+				string_aux [length - iterator] = 0;
+		}
+	}
 
 	/* create the node and associate it */
 	axl_stream_nullify (stream, LAST_CHUNK);
-	node  = axl_node_create_ref (string_aux); 
-	/* node   = axl_node_create_from_factory_ref (string_aux, doc->nodeFactory); */
+	node = axl_node_create_ref (string_aux);  
 
 	if (doc->rootNode == NULL) {
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "setting as first node found, the root node: <%s>", string_aux);
@@ -673,7 +689,7 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 		 * done due to previous call to get_until function. If
 		 * the value 0 or 1 was matched, this means that we
 		 * are on "/>" case */
-		if ((matched_chunk == 0) ||
+		if ((matched_chunk == 1) ||
 		    axl_stream_inspect (stream, "/>", 2) > 0) {
 
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found end xml node definition '/>'");
@@ -696,7 +712,7 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 		 * done due to previous call to get_until function. If
 		 * the value 2 or 3 was matched, this means that we
 		 * are on ">" case */
-		if ((matched_chunk == 1) ||
+		if ((matched_chunk == 0) ||
 		    (axl_stream_inspect (stream, ">", 1) > 0)) {
 			
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found [end] xml node definition '>', for node: [%s]",
@@ -723,16 +739,26 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 			axl_stream_nullify (stream, LAST_CHUNK);
 
 			/* remove next " and ' if defined */
-			if (! ((axl_stream_inspect (stream, "\"", 1) > 0)))
+			/* flag the we are looking for a " */
+			delim = true;
+			if (! ((axl_stream_inspect (stream, "\"", 1) > 0))) {
+				/* seems it is not found, flag we are
+				 * looking for ' */
+				delim = false;
 				if (! (axl_stream_inspect (stream, "\'", 1) > 0)) {
 					axl_error_new (-2, "Expected to find an attribute value initiator (\") or ('), every attribute value must start with them", 
 						       stream, error);
 					axl_stream_free (stream);
 					return false;
 				}
+			}
+			
 			
 			/* now get the attribute value */
-			string_aux2 = axl_stream_get_until (stream, NULL, NULL, true, 2, "'", "\"");
+			if (delim)
+				string_aux2 = axl_stream_get_until (stream, NULL, NULL, true, 1, "\"");
+			else
+				string_aux2 = axl_stream_get_until (stream, NULL, NULL, true, 1, "'");
 
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "value found: [%s]", string_aux2);
 			
@@ -761,9 +787,7 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 		iterator++;
 	} while (axl_stream_remains (stream));
 
-
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found end xml node definition (2)");
-
 	
 	/* document properly parsed */
 	return true;
@@ -778,11 +802,12 @@ bool __axl_doc_parse_close_node (axlStream * stream, axlDoc * doc, axlNode ** _n
 {
 	char    * string;
 	int       result_size = -1;
+	int       iterator;
 	int       matched_chunk;
 	axlNode * node;
 
 	/* get the node being closed to check to the current parent */
-	string = axl_stream_get_until_ref (stream, NULL, &matched_chunk, true, &result_size, 2, " ", ">");
+	string = axl_stream_get_until_ref (stream, NULL, &matched_chunk, true, &result_size, 1, ">");
 	if (string == NULL) {
 		
 		axl_error_new (-1, "An error was found while closing the xml node", stream, error);
@@ -790,17 +815,14 @@ bool __axl_doc_parse_close_node (axlStream * stream, axlDoc * doc, axlNode ** _n
 		return false;
 	}
 
-	if (matched_chunk == 0) {
-		/* get rid from spaces */
-		AXL_CONSUME_SPACES (stream);
+	/* check for spaces inside the trailing result */
+	iterator = 1;
+	while (axl_stream_is_white_space (string + result_size - iterator)) {
+		/* nullify to remove white spaces */
+		string [result_size - iterator] = 0;
 
-		/* get the node terminator > */
-		if (! (axl_stream_inspect (stream, ">", 1) > 0)) {
-			axl_error_new (-1, "An error was found while closing the xml node, with white spaces between the node name and the node terminator (>)", 
-				       stream, error);
-			axl_stream_free (stream);
-			return false;
-		}
+		/* update the iterator */
+		iterator++;
 	}
 
 	/* get current parent node */
@@ -2263,11 +2285,6 @@ void     axl_doc_free         (axlDoc * doc)
 		axl_free (doc->version);
 	}
 
-	if (doc->nodeFactory != NULL) {
-		/* free node factory */
-		axl_node_factory_free (doc->nodeFactory);
-	}
-
 	/* free document allocated */
 	axl_free (doc);
 
@@ -2287,7 +2304,6 @@ bool      axl_doc_consume_comments         (axlDoc * doc, axlStream * stream, ax
 {
 
 	bool found_item;
-	
 
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "checking for comemnts");
 
@@ -2326,9 +2342,13 @@ bool      axl_doc_consume_comments         (axlDoc * doc, axlStream * stream, ax
 				return false;
 			found_item = true;
 		}
-
-		/* get rid from spaces */
-		AXL_CONSUME_SPACES(stream);
+		
+		/* do not consume spaces if an item was found because
+		 * it is done again at the begin of the loop */
+		if (! found_item) {
+			/* get rid from spaces */
+			AXL_CONSUME_SPACES(stream);
+		}
 		
 		/* check to break-the-loop */
 	}while (found_item);

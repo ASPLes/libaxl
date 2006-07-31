@@ -396,9 +396,6 @@ axlStream * axl_stream_new (char * stream_source, int stream_size,
 int         axl_stream_common_inspect (axlStream * stream, char * chunk, int inspected_size, bool alsoAccept)
 {
 
-	axl_return_val_if_fail (stream, -2);
-	axl_return_val_if_fail (chunk, -1);
-
 	/* get current size to inspect */
 	if (inspected_size == -1)
 		inspected_size = strlen (chunk);
@@ -756,40 +753,21 @@ void        axl_stream_nullify         (axlStream * stream,
 }
 
 /** 
- * @brief Allows to perform the same operation like \ref
- * axl_stream_get_untilv but providing an already initialized and
- * opened std arg.
- *
- * This function is in fact, used by \ref axl_stream_get_untilv.
+ * @internal 
  * 
- * @param stream The stream where the operation will be peformed.
- * 
- * @param valid_chars The valid chars set to be used while reading
- * data.
- *
- * @param chunk_matched An optional value where the matched chunk will
- * be reported.
- *
- * @param accept_terminator Configure if terminator read should be
- * accepted or only the chunk read.
- *
- * @param result_size Allows to notify the caller with the chunk size
- * that is being returned by the function.
- *
- * @param chunk_num How many terminators are configured.
- *
- * @param args The list of terminators.
- * 
- * @return The chunk read or NULL if fails.
+ * Wide implementation for axl stream get until (which checks for
+ * every index chunks provided instead of checking the first one until
+ * a prebuffer operation is required).
  */
-char      * axl_stream_get_untilv      (axlStream * stream, 
-					char      * valid_chars, 
-					int       * chunk_matched,
-					bool        accept_terminator,
-					int       * result_size,
-					int         chunk_num, 
-					va_list args)
+char * __axl_stream_get_untilv_wide (axlStream * stream, 
+				     char      * valid_chars, 
+				     int       * chunk_matched,
+				     bool        accept_terminator,
+				     int       * result_size,
+				     int         chunk_num, 
+				     va_list args)
 {
+
 	int          iterator    = 0;
 	int          index       = 0;
 	int          length      = 0;
@@ -801,7 +779,6 @@ char      * axl_stream_get_untilv      (axlStream * stream,
 	
 	/* perform some environmental checks */
 	axl_return_val_if_fail (stream, NULL);
-	/* axl_return_val_if_fail (valid_chars, NULL); */
 	axl_return_val_if_fail (chunk_num > 0, NULL);
 
 	/* set current matched value */
@@ -827,8 +804,6 @@ char      * axl_stream_get_untilv      (axlStream * stream,
 			stream->lengths [iterator] = strlen (stream->chunks [iterator]);
 		}
 
-		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "looking for: '%s'", stream->chunks[iterator]);
-		
 		/* get current length */
 		if (stream->lengths [iterator] > max_length)
 			max_length = stream->lengths [iterator];
@@ -839,15 +814,10 @@ char      * axl_stream_get_untilv      (axlStream * stream,
 
 	/* now we have chunks to lookup, stream until get the stream
 	 * limited by the chunks received. */
-
 	do {
 
 		/* check if the index is falling out side the buffer boundaries */
 		if (fall_out_side_checking (stream, index)) {
-			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "prebuffering from get-until (requested %d, starting from: %d): current status: %s", 
-				   index, stream->stream_index, 
-				   axl_stream_get_following (stream, 10));
-			
 			
 			if (! axl_stream_prebuffer (stream)) {
 				__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "failed while prebuffer");
@@ -860,9 +830,6 @@ char      * axl_stream_get_untilv      (axlStream * stream,
 			 * a prebuffer operation happens */
 			index--;
 
-			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "before prebuffering (requested: %d, starting from: %d): %s", 
-				   index, stream->stream_index, 
-				   axl_stream_get_following (stream, 10));
 		} /* end if */
 		
 		/* compare chunks received for each index increased
@@ -954,12 +921,12 @@ char      * axl_stream_get_untilv      (axlStream * stream,
 			
 			
 			if (result_size == NULL) {
-				__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "returning (last chunk): '%s' (chunk num: %d) (index: %d, stream index: %d, stream_size: %d)", 
-					   stream->last_chunk, iterator, index, stream->stream_index, stream->stream_size);
+/*				__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "returning (last chunk): '%s' (chunk num: %d) (index: %d, stream index: %d, stream_size: %d)", 
+				stream->last_chunk, iterator, index, stream->stream_index, stream->stream_size); */
 				return stream->last_chunk;
 			}
-			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "returning: (internal ref) (chunk num: %d) (index: %d, stream index: %d, stream_size: %d)", 
-				   iterator, index, stream->stream_index, stream->stream_size);
+/*			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "returning: (internal ref) (chunk num: %d) (index: %d, stream index: %d, stream_size: %d)", 
+			iterator, index, stream->stream_index, stream->stream_size); */
 			return string;
 		} /* end if */
 		
@@ -970,6 +937,45 @@ char      * axl_stream_get_untilv      (axlStream * stream,
 
 	/* return a NULL chunk. */
 	return NULL;	
+}
+
+/** 
+ * @brief Allows to perform the same operation like \ref
+ * axl_stream_get_untilv but providing an already initialized and
+ * opened std arg.
+ *
+ * This function is in fact, used by \ref axl_stream_get_untilv.
+ * 
+ * @param stream The stream where the operation will be peformed.
+ * 
+ * @param valid_chars The valid chars set to be used while reading
+ * data.
+ *
+ * @param chunk_matched An optional value where the matched chunk will
+ * be reported.
+ *
+ * @param accept_terminator Configure if terminator read should be
+ * accepted or only the chunk read.
+ *
+ * @param result_size Allows to notify the caller with the chunk size
+ * that is being returned by the function.
+ *
+ * @param chunk_num How many terminators are configured.
+ *
+ * @param args The list of terminators.
+ * 
+ * @return The chunk read or NULL if fails.
+ */
+char      * axl_stream_get_untilv      (axlStream * stream, 
+					char      * valid_chars, 
+					int       * chunk_matched,
+					bool        accept_terminator,
+					int       * result_size,
+					int         chunk_num, 
+					va_list args)
+{
+	/* call to current implementation */
+	return __axl_stream_get_untilv_wide (stream, valid_chars, chunk_matched, accept_terminator, result_size, chunk_num, args); 
 }
 
 
@@ -1453,8 +1459,6 @@ bool        axl_stream_cmp             (char * chunk1, char * chunk2, int size)
  */
 bool axl_stream_fall_outside (axlStream * stream, int inspected_size)
 {
-	axl_return_val_if_fail (stream, true);
-
 	/* if the content is inside memory, check it */
 	if (fall_out_side_checking (stream, inspected_size)) {
 		return (! axl_stream_prebuffer (stream));
@@ -1478,13 +1482,6 @@ bool axl_stream_fall_outside (axlStream * stream, int inspected_size)
  */
 bool         axl_stream_check           (axlStream * stream, char * chunk, int inspected_size)
 {
-
-	axl_return_val_if_fail (stream, false);
-	axl_return_val_if_fail (chunk, false);
-
-	/* get current size to inspect */
-	if (inspected_size == -1)
-		inspected_size = strlen (chunk);
 
 	/* check current chunk against current stream status */
 	return (memcmp (chunk, stream->stream + stream->stream_index, inspected_size) == 0) ? true : false;

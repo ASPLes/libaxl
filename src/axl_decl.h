@@ -632,7 +632,7 @@ void    axl_free(axlPointer ref);
  * @param expr The expresion to check.
  */
 #define axl_return_if_fail(expr) \
-if (!(expr)) {axl_log ("", AXL_LEVEL_CRITICAL, "Expresion '%s' have failed at %s (%s:%d)", #expr, __AXL_PRETTY_FUNCTION__, __AXL_FILE__, __AXL_LINE__); return;}
+if (!(expr)) {__axl_log ("", AXL_LEVEL_CRITICAL, "Expresion '%s' have failed at %s (%s:%d)", #expr, __AXL_PRETTY_FUNCTION__, __AXL_FILE__, __AXL_LINE__); return;}
 
 /** 
  * @brief Allows to check a condition and return the given value if it
@@ -643,7 +643,7 @@ if (!(expr)) {axl_log ("", AXL_LEVEL_CRITICAL, "Expresion '%s' have failed at %s
  * @param val The value to return if the expression is not meet.
  */
 #define axl_return_val_if_fail(expr, val) \
-if (!(expr)) { axl_log ("", AXL_LEVEL_CRITICAL, "Expresion '%s' have failed, returning: %s at %s (%s:%d)", #expr, #val, __AXL_PRETTY_FUNCTION__, __AXL_FILE__, __AXL_LINE__); return val;}
+if (!(expr)) { __axl_log ("", AXL_LEVEL_CRITICAL, "Expresion '%s' have failed, returning: %s at %s (%s:%d)", #expr, #val, __AXL_PRETTY_FUNCTION__, __AXL_FILE__, __AXL_LINE__); return val;}
 
 
 char * axl_strdup (const char * string);

@@ -5,9 +5,9 @@
  * @brief Test current libaxl list implementation.
  * 
  * 
- * @return AXL_TRUE if it works properly or AXL_FALSE if not.
+ * @return true if it works properly or false if not.
  */
-aboolean test_01 () 
+bool test_01 () 
 {
 	axlList * list;
 
@@ -16,7 +16,7 @@ aboolean test_01 ()
 	if (axl_list_length (list) != 0) {
 		printf ("Bad length returned by the list (%d != 0)\n",
 			axl_list_length (list));
-		return AXL_FALSE;
+		return false;
 	}
 	
 	/* add data */
@@ -24,21 +24,21 @@ aboolean test_01 ()
 	if (axl_list_length (list) != 1) {
 		printf ("Bad length returned by the list (%d != 1)\n",
 			axl_list_length (list));
-		return AXL_FALSE;
+		return false;
 	}
 	
 	axl_list_add (list, "test 2");
 	if (axl_list_length (list) != 2) {
 		printf ("Bad length returned by the list (%d != 2)\n",
 			axl_list_length (list));
-		return AXL_FALSE;
+		return false;
 	}
 
 	axl_list_add (list, "test 3");
 	if (axl_list_length (list) != 3) {
 		printf ("Bad length returned by the list (%d != 3)\n",
 			axl_list_length (list));
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* remove data */
@@ -46,19 +46,19 @@ aboolean test_01 ()
 	if (axl_list_length (list) != 2) {
 		printf ("Bad length returned by the list, seems that remove doesn't work (%d != 2)\n",
 			axl_list_length (list));
-		return AXL_FALSE;
+		return false;
 	}
 
 	axl_list_remove (list, "test 2");
 	if (axl_list_length (list) != 1) {
 		printf ("Bad length returned by the list, seems that remove doesn't work\n");
-		return AXL_FALSE;
+		return false;
 	}
 
 	axl_list_remove (list, "test 3");
 	if (axl_list_length (list) != 0) {
 		printf ("Bad length returned by the list, seems that remove doesn't work\n");
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* add data again */
@@ -66,43 +66,43 @@ aboolean test_01 ()
 	axl_list_add (list, "test 5");
 	if (axl_list_length (list) != 2) {
 		printf ("Bad length returned by the list, seems that remove doesn't work\n");
-		return AXL_FALSE;
+		return false;
 	}
 	
 	axl_list_remove (list, "test 1");
 	if (axl_list_length (list) != 2) {
 		printf ("Bad length returned by the list, seems that remove doesn't work\n");
-		return AXL_FALSE;
+		return false;
 	}
 
 	if (! axl_list_exists (list, "test 5")) {
 		printf ("Exist function have failed\n");
-		return AXL_FALSE;
+		return false;
 	}
 
 	if (! axl_list_exists (list, "test 4")) {
 		printf ("Exist function have failed\n");
-		return AXL_FALSE;
+		return false;
 	}
 	
 	if (axl_list_exists (list, "test 1")) {
 		printf ("Exist function have failed\n");
-		return AXL_FALSE;
+		return false;
 	}
 
 	if (! axl_list_exists_at (list, "test 4", 0)) {
 		printf ("\"Exists at\" functionality seems to not work (0)\n");
-		return AXL_FALSE;
+		return false;
 	}
 
 	if (! axl_list_exists_at (list, "test 5", 1)) {
 		printf ("\"Exists at\" functionality seems to not work (1)\n");
-		return AXL_FALSE;
+		return false;
 	}
 
 	axl_list_free (list);
 	
-	return AXL_TRUE;
+	return true;
 }
 
 /** 
@@ -110,10 +110,10 @@ aboolean test_01 ()
  * based on the axlList.
  * 
  * 
- * @return AXL_TRUE if the stack works properly, otherwise AXL_FALSE
+ * @return true if the stack works properly, otherwise false
  * is returned.
  */
-aboolean test_02 () 
+bool test_02 () 
 {
 	axlStack * stack;
 	char     * value;
@@ -127,41 +127,41 @@ aboolean test_02 ()
 
 	if (axl_stack_size (stack) != 3) {
 		printf ("Wrong stack size expected ..\n");
-		return AXL_FALSE;
+		return false;
 	}
 	
 	value = axl_stack_pop (stack);
 	if (! axl_stream_cmp (value, "test 3", 6)) {
 		printf ("Wrong pop value returned (%s != %s)..\n", value, "test 3");
-		return AXL_FALSE;
+		return false;
 	}
 
 	value = axl_stack_pop (stack);
 	if (! axl_stream_cmp (value, "test 2", 6)) {
 		printf ("Wrong pop value returned (%s != %s)..\n", value, "test 2");
-		return AXL_FALSE;
+		return false;
 	}
 
 	value = axl_stack_pop (stack);
 	if (! axl_stream_cmp (value, "test 1", 6)) {
 		printf ("Wrong pop value returned (%s != %s)..\n", value, "test 1");
-		return AXL_FALSE;
+		return false;
 	}
 
 	if (axl_stack_size (stack) != 0) {
 		printf ("Wrong stack size before operating..\n");
-		return AXL_FALSE;
+		return false;
 	}
 
 	if (! axl_stack_is_empty (stack)) {
 		printf ("Wrong stack emptyness value received..\n");
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* destroy the stack */
 	axl_stack_free (stack);
 
-	return AXL_TRUE;
+	return true;
 }
 
 /** 
@@ -169,10 +169,10 @@ aboolean test_02 ()
  * @brief Checks some internal functions that the library provides to
  * manage strings.
  *
- * @return The function must return AXL_TRUE if everything is
- * ok. Otherwise AXL_FALSE is returned.
+ * @return The function must return true if everything is
+ * ok. Otherwise false is returned.
  */
-aboolean test_03 () 
+bool test_03 () 
 {
 	char  * string;
 	char ** result;
@@ -182,33 +182,33 @@ aboolean test_03 ()
 	result = axl_stream_split ("value/value1/value3/value4", 1, "/");
 	if (result == NULL) {
 		printf ("Something have failed while using splitting functions\n");
-		return AXL_FALSE;
+		return false;
 	}
 
 	if (axl_stream_strv_num (result) != 4) {
 		printf ("Something have failed while getting current number of pieces inside the split result (%d != %d)\n", 
 			axl_stream_strv_num (result),4);
-		return AXL_FALSE;
+		return false;
 	}
 	
 	if (! axl_cmp (result[0], "value")) {
 		printf ("Failed to get the first element: (%s != %s)\n", result[0], "value");
-		return AXL_FALSE;
+		return false;
 	}
 
 	if (! axl_cmp (result[1], "value1")) {
 		printf ("Failed to get the second element: (%s != %s)\n", result[1], "value1");
-		return AXL_FALSE;
+		return false;
 	}
 
 	if (! axl_cmp (result[2], "value3")) {
 		printf ("Failed to get the third element (%s != %s)\n", result[2], "value3");
-		return AXL_FALSE;
+		return false;
 	}
 
 	if (! axl_cmp (result[3], "value4")) {
 		printf ("Failed to get the fourth element (%s != %s)\n", result[3], "value4");
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* release memory used */
@@ -217,33 +217,33 @@ aboolean test_03 ()
 	result = axl_stream_split ("value1, value2/ value3* ", 3, ", ", "/ ", "* ");
 	if (result == NULL) {
 		printf ("Something have failed while using splitting functions (2)\n");
-		return AXL_FALSE;
+		return false;
 	}
 
 	if (axl_stream_strv_num (result) != 4) {
 		printf ("Something have failed while getting current number of pieces inside the split result (%d != %d) (2)\n", 
 			axl_stream_strv_num (result), 4);
-		return AXL_FALSE;
+		return false;
 	}
 
 	if (! axl_cmp (result[0], "value1")) {
 		printf ("Failed to get the second element: (%s != %s)\n", result[0], "value1");
-		return AXL_FALSE;
+		return false;
 	}
 
 	if (! axl_cmp (result[1], "value2")) {
 		printf ("Failed to get the third element (%s != %s)\n", result[1], "value2");
-		return AXL_FALSE;
+		return false;
 	}
 
 	if (! axl_cmp (result[2], "value3")) {
 		printf ("Failed to get the fourth element (%s != %s)\n", result[2], "value3");
-		return AXL_FALSE;
+		return false;
 	}
 
 	if (! axl_cmp (result[3], "")) {
 		printf ("Failed to get the fourth element ('%s' != '%s')\n", result[3], "");
-		return AXL_FALSE;
+		return false;
 	}
 
 	
@@ -255,13 +255,13 @@ aboolean test_03 ()
 	result = axl_stream_split ("///", 1, "/");
 	if (result == NULL) {
 		printf ("Something have failed while using splitting functions (3)\n");
-		return AXL_FALSE;
+		return false;
 	}
 
 	if (axl_stream_strv_num (result) != 4) {
 		printf ("Something have failed while getting current number of pieces inside the split result (%d != %d) (3)\n", 
 			axl_stream_strv_num (result), 4);
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* release memory used */
@@ -271,7 +271,7 @@ aboolean test_03 ()
 	if (! axl_cmp (axl_stream_to_upper (string), "AXBCA")) {
 		/* report error found */
 		printf ("failed to upper case letters\n");
-		return AXL_FALSE;
+		return false;
 	}
 	axl_free (string);
 
@@ -279,7 +279,7 @@ aboolean test_03 ()
 	if (! axl_cmp (axl_stream_to_lower (string), "axbca")) {
 		/* report error found */
 		printf ("failed to lower case letters, result found: %s != %s\n", string, "axbca");
-		return AXL_FALSE;
+		return false;
 	}
 	axl_free (string);
 
@@ -290,7 +290,7 @@ aboolean test_03 ()
 	if (! axl_cmp (string, "value")) {
 		printf ("failed to trim the string received, expected '%s' == '%s'\n", 
 			string, "value");
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* release memory */
@@ -301,19 +301,19 @@ aboolean test_03 ()
 	if (trimmed != 7) {
 		printf ("failed, expected to find a trimmed size of 7 but found %d (%s)\n", 
 			trimmed, string);
-		return AXL_FALSE;
+		return false;
 	}
 
 	/* release the memory */
 	axl_free (string);
 	
-	return AXL_TRUE;
+	return true;
 }
 
 /** 
  * @brief Intensive axl list implementation.
  */
-aboolean test_04 () {
+bool test_04 () {
 	int       iterator = 0;
 	axlList * list;
 
@@ -334,7 +334,7 @@ aboolean test_04 () {
 	axl_list_free (list);
 	
 	/* true */
-	return AXL_TRUE;
+	return true;
 }
 
 /** 

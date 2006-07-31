@@ -147,11 +147,6 @@ struct _axlNode {
 	 * is contained.
 	 */
 	axlDoc        * doc;
-	
-	/** 
-	 * @internal Flag the node to be created from a factory.
-	 */
-	bool            from_factory;
 };
 
 /** 
@@ -502,48 +497,6 @@ axlNode * axl_node_create_ref         (char * name)
 	
 	/* return a reference to a new axlNode */
 	return __axl_node_create_internal (name);
-}
-
-/** 
- * @brief Creates a new \ref axlNode to be configured as attached to
- * the provided \ref axlDoc instance.
- *
- * 
- * 
- * @param name The name for the node to be created.
- *
- * @param doc The \ref axlDoc that will provide resources to create
- * the node provided.
- * 
- * @return A newly created \ref axlNode.
- */
-axlNode * axl_node_create_from_factory_ref          (char           * name, 
-						     axlNodeFactory * factory)
-{
-	axlNode * node;
-
-	/* get a node */
-	node = axl_node_factory_get (factory);
-	axl_return_val_if_fail (node, NULL);
-
-	/* init the node */
-	__axl_node_init_internal (node, name);
-
-	/* set the node to be created from a factory */
-	node->from_factory = true;
-	
-	return node;
-}
-
-axlNode * axl_node_create_from_factory (char           * name,
-					axlNodeFactory * factory)
-{
-	/* check values received */
-	axl_return_val_if_fail (name, NULL);
-	axl_return_val_if_fail (factory, NULL);
-
-	/* call to create the node */
-	return axl_node_create_from_factory_ref (axl_strdup (name), factory);
 }
 
 /** 
@@ -2181,10 +2134,6 @@ void axl_node_free (axlNode * node)
 {
 	axl_return_if_fail (node);
 
-	/* do not deallocate nodes from a factory */
-	if (node->from_factory)
-		return;
-
 	/* free internal content */
 	__axl_node_free_internal (node);
 
@@ -2194,156 +2143,5 @@ void axl_node_free (axlNode * node)
 	/* the node to release */
 	return;
 }
-
-struct _axlNodeFactory {
-	/* number of nodes available to allocate */
-	int         available;
-
-	/* number of nodes allocated */
-	int         allocated;
-
-	/* how many items are allocated each type is required more
-	 * memory */
-	int         steps;
-	
-	/* pointer to the structure of nodes allocated */
-	axlNode   * preallocated;
-
-	/* a list of block references */
-	axlList   * blocks;
-};
-
-axlNodeFactory * axl_node_factory_create  (int steps)
-{
-	axlNodeFactory * factory;
-
-	/* create the factory */
-	factory = axl_new (axlNodeFactory, 1);
-
-	/* allocate nodes */
-	factory->preallocated = axl_new (axlNode, steps);
-
-	/* node allocated */
-	factory->allocated    = steps;
-
-	/* node available to get */
-	factory->available    = steps;
-
-	/* the amount of memory allocated */
-	factory->steps        = steps;
-
-	/* allocated blocks */
-	factory->blocks       = axl_list_new (axl_list_always_return_1, NULL);
-
-	/* return the factory */
-	return factory;
-}
-
-axlNode        * axl_node_factory_get     (axlNodeFactory * factory)
-{
-	axlNode  * node;
-
-	/* check factory received */
-	axl_return_val_if_fail (factory, NULL);
-
-	__axl_log ("node-factory", AXL_LEVEL_DEBUG, "getting a node from factory: available=%d, allocated=%d, steps=%d",
-		   factory->available, factory->allocated, factory->steps);
-
-	if (factory->available == 0) {
-		/* remember the block to be deallocated later */
-		axl_list_add (factory->blocks, factory->preallocated);
-
-		/* calculate amount */
-		factory->preallocated  = axl_new (axlNode, factory->steps);
-
-		/* update how many nodes we have allocated */
-		factory->allocated    += factory->steps;
-
-		/* update available */
-		factory->available     = factory->steps;
-
-		__axl_log ("node-factory", AXL_LEVEL_DEBUG, "after allocating more nodes for the factory: available=%d, allocated=%d, steps=%d",
-			   factory->available, factory->allocated, factory->steps);
-	}
-
-	/* return the next available node */
-	node = &(factory->preallocated [factory->steps - factory->available]);
-
-	__axl_log ("node-factory", AXL_LEVEL_DEBUG, "returning next node at: %d (0x%x",
-		   factory->steps - factory->available, node);
-
-	/* decrease available nodes */
-	factory->available--;
-	
-	return node;
-}
-
-
-void             axl_node_factory_release (axlNodeFactory * to, axlNode * node)
-{
-	/* not implemented yet */
-	return;
-}
-
-
-void             axl_node_factory_free    (axlNodeFactory * factory)
-{
-	int       iterator;
-	int       iterator2;
-	int       length;
-	axlNode * block;
-
-	/* check factory received */
-	axl_return_if_fail (factory);
-
-	/* free factory list */
-	iterator = 0;
-	length   = axl_list_length (factory->blocks);
-	while (iterator < length) {
-		/* get the block allocated */
-		block = axl_list_get_nth (factory->blocks, iterator);
-
-		/* release it */
-		iterator2 = 0;
-		while (iterator2 < factory->steps) {
-			
-			/* free the internal content */
-			__axl_node_free_internal (&block[iterator2]);
-
-			/* update iterator */
-			iterator2++;
-		}
-
-		/* free the block */
-		axl_free (block);
-
-		/* update iterator */
-		iterator++;
-	}
-
-	/* free the list */
-	axl_list_free (factory->blocks);
-
-	/* now release available block */
-	iterator2 = 0;
-	while (iterator2 < factory->steps) {
-		
-		/* free the internal content */
-		__axl_node_free_internal (&factory->preallocated[iterator2]);
-		
-		/* update iterator */
-		iterator2++;
-	}
-	
-
-	/* free preallocated nodes and the node itself */
-	axl_free (factory->preallocated);
-	axl_free (factory);
-
-	return;
-}
-
-
-
 
 /* @} */
