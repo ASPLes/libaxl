@@ -1,4 +1,4 @@
-/**
+/*
  *  LibAxl:  Another XML library
  *  Copyright (C) 2006 Advanced Software Production Line, S.L.
  *
