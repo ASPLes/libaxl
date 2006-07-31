@@ -573,7 +573,7 @@ void __axl_node_init_attributes (axlNode * node)
 		return;
 	
 	/* create attribute list */
-	node->attributes = axl_list_new (__axl_node_equal, (axlDestroyFunc) __axl_node_destroy_attr);
+	node->attributes = axl_list_new (axl_list_always_return_1, (axlDestroyFunc) __axl_node_destroy_attr);
 }
 
 /** 
@@ -643,7 +643,7 @@ void      __axl_node_set_attribute      (axlNode * node, char * attribute, char 
 	_attribute->value = value;
 
 	/* add the attribute */
-	axl_list_add (node->attributes, _attribute);
+	axl_list_append (node->attributes, _attribute);
 
 	return;
 }
@@ -1439,7 +1439,7 @@ void      axl_node_set_child (axlNode * parent, axlNode * child)
 	}
 	
 	/* add the child node to the parent node */
-	axl_list_add (parent->childs, child);
+	axl_list_append (parent->childs, child);
 
 	return;
 }

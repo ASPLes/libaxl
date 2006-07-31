@@ -54,6 +54,8 @@ void       axl_list_add    (axlList * list, axlPointer pointer);
 
 void       axl_list_prepend (axlList * list, axlPointer pointer);
 
+void       axl_list_append  (axlList * list, axlPointer pointer);
+
 void       axl_list_remove (axlList * list, axlPointer pointer);
 
 void       axl_list_unlink (axlList * list, axlPointer pointer);
@@ -75,6 +77,8 @@ axlPointer axl_list_get_first (axlList * list);
 axlPointer axl_list_get_last  (axlList * list);
 
 axlPointer axl_list_get_nth   (axlList * list, int position);
+
+axlPointer axl_list_lookup    (axlList * list, axlLookupFunc func, axlPointer data);
 
 int        axl_list_length (axlList * list);
 

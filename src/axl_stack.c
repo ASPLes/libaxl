@@ -106,7 +106,7 @@ void       axl_stack_push (axlStack * stack, axlPointer data)
 	axl_return_if_fail (data);
 
 	/* simply add the element */
-	axl_list_add (stack->list, data);
+	axl_list_prepend (stack->list, data);
 	
 	return;
 }

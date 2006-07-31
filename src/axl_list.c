@@ -203,7 +203,7 @@ axlList * axl_list_new    (axlEqualFunc are_equal, axlDestroyFunc destroy_data)
 	result->destroy_data = destroy_data;
 
 	/* preallocate memory for nodes */
-	__axl_list_allocate_nodes (result);
+	/* __axl_list_allocate_nodes (result); */
 
 	return result;
 }
@@ -452,6 +452,44 @@ void       axl_list_prepend (axlList * list, axlPointer pointer)
 	return;
 }
 
+
+/** 
+ * @brief Allows to add a node to the provided list, at the last
+ * position, without taking into consideration current \ref axlList
+ * configuration (\ref axlEqualFunc at \ref axl_list_new). 
+ * 
+ * @param list The list where the data will be added at the last
+ * position.
+ *
+ * @param pointer The pointer to add.
+ */
+void       axl_list_append  (axlList * list, axlPointer pointer)
+{
+	axlListNode * new_node;
+
+	axl_return_if_fail (list);
+	axl_return_if_fail (pointer);
+	
+	/* simulate adding the node at the first position */
+	new_node         = __axl_list_get_next_node_available (list); 
+	new_node->data   = pointer;
+
+	/* make the new node the be the first one */
+	if (list->last_node == NULL) {
+		list->first_node  = new_node;
+		list->last_node   = new_node;
+	}else {
+		list->last_node->next  = new_node;
+		new_node->previous     = list->last_node;
+		list->last_node        = new_node;
+	}
+
+	/* update number of items inside */
+	list->length++;
+	
+	return;
+}
+
 /** 
  * @internal
  * @brief Internal lookup function to locate the axlListNode that contains the pointer.
@@ -553,36 +591,19 @@ axlListNode * axl_list_internal_get_nth (axlList * list, int position)
 	return NULL;
 }
 
-/** 
- * @internal
- *
- * Internal support for axl_list_remove and axl_list_unlink
- * function. The function perform a node removing, the one that
- * contains the node pointed by the provided pointer, and making a
- * node deallocation according to the configuration of the
- * <b>alsoRemove</b>.
- * 
- * @param list The list where the operation will be performed.
- *
- * @param pointer The pointer to remove
- *
- * @param alsoRemove Also call to destroy function.
- */
-void     axl_list_common_remove (axlList * list, axlPointer pointer, bool     alsoRemove)
+/* remove the selected node */
+void __axl_list_common_remove_selected_node (axlList * list, axlListNode * node, 
+					     bool alsoRemove)
 {
-	axlListNode * node;
+	axlPointer pointer;
 
-	axl_return_if_fail (list);
-	axl_return_if_fail (pointer);
-
-	/* complex case */
-	node  = axl_list_internal_lookup (list, pointer);
-	if (node == NULL) {
+	/* do not remove anything if a null reference is received */
+	if (node == NULL)
 		return;
-	}
-
 	
-	/* the node found is equal, remove it */
+	/* get a reference to the pointer */
+	pointer = node->data;
+	
 	if (node->previous == NULL)
 		list->first_node = node->next;
 	else
@@ -600,10 +621,44 @@ void     axl_list_common_remove (axlList * list, axlPointer pointer, bool     al
 	
 	/* release memory allocated by the node */
 	__axl_list_dispose_node (list, node); 
-	/* axl_free (node);  */
 
 	/* decrease list length */
 	list->length--;
+
+	/* nothing more to do */
+	return;
+}
+
+/** 
+ * @internal
+ *
+ * Internal support for axl_list_remove and axl_list_unlink
+ * function. The function perform a node removing, the one that
+ * contains the node pointed by the provided pointer, and making a
+ * node deallocation according to the configuration of the
+ * <b>alsoRemove</b>.
+ * 
+ * @param list The list where the operation will be performed.
+ *
+ * @param pointer The pointer to remove
+ *
+ * @param alsoRemove Also call to destroy function.
+ */
+void     axl_list_common_remove (axlList * list, axlPointer pointer, bool alsoRemove)
+{
+	axlListNode * node;
+
+	axl_return_if_fail (list);
+	axl_return_if_fail (pointer);
+
+	/* complex case */
+	node  = axl_list_internal_lookup (list, pointer);
+	if (node == NULL)
+		return;
+
+	/* remove the selected node */
+	__axl_list_common_remove_selected_node (list, node, alsoRemove);
+	
 	return;	
 }
 
@@ -655,8 +710,6 @@ void       axl_list_unlink (axlList * list, axlPointer pointer)
  */
 void       axl_list_remove_first (axlList * list)
 {
-	axlPointer   pointer;
-	axlEqualFunc previous_func;
 
 	axl_return_if_fail (list);
 
@@ -664,18 +717,9 @@ void       axl_list_remove_first (axlList * list)
 	if (list->first_node == NULL)
 		return;
 
-	/* get the pointer to remove */
-	pointer         = list->first_node->data;
+	/* remove the selected node */
+	__axl_list_common_remove_selected_node (list, list->first_node, true);
 
-	/* configure the list to find the first element */
-	previous_func   = list->are_equal;
-	list->are_equal = __axl_list_always_true;
-
-	axl_list_common_remove (list, pointer, true);
-
-	/* restore previous equal func */
-	list->are_equal = previous_func;
-	
 	return;
 }
 
@@ -687,8 +731,6 @@ void       axl_list_remove_first (axlList * list)
  */
 void       axl_list_unlink_first (axlList * list)
 {
-	axlPointer   pointer;
-	axlEqualFunc previous_func;
 
 	axl_return_if_fail (list);
 
@@ -696,17 +738,10 @@ void       axl_list_unlink_first (axlList * list)
 	if (list->first_node == NULL)
 		return;
 
-	/* get the pointer to remove */
-	pointer         = list->first_node->data;
+	/* remove the selected node */
+	__axl_list_common_remove_selected_node (list, list->first_node, false);
 
-	/* configure the list to find the first element */
-	previous_func   = list->are_equal;
-	list->are_equal = __axl_list_always_true;
-
-	axl_list_common_remove (list, pointer, false);
-
-	/* restore previous equal func */
-	list->are_equal = previous_func;
+	return;
 }
 
 
@@ -811,6 +846,66 @@ axlPointer axl_list_get_nth   (axlList * list, int position)
 }
 
 /** 
+ * @brief Allows to perform a linear lookup on the list provided,
+ * givin a function that is used to now the object to return due to
+ * the lookup.
+ *
+ * The function can also be used as a foreach function. The following
+ * example shows how to launch the function and perform a tasks on the
+ * lookup function:
+ * \code
+ * // perform the lookup 
+ * return axl_list_lookup (list, __find_item, name);
+ *
+ * // the lookup function 
+ * bool __find_item (axlPointer _element, axlPointer data)
+ * {
+ *	SomeItem * element = _element;
+ *	char     * name    = data;
+ *
+ *	// check the name 
+ *	if (axl_cmp (element->name, name))
+ *		return true;
+ *
+ *	// it is not the element 
+ *	return false;
+ * }
+ * \endcode
+ * 
+ * @param list The list where the lookup will be performed.
+ *
+ * @param func The function to use to perform the lookup.
+ * 
+ * @return A pointer to the object found or NULL if no item was found.
+ */
+axlPointer axl_list_lookup    (axlList * list, axlLookupFunc func, axlPointer data)
+{
+	axlListNode * node;
+	axl_return_val_if_fail (list, NULL);
+	axl_return_val_if_fail (func, NULL);
+
+	/* get the first pointer */
+	node = list->first_node;
+	do {
+		/* if the next node to check is NULL, terminate the
+		 * lookup. */
+		if (node == NULL)
+			return NULL;
+
+		/* check if the node found is the one looked up */
+		if (func (node->data, data))
+			return node->data;
+
+		/* seems not, update to the next reference */
+		node = node->next;
+		
+	}while (1);
+
+	/* return no node found */
+	return NULL;
+}
+
+/** 
  * @brief Allows to get current list length.
  * 
  * @param list The list to operate.
@@ -835,6 +930,8 @@ void      axl_list_free (axlList * list)
 	int iterator;
 	axlListNode * node;
 	axlListNode * node2;
+
+	
 	axl_return_if_fail (list);
 
 	node = list->first_node;

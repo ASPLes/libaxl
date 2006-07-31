@@ -318,6 +318,17 @@ axlDtd * __axl_dtd_new ()
 	return dtd;
 }
 
+bool __queue_items (axlPointer data, axlPointer _stack)
+{
+	axlStack * stack = _stack;
+
+	/* queue the data */
+	axl_stack_push (stack, data);
+
+	/* return false to make the function to not stop */
+	return false;
+}
+
 /** 
  * @internal
  *
@@ -331,14 +342,10 @@ axlDtd * __axl_dtd_new ()
  */
 void __axl_dtd_queue_items (axlStack * stack, axlList * list) 
 {
-	int                     iterator = 0;
-	axlPointer              data;
-	
-	while (iterator < axl_list_length (list)) {
-		data = axl_list_get_nth (list, iterator);
-		axl_stack_push (stack, data);
-		iterator++;
-	}
+	/* call to queue items */
+	axl_list_lookup (list, __queue_items, stack);
+
+	/* nothing more */
 	return;
 }
 
@@ -2581,6 +2588,23 @@ axlDtdElement  * axl_dtd_get_root        (axlDtd * dtd)
 }
 
 /** 
+ * @internal function used by \ref axl_dtd_get_element to perform node
+ * lookups.
+ */
+bool __find_dtd_element (axlPointer _element, axlPointer data)
+{
+	axlDtdElement * element = _element;
+	char          * name    = data;
+
+	/* check the name */
+	if (axl_cmp (element->name, name))
+		return true;
+
+	/* it is not the element */
+	return false;
+}
+
+/** 
  * @brief Allows to get the DTD element (\ref axlDtdElement), inside
  * the provided DTD (\ref axlDtd), that represent the spefication for
  * the node called by the provided name.
@@ -2595,28 +2619,12 @@ axlDtdElement  * axl_dtd_get_root        (axlDtd * dtd)
  */
 axlDtdElement      * axl_dtd_get_element      (axlDtd * dtd, char * name)
 {
-	int             iterator;
-	axlDtdElement * result;
 
 	axl_return_val_if_fail (dtd, NULL);
 	axl_return_val_if_fail (name, NULL);
 
-	iterator = 0;
-	while (iterator < axl_list_length (dtd->elements)) {
-		/* get a reference to the nth item */
-		result = axl_list_get_nth (dtd->elements, iterator);
-		
-		/* check that it is the value looked up */
-		if (axl_cmp (axl_dtd_get_element_name (result), name)) {
-			return result;
-		}
-
-		/* update the iterator */
-		iterator++;
-	} /* end while */
-
-	/* it seems that the value wasn't found */
-	return NULL;
+	/* perform the lookup */
+	return axl_list_lookup (dtd->elements, __find_dtd_element, name);
 }
 
 /** 
