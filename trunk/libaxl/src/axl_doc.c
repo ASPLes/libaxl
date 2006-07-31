@@ -770,7 +770,6 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 			/* set a new attribute for the given node */
 			axl_node_set_attribute_ref (node, string_aux, string_aux2);
 
-
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "attribute installed..");
 
 			/* get rid from spaces */
@@ -2338,6 +2337,7 @@ bool      axl_doc_consume_comments         (axlDoc * doc, axlStream * stream, ax
 
 		/* check for PI, only once the xml header have been processed */
 		if ((doc != NULL) && doc->headerProcess && (axl_stream_peek (stream, "<?", 2) > 0)) {
+			
 			if (! axl_doc_consume_pi (doc, axl_stack_peek (doc->parentNode), stream, error))
 				return false;
 			found_item = true;

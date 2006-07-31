@@ -624,6 +624,12 @@ AxlDebugLevel;
  */
 #define axl_new(type, count) (type *) calloc (count, sizeof (type))
 
+/** 
+ * @brief The the provided pointer that was allocated using \ref
+ * axl_new.
+ * 
+ * @param ref The reference to deallocate.
+ */
 void    axl_free(axlPointer ref);
 
 /** 
@@ -769,6 +775,21 @@ typedef bool (*AxlIterationFunc) (axlNode * node, axlNode * parent, axlDoc * doc
  * @return A newly allocated data duplicated.
  */
 typedef axlPointer (*axlDuplicateFunc) (axlPointer ptr);
+
+/** 
+ * @brief Handler used by the \ref axl_list_module "axl list module"
+ * to perform linear and efficient lookups.
+ * 
+ * @param ptr A pointer to the object stored inside the list and to be
+ * checked if it is the one looked up. 
+ * 
+ * @param data A pointer to a user defined data that is received at
+ * the lookup function and passed to this handler.
+ * 
+ * @return The function should return true (found). Otherwise, false
+ * must be returned to keep on searching.
+ */
+typedef bool (*axlLookupFunc) (axlPointer ptr, axlPointer data);
 
 #endif
 

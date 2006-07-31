@@ -51,17 +51,31 @@
  */
 bool axl_cmp (char * string, char * string2)
 {
-	axl_return_val_if_fail (string, false);
-	axl_return_val_if_fail (string2, false);
-	
-	if (! axl_stream_cmp ((string != NULL) ? string : "s1",
-			      (string2 != NULL) ? string2 : "s2",
-			      (string != NULL) ? strlen (string) : 2))
-		return false;
+	int iterator = 0;
 
-	return axl_stream_cmp ((string != NULL) ? string : "s1",
-			       (string2 != NULL) ? string2 : "s2",
-			       (string2 != NULL) ? strlen (string2) : 2);
+	if (string == NULL)
+		return false;
+	if (string2 == NULL)
+		return false;
+	
+	/* for each item inside the iterator */
+	while (string [iterator] != 0 && string2 [iterator] != 0) {
+		
+		/* check the content */
+		if (string [iterator] != string2 [iterator])
+			return false;
+
+		/* update the iterator */
+		iterator++;
+		
+	} /* end while */
+	
+	/* check that both string ends at the same point */
+	if (string [iterator] != 0 ||
+	    string2 [iterator] != 0)
+		return false;
+	
+	return true;
 }
 
 /** 

@@ -69,12 +69,11 @@ int main (int argc, char ** argv)
 	if (doc == NULL)
 		return AXL_FALSE;
 
-	/* release the document */
-	axl_doc_free (doc);
-
 	/* cleanup axl library */
 	axl_end ();
 
+	/* release the document */
+	axl_doc_free (doc);
 
 	return AXL_TRUE;
 }
@@ -395,7 +394,7 @@ Multiprocessors.</li>
 
 <div class="footer">
 <p>
-<!-- hhmts start -->Last modified: Thu Apr 20 10:19:25 CEST 2006 <!-- hhmts end -->
+<!-- hhmts start -->Last modified: Mon Jul 31 17:28:04 CEST 2006 <!-- hhmts end -->
 </p>
 </div>
 <div> <!-- main-page -->

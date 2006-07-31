@@ -2,7 +2,7 @@ EXTRA_DIST      = $(wildcard *.c) $(wildcard *.dtd) $(wildcard *.xml) $(wildcard
 
 INCLUDES = -I../src/ -Wall
 
-noinst_PROGRAMS = test_01 test_02 test_01a
+noinst_PROGRAMS = test_01 test_02 test_01a test_02a
 
 test_01_SOURCES = test_01.c
 test_01_LDADD   = ../src/libaxl.la 
@@ -12,4 +12,7 @@ test_02_LDADD   = ../src/libaxl.la
 
 test_01a_SOURCES = test_01a.c
 test_01a_LDADD   = ../src/libaxl.la 
+
+test_02a_SOURCES = test_02a.c
+test_02a_LDADD   = ../src/libaxl.la 
 
