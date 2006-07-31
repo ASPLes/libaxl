@@ -540,15 +540,7 @@ typedef int bool;
  * integer value).
  */
 #define true  (1)
-#endif
-
-/** 
- * @internal
- * More boolean compatibility declarations.
- */
-#ifndef boolean
-#define boolean int
-#endif
+#endif /* __cplusplus */
 
 /** 
  * @brief Pointer to any structure definition. It should be required
