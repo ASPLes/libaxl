@@ -16,3 +16,7 @@ test_01a_LDADD   = ../src/libaxl.la
 test_02a_SOURCES = test_02a.c
 test_02a_LDADD   = ../src/libaxl.la 
 
+compref:
+	gcc `pkg-config --libs --cflags libxml-2.0` test_01b.c -o test_01b
+	gcc `pkg-config --libs --cflags libxml-2.0` test_02b.c -o test_02b
+
