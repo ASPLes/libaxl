@@ -63,7 +63,7 @@
  * 
  * @param stream 
  */
-#define STREAM_BUFFER_SIZE 4096
+#define STREAM_BUFFER_SIZE 8192
 
 /** 
  * @internal
@@ -77,6 +77,21 @@ typedef  enum {
 	STREAM_FD,
 	STREAM_MEM
 }axlStreamType;
+
+typedef struct _axlStreamIndexer {
+	/* an array of keys indexed. */
+	char ** keys;
+
+	/* an array containing arrays of indexes associated to a
+	 * selected key */
+	int  ** indexes;
+
+	/* the size of the array allocated for a particular
+	 * position. this helps to reuse the memory allocated to hold
+	 * indexes while renewing indexes each time a prebuffer
+	 * operation is performed. */
+	int   * sizes;
+}axlStreamIndexer;
 
 struct _axlStream {
 
@@ -129,6 +144,11 @@ struct _axlStream {
 	 * operations.
 	 */
 	char  temp[STREAM_BUFFER_SIZE];
+
+	/** 
+	 * An optional reference to the indexer object.
+	 */
+	axlStreamIndexer * indexer;
 };
 
 
@@ -372,6 +392,66 @@ axlStream * axl_stream_new (char * stream_source, int stream_size,
 	/* return newly created stream */
 	return stream;
 }
+
+
+
+/** 
+ * @internal
+ *
+ * Creates a new indexer instance.
+ *
+ * @return A newly allocated indexer.
+ */
+axlStreamIndexer * __axl_stream_indexer_create ()
+{
+	/* return a newly created indexer */
+	return axl_new (axlStreamIndexer, 1);
+}
+
+void __axl_stream_indexer_free (axlStreamIndexer * indexer)
+{
+	/* not implemented yet */
+
+	return;
+}
+
+
+/** 
+ * @brief Allows to index the content of the stream for the provided
+ * string. This information will be used by the stream module to make
+ * lookups and general operational faster.
+ * 
+ * @param stream The stream to index followed by a null terminated
+ * list of strings to be indexed.
+ */
+void        axl_stream_index_content   (axlStream * stream, ...)
+{
+	va_list            args;
+	char             * chunk;
+
+	axl_return_if_fail (stream);
+
+	/* open std arguments */
+	va_start (args, stream);
+
+	/* get the chunk to index */
+	chunk  = va_arg (args, char *);
+	
+	if (stream->indexer != NULL) {
+		/* free index info */
+		__axl_stream_indexer_free (stream->indexer);
+	}
+
+	/* create a new indexer */
+	stream->indexer = __axl_stream_indexer_create ();
+
+
+	/* close arguments */
+	va_end (args);
+	
+	return;
+}
+
 
 /** 
  * @internal
@@ -776,6 +856,9 @@ char * __axl_stream_get_untilv_wide (axlStream * stream,
 	char       * string      = NULL;
 	bool         match_empty = false;
 	int          empty_index = 0;
+
+	/* get how many bytes remains to be read */
+	int          remains;
 	
 	/* perform some environmental checks */
 	axl_return_val_if_fail (stream, NULL);
@@ -812,25 +895,42 @@ char * __axl_stream_get_untilv_wide (axlStream * stream,
 		iterator ++;
 	}
 
+	/* calculate how many bytes ara available */
+	remains = stream->stream_size - stream->stream_index;
+
 	/* now we have chunks to lookup, stream until get the stream
 	 * limited by the chunks received. */
 	do {
 
-		/* check if the index is falling out side the buffer boundaries */
-		if (fall_out_side_checking (stream, index)) {
+		/* only prebuffer for this type of stream */
+		if (stream->type == STREAM_FD) {
 			
-			if (! axl_stream_prebuffer (stream)) {
-				__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "failed while prebuffer");
-				return NULL;
-			}
+			/* decrease remain bytes to be read until perform a
+			 * prebuffer operation */
+			remains--;
 
-			/* work around: because the index is updated
-			 * at the end of the loop, it is required to
-			 * decrease the index in one unit in the case
-			 * a prebuffer operation happens */
-			index--;
+			/* check if the index is falling out side the buffer boundaries */
+			if (remains < 0) {
+				
+				if (! axl_stream_prebuffer (stream)) {
+					__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "failed while prebuffer");
+					return NULL;
+				}
+				
+				/* update remains value but this time removing
+				 * one unit (the unit to be consumed at the
+				 * next sentence) */
+				remains = stream->stream_size - stream->stream_index - 1;
+				
+				/* work around: because the index is updated
+				 * at the end of the loop, it is required to
+				 * decrease the index in one unit in the case
+				 * a prebuffer operation happens */
+				index--;
+				
+			} /* end if */
+		}
 
-		} /* end if */
 		
 		/* compare chunks received for each index increased
 		 * one step */
@@ -1301,13 +1401,28 @@ bool        axl_stream_is_white_space  (char * chunk)
  */
 void axl_stream_consume_white_spaces (axlStream * stream)
 {
+	/* get how many bytes remains to be read */
+	int remains = stream->stream_size - stream->stream_index;
 
 	do {
-		/* check if there are enough stream buffered to check for
-		 * white spaces */
-		if (axl_stream_fall_outside (stream, 1)) {
-			return; /* no more stream is left to satisfy current petition */
-		}
+
+		/* decrase the number of bytes remaining to be read
+		 * and check if it is zero or less than zero to
+		 * prebuffer. NOTE: remains could be 1 (remains one
+		 * byte) making it possible to consume one byte
+		 * more */
+		remains--;
+		if (remains < 0) {
+			/* we fall outside the stream, so a prebuffer
+			 * operation is required */
+			if (! axl_stream_prebuffer (stream))
+				return;
+			
+			/* update remains value but this time removing
+			 * one unit (the unit to be consumed at the
+			 * next sentence) */
+			remains = stream->stream_size - stream->stream_index - 1;
+                }
 		
 		/* check for a white space */
 		if (! axl_stream_is_white_space (stream->stream + stream->stream_index))

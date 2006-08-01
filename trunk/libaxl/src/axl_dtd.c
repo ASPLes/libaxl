@@ -1361,12 +1361,10 @@ bool __axl_dtd_parse_attlist (axlDtd * dtd, axlStream * stream, axlError ** erro
 			
 			/* free value */
 			axl_free (string_aux);
-		}
+			
+		} /* end if */
 		
-		
-
-		
-	}
+	} /* end while */
 	
 	
 	
@@ -1489,17 +1487,20 @@ bool __axl_dtd_parse_entity (axlDtd * dtd, axlStream * stream, axlError ** error
 	}else {
 		/* we have a plain value get the content remove next "
 		   and ' if defined */
-		if (! ((axl_stream_inspect (stream, "\"", 1) > 0)))
+		if (! ((axl_stream_inspect (stream, "\"", 1) > 0))) {
 			if (! (axl_stream_inspect (stream, "\'", 1) > 0)) {
 				axl_error_new (-2, "Expected to find entity value initiator (\") or ('), every entity value must start with them", 
 					       stream, error);
 				axl_stream_free (stream);
 				return false;
 			}
-		
-		/* now get the attribute value */
-		string_aux = axl_stream_get_until (stream, NULL, NULL, true, 2, "'", "\"");
-		
+			/* knowing that ' was matched, now get the attribute value */
+			string_aux = axl_stream_get_until (stream, NULL, &matched_chunk, true, 1, "'");
+		}else {
+			/* knowhing that " was matched, now get the attribute value */
+			string_aux = axl_stream_get_until (stream, NULL, &matched_chunk, true, 1, "\"");
+		}
+
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "entity value found: [%s]", string_aux);
 		
 		/* nullify internal reference so we have the

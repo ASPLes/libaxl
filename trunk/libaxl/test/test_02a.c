@@ -36,8 +36,6 @@ int main (int argc, char ** argv)
 		return false;
 	}
 
-	printf ("ok\n");
-
 	/* release the document */
 	axl_doc_free (doc);
 

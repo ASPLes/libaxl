@@ -195,11 +195,8 @@ axlNode * __axl_node_create_internal (char * name)
 {
 	axlNode * node = NULL;
 
-	/* perform some environmental checks */
-	axl_return_val_if_fail (name, NULL);
-	
 	/* init the node */
-	node           = axl_new (axlNode, 1);
+	node = axl_new (axlNode, 1);
 	__axl_node_init_internal (node, name);
 
 	return node;
