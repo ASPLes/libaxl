@@ -710,6 +710,19 @@ axl_stream_consume_white_spaces (stream)
 
 bool axl_cmp (char * string, char * string2);
 
+bool axl_memcmp (char * string, char * string2, int size);
+
+#define _memcmp(i,s1,s2,size)\
+i = 0;\
+while (s1 [i] != 0 && s2 [i] != 0) {\
+     if (s1 [i] != s2 [i])\
+	return false;\
+     i++;\
+     if (i == size)\
+	return true;\
+}\
+return false
+
 /** 
  * @brief Allows to configure how is performed the iteration other the xml document.
  *

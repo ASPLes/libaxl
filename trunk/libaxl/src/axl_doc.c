@@ -886,9 +886,6 @@ axlDoc * __axl_doc_parse_common (char * entity, int entity_size,
 	stream         = axl_stream_new (entity, entity_size, file_path, fd_handle, error);
 	axl_return_val_if_fail (stream, NULL);
 
-	/* index the content */
-	axl_stream_index_content (stream, " ", "'", "\"", "<", ">", "/>", "=", "<!--", "-->", "<![CDATA[", "]]>", NULL);
-
 	/* create a document reference */
 	doc            = __axl_doc_new (true);
 	axl_stream_link (stream, doc, (axlDestroyFunc) axl_doc_free);
