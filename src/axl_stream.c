@@ -71,31 +71,12 @@
  * Internal definition used to represent the maximum value used for
  * calls done to match a set of chunks. 
  */
-#define MAX_INSPECTED_CHUNKS 8
+#define MAX_INSPECTED_CHUNKS 10
 
 typedef  enum {
 	STREAM_FD,
 	STREAM_MEM
 }axlStreamType;
-
-typedef struct _axlStreamIndexer {
-	/* the stream being indexed */
-	axlStream * stream;
-
-	/* an array of keys indexed. */
-	char ** keys;
-
-	/* an array containing arrays of indexes associated to a
-	 * selected key */
-	int  ** indexes;
-
-	/* the size of the array allocated for a particular
-	 * position. this helps to reuse the memory allocated to hold
-	 * indexes while renewing indexes each time a prebuffer
-	 * operation is performed. */
-	int   * sizes;
-	
-}axlStreamIndexer;
 
 struct _axlStream {
 
@@ -149,10 +130,6 @@ struct _axlStream {
 	 */
 	char  temp[STREAM_BUFFER_SIZE];
 
-	/** 
-	 * An optional reference to the indexer object.
-	 */
-	axlStreamIndexer * indexer;
 };
 
 
@@ -396,179 +373,6 @@ axlStream * axl_stream_new (char * stream_source, int stream_size,
 	/* return newly created stream */
 	return stream;
 }
-
-
-
-/** 
- * @internal
- *
- * Creates a new indexer instance.
- *
- * @return A newly allocated indexer.
- */
-axlStreamIndexer * axl_stream_indexer_create (axlStream * stream)
-{
-	/* return a newly created indexer */
-	axlStreamIndexer * indexer;
-
-	/* create the index and configure the stream */
-	indexer         = axl_new (axlStreamIndexer, 1);
-	indexer->stream = stream;
-
-	return indexer;
-}
-
-void axl_stream_indexer_free (axlStreamIndexer * indexer)
-{
-	int iterator  = 0;
-
-	/* only release container not keys */
-	axl_free (indexer->keys);
-	
-	if (indexer->indexes != NULL) {
-		while (indexer->indexes[iterator] != NULL) {
-			
-			/* free index array */
-			if (indexer->indexes[iterator] != NULL)
-				axl_free (indexer->indexes[iterator]);
-			
-			/* update the iterator */
-			iterator++;
-		}
-		
-		/* free indexes */
-		axl_free (indexer->indexes);
-	}
-
-	if (indexer->sizes)
-		axl_free (indexer->sizes);
-
-	axl_free (indexer);
-	
-
-	return;
-}
-
-void axl_stream_indexer_add_key (axlStreamIndexer * indexer, char * key)
-{
-	int        kindex = 0;
-	int        i_index;
-	char     * ptr;
-	int        length = strlen (key);
-
-
-	/* check for basic case */
-	if (indexer->keys == NULL) {
-		/* create the key index */
-		indexer->keys    = axl_new (char *, 2);
-		indexer->keys[0] = key;
-		
-		/* create the associated index */
-		indexer->indexes    = axl_new (int *, 1);
-		
-		/* create the sizes array */
-		indexer->sizes      = axl_new (int, 1);
-		indexer->sizes[0]   = 0;
-	}else {
-		/* lookup for the next free position */
-		while (indexer->keys[kindex] != NULL)
-			kindex++;
-
-		/* extend key array */
-		indexer->keys             = realloc (indexer->keys,    sizeof (char *) * (kindex + 2));
-		indexer->keys[kindex]     = key;
-		indexer->keys[kindex + 1] = NULL;
-
-		/* extend indexes array */
-		indexer->indexes          = realloc (indexer->indexes, sizeof (int *) * (kindex + 1));
-		indexer->indexes[kindex]  = 0;
-
-		indexer->sizes            = realloc (indexer->sizes,   sizeof (int) * (kindex + 1));
-		indexer->sizes[kindex]    = 0;
-	}
-	
-	/* now, generate the index for the received key: use kindex as position */
-	ptr     = indexer->stream->stream;
-	i_index = 0;
-
-	/* while stream size is bigger then item index */
-	while (i_index < indexer->stream->stream_size) {
-		if (!memcmp (ptr + i_index, key, length)) {
-			
-			/* item found at i_index, add to the know places */
-			if (indexer->indexes[kindex] == NULL) {
-				indexer->indexes[kindex]    = axl_new (int, 1);
-
-				/* update size */
-				indexer->sizes[kindex]      = 1;
-				
-				/* add the first item */
-				indexer->indexes[kindex][0] = i_index;
-			} else {
-				{
-					int size = indexer->sizes[kindex];
-
-					/* we stored more objects previously */
-					indexer->indexes[kindex] = realloc (indexer->indexes[kindex], sizeof (int) * (size + 1));
-					
-					/* add the item */
-					indexer->indexes[kindex][size] = i_index;
-
-					/* update size */
-					indexer->sizes[kindex] = size + 1;
-				}
-			} /* end if */
-		}  /* end if */
-
-
-		/* update the item index */
-		i_index++;
-
-	} /* end while */
-	
-	/* key added and content indexed */
-	return;
-}
-
-
-/** 
- * @brief Allows to index the content of the stream for the provided
- * string. This information will be used by the stream module to make
- * lookups and general operational faster.
- * 
- * @param stream The stream to index followed by a null terminated
- * list of strings to be indexed.
- */
-void        axl_stream_index_content   (axlStream * stream, ...)
-{
-	va_list    args;
-	char     * chunk;
-
-	axl_return_if_fail (stream);
-
-	/* open std arguments */
-	va_start (args, stream);
-
-	if (stream->indexer != NULL) {
-		/* free index info */
-		axl_stream_indexer_free (stream->indexer);
-	}
-
-	/* create a new empty indexer */
-	stream->indexer = axl_stream_indexer_create (stream);
-
-	/* foreach chunk to index */
-	while ((chunk   = va_arg (args, char *)) != NULL) {
-		/* install the chunk */
-		axl_stream_indexer_add_key (stream->indexer, chunk);
-	}
-	
-	/* close arguments */
-	va_end (args);
-	
-	return;
-}
-
 
 /** 
  * @internal
@@ -967,6 +771,7 @@ char * __axl_stream_get_untilv_wide (axlStream * stream,
 
 	int          iterator    = 0;
 	int          index       = 0;
+	int          _index;
 	int          length      = 0;
 	int          max_length  = 0;
 	bool         matched;
@@ -1052,13 +857,18 @@ char * __axl_stream_get_untilv_wide (axlStream * stream,
 		/* compare chunks received for each index increased
 		 * one step */
 	init_get_until:
+		_index   = stream->stream_index + index;
 		matched  = false;
 		iterator = 0;
 		
 		/* before iterating, check if we have to match the
 		 * empty string */
 		if (match_empty) {
-			if (axl_stream_is_white_space (stream->stream + index + stream->stream_index)) {
+			/* check for a white space item */
+			if ((stream->stream[_index] == ' ')  ||
+			    (stream->stream[_index] == '\n') ||
+			    (stream->stream[_index] == '\t') ||
+			    (stream->stream[_index] == '\r')) {
 				/* string matched */
 				length         = 1;
 				matched        = true;
@@ -1074,15 +884,21 @@ char * __axl_stream_get_untilv_wide (axlStream * stream,
 			length = stream->lengths [iterator];
 
 			/* check the length returned */
+			matched = false;
 			if (length > 0) {
 
-				/* if we receive a white space " " as a
-				 * delimiter, we will also stop on white
-				 * spaces (in the sense defined at the XML
-				 * 1.0, that is \r \n \t " " */
-				matched = !memcmp (stream->chunks[iterator], stream->stream + index + stream->stream_index, length);
-			}else
-				matched = false;
+				/* try to figure out if the next
+				 * string match */
+				if ((stream->chunks [iterator][0] == 
+				     stream->stream [_index])) {
+					
+					if ((length == 1) ||
+					    (axl_memcmp (stream->chunks [iterator] + 1, stream->stream + _index + 1, length -1))) {
+						/* flag as matched */
+						matched = true;
+					} /* end if */
+				} /* end if */
+			} /* end if */
 			
 			/* check if we have found the chunk we were looking */
 			if (! matched) {
@@ -1096,7 +912,7 @@ char * __axl_stream_get_untilv_wide (axlStream * stream,
 			/* check for matching a more specific
 			 * terminal than a general */
 			if ((length < max_length) && 
-			    ((index + stream->stream_index + length) == stream->stream_size)) {
+			    ((_index + length) == stream->stream_size)) {
 				__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "detected possible false positive");
 				
 				/* do a prebuffer operation,
@@ -1110,15 +926,13 @@ char * __axl_stream_get_untilv_wide (axlStream * stream,
 			
 			/* report which is the chunk being
 			 * matched by the expresion */
-			if (chunk_matched != NULL) {
+			if (chunk_matched != NULL)
 				*chunk_matched = (iterator);
-			}
 			
 			/* result is found from last stream
 			 * index read up to index */
-			if (stream->last_chunk != NULL) {
+			if (stream->last_chunk != NULL)
 				axl_free (stream->last_chunk);
-			}
 			
 			/* get a copy to the chunk to be returned */
 			if (result_size == NULL) {
@@ -1137,13 +951,11 @@ char * __axl_stream_get_untilv_wide (axlStream * stream,
 			stream->previous_inspect          = 0;
 			
 			
-			if (result_size == NULL) {
-/*				__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "returning (last chunk): '%s' (chunk num: %d) (index: %d, stream index: %d, stream_size: %d)", 
-				stream->last_chunk, iterator, index, stream->stream_index, stream->stream_size); */
+			/* return allocated result */
+			if (result_size == NULL) 
 				return stream->last_chunk;
-			}
-/*			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "returning: (internal ref) (chunk num: %d) (index: %d, stream index: %d, stream_size: %d)", 
-			iterator, index, stream->stream_index, stream->stream_size); */
+
+			/* return reference result */
 			return string;
 		} /* end if */
 		
@@ -1459,10 +1271,6 @@ void axl_stream_free (axlStream * stream)
 		close (stream->fd);
 	}
 
-	/* free indexer if was defined */
-	if (stream->indexer) 
-		axl_stream_indexer_free (stream->indexer);
-
 	/* free memory allocated for chunk matching */
 	axl_free (stream->chunks);
 
@@ -1498,13 +1306,13 @@ bool        axl_stream_is_white_space  (char * chunk)
 	if (chunk == NULL)
 		return false;
 	
-	if (! memcmp (chunk, " ", 1)) 
+	if (chunk[0] == ' ')
 		return true;
-	if (! memcmp (chunk, "\n", 1)) 
+	if (chunk[0] == '\n')
 		return true;
-	if (! memcmp (chunk, "\t", 1)) 
+	if (chunk[0] == '\t')
 		return true;
-	if (! memcmp (chunk, "\r", 1)) 
+	if (chunk[0] == '\r')
 		return true;
 
 	/* no white space was found */
@@ -1526,7 +1334,6 @@ void axl_stream_consume_white_spaces (axlStream * stream)
 	int remains = stream->stream_size - stream->stream_index;
 
 	do {
-
 		/* decrase the number of bytes remaining to be read
 		 * and check if it is zero or less than zero to
 		 * prebuffer. NOTE: remains could be 1 (remains one
@@ -1546,13 +1353,20 @@ void axl_stream_consume_white_spaces (axlStream * stream)
                 }
 		
 		/* check for a white space */
-		if (! axl_stream_is_white_space (stream->stream + stream->stream_index))
-			return;
+		if ((stream->stream[stream->stream_index] == ' ')  ||
+		    (stream->stream[stream->stream_index] == '\n') ||
+		    (stream->stream[stream->stream_index] == '\t') ||
+		    (stream->stream[stream->stream_index] == '\r')) {
 
-		/* update internal indexes */
-		stream->stream_index++;
-		stream->global_index++;
-		stream->previous_inspect  = 0;
+			/* update internal indexes */
+			stream->stream_index++;
+			stream->global_index++;
+			stream->previous_inspect  = 0;
+		}else {
+			/* return */
+			return;
+		}
+		
 
 	}while (true);
 
@@ -1672,8 +1486,13 @@ bool        axl_stream_cmp             (char * chunk1, char * chunk2, int size)
 		return false;
 	
 	/* report current comparation status */
-	if (!memcmp (chunk1, chunk2, size))
-		return true;
+	if ((chunk1[0] == chunk2[0])) {
+		if ((size == 1) ||
+		    (axl_memcmp (chunk1 + 1, chunk2 + 1, size -1))) {
+			return true;
+		} /* end if */
+	} /* end if */
+
 	return false;
 }
 
@@ -1718,9 +1537,11 @@ bool axl_stream_fall_outside (axlStream * stream, int inspected_size)
  */
 bool         axl_stream_check           (axlStream * stream, char * chunk, int inspected_size)
 {
+	int iterator;
 
-	/* check current chunk against current stream status */
-	return (memcmp (chunk, stream->stream + stream->stream_index, inspected_size) == 0) ? true : false;
+	/* call to the internal implementation of axl_memcmp */
+	_memcmp(iterator,chunk,(stream->stream + stream->stream_index), inspected_size);
+
 }
 
 /** 
@@ -1738,16 +1559,15 @@ bool        axl_stream_remains         (axlStream * stream)
 {
 	axl_return_val_if_fail (stream, false);
 
-#ifdef SHOW_DEBUG_LOG	
-	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "checking for stream status with stream index=%d and stream size=%d",
-		 stream->stream_index, stream->stream_size);
-#endif
+	
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "checking for stream status with stream index=%d and stream size=%d",
+		   stream->stream_index, stream->stream_size);
 		
 	/* check if the stream is exhausted */
 	if (stream->stream_index >= (stream->stream_size - 1)) {
-#ifdef SHOW_DEBUG_LOG
-		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "prebufferring from remains");
-#endif
+
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "prebufferring from remains");
+
 		/* in the case the stream is exhausted, try to read
 		 * more content from the streaming */
 		return axl_stream_prebuffer (stream);
@@ -2004,17 +1824,13 @@ char     ** axl_stream_split           (char * chunk, int separator_num, ...)
 			/* compare the current index with the current
 			 * separator */
 			length = strlen (separators[iterator]);
-			if (! memcmp (chunk + index, separators[iterator], length)) {
+			if (axl_memcmp (chunk + index, separators[iterator], length)) {
 
 				/* update items found */
 				count++;
 
-				/* axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found item at the index: %d (count %d)", index, count); */
-
 				/* update index to skip the item found */
 				index += length - 1; /* make the last index to be captured the the -1 */
-
-				/* axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "starting to look at index: %d", index); */
 
 				/* break the loop */
 				break;
@@ -2028,7 +1844,6 @@ char     ** axl_stream_split           (char * chunk, int separator_num, ...)
 	
 	/* create the result that will hold items separated */
 	result = axl_new (char *, count + 2);
-	/* axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found %d items to split", count); */
 
 	/* now copy items found */
 	count          = 0;
@@ -2045,7 +1860,7 @@ char     ** axl_stream_split           (char * chunk, int separator_num, ...)
 			/* compare the current index with the current
 			 * separator */
 			length = strlen (separators[iterator]);
-			if (! memcmp (chunk + index, separators[iterator], length)) {
+			if (axl_memcmp (chunk + index, separators[iterator], length)) {
 
 				/* copy the chunk found */
 				result[count] = axl_new (char, index - previous_index + 1);
@@ -2127,30 +1942,28 @@ char      * axl_stream_concat          (char * chunk1, char * chunk2)
 {
 	axl_return_val_if_fail ((chunk2 != NULL) || (chunk1 != NULL), NULL);
 
-#ifdef SHOW_DEBUG_LOG
-	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "concat called..");
-#endif
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "concat called..");
 
 	if (chunk1 == NULL) {
-#ifdef SHOW_DEBUG_LOG
-		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "concat called.., returning %s", chunk2);
-#endif
+
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "concat called.., returning %s", chunk2);
+
 		/* return the result */
 		return axl_strdup (chunk2);
 	}
 
 	if (chunk2 == NULL) {
-#ifdef SHOW_DEBUG_LOG
-		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "concat called.., returning %s", chunk1);
-#endif
+
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "concat called.., returning %s", chunk1);
+
 		/* return the result */
 		return axl_strdup (chunk1);
 	}
 
 	/* return the concatenation */
-#ifdef SHOW_DEBUG_LOG
-	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "concat called.., returning %s%s", chunk1, chunk2);
-#endif
+
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "concat called.., returning %s%s", chunk1, chunk2);
+
 	return axl_stream_strdup_printf ("%s%s", chunk1, chunk2);
 }
 

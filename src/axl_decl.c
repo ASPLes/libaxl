@@ -78,6 +78,32 @@ bool axl_cmp (char * string, char * string2)
 	return true;
 }
 
+
+/** 
+ * @brief Allows to check if both strings provided are equal on its initial size bytes.
+ *
+ * This function is more efficient than common memcmp because it
+ * doesn't perform the additional work to figure out which are the
+ * bytes that differ both strings.
+ * 
+ * @param string The string to check.
+ *
+ * @param string2 The second string to check.
+ *
+ * @param size The size to check for both strings to be equal.
+ * 
+ * @return \ref true if the both strings are equal for its initial
+ * size bytes or \ref false if not.
+ */
+bool axl_memcmp (char * string, char * string2, int size)
+{
+	int iterator = 0;
+
+	_memcmp(iterator,string,string2,size);
+}
+
+
+
 /** 
  * @brief Allows to deallocate memory referenced by <i>ref</i> but
  * checking before that the reference is different from null.
