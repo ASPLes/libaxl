@@ -79,6 +79,9 @@ typedef  enum {
 }axlStreamType;
 
 typedef struct _axlStreamIndexer {
+	/* the stream being indexed */
+	axlStream * stream;
+
 	/* an array of keys indexed. */
 	char ** keys;
 
@@ -91,6 +94,7 @@ typedef struct _axlStreamIndexer {
 	 * indexes while renewing indexes each time a prebuffer
 	 * operation is performed. */
 	int   * sizes;
+	
 }axlStreamIndexer;
 
 struct _axlStream {
@@ -402,16 +406,127 @@ axlStream * axl_stream_new (char * stream_source, int stream_size,
  *
  * @return A newly allocated indexer.
  */
-axlStreamIndexer * __axl_stream_indexer_create ()
+axlStreamIndexer * axl_stream_indexer_create (axlStream * stream)
 {
 	/* return a newly created indexer */
-	return axl_new (axlStreamIndexer, 1);
+	axlStreamIndexer * indexer;
+
+	/* create the index and configure the stream */
+	indexer         = axl_new (axlStreamIndexer, 1);
+	indexer->stream = stream;
+
+	return indexer;
 }
 
-void __axl_stream_indexer_free (axlStreamIndexer * indexer)
+void axl_stream_indexer_free (axlStreamIndexer * indexer)
 {
-	/* not implemented yet */
+	int iterator  = 0;
 
+	/* only release container not keys */
+	axl_free (indexer->keys);
+	
+	if (indexer->indexes != NULL) {
+		while (indexer->indexes[iterator] != NULL) {
+			
+			/* free index array */
+			if (indexer->indexes[iterator] != NULL)
+				axl_free (indexer->indexes[iterator]);
+			
+			/* update the iterator */
+			iterator++;
+		}
+		
+		/* free indexes */
+		axl_free (indexer->indexes);
+	}
+
+	if (indexer->sizes)
+		axl_free (indexer->sizes);
+
+	axl_free (indexer);
+	
+
+	return;
+}
+
+void axl_stream_indexer_add_key (axlStreamIndexer * indexer, char * key)
+{
+	int        kindex = 0;
+	int        i_index;
+	char     * ptr;
+	int        length = strlen (key);
+
+
+	/* check for basic case */
+	if (indexer->keys == NULL) {
+		/* create the key index */
+		indexer->keys    = axl_new (char *, 2);
+		indexer->keys[0] = key;
+		
+		/* create the associated index */
+		indexer->indexes    = axl_new (int *, 1);
+		
+		/* create the sizes array */
+		indexer->sizes      = axl_new (int, 1);
+		indexer->sizes[0]   = 0;
+	}else {
+		/* lookup for the next free position */
+		while (indexer->keys[kindex] != NULL)
+			kindex++;
+
+		/* extend key array */
+		indexer->keys             = realloc (indexer->keys,    sizeof (char *) * (kindex + 2));
+		indexer->keys[kindex]     = key;
+		indexer->keys[kindex + 1] = NULL;
+
+		/* extend indexes array */
+		indexer->indexes          = realloc (indexer->indexes, sizeof (int *) * (kindex + 1));
+		indexer->indexes[kindex]  = 0;
+
+		indexer->sizes            = realloc (indexer->sizes,   sizeof (int) * (kindex + 1));
+		indexer->sizes[kindex]    = 0;
+	}
+	
+	/* now, generate the index for the received key: use kindex as position */
+	ptr     = indexer->stream->stream;
+	i_index = 0;
+
+	/* while stream size is bigger then item index */
+	while (i_index < indexer->stream->stream_size) {
+		if (!memcmp (ptr + i_index, key, length)) {
+			
+			/* item found at i_index, add to the know places */
+			if (indexer->indexes[kindex] == NULL) {
+				indexer->indexes[kindex]    = axl_new (int, 1);
+
+				/* update size */
+				indexer->sizes[kindex]      = 1;
+				
+				/* add the first item */
+				indexer->indexes[kindex][0] = i_index;
+			} else {
+				{
+					int size = indexer->sizes[kindex];
+
+					/* we stored more objects previously */
+					indexer->indexes[kindex] = realloc (indexer->indexes[kindex], sizeof (int) * (size + 1));
+					
+					/* add the item */
+					indexer->indexes[kindex][size] = i_index;
+
+					/* update size */
+					indexer->sizes[kindex] = size + 1;
+				}
+			} /* end if */
+		}  /* end if */
+
+
+		/* update the item index */
+		i_index++;
+
+	} /* end while */
+	
+	/* key added and content indexed */
 	return;
 }
 
@@ -426,26 +541,28 @@ void __axl_stream_indexer_free (axlStreamIndexer * indexer)
  */
 void        axl_stream_index_content   (axlStream * stream, ...)
 {
-	va_list            args;
-	char             * chunk;
+	va_list    args;
+	char     * chunk;
 
 	axl_return_if_fail (stream);
 
 	/* open std arguments */
 	va_start (args, stream);
 
-	/* get the chunk to index */
-	chunk  = va_arg (args, char *);
-	
 	if (stream->indexer != NULL) {
 		/* free index info */
-		__axl_stream_indexer_free (stream->indexer);
+		axl_stream_indexer_free (stream->indexer);
 	}
 
-	/* create a new indexer */
-	stream->indexer = __axl_stream_indexer_create ();
+	/* create a new empty indexer */
+	stream->indexer = axl_stream_indexer_create (stream);
 
-
+	/* foreach chunk to index */
+	while ((chunk   = va_arg (args, char *)) != NULL) {
+		/* install the chunk */
+		axl_stream_indexer_add_key (stream->indexer, chunk);
+	}
+	
 	/* close arguments */
 	va_end (args);
 	
@@ -1341,6 +1458,10 @@ void axl_stream_free (axlStream * stream)
 		/* close file descriptor if defined */
 		close (stream->fd);
 	}
+
+	/* free indexer if was defined */
+	if (stream->indexer) 
+		axl_stream_indexer_free (stream->indexer);
 
 	/* free memory allocated for chunk matching */
 	axl_free (stream->chunks);
