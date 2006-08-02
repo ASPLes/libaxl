@@ -53,8 +53,6 @@ axlStream * axl_stream_new             (char * stream_source,
 					int    fd_handler,
 					axlError ** error);
 
-void        axl_stream_index_content   (axlStream * stream, ...);
-
 int         axl_stream_inspect         (axlStream * stream, char * chunk, int inspected_size);
 
 int         axl_stream_peek            (axlStream * stream, char * chunk, int inspected_size);
