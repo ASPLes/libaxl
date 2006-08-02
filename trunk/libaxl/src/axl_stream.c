@@ -394,37 +394,26 @@ axlStream * axl_stream_new (char * stream_source, int stream_size,
  * 
  * @return See \ref axl_stream_inspect.
  */
-int         axl_stream_common_inspect (axlStream * stream, char * chunk, int inspected_size, bool alsoAccept)
-{
+#define axl_stream_common_inspect(i,stream,chunk,inspected_size,alsoAccept)\
+if (inspected_size == -1)\
+	inspected_size = strlen (chunk);\
+if (axl_stream_fall_outside (stream, inspected_size))\
+	return -1;\
+i = 0;\
+while (chunk [i] != 0 && (stream->stream + stream->stream_index) [i] != 0) {\
+     if (chunk [i] != (stream->stream + stream->stream_index) [i])\
+        return 0;\
+     i++;\
+     if (i == inspected_size) {\
+	stream->previous_inspect = inspected_size;\
+	if (alsoAccept) {\
+		axl_stream_accept (stream);\
+	}\
+	return 1;\
+     }\
+}\
+	return 0
 
-	/* get current size to inspect */
-	if (inspected_size == -1)
-		inspected_size = strlen (chunk);
-
-	/* check that chunk to inspect doesn't fall outside the stream
-	 * boundaries */
-	if (axl_stream_fall_outside (stream, inspected_size)) {
-		return -1; /* no more stream is left to satisfy current petition */
-	}
-	
-	/* check that the chunk to be search is found */
-	if (axl_stream_check (stream, chunk, inspected_size)) {
-
-		/* chunk found!, remember that the previous inspect
-		 * size so we can make the stream to roll on using
-		 * this value */
-		stream->previous_inspect = inspected_size;
-
-		if (alsoAccept) {
-			/* accept the chunk readed */
-			axl_stream_accept (stream);
-		}
-		return 1;
-	}
-	/* return that the stream chunk wasn't found */
-	return 0;
-
-}
 
 /** 
  * @brief Allows to perform an inspection of the given chunk on the
@@ -455,8 +444,10 @@ int         axl_stream_common_inspect (axlStream * stream, char * chunk, int ins
  */
 int         axl_stream_inspect (axlStream * stream, char * chunk, int inspected_size)
 {
+	int iterator;
+
 	/* call to common implementation */
-	return axl_stream_common_inspect (stream, chunk, inspected_size, true);
+	axl_stream_common_inspect (iterator, stream, chunk, inspected_size, true);
 }
 
 /** 
@@ -475,8 +466,10 @@ int         axl_stream_inspect (axlStream * stream, char * chunk, int inspected_
  */
 int         axl_stream_peek            (axlStream * stream, char * chunk, int inspected_size)
 {
+	int iterator;
+
 	/* call to common implementation */
-	return axl_stream_common_inspect (stream, chunk, inspected_size, false);
+	axl_stream_common_inspect (iterator, stream, chunk, inspected_size, false);
 }
 
 /** 
