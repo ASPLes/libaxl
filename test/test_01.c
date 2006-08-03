@@ -274,7 +274,57 @@ bool test_14 (axlError ** error)
 
 	/* free document */
 	axl_doc_free (doc);
-	
+
+	doc = axl_doc_parse ("<?xml version='1.0' ?><test></test>", 37, error);
+	if (doc == NULL) {
+		printf ("Expected to parse a document but it fails, error was: %s\n", axl_error_get (*error));
+		return false;
+	}
+
+	/* get the content */
+	node = axl_doc_get (doc, "/test");
+	if (node == NULL) {
+		axl_error_new (-1, "Expected to find a node reference not found (/test)\n", NULL, error);
+		return false;		
+	}
+
+	/* get the content */
+	size  = 11;
+	value = axl_node_get_content (node, &size);
+	if (size != 0) {
+		axl_error_new (-1, "Expected to find a node content with 0 bytes but it 11 (/test)\n", NULL, error);
+		return false;
+	}
+
+	/* get the content copy */
+	size  = 13;
+	value = axl_node_get_content_copy (node, &size);
+	if (size != 0) {
+		axl_error_new (-1, "Expected to find a node content with 0 bytes but it 13 (/test)\n", NULL, error);
+		return false;
+	}
+	axl_free (value);
+
+	/* get content copy trans */
+	size  = 14;
+	value = axl_node_get_content_trans (node, &size);
+	if (size != 0) {
+		axl_error_new (-1, "Expected to find a node content with 0 bytes but it 14 (/test)\n", NULL, error);
+		return false;
+	}
+	axl_free (value);
+
+	/* get content trimmed */
+	size  = 15;
+	value = axl_node_get_content_trim (node, &size);
+	if (size != 0) {
+		axl_error_new (-1, "Expected to find a node content with 0 bytes but it 15 (/test)\n", NULL, error);
+		return false;
+	}
+
+	/* free the document */
+	axl_doc_free (doc);
+
 	return true;
 }
 

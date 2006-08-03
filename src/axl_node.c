@@ -65,47 +65,7 @@ struct _axlAttribute {
 	char * value;
 };
 
-struct _axlNode {
-	/** 
-	 * @internal
-	 *
-	 * Node name that is the value found at the very begining of
-	 * the node definition <name.../>
-	 */
-	char          * name;
-
-	/** 
-	 * @internal
-	 * @brief The attributes this node has.
-	 */
-	axlList       * attributes;
-
-	/** 
-	 * @internal
-	 * 
-	 * Current configuration for a node to be considered
-	 * empty. This value applies to the content that the node
-	 * holds. If the node have only xml childs, the node is still
-	 * considered to be empty. This is because we have is_empty
-	 * and have_childs.
-	 */
-	bool            is_empty;
-
-	/** 
-	 * @internal
-	 *
-	 * Current configuration about xml child nodes that must have
-	 * the node. This value is set by the axl doc module to advise
-	 * that the module must have or not a xml child nodes.
-	 */
-	bool            have_childs;
-
-	/** 
-	 * @internal
-	 * @brief A list of childs the current node has.
-	 */
-	axlList       * childs;
-
+typedef struct _axlNodeContent {
 	/** 
 	 * @internal
 	 *
@@ -119,6 +79,37 @@ struct _axlNode {
 	 * @brief Current content size stored on the given axlNode.
 	 */
 	int             content_size;
+	
+} axlNodeContent;
+
+struct _axlNode {
+	/** 
+	 * @internal
+	 *
+	 * Node name that is the value found at the very begining of
+	 * the node definition <name.../>
+	 */
+	char          * name;
+
+	/** 
+	 * @internal
+	 * @brief The attributes this node has.
+	 */
+	axlList        * attributes;
+
+	/* @internal Content configuratino. 
+	 *
+	 * If the node has content, this pointer is defined,
+	 * containing the content and the content size. If the pointer
+	 * is not defined, the node has no content.
+	 */
+	axlNodeContent * content;
+
+	/** 
+	 * @internal
+	 * @brief A list of childs the current node has.
+	 */
+	axlList       * childs;
 
 	/** 
 	 * @internal
@@ -152,7 +143,7 @@ struct _axlNode {
 	 * @internal A hash used to store arbitrary data associated to
 	 * the node.
 	 */
-	axlHash       * anotate_data;
+	axlHash       * anotate_data; 
 };
 
 /** 
@@ -184,26 +175,13 @@ void __axl_node_destroy_attr (axlAttribute * attr)
 	return;
 }
 
-/** 
- * @internal function which initializes the node to the default state.
- * 
- * @param node The node to initialize.
- */
-void __axl_node_init_internal (axlNode * node, char * name)
-{
-	node->is_empty = true;
-	node->name     = name;
-
-	return;
-}
-
 axlNode * __axl_node_create_internal (char * name)
 {
 	axlNode * node = NULL;
 
 	/* init the node */
-	node = axl_new (axlNode, 1);
-	__axl_node_init_internal (node, name);
+	node        = axl_new (axlNode, 1);
+	node->name  = name;
 
 	return node;
 }
@@ -1065,7 +1043,9 @@ axlPointer axl_node_anotate_get                 (axlNode * node,
  * @brief Allows to configure the given node to be empty.
  *
  * A \ref axlNode is empty when it is known that the node doesn't have
- * any content inside it as a child element.
+ * any content inside it as a child element. If the node as content,
+ * and the value provided to this function is \ref true, the function
+ * will deallocate the content inside.
  *
  * @param node The node to configure as empty.
  *
@@ -1075,10 +1055,22 @@ axlPointer axl_node_anotate_get                 (axlNode * node,
 void      axl_node_set_is_empty (axlNode * node, bool     empty)
 {
 	axl_return_if_fail (node);
-	
-	/* set value received */
-	node->is_empty = empty;
 
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "received set to empty node=<%s> is_empty=\"%s\"",
+		   node->name, empty ? "true" : "false");
+	
+	if (node->content != NULL) {
+		/* free the content inside */
+		if (node->content->content)
+			axl_free (node->content->content);
+
+		/* free the content node */
+		axl_free (node->content);
+	}
+
+	/* flag the content as null */
+	node->content = NULL;
+	
 	return;
 }
 
@@ -1211,7 +1203,10 @@ bool          axl_node_is_empty        (axlNode * node)
 {
 	axl_return_val_if_fail (node, false);
 
-	return node->is_empty;
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "received get empty configuration for node=<%s>",
+		   node->name);
+
+	return (node->content == NULL);
 }
 
 /** 
@@ -1236,12 +1231,28 @@ bool          axl_node_is_empty        (axlNode * node)
  * If you don't like this behaviour you can check \ref
  * axl_node_get_content_trans which returns a copy for the xml node
  * content with all entities references translated.
+ *
+ * Here is a summary of functions available to get the content of a
+ * node:
+ * 
+ * - \ref axl_node_get_content_copy (the same like this function but
+ * producing an independent copy)
+ *
+ * - \ref axl_node_get_content_trans (the same like this function but
+ * translating all entity references and producing an indenpendent
+ * copy).
+ *
+ * - \ref axl_node_get_content_trim (the same like this function but
+ * removing initial and trailing white spaces in the W3C: spaces,
+ * tabulars, carry returns and line feed values).
  * 
  * @param node The \ref axlDoc node where the content will be retrieved.
  *
  * @param content_size Optional pointer to an integer variable where
  * the content size will be reported. If the variable is not set, the
- * function will not report the content size.
+ * function will not report the content size. If this value is
+ * configured, it will contain the content size starting from 0 up to
+ * the content size.
  * 
  * @return Current xml node content. You must not deallocate reference
  * returned. If you want a permanet copy you should use \ref
@@ -1253,11 +1264,20 @@ char    * axl_node_get_content     (axlNode * node, int * content_size)
 {
 	axl_return_val_if_fail (node, NULL);
 
+	/* return empty string for node without content */
+	if (node->content == NULL) {
+		/* set content size to zero */
+		if (content_size != NULL)
+			*content_size = 0;
+		return "";
+	}
+
+	/* return the content */
         if (content_size != NULL)
-		*content_size = node->content_size;
+		*content_size = node->content->content_size;
 
         /* return the node content or empty string */
-	return (node->content != NULL) ? node->content : "";
+	return node->content->content;
 }
 
 /** 
@@ -1322,23 +1342,24 @@ void      axl_node_set_content        (axlNode * node, char * content, int conte
 	if (__axl_node_content_have_not_valid_sequences (content, content_size, 
 							 &additional_size)) {
 		/* allocate the content */
-		node->content = __axl_node_content_copy_and_escape (content, 
-								    content_size, 
-								    additional_size);
+		node->content                 = axl_new (axlNodeContent, 1);
+		node->content->content        = __axl_node_content_copy_and_escape (content, 
+										    content_size, 
+										    additional_size);
 		/* set node content size */
-		node->content_size   = content_size + additional_size;
+		node->content->content_size   = content_size + additional_size;
 	}else {
 		/* set current content */
-		node->content_size   = content_size;
-		node->content        = axl_new (char, node->content_size + 1);
-		memcpy (node->content, content, node->content_size);
+		node->content                 = axl_new (axlNodeContent, 1);
+		node->content->content_size   = content_size;
+		node->content->content        = axl_new (char, content_size + 1);
+
+		/* copy content */
+		memcpy (node->content->content, content, node->content->content_size);
 	}
 
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "setting xml node (name: %s) content (size: %d) %s",
-		   node->name, node->content_size, node->content);
-
-	/* set that the node is not empty */
-	node->is_empty = false;
+		   node->name, node->content->content_size, node->content->content);
 
 	/* job done */
 	return;
@@ -1374,14 +1395,17 @@ void      axl_node_set_content_ref    (axlNode * node,
 	/* get current content in the case a -1 is provided */
 	if (content_size == -1)
 		content_size = strlen (content);
-	node->content_size = content_size;
+
+	if (node->content == NULL)
+		node->content = axl_new (axlNodeContent, 1);
+
+	node->content->content_size = content_size;
 
 	/* set current content */
-	node->content  = content;
-	node->is_empty = false;
+	node->content->content  = content;
 
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "setting xml node (name: %s) content (size: %d) %s",
-		   node->name, node->content_size, node->content);
+		   node->name, node->content->content_size, node->content->content);
 
 	/* job done */
 	return;	
@@ -1445,9 +1469,11 @@ void      axl_node_set_cdata_content  (axlNode * node,
  * @param node The \ref axlNode where the content is being required.
  *
  * @param content_size An optinal reference to an integer variable
- * where the content size will be returned.
+ * where the content size will be returned. The function will return
+ * the content size (if the variable is defined) ranging from 0 up to
+ * the content size.
  * 
- * @return A newly allocated string representing the node content.
+ * @return A newly allocated string representing the node content. 
  */
 char    * axl_node_get_content_copy (axlNode * node, int * content_size)
 {
@@ -1462,8 +1488,9 @@ char    * axl_node_get_content_copy (axlNode * node, int * content_size)
 		content = axl_node_get_content (node, &_content_size);
 
 	/* check result */
-	if (content == NULL)
+	if (content == NULL || strlen (content) == 0) {
 		return axl_strdup ("");
+	}
 
 	/* allocate enough memory for the result */
 	if (content_size) {
@@ -1503,18 +1530,26 @@ char    * axl_node_get_content_trim   (axlNode * node,
 {
 	int    trimmed;
 
+	/* if no content is defined return "" */
+	if (node->content == NULL) {
+		/* set that no content was defined */
+		if (content_size != NULL)
+			*content_size = 0;
+		return "";
+	}
+
 	/* trim the content */
-	axl_stream_trim_with_size (node->content, &trimmed);
+	axl_stream_trim_with_size (node->content->content, &trimmed);
 
 	/* updates current internal content size */
-	node->content_size -= trimmed;
+	node->content->content_size -= trimmed;
 
 	/* notify content size to the caller */
 	if (content_size != NULL)
-		*content_size = node->content_size;
+		*content_size = node->content->content_size;
 
 	/* return an internal reference to the node content */
-	return (node->content != NULL) ? node->content : "";
+	return node->content->content;
 }
 
 /** 
@@ -1546,8 +1581,11 @@ char    * axl_node_get_content_trans (axlNode * node, int * content_size)
 		result = axl_node_get_content_copy (node, &_content_size);
 
 	/* check result returned */
-        if (result == NULL)
-                return "";;
+        if (result == NULL || strlen (result) == 0) {
+		/* do not perform a copy here, it is already done by
+		 * get_content_copy, even in error */
+                return result;
+	}
 
 	/* translate all references that performs the entities to the
 	 * replacement text. */
@@ -2078,7 +2116,12 @@ int       axl_node_get_flat_size            (axlNode * node)
 	 * childs:
 	 * "<" + strlen (node-name) + ">" + strlen (node-content) + 
 	 * "</" + strlen (node-name) + ">" */
-	result = 5 + (2 * strlen (node->name)) + node->content_size + __axl_node_get_flat_size_attributes (node);
+	if (node->content != NULL) {
+		/* the content is defined, get it */
+		result = 5 + (2 * strlen (node->name)) + node->content->content_size + __axl_node_get_flat_size_attributes (node);
+	} else {
+		result = 5 + (2 * strlen (node->name)) + __axl_node_get_flat_size_attributes (node);
+	}
 
 	/* if the node have childs */
 	if (axl_node_have_childs (node)) {
@@ -2232,8 +2275,8 @@ int       axl_node_dump_at                  (axlNode * node,
 
 		/* dump node content */
 		if (node->content != NULL) {
-			memcpy (content + desp, node->content, strlen (node->content));
-			desp += strlen (node->content);
+			memcpy (content + desp, node->content->content, node->content->content_size);
+			desp += node->content->content_size;
 		}
 	}
 
@@ -2260,8 +2303,14 @@ void __axl_node_free_internal (axlNode * node)
 		axl_free (node->name);
 
 	/* free node content */
-	if (node->content != NULL)
+	if (node->content != NULL) {
+		/* free the internal content reference */
+		if (node->content->content != NULL)
+			axl_free (node->content->content);
+		
+		/* free the node itself */
 		axl_free (node->content);
+	}
 
 	if (node->piTargets != NULL)
 		axl_list_free (node->piTargets);

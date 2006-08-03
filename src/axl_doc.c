@@ -581,7 +581,7 @@ bool __axl_doc_parse_xml_header (axlStream * stream, axlDoc * doc, axlError ** e
  * false if not. If the function find something wrong the document
  * is unrefered.
  */
-bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_node, axlError ** error)
+bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_node, bool * is_empty, axlError ** error)
 {
 	char    * string_aux;
 	char    * string_aux2;
@@ -695,8 +695,8 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found end xml node definition '/>'");
 
 			/* empty node configuration found */
-			axl_node_set_is_empty (node, true);
-			axl_node_set_have_childs (node, false);
+			*is_empty = true;
+			/* axl_node_set_is_empty (node, true); */
 
 			/* make this node to be completed and no child
 			 * could be set. */
@@ -718,8 +718,9 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found [end] xml node definition '>', for node: [%s]",
 				   axl_node_get_name (node));
 
-			axl_node_set_have_childs (node, true);
-			axl_node_set_is_empty (node, false);
+			/* flag that the node is an empty definition */
+			*is_empty = false;
+
 			/* this node is ended */
 			return true;
 		}
@@ -836,11 +837,6 @@ bool __axl_doc_parse_close_node (axlStream * stream, axlDoc * doc, axlNode ** _n
 	if (axl_stream_cmp (axl_node_get_name (node), string, strlen (axl_node_get_name (node))) &&
 	    axl_stream_cmp (axl_node_get_name (node), string, result_size)) {
 
-		/* update emptyness configuration */
-		if (axl_node_get_content (node, NULL) == NULL && (! axl_node_is_empty (node)))
-			axl_node_set_is_empty (node, true);
-
-
 		/* ok, axl node to be closed is the one expected */
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "closing xml node, that matched with parent opened");
 
@@ -848,7 +844,6 @@ bool __axl_doc_parse_close_node (axlStream * stream, axlDoc * doc, axlNode ** _n
 	}
 
 	/* seems that the node being closed doesn't match */
-
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "xml node names to be closed doesn't matched (%s != %s), current node stack status:",
 		 axl_node_get_name (node), string);
 
@@ -881,6 +876,7 @@ axlDoc * __axl_doc_parse_common (char * entity, int entity_size,
 	axlNode   * node          = NULL;
 	char      * string        = NULL;
 	int         index;
+	bool        is_empty      = false;
 	
 	/* create the xml stream using provided data */
 	stream         = axl_stream_new (entity, entity_size, file_path, fd_handle, error);
@@ -898,11 +894,11 @@ axlDoc * __axl_doc_parse_common (char * entity, int entity_size,
 	doc->headerProcess = true;
 	
 	/* parse the rest of the document */
-	if (!__axl_doc_parse_node (stream, doc, &node, error))
+	if (!__axl_doc_parse_node (stream, doc, &node, &is_empty, error))
 		return NULL;
 	
 	/* if the node returned is not empty */
-	if (! axl_node_is_empty (node)) {
+	if (! is_empty) {
 
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "the first node ready, have content, reading it");
 
@@ -977,7 +973,7 @@ axlDoc * __axl_doc_parse_common (char * entity, int entity_size,
 				__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found a new node being opened");
 
 				/* seems that another node is being opened */
-				if (!__axl_doc_parse_node (stream, doc, &node, error))
+				if (!__axl_doc_parse_node (stream, doc, &node, &is_empty, error))
 					return NULL;
 
 				continue;
