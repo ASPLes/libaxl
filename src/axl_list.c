@@ -876,6 +876,8 @@ axlPointer axl_list_get_nth   (axlList * list, int position)
  *
  * @param func The function to use to perform the lookup.
  * 
+ * @param data User defined data that will be passed to the func provided.
+ * 
  * @return A pointer to the object found or NULL if no item was found.
  */
 axlPointer axl_list_lookup    (axlList * list, axlLookupFunc func, axlPointer data)

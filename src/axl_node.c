@@ -147,6 +147,12 @@ struct _axlNode {
 	 * is contained.
 	 */
 	axlDoc        * doc;
+	
+	/**
+	 * @internal A hash used to store arbitrary data associated to
+	 * the node.
+	 */
+	axlHash       * anotate_data;
 };
 
 /** 
@@ -685,23 +691,19 @@ void      axl_node_set_attribute      (axlNode * node, char * attribute, char * 
 	if (!__axl_node_set_attribute_common_check (node, attribute, value))
 		return;
 
-#ifdef SHOW_DEBUG_LOG
-	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "setting attribute: %s='%s'", attribute, value);
-#endif
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "setting attribute: %s='%s'", attribute, value);
 
 	/* check attribute name */
 	if (__axl_node_content_have_not_valid_sequences (attribute, strlen (attribute),
 							 &additional_size)) {
-#ifdef SHOW_DEBUG_LOG
-		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found attribute content with escapable, non-valid content");
-#endif
+
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found attribute content with escapable, non-valid content");
 		_attr = __axl_node_content_copy_and_escape (attribute, 
 							    strlen (attribute),
 							    additional_size);
 	}else {
-#ifdef SHOW_DEBUG_LOG
-		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "'%s' is a valid string..", attribute);
-#endif
+
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "'%s' is a valid string..", attribute);
 		_attr = axl_strdup (attribute);
 	}
 
@@ -714,9 +716,8 @@ void      axl_node_set_attribute      (axlNode * node, char * attribute, char * 
 							     strlen (value),
 							     additional_size);
 	}else {
-#ifdef SHOW_DEBUG_LOG
-		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "'%s' is a valid string..", value);
-#endif
+		
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "'%s' is a valid string..", value);
 		_value = axl_strdup (value);
 	}
 
@@ -901,6 +902,164 @@ char    * axl_node_get_attribute_value_trans (axlNode * node, char * attribute)
 	return __axl_node_content_translate_defaults (_value, &size);
 }
 
+/** 
+ * @internal function which checks and initializes the hash used for
+ * anotated data.
+ */
+void __init_node_anotation (axlNode * node)
+{
+	if (node->anotate_data != NULL)
+		node->anotate_data =  axl_hash_new (axl_hash_string, axl_hash_equal_string);
+	return;
+}
+
+/** 
+ * @brief Allows to store user defined data associated to the node
+ * that is not visible from an XML perspective.
+ *
+ * This function allows to store data associated to the node that is
+ * accesible in an inherired fashion that allows to store semantic
+ * information while parsing xml documents.
+ *
+ * This function stores the given key using a hashing storage,
+ * associating the data provided on the given node. You can also check
+ * the \ref axl_node_anotate_data_full which performs the same task
+ * but allowing to provide key and data destroy functions.
+ *
+ * Once data is stored, it could be inherited by child nodes because
+ * the access to it is done using \ref axl_node_anotate_get. 
+ *
+ *
+ * @param node The node where the anotated data will be stored.
+ *
+ * @param key The key under which the anotated data will be stored
+ * (and indexed).
+ *
+ * @param data The data to be stored associated to the key provided.
+ */
+void      axl_node_anotate_data                 (axlNode     * node, 
+						 char        * key, 
+						 axlPointer    data)
+{
+	axl_return_if_fail (node);
+
+	/* check and init node anotation */
+	__init_node_anotation (node);
+
+	/* insert data */
+	axl_hash_insert (node->anotate_data, key, data);
+
+	/* nothing more to do */
+	return;
+}
+
+/** 
+ * @brief Allows to store user defined data associated to the node
+ * that is not visible from an XML perspective.
+ *
+ * See \ref axl_node_anotate_data for a long explanation. This
+ * function performs the same task as \ref axl_node_anotate_data_full
+ * but allowing to store a destroy key and a destroy data associated
+ * to the anotated data to be stored.
+ *
+ * @param node The node where the anotated data will be stored.
+ *
+ * @param key The key under which the anotated data will be stored
+ * (and indexed).
+ *
+ * @param key_destroy The destroy function to be called to deallocate
+ * the key stored.
+ *
+ * @param data The data to be stored associated to the key provided.
+ *
+ * @param data_destroy The destroy function to be called to deallocate
+ * the data provided.
+ */
+void      axl_node_anotate_data_full            (axlNode       * node,
+						 char          * key, 
+						 axlDestroyFunc  key_destroy,
+						 axlPointer      data,
+						 axlDestroyFunc  data_destroy)
+{
+	axl_return_if_fail (node);
+
+	/* check and init node anotation */
+	__init_node_anotation (node);
+
+	/* insert data */
+	axl_hash_insert_full (node->anotate_data, key, key_destroy, data, data_destroy);
+
+	/* nothing more to do */
+	return;
+}
+
+/** 
+ * @brief Allows to perform lookups for anotated data stored on the
+ * provided node, configure how data is looked up if it fails to find
+ * on the provided node.
+ * 
+ * @param node The node where the lookup will be performed.
+ *
+ * @param key The key to lookup in the \ref axlNode reference.
+ *
+ * @param lookup_in_parent Once the lookup fails, this variable allows
+ * to signal the function to also lookup the value in the parent
+ * nodes. This mechanism allows to store data on parent nodes that are
+ * shared by child nodes.
+ *
+ * @param lookup_in_doc The same as lookup_in_parent but allowing to
+ * perform the lookup in the document reference.
+ * 
+ * @return The data associated to the key according to the lookup
+ * configuration (lookup_in_parent and lookup_in_doc).
+ */
+axlPointer axl_node_anotate_get                 (axlNode * node,
+						 char    * key,
+						 bool      lookup_in_parent,
+						 bool      lookup_in_doc)
+{
+	axlPointer   result = NULL;
+	axlNode    * parent;
+
+	/* lookup the data in the current node */
+	if (node->anotate_data) {
+		/* lookup the data */
+		result = axl_hash_get (node->anotate_data, key);
+
+		/* check result returned */
+		if (result != NULL)
+			return result;
+	} /* end if */
+
+	/* check if we have to lookup the data in parent nodes */
+	if (lookup_in_parent) {
+		/* get the first parent reference */
+		parent = node->parent;
+		
+		/* for each parent, try to lookup the data */
+		while (parent != NULL) {
+			/* lookup the data */
+			if (parent->anotate_data)
+				result = axl_hash_get (parent->anotate_data, key);
+
+			/* check result returned */
+			if (result != NULL)
+				return result;
+
+			/* get the next parent */
+			parent = parent->parent;
+		}
+	}
+
+	/* seems the data wasn't found */
+	if (lookup_in_doc) {
+		/* implement doc lookup: not really sure it is
+		 * needed */
+	}
+
+	/* no node was found */
+	return result;
+}
 
 /** 
  * @brief Allows to configure the given node to be empty.
