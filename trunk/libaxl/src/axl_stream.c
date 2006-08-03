@@ -1,4 +1,4 @@
-/**
+/*
  *  LibAxl:  Another XML library
  *  Copyright (C) 2006 Advanced Software Production Line, S.L.
  *
@@ -575,7 +575,7 @@ void axl_stream_accept (axlStream * stream)
  * 
  * @param stream The stream where the operation will be performed.
  *
- * @param count Count to move internal stream index.
+ * @param index Count to move internal stream index.
  */
 void        axl_stream_move            (axlStream * stream, int index)
 {

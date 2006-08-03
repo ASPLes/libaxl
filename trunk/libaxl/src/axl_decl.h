@@ -552,14 +552,23 @@ typedef void * axlPointer;
 
 /** 
  * @brief \ref axlList definition, a list implementation.
+ * See \ref axl_list_new for more information about using this type.
  */
 typedef struct _axlList axlList;
 
 /** 
  * @brief \ref axlStack definitinon, a stack implementation on top of \ref
  * axlList.
+ * See \ref axl_stack_new for more information about using this type.
  */
 typedef struct _axlStack axlStack;
+
+/** 
+ * @brief \ref axlHash definition, a hash table to store key indexed
+ * values.
+ * See \ref axl_hash_new for more information about using this type.
+ */
+typedef struct _axlHash  axlHash;
 
 /** 
  * @brief Handler definition used to compare two elements.
@@ -803,6 +812,20 @@ typedef axlPointer (*axlDuplicateFunc) (axlPointer ptr);
  * must be returned to keep on searching.
  */
 typedef bool (*axlLookupFunc) (axlPointer ptr, axlPointer data);
+
+/** 
+ * @brief Hashing function used by the axl hash module to implement
+ * translation from an user defined pointer into a number that should
+ * be as much unique as possible.
+ * 
+ * @param key User defined data that represents the key for a data to
+ * be stored into the hash. The value provided here usually is an
+ * string but it could be any other data used as key. 
+ * 
+ * @return The function must return a positive value from 0 up to
+ * 2^32-1 that will be used to index the content into the hash table.
+ */
+typedef unsigned int (*axlHashFunc) (axlPointer key);
 
 #endif
 

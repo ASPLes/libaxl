@@ -67,6 +67,23 @@ char    * axl_node_get_attribute_value_copy (axlNode * node, char * attribute);
 
 char    * axl_node_get_attribute_value_trans (axlNode * node, char * attribute);
 
+/* user defined data interface store arbitrary data inside the
+ * hash  */
+void      axl_node_anotate_data                 (axlNode     * node, 
+						 char        * key, 
+						 axlPointer    data);
+
+void      axl_node_anotate_data_full            (axlNode       * node,
+						 char          * key, 
+						 axlDestroyFunc  key_destroy,
+						 axlPointer      data,
+						 axlDestroyFunc  data_destroy);
+
+axlPointer axl_node_anotate_get                 (axlNode * node,
+						 char    * key,
+						 bool      lookup_in_parent,
+						 bool      lookup_in_doc);
+
 /** 
  * @brief Allows to easily check that the given xml node (\ref
  * axlNode) have the provided name.

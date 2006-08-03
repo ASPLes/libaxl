@@ -8,6 +8,7 @@ OBJ  = axl.o \
        axl_log.o \
        axl_node.o \
        axl_stack.o \
+       axl_hash.o \
        axl_stream.o
 
 DLL        = $(axl_dll).dll

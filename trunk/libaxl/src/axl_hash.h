@@ -1,4 +1,4 @@
-/**
+/*
  *  LibAxl:  Another XML library
  *  Copyright (C) 2006 Advanced Software Production Line, S.L.
  *
@@ -35,32 +35,42 @@
  *      Email address:
  *         info@aspl.es - http://fact.aspl.es
  */
-#ifndef __AXL_H__
-#define __AXL_H__
+#ifndef __AXL_HASH_H__
+#define __AXL_HASH_H__
 
 #include <axl_decl.h>
-#include <axl_list.h>
-#include <axl_stack.h>
-#include <axl_hash.h>
-#include <axl_stream.h>
-#include <axl_doc.h>
-#include <axl_node.h>
-#include <axl_dtd.h>
-#include <axl_error.h>
-#include <axl_log.h>
 
 BEGIN_C_DECLS
 
-/** 
- * \addtogroup axl_module
- * @{
- */
+axlHash       * axl_hash_new          (axlHashFunc    hash,
+				       axlEqualFunc   equal);
 
-bool  axl_init ();
+unsigned int    axl_hash_string       (axlPointer key);
 
-void  axl_end ();
 
-/* @} */
+int             axl_hash_equal_string (axlPointer keya, 
+				       axlPointer keyb);
+
+void            axl_hash_insert       (axlHash    * hash, 
+				       axlPointer   key,
+				       axlPointer   data);
+
+void            axl_hash_insert_full  (axlHash        * hash,
+				       axlPointer       key,
+				       axlDestroyFunc   destroy_key,
+				       axlPointer       data,
+				       axlDestroyFunc   destroy_data);
+
+void            axl_hash_remove       (axlHash    * hash,
+				       axlPointer * key);
+
+axlPointer      axl_hash_get          (axlHash * hash, 
+				       axlPointer key);
+				
+int             axl_hash_items        (axlHash * hash);
+
+void            axl_hash_free         (axlHash * hash);
+			   
 
 END_C_DECLS
 

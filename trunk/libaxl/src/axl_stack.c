@@ -47,7 +47,7 @@ struct _axlStack {
 };
 
 /**
- * \defgroup axl_stack_module Axl Stack: An stack built on top of axlList, used across AXL library
+ * \defgroup axl_stack_module Axl Stack: A stack built on top of axlList, used across AXL library
  */
 
 /** 

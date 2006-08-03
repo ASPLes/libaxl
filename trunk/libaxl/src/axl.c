@@ -472,6 +472,8 @@
  * - \ref axl_stream_module
  * - \ref axl_list_module
  * - \ref axl_stack_module
+ * - \ref axl_hash_module
+ *
  *  </li>
  * </ul>
  * 
