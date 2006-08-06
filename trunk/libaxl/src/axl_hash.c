@@ -410,7 +410,7 @@ void       axl_hash_insert_full (axlHash        * hash,
  * @param key The key to lookup to be removed. 
  */
 void            axl_hash_remove       (axlHash    * hash,
-				       axlPointer * key)
+				       axlPointer   key)
 {
 	axlHashNode * node;
 	axlHashNode * aux;
@@ -516,6 +516,62 @@ axlPointer axl_hash_get         (axlHash * hash,
 	/* no item was found on the hash */
 	return NULL;
 }
+
+/** 
+ * @brief Allows to check if the provided key is found on the given
+ * hash table.
+ *
+ * The function allows to get if the key is found on the table pretty
+ * much the behaviour that we could get using the following:
+ * \code
+ * // just compare if the provided key returns some value 
+ * bool value = (axl_hash_get (hash, "key2") != NULL);
+ * \endcode
+ *
+ * However it could happen that the value associated to the key, which
+ * already exists, is a NULL pointer, making previous comparation to
+ * not work in all cases. This function allows to check for the
+ * existance of a key and its associated data no mather what is the
+ * value of the associated data.
+ * 
+ * @param hash The hash table to check for a key value.
+ * @param key The key to check for its existance.
+ * 
+ * @return true if the key is found, otherwise false is returned.
+ */
+bool            axl_hash_exists       (axlHash    * hash,
+				       axlPointer   key)
+{
+	axlHashNode * node;
+
+	/* check if the hash is provided without loggin an error */
+	if (hash == NULL)
+		return false;
+	axl_return_val_if_fail (key, false);
+	
+	/* get the node at the provided position */
+	node = hash->table [(hash->hash (key)) % hash->hash_size];
+
+	/* node not found */
+	if (node == NULL)
+		return false;
+
+	/* check for equal keys */
+	if (hash->equal (node->key, key) == 0)
+		return true;
+
+	while (node->next != NULL) {
+		/* seems we have more nodes */
+		node = node->next;		
+
+		/* check for equal keys */
+		if (hash->equal (node->key, key) == 0)
+			return true;
+	}  /* end */
+	
+	/* no item was found on the hash */
+	return false;
+}
 	
 /** 
  * @brief Returns the number of items already stored on the provided
@@ -545,7 +601,10 @@ void       axl_hash_free        (axlHash *  hash)
 	axlHashNode * node;
 	axlHashNode * aux;
 
-	axl_return_if_fail (hash);
+	/* do not perform any operation if a null reference is
+	 * received */
+	if (hash == NULL)
+		return;
 
 	/* release the hash table */
 	if (hash->table != NULL) {
