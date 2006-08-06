@@ -1302,11 +1302,11 @@ char    * axl_node_get_content     (axlNode * node, int * content_size)
  *
  * <table>
  * <tr><td><b>Character</b></td><td>Entity name</td></tr>
- * <tr><td>'</td><td>&apos;</td></tr>
- * <tr><td><</td><td>&lt;</td></tr>
- * <tr><td>></td><td>&gt;</td></tr>
- * <tr><td>&</td><td>&amp;</td></tr>
- * <tr><td>"</td><td>&quot;</td></tr>
+ * <tr><td>'</td><td>&amp;apos;</td></tr>
+ * <tr><td><</td><td>&amp;lt;</td></tr>
+ * <tr><td>></td><td>&amp;gt;</td></tr>
+ * <tr><td>&</td><td>&amp;amp;</td></tr>
+ * <tr><td>"</td><td>&amp;quot;</td></tr>
  * </table>
  *
  * In general it is a good idea to espace previous sequences by
