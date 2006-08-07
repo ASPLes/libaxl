@@ -26,4 +26,5 @@ test_03a_LDADD   = ../src/libaxl.la
 compref:
 	gcc `pkg-config --libs --cflags libxml-2.0` test_01b.c -o test_01b
 	gcc `pkg-config --libs --cflags libxml-2.0` test_02b.c -o test_02b
+	gcc `pkg-config --libs --cflags glib-2.0` -I ../src ../src/.libs/libaxl.so test_03c.c -o test_03c
 
