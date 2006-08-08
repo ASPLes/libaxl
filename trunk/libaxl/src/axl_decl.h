@@ -827,6 +827,26 @@ typedef bool (*axlLookupFunc) (axlPointer ptr, axlPointer data);
  */
 typedef unsigned int (*axlHashFunc) (axlPointer key);
 
+/** 
+ * @brief Foreach function signature used to represent the set of
+ * functions used at \ref axl_hash_foreach.
+ * 
+ * The function receives the item found (key and data values) as well
+ * as a user defined pointer also defined at \ref
+ * axl_hash_foreach. The function must return \ref true (<i>"item
+ * found"</i>) to make the search to stop. In the case a full
+ * iteration over all items inside the hash is required, the function
+ * must always return \ref false.
+ * 
+ * @param key The key for the item stored.
+ * @param data The data associated to the key found
+ * @param user_data User defined data that was provided to the axl_hash_foreach function.
+ * 
+ * @return \ref true to make the foreach process to stop. \ref false
+ * to make the process to continue.
+ */
+typedef bool (* axlHashForeachFunc) (axlPointer key, axlPointer data, axlPointer user_data);
+
 #endif
 
 /* @} */

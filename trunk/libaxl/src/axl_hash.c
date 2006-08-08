@@ -518,6 +518,69 @@ axlPointer axl_hash_get         (axlHash * hash,
 }
 
 /** 
+ * @brief Performs a foreach operation over all items stored in the
+ * hash provided.
+ * 
+ * The function provided (<b>func</b>) will be called passing in the
+ * item found, and the data provided (third argument). 
+ * 
+ * Because the \ref axlHashForeachFunc function is used, \ref true must be
+ * returned to stop the foreach process. In the case all items must be
+ * visited, \ref false must be returned in any case.
+ * 
+ * @param hash The hash table where the iteration process will take
+ * place.
+ *
+ * @param func The function to call for each item found.
+ *
+ * @param user_data User defined data to be passed in to the function callback along with the item found.
+ */
+void            axl_hash_foreach      (axlHash            * hash, 
+				       axlHashForeachFunc   func, 
+				       axlPointer           user_data)
+
+{
+	int           iterator = 0;
+	axlHashNode * node;
+
+	/* perform some basic checks */
+	axl_return_if_fail (hash);
+	axl_return_if_fail (func);
+
+	/* foreach item row inside the hash table */
+	while (iterator < hash->hash_size) {
+		
+		/* check for content */
+		if (hash->table[iterator] != NULL) {
+			/* get the first item inside the table */
+			node = hash->table[iterator];
+
+			do {
+				/* notify the item found */
+				if (func (node->key, node->data, user_data)) {
+					/* user have decided to stop */
+					return;
+				}
+				
+				/* next item inside the same collition
+				 * position */
+				node = node->next;
+
+				/* while the next item is not null,
+				 * keep on iterating */
+			} while (node != NULL);
+				    
+		} /* end if */
+		
+		/* update the iterator */
+		iterator++;
+		
+	} /* end while */
+	
+	return;
+}
+
+/** 
  * @brief Allows to check if the provided key is found on the given
  * hash table.
  *

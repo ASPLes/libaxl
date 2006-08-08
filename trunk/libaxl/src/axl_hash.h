@@ -69,6 +69,10 @@ bool            axl_hash_exists       (axlHash   * hash,
 
 axlPointer      axl_hash_get          (axlHash * hash, 
 				       axlPointer key);
+
+void            axl_hash_foreach      (axlHash            * hash, 
+				       axlHashForeachFunc   func, 
+				       axlPointer           user_data);
 				
 int             axl_hash_items        (axlHash * hash);
 
