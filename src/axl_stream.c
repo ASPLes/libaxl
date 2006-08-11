@@ -130,6 +130,14 @@ struct _axlStream {
 	 */
 	char  temp[STREAM_BUFFER_SIZE];
 
+	/* more variables used to perform work */
+	char      * valid_chars;
+	int         chunk_matched;
+	bool        accept_terminator;
+	int         result_size;
+	int         chunk_num;
+	va_list     args;
+	
 };
 
 
@@ -266,14 +274,14 @@ bool axl_stream_prebuffer (axlStream * stream)
  * (including a socket):
  * 
  * \code
- * stream = axl_stream_new (NULL, -1, fd, NULL, &error);
+ * stream = axl_stream_new (NULL, -1, NULL, fd, &error);
  * \endcode
  *
  * You can also provide a file path to let the axl stream module to
  * open the file and buffer it as it requires to consume characters:
  *
  * \code
- * stream = axl_stream_new (NULL, -1, -1, "c:/myFiles/document.xml", &error);
+ * stream = axl_stream_new (NULL, -1, "c:/myFiles/document.xml", -1, &error);
  * \endcode
  * 
  *
@@ -288,6 +296,7 @@ bool axl_stream_prebuffer (axlStream * stream)
  * patter is found (or a set of patterns):
  * 
  * - \ref axl_stream_get_until
+ *
  * 
  * @param stream_source A pointer to the memory where the data to be
  * streamed is located.
@@ -753,13 +762,7 @@ void        axl_stream_nullify         (axlStream * stream,
  * every index chunks provided instead of checking the first one until
  * a prebuffer operation is required).
  */
-char * __axl_stream_get_untilv_wide (axlStream * stream, 
-				     char      * valid_chars, 
-				     int       * chunk_matched,
-				     bool        accept_terminator,
-				     int       * result_size,
-				     int         chunk_num, 
-				     va_list args)
+char * __axl_stream_get_untilv_wide (axlStream * stream)
 {
 
 	int          iterator    = 0;
@@ -777,16 +780,16 @@ char * __axl_stream_get_untilv_wide (axlStream * stream,
 	
 	/* perform some environmental checks */
 	axl_return_val_if_fail (stream, NULL);
-	axl_return_val_if_fail (chunk_num > 0, NULL);
+	axl_return_val_if_fail (stream->chunk_num > 0, NULL);
 
 	/* set current matched value */
-	if (chunk_matched != NULL)
-		*chunk_matched = -1;
+	stream->chunk_matched = -1;
 	
 	/* iterate over the chunk list */
-	while (iterator < chunk_num) {
+	while (iterator < stream->chunk_num) {
+
 		/* get the chunk */
-		stream->chunks [iterator]  = va_arg (args, char *);
+		stream->chunks [iterator]  = va_arg (stream->args, char *);
 
 		/* check if we have to match the emtpy string, and
 		 * don't install the value to be matched */
@@ -813,17 +816,19 @@ char * __axl_stream_get_untilv_wide (axlStream * stream,
 	/* calculate how many bytes ara available */
 	remains = stream->stream_size - stream->stream_index;
 
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "remaining data to be inspected: %d bytes", remains);
+
 	/* now we have chunks to lookup, stream until get the stream
 	 * limited by the chunks received. */
 	do {
 
+		/* decrease remain bytes to be read until perform a
+		 * prebuffer operation */
+		remains--;
+
 		/* only prebuffer for this type of stream */
 		if (stream->type == STREAM_FD) {
 			
-			/* decrease remain bytes to be read until perform a
-			 * prebuffer operation */
-			remains--;
-
 			/* check if the index is falling out side the buffer boundaries */
 			if (remains < 0) {
 				
@@ -846,6 +851,15 @@ char * __axl_stream_get_untilv_wide (axlStream * stream,
 			} /* end if */
 		}
 
+		/* check we don't get out side the memory */
+		if (stream->type == STREAM_MEM) {
+			if (remains < 0) {
+				/* seems there is no more room to
+				 * read */
+				return NULL;
+			} /* end if */
+		} /* end if */
+
 		
 		/* compare chunks received for each index increased
 		 * one step */
@@ -862,6 +876,10 @@ char * __axl_stream_get_untilv_wide (axlStream * stream,
 			    (stream->stream[_index] == '\n') ||
 			    (stream->stream[_index] == '\t') ||
 			    (stream->stream[_index] == '\r')) {
+
+				__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "matched by white space value matched_chunk=%d",
+					   iterator);
+
 				/* string matched */
 				length         = 1;
 				matched        = true;
@@ -871,10 +889,10 @@ char * __axl_stream_get_untilv_wide (axlStream * stream,
 
 		/* the empty string wasn't matched, now check for the
 		 * rest of chunks */
-		while ((! matched) && (iterator < chunk_num)) {
+		while ((! matched) && (iterator < stream->chunk_num)) {
 			
 			/* get current length for the chunk to check */
-			length = stream->lengths [iterator];
+			length  = stream->lengths [iterator];
 
 			/* check the length returned */
 			matched = false;
@@ -887,6 +905,8 @@ char * __axl_stream_get_untilv_wide (axlStream * stream,
 					
 					if ((length == 1) ||
 					    (axl_memcmp (stream->chunks [iterator] + 1, stream->stream + _index + 1, length -1))) {
+						__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "matched as normal situation.. at index=%d (stream size=%d)",
+							   stream->stream_index + _index + 1, stream->stream_size);
 						/* flag as matched */
 						matched = true;
 					} /* end if */
@@ -915,12 +935,13 @@ char * __axl_stream_get_untilv_wide (axlStream * stream,
 				if (axl_stream_prebuffer (stream))
 					goto init_get_until;
 			}
-			
+
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "matched_chunk=%d", iterator);
 			
 			/* report which is the chunk being
 			 * matched by the expresion */
-			if (chunk_matched != NULL)
-				*chunk_matched = (iterator);
+			stream->chunk_matched = iterator;
+
 			
 			/* result is found from last stream
 			 * index read up to index */
@@ -928,16 +949,17 @@ char * __axl_stream_get_untilv_wide (axlStream * stream,
 				axl_free (stream->last_chunk);
 			
 			/* get a copy to the chunk to be returned */
-			if (result_size == NULL) {
+			if (! stream->result_size) {
 				stream->last_chunk = axl_new (char, index + 1);
 				memcpy (stream->last_chunk, stream->stream + stream->stream_index, index);
 			}else {
-				*result_size = index;
+				/* *result_size = index;*/
+				stream->result_size = index;
 				string       = stream->stream + stream->stream_index;
 			}
 			
 			/* in the case a memory chunk is being read */
-			if (accept_terminator)
+			if (stream->accept_terminator)
 				stream->stream_index     += length;
 			stream->stream_index             += index;
 			stream->global_index             += index;
@@ -945,7 +967,7 @@ char * __axl_stream_get_untilv_wide (axlStream * stream,
 			
 			
 			/* return allocated result */
-			if (result_size == NULL) 
+			if (! stream->result_size)
 				return stream->last_chunk;
 
 			/* return reference result */
@@ -996,8 +1018,27 @@ char      * axl_stream_get_untilv      (axlStream * stream,
 					int         chunk_num, 
 					va_list args)
 {
+	char * result;
+
+
+	/* configure variables for the operation */
+	stream->valid_chars       = valid_chars;
+	stream->accept_terminator = accept_terminator;
+	stream->result_size       = (result_size != NULL);
+	stream->chunk_num         = chunk_num;
+	stream->args              = args;
+
 	/* call to current implementation */
-	return __axl_stream_get_untilv_wide (stream, valid_chars, chunk_matched, accept_terminator, result_size, chunk_num, args); 
+	result = __axl_stream_get_untilv_wide (stream);
+
+	/* check for returning references */
+	if (result_size != NULL)
+		*result_size   = stream->result_size;
+	if (chunk_matched != NULL)
+		*chunk_matched = stream->chunk_matched;
+
+	/* return string matched */
+	return result;
 }
 
 
