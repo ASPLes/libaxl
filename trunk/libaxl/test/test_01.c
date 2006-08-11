@@ -355,7 +355,6 @@ bool test_13 (axlError ** error)
 
 	/* check if both documents are equals */
 	if (! axl_doc_are_equal (doc, doc2)) {
-		printf ("xml document content (size: %d):\n%s", size, content);
 		axl_error_new (-1, "Expected to dump an equivalent xml document, but found an error", NULL, error);
 		return false;
 	}
@@ -1412,6 +1411,40 @@ bool test_01a (axlError ** error)
 		/* fill an error */
 		axl_error_new (-1, "expected to chunk matched value equal to -1", NULL, error);
 		
+		return false;
+	}
+
+	/* parse the stream using zero support */
+
+	/* get the value */
+	value = axl_stream_get_until_zero (stream, NULL, &chunk_matched, true, 2, "[", ".");
+	if (value == NULL) {
+		/* free the stream */
+		axl_stream_free (stream);
+
+		/* fill an error */
+		axl_error_new (-1, "expected to find a defined value while parsing content", NULL, error);
+		
+		return false;
+	}
+
+	if (chunk_matched != -2) {
+		/* free the stream */
+		axl_stream_free (stream);
+
+		/* fill an error */
+		axl_error_new (-1, "expected to chunk matched value equal to -2", NULL, error);
+		
+		return false;
+	}
+
+	/* zero string found (in the current stream) */
+	if (! axl_cmp (value, "customer")) {
+		printf ("Found values: '%s' != 'customer'\n", value);
+		
+		/* fill an error */
+		axl_error_new (-1, "expected to find a string not found", NULL, error);
+
 		return false;
 	}
 
