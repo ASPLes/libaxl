@@ -355,6 +355,7 @@ bool test_13 (axlError ** error)
 
 	/* check if both documents are equals */
 	if (! axl_doc_are_equal (doc, doc2)) {
+		printf ("xml document content (size: %d):\n%s", size, content);
 		axl_error_new (-1, "Expected to dump an equivalent xml document, but found an error", NULL, error);
 		return false;
 	}

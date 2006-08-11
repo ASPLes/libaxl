@@ -77,6 +77,10 @@ struct _axlHash {
 
 	/* the hash size */
 	int hash_size;
+
+	/* steps: how many slots are allocated when the hash is
+	 * resized */
+	int step;
 };
 
 /** 
@@ -200,15 +204,42 @@ int             axl_hash_equal_string (axlPointer keya,
  */
 axlHash * axl_hash_new       (axlHashFunc    hash, axlEqualFunc equal)
 {
+	/* call to full implementation */
+	return axl_hash_new_full (hash, equal, 10);
+}
+
+/** 
+ * @brief The function works the same way like \ref axl_hash_new, but
+ * provides a way to configure how many unit are allocated on hash
+ * resizing operations.
+ *
+ * See \ref axl_hash_new for more information. That function uses a
+ * default step value equal to 10.
+ * 
+ * @param hash  The hashing function to be used for this table.
+ *
+ * @param equal The equal function used by the hash to actually check
+ * that two stored items are equal (using the key value)
+ *
+ * @param step The number of empty new slots to allocate once the hash
+ * must be resized.
+ * 
+ * @return A newly created hash table that is deallocated by using \ref axl_hash_free.
+ */
+axlHash       * axl_hash_new_full     (axlHashFunc    hash,
+				       axlEqualFunc   equal,
+				       int            step)
+{
 	/* create the hash */
 	axlHash * result;
 
 	result        = axl_new (axlHash, 1);
 	result->hash  = hash;
 	result->equal = equal;
+	result->step  = step;
 
 	/* return the hash table created */
-	return result;
+	return result;	
 }
 
 /** 
@@ -298,8 +329,8 @@ void       axl_hash_insert_full (axlHash        * hash,
 	 * stored yet. */
 	if (hash->hash_size == 0) {
 		/* allocate memory for the hash */
-		hash->table     = axl_new (axlHashNode *, 10);
-		hash->hash_size = 10;
+		hash->table     = axl_new (axlHashNode *, hash->step);
+		hash->hash_size = hash->step;
 		
 		/* create the node to store */
 		__axl_hash_create_node (node, key, key_destroy, data, data_destroy);
@@ -359,7 +390,7 @@ void       axl_hash_insert_full (axlHash        * hash,
 	
 		/* now we have in node a complete list of items
 		 * stored, allocate more memory and rehash */
-		hash->hash_size += 10;
+		hash->hash_size += hash->step;
 		hash->table      = realloc (hash->table, sizeof (axlHashNode *) * (hash->hash_size));
 
 		/* clear the table */
@@ -518,6 +549,72 @@ axlPointer axl_hash_get         (axlHash * hash,
 }
 
 /** 
+ * @internal
+ * 
+ * Common implementation for both foreach functions: axl_hash_foreach
+ * and axl_hash_foreach2.
+ */
+void __axl_hash_foreach (axlHash             * hash, 
+			 axlHashForeachFunc    func, 
+			 axlHashForeachFunc2   func2, 
+			 axlPointer            user_data, 
+			 axlPointer            user_data2)
+{
+
+	int           iterator = 0;
+	axlHashNode * node;
+
+	/* perform some basic checks */
+	axl_return_if_fail (hash);
+
+	/* foreach item row inside the hash table */
+	while (iterator < hash->hash_size) {
+		
+		/* check for content */
+		if (hash->table[iterator] != NULL) {
+			/* get the first item inside the table */
+			node = hash->table[iterator];
+
+			do {
+				/* check for one user defined pointer
+				 * foreach */
+				if (func != NULL) {
+					/* notify the item found */
+					if (func (node->key, node->data, user_data)) {
+						/* user have decided to stop */
+						return;
+					}
+				} /* end if */
+
+				/* check for two user defined
+				 * pointers */
+				if (func2 != NULL) {
+					/* notify the item found */
+					if (func2 (node->key, node->data, user_data, user_data2)) {
+						/* user have decided to stop */
+						return;
+					}
+				} /* end if */
+				
+				/* next item inside the same collition
+				 * position */
+				node = node->next;
+
+				/* while the next item is not null,
+				 * keep on iterating */
+			} while (node != NULL);
+				    
+		} /* end if */
+		
+		/* update the iterator */
+		iterator++;
+		
+	} /* end while */
+	
+	return;
+}
+
+/** 
  * @brief Performs a foreach operation over all items stored in the
  * hash provided.
  * 
@@ -540,43 +637,42 @@ void            axl_hash_foreach      (axlHash            * hash,
 				       axlPointer           user_data)
 
 {
-	int           iterator = 0;
-	axlHashNode * node;
 
-	/* perform some basic checks */
-	axl_return_if_fail (hash);
-	axl_return_if_fail (func);
+	/* perform the foreach operation using common support */
+	__axl_hash_foreach (hash, func, NULL, user_data, NULL);
 
-	/* foreach item row inside the hash table */
-	while (iterator < hash->hash_size) {
-		
-		/* check for content */
-		if (hash->table[iterator] != NULL) {
-			/* get the first item inside the table */
-			node = hash->table[iterator];
+	return;
+}
 
-			do {
-				/* notify the item found */
-				if (func (node->key, node->data, user_data)) {
-					/* user have decided to stop */
-					return;
-				}
-				
-				/* next item inside the same collition
-				 * position */
-				node = node->next;
+/** 
+ * @brief Allows to perform a foreach operation providing two user
+ * defined pointer to be passed to the foreach function for each item
+ * found.
+ *
+ * This function works like \ref axl_hash_foreach function but support
+ * two user defined pointers. See \ref axl_hash_foreach for more information.
+ * 
+ * @param hash The hash where the iteration will be performed.
+ * 
+ * @param func The foreach function that will be called for all nodes
+ * found passed in both pointers defined along with the key value and
+ * the value associated.
+ *
+ * @param user_data User defined data to be passed to the foreach
+ * function.
+ *
+ * @param user_data2 Second User defined data to be passed to the
+ * foreach function.
+ */
+void            axl_hash_foreach2     (axlHash            * hash, 
+				       axlHashForeachFunc2  func, 
+				       axlPointer           user_data,
+				       axlPointer           user_data2)
 
-				/* while the next item is not null,
-				 * keep on iterating */
-			} while (node != NULL);
-				    
-		} /* end if */
-		
-		/* update the iterator */
-		iterator++;
-		
-	} /* end while */
-	
+{
+	/* perform the foreach operation using common support */
+	__axl_hash_foreach (hash, NULL, func, user_data, user_data2);
+
 	return;
 }
 
