@@ -1375,6 +1375,52 @@ bool test_01 (axlError ** error)
 }
 
 /** 
+ * @brief Axl stream boundary checks.
+ * 
+ * 
+ * @return false if the function fails to parse the
+ * document. true if the test was properly executed.
+ */
+bool test_01a (axlError ** error) 
+{
+	axlStream * stream;
+	char      * value;
+	int         chunk_matched = -2;
+
+	/* parse the string */
+	stream = axl_stream_new ("customer", -1, NULL, -1, error);
+	if (stream == NULL) 
+		return false;
+
+	/* get the value */
+	value = axl_stream_get_until (stream, NULL, &chunk_matched, true, 2, "[", ".");
+	if (value != NULL) {
+		/* free the stream */
+		axl_stream_free (stream);
+
+		/* fill an error */
+		axl_error_new (-1, "expected to find a null value while parsing content", NULL, error);
+		
+		return false;
+	}
+
+	if (chunk_matched != -1) {
+		/* free the stream */
+		axl_stream_free (stream);
+
+		/* fill an error */
+		axl_error_new (-1, "expected to chunk matched value equal to -1", NULL, error);
+		
+		return false;
+	}
+
+	/* free the stream */
+	axl_stream_free (stream);
+
+	return true;
+}
+
+/** 
  * Test01: Initial xml header checking.
  */
 int main (int argc, char ** argv) 
@@ -1395,6 +1441,15 @@ int main (int argc, char ** argv)
 		axl_error_free (error);
 		return -1;
 	}
+
+	if (test_01a (&error)) {
+		printf ("Test 01-a: Axl Stream boundary checks [   OK   ]\n");
+	} else {
+		printf ("Test 01-a: Axl Stream boundary checks [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}	
 
 	if (test_02 (&error))
 		printf ("Test 02: basic xml error detection [   OK   ]\n");
@@ -1552,7 +1607,7 @@ int main (int argc, char ** argv)
 		axl_error_free (error);
 		return -1;
 	}	
-	
+
 	/* cleanup axl library */
 	axl_end ();
 	return 0;
