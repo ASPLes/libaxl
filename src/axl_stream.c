@@ -130,13 +130,21 @@ struct _axlStream {
 	 */
 	char  temp[STREAM_BUFFER_SIZE];
 
-	/* more variables used to perform work */
+	/* more variables used to perform work: at get until */
 	char      * valid_chars;
 	int         chunk_matched;
 	bool        accept_terminator;
 	int         result_size;
 	int         chunk_num;
 	va_list     args;
+
+	/** 
+	 * @internal Internal variable used to notify get_until
+	 * function that the last 0 character for stream memory
+	 * operation done in a STREAM_MEM must be considered as a
+	 * terminator character found.
+	 */
+	bool        zero;
 	
 };
 
@@ -698,7 +706,7 @@ char      * axl_stream_get_until       (axlStream * stream,
 char      * axl_stream_get_until_ref   (axlStream * stream, 
 					char      * valid_chars, 
 					int       * chunk_matched,
-					bool    accept_terminator,
+					bool        accept_terminator,
 					int       * result_size,
 					int         chunk_num, ...)
 {
@@ -710,6 +718,101 @@ char      * axl_stream_get_until_ref   (axlStream * stream,
 
 	/* call to get next chunk separated by the provided values */
 	result = axl_stream_get_untilv (stream, valid_chars, chunk_matched, accept_terminator, result_size, chunk_num, args);
+
+	/* close the standard argument */
+	va_end (args);
+
+	/* return value read */
+	return result;
+}
+
+/** 
+ * @brief Allows to get the next string until the separators provided
+ * are found or the stream memory is reached.
+ *
+ * \ref axlStream type was designed to support parsing xml
+ * documents. This documents have elements that allows to now where
+ * the input has finished. Howerver, \ref axlStream abstraction has
+ * showed to be powerful enough to be usable to parse other kinds of
+ * elements that don't have lexical terminators to let the user to
+ * provide that chunk to be matched.
+ *
+ * In those cases, this function allows to perform the same function
+ * as \ref axl_stream_get_until but also checking, and using, as
+ * terminator the stream upper bound.
+ * 
+ * This allows to parse expressions like:
+ * \code
+ * int         chunk_matched;
+ * axlStream * stream;
+ * char      * string;
+ * 
+ * // create the stream 
+ * stream = axl_stream_new ("array.value", -1, NULL, -1, &error);
+ *
+ * // parse first array identifier 
+ * string = axl_stream_get_until_zero (stream, NULL, &chunk_matched, 
+ *                                     false, 2, "[", ".", NULL);
+ *
+ * // received "array"
+ *
+ * // parse again 
+ * string = axl_stream_get_until_zero (stream, NULL, &chunk_matched, 
+ *                                     false, 2, "[", ".", NULL);
+ *
+ * // received "value" and chunk_matched == -2
+ * \endcode
+ *  
+ * 
+ * @param stream 
+ * @param valid_chars 
+ * @param chunk_matched 
+ * @param accept_terminator 
+ * @param chunk_num 
+ * 
+ * @return 
+ */
+char      * axl_stream_get_until_zero  (axlStream * stream, 
+					char      * valid_chars, 
+					int       * chunk_matched,
+					bool        accept_terminator,
+					int         chunk_num, ...)
+{
+	char * result;
+	va_list args;
+	
+	/* open the standard argument */
+	va_start (args, chunk_num);
+
+	/* call to get next chunk separated by the provided values */
+	stream->zero = true;
+	result       = axl_stream_get_untilv (stream, valid_chars, chunk_matched, accept_terminator, NULL, chunk_num, args);
+	stream->zero = false;
+
+	/* close the standard argument */
+	va_end (args);
+
+	/* return value read */
+	return result;
+}
+
+char      * axl_stream_get_until_ref_zero  (axlStream * stream, 
+					    char      * valid_chars, 
+					    int       * chunk_matched,
+					    bool        accept_terminator,
+					    int       * result_size,
+					    int         chunk_num, ...)
+{
+	char * result;
+	va_list args;
+	
+	/* open the standard argument */
+	va_start (args, chunk_num);
+
+	/* call to get next chunk separated by the provided values */
+	stream->zero = true;
+	result       = axl_stream_get_untilv (stream, valid_chars, chunk_matched, accept_terminator, result_size, chunk_num, args);
+	stream->zero = false;
 
 	/* close the standard argument */
 	va_end (args);
@@ -854,6 +957,16 @@ char * __axl_stream_get_untilv_wide (axlStream * stream)
 		/* check we don't get out side the memory */
 		if (stream->type == STREAM_MEM) {
 			if (remains < 0) {
+
+				/* check for zero stream ended
+				 * support */
+				if (stream->zero) {
+					/* flag that chunk matched
+					 * will be -2 */
+					stream->chunk_matched = -2;
+					goto matched_return_result;
+				}
+
 				/* seems there is no more room to
 				 * read */
 				return NULL;
@@ -942,6 +1055,7 @@ char * __axl_stream_get_untilv_wide (axlStream * stream)
 			 * matched by the expresion */
 			stream->chunk_matched = iterator;
 
+		matched_return_result:
 			
 			/* result is found from last stream
 			 * index read up to index */

@@ -80,7 +80,7 @@ char      * axl_stream_get_until_ref   (axlStream * stream,
 					int       * result_size,
 					int         chunk_num, ...);
 
-/* char      * axl_stream_get_until_zero  (axlStream * stream, 
+char      * axl_stream_get_until_zero  (axlStream * stream, 
 					char      * valid_chars, 
 					int       * chunk_matched,
 					bool        accept_terminator,
@@ -90,7 +90,8 @@ char      * axl_stream_get_until_ref_zero  (axlStream * stream,
 					    char      * valid_chars, 
 					    int       * chunk_matched,
 					    bool        accept_terminator,
-					    int         chunk_num, ...); */
+					    int       * result_size,
+					    int         chunk_num, ...);
 
 /** 
  * @brief Enum value that allows to configure which item to nullify
