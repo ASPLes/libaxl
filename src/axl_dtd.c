@@ -329,6 +329,24 @@ bool __queue_items (axlPointer data, axlPointer _stack)
 	return false;
 }
 
+void __axl_dtd_queue_childs (axlStack * stack, axlNode * parent)
+{
+	axlNode * child;
+
+	/* get the first child */
+	child = axl_node_get_first_child (parent);
+	while (child != NULL) {
+
+		/* queue the child */
+		axl_stack_push (stack, child);
+		
+		/* get the next child */
+		child = axl_node_get_next (child);
+	} /* end while */
+
+	return;
+}
+
 /** 
  * @internal
  *
@@ -2403,7 +2421,6 @@ bool           axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 					axlError ** error)
 {
 	axlNode            * parent;
-	axlList            * childs;
 	axlStack           * stack;
 	axlDtdElement      * element;
 	bool                 top_level;
@@ -2512,12 +2529,12 @@ bool           axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "parent node <%s> have childs, adding its childs (stack size: %d)",
 				   axl_node_get_name (parent),
 				   axl_stack_size (stack));
-			childs = axl_node_get_childs (parent);
-			
-			__axl_dtd_queue_items (stack, childs);
+
+			/* queue childs to be processed */
+			__axl_dtd_queue_childs (stack, parent);
 
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "parent node <%s> childs: %d, (stack size: %d)",
-				   axl_node_get_name (parent), axl_list_length (childs),
+				   axl_node_get_name (parent), axl_node_get_child_num (parent),
 				   axl_stack_size (stack));
 		}
 		

@@ -1440,8 +1440,11 @@ bool __axl_doc_are_equal (axlNode * node, axlNode * node2)
 		child2 = axl_node_get_child_nth (node2, iterator);
 
 		/* check if these nodes are also equal */
-		if (! axl_node_are_equal (child, child2)) 
+		if (! axl_node_are_equal (child, child2)) {
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "nodes <%s> and <%s> aren't equal", 
+				   axl_node_get_name (child), axl_node_get_name (child2));
 			return false;
+		}
 
 		/* check its childs */
 		if (! __axl_doc_are_equal (child, child2))
@@ -2179,11 +2182,7 @@ void      axl_doc_iterate                  (axlDoc           * doc,
 	axlNode  * node;
 	axlNode  * nodeAux;
 
-	axlList  * childs;
 	axlList  * pending;
-
-	int        iterator;
-	int        length;
 
 	/* check basic data */
 	axl_return_if_fail (doc);
@@ -2199,8 +2198,7 @@ void      axl_doc_iterate                  (axlDoc           * doc,
 		return;
 
 	/* get childs */
-	childs   = axl_node_get_childs (node);
-	pending  = axl_list_copy (childs, NULL);
+	pending  = axl_node_get_childs (node);
 
 	/* for each pending node */
 	while (axl_list_length (pending) > 0) {
@@ -2220,22 +2218,21 @@ void      axl_doc_iterate                  (axlDoc           * doc,
 
 		/* add all its childs */
 		if (axl_node_have_childs (node)) {
-			childs = axl_node_get_childs (node);
-			/* copy all nodes */
-			iterator = 0;
-			length   = axl_list_length (childs);
-			for (; iterator < length; iterator++) {
-				/* get the node to add */
+			/* get first child */
+			nodeAux = axl_node_get_first_child (node);
+			while (nodeAux != NULL) {
+				/* add to the pending list */
 				switch (mode) {
 				case DEEP_ITERATION:
-					nodeAux = axl_list_get_nth (childs, length - iterator - 1);
 					axl_list_prepend (pending, nodeAux);
 					break;
 				case WIDE_ITERATION:
-					nodeAux = axl_list_get_nth (childs, iterator);
 					axl_list_add (pending, nodeAux);
 					break;
 				}
+
+				/* update to the next */
+				nodeAux = axl_node_get_next (nodeAux);
 			}
 		} /* end if */
 		

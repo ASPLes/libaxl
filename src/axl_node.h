@@ -107,6 +107,10 @@ axlNode * axl_node_get_parent         (axlNode * node);
 
 axlNode * axl_node_get_next           (axlNode * node);
 
+axlNode * axl_node_get_first_child    (axlNode * node);
+
+axlNode * axl_node_get_last_child     (axlNode * node);
+
 void      axl_node_set_child          (axlNode * parent, 
 				       axlNode * child);
 

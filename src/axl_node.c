@@ -48,23 +48,6 @@
  * @{
  */
 
-struct _axlAttribute {
-	/** 
-	 * @internal
-	 *
-	 * The attribute name, that is, the left hand part of the
-	 * attribute expresion name=value.
-	 */
-	char * name;
-	/** 
-	 * @internal
-	 * 
-	 * The attribute value, that is, the right hand part of the
-	 * attribute expresion name=value.
-	 */
-	char * value;
-};
-
 typedef struct _axlNodeContent {
 	/** 
 	 * @internal
@@ -95,7 +78,7 @@ struct _axlNode {
 	 * @internal
 	 * @brief The attributes this node has.
 	 */
-	axlList        * attributes;
+	axlHash      * attributes;
 
 	/* @internal Content configuratino. 
 	 *
@@ -106,10 +89,12 @@ struct _axlNode {
 	axlNodeContent * content;
 
 	/** 
-	 * @internal
-	 * @brief A list of childs the current node has.
+	 * @internal A reference to the frist child, the last child
+	 * and the number of childs stored.
 	 */
-	axlList       * childs;
+	axlNode      * first;
+	axlNode      * last;
+	int            child_num;
 
 	/** 
 	 * @internal
@@ -157,23 +142,6 @@ int __axl_node_equal (axlPointer a, axlPointer b)
 	return 1;
 }
 
-/** 
- * @internal 
- *
- * @brief Implements automatic attribute memory deallocation once the
- * node is finished.
- * 
- * @param attr The axlAttribute to deallocate
- */
-void __axl_node_destroy_attr (axlAttribute * attr)
-{
-	/* release memory hold by the attribute */
-	axl_free (attr->name);
-	axl_free (attr->value);
-	axl_free (attr);
-
-	return;
-}
 
 axlNode * __axl_node_create_internal (char * name)
 {
@@ -554,55 +522,9 @@ void __axl_node_init_attributes (axlNode * node)
 		return;
 	
 	/* create attribute list */
-	node->attributes = axl_list_new (axl_list_always_return_1, (axlDestroyFunc) __axl_node_destroy_attr);
+	node->attributes = axl_hash_new_full (axl_hash_string, axl_hash_equal_string, 1);
 }
 
-/** 
- * @internal
- *
- * Support function which initializes current childs node list, if
- * necessary.
- * 
- * @param node The axlNode where the child node initialization will be
- * performed.
- */
-void __axl_node_init_childs (axlNode * node)
-{
-	/* do not init childs if already created */
-	if (node->childs != NULL) {
-		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "not initializing the child list for <%s>0x%x, pointer is defined",
-			   node->name, node);
-		return;
-	}
-
-	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "initializing the child list for <%s>0x%x, pointer isn't defined",
-		   node->name, node);
-	
-	/* create the child list */
-	node->childs   = axl_list_new (__axl_node_equal, (axlDestroyFunc) axl_node_free);	
-	
-	return;
-}
-
-/** 
- * @internal
- * 
- * Internal function to perform common checks for setting attribute
- * code.
- */
-bool         __axl_node_set_attribute_common_check (axlNode * node, char * attribute, char * value)
-{
-	/* checks values received */
-	axl_return_val_if_fail (node, false);
-	axl_return_val_if_fail (attribute, false);
-	axl_return_val_if_fail (value, false);
-
-	/* attribute could be added twice */
-	axl_return_val_if_fail (! axl_node_has_attribute (node, attribute), false);
-
-	/* check ok */
-	return true;
-}
 
 /** 
  * @internal
@@ -612,19 +534,12 @@ bool         __axl_node_set_attribute_common_check (axlNode * node, char * attri
  */
 void      __axl_node_set_attribute      (axlNode * node, char * attribute, char * value)
 {
-	axlAttribute * _attribute;
-	
 	/* init attribute list */
 	/* do not init attribute list twice */
 	__axl_node_init_attributes (node);
 
-	/* create the attribute */
-	_attribute        = axl_new (axlAttribute, 1);
-	_attribute->name  = attribute;
-	_attribute->value = value;
-
-	/* add the attribute */
-	axl_list_append (node->attributes, _attribute);
+	/* add the attribute */	
+	axl_hash_insert_full (node->attributes, attribute, axl_free, value, axl_free);
 
 	return;
 }
@@ -665,9 +580,9 @@ void      axl_node_set_attribute      (axlNode * node, char * attribute, char * 
 	char * _attr;
 	char * _value;
 
-	/* perform initial checks */
-	if (!__axl_node_set_attribute_common_check (node, attribute, value))
-		return;
+	axl_return_if_fail (node);
+	axl_return_if_fail (attribute);
+	axl_return_if_fail (value);
 
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "setting attribute: %s='%s'", attribute, value);
 
@@ -722,51 +637,15 @@ void      axl_node_set_attribute      (axlNode * node, char * attribute, char * 
  */
 void      axl_node_set_attribute_ref  (axlNode * node, char * attribute, char * value)
 {
-	/* perform initial checks */
-	if (!__axl_node_set_attribute_common_check (node, attribute, value))
-		return;
+
+	axl_return_if_fail (node);
+	axl_return_if_fail (attribute);
+	axl_return_if_fail (value);
 
 	/* insert the attribute */
 	__axl_node_set_attribute (node, attribute, value);
 
 	return;
-}
-
-/** 
- * @internal
- *
- * @brief Allows to get the attribute inside the node, that has as
- * name the value provided.
- */
-axlAttribute * __axl_node_common_attr_get (axlNode * node, char * attribute)
-{
-	axlAttribute * attr;
-	int            iterator = 0;
-
-	axl_return_val_if_fail (node, false);
-	axl_return_val_if_fail (attribute, false);
-
-	/* assume the attribute requested doesn't exist because the
-	 * attribute list is not initialized  */
-	if (node->attributes == NULL) {
-		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "the node doesn't have any attribute installed");
-		return NULL;
-	}
-
-	/* get the first */
-	while (iterator < axl_list_length (node->attributes)) {
-		attr = axl_list_get_nth (node->attributes, iterator);
-
-		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "checking attribute name='%s'", attr->name);
-
-		if (axl_cmp (attr->name, attribute))
-			return attr;
-
-		iterator++;
-	}
-
-	/* attribute not found */
-	return NULL;
 }
 
 /** 
@@ -783,8 +662,15 @@ axlAttribute * __axl_node_common_attr_get (axlNode * node, char * attribute)
  */
 bool          axl_node_has_attribute      (axlNode * node, char * attribute)
 {
+	axl_return_val_if_fail (node, false);
+	axl_return_val_if_fail (attribute, false);
+
+	/* check for empty hash */
+	if (node->attributes == NULL)
+		return false;
+
 	/* attribute not found */
-	return (__axl_node_common_attr_get (node, attribute) != NULL);
+	return axl_hash_exists (node->attributes, attribute);
 }
 
 /** 
@@ -806,12 +692,16 @@ bool          axl_node_has_attribute      (axlNode * node, char * attribute)
  */
 char    * axl_node_get_attribute_value (axlNode * node, char * attribute)
 {
-	axlAttribute * attr;
+	/* check values received */
+	axl_return_val_if_fail (node, NULL);
+	axl_return_val_if_fail (attribute, NULL);
 
-	attr = __axl_node_common_attr_get (node, attribute);
-	if (attr == NULL)
+	/* check for empty hash */
+	if (node->attributes == NULL)
 		return NULL;
-	return attr->value;
+
+	/* return value stored for the provided key */
+	return axl_hash_get (node->attributes, attribute);
 }
 
 /** 
@@ -1160,6 +1050,38 @@ axlNode * axl_node_get_next           (axlNode * node)
 
 	/* return the next reference */
 	return node->next;
+}
+
+/** 
+ * @brief Allows to get the first child that holds the node.
+ * 
+ * @param node The node that is requested to return its first child.
+ * 
+ * @return The first child node or NULL if it has no child node.
+ */
+axlNode * axl_node_get_first_child    (axlNode * node)
+{
+	/* check values */
+	axl_return_val_if_fail (node, NULL);
+
+	/* return first child */
+	return node->first;
+}
+
+/** 
+ * @brief Allows to get the last child that holds the node.
+ * 
+ * @param node The node that is requested to return its last child.
+ * 
+ * @return The last child node or NULL if it has no child node.
+ */
+axlNode * axl_node_get_last_child     (axlNode * node)
+{
+	/* check values */
+	axl_return_val_if_fail (node, NULL);
+
+	/* return last child */
+	return node->last;
 }
 
 /** 
@@ -1607,15 +1529,11 @@ char    * axl_node_get_content_trans (axlNode * node, int * content_size)
  */
 void      axl_node_set_child (axlNode * parent, axlNode * child)
 {
-	axlNode * last;
 
 	axl_return_if_fail (parent);
 	axl_return_if_fail (child);
 
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "received parent=0x%x and child=0x%x",  parent, child);
-
-	/* init childs list */
-	__axl_node_init_childs (parent);
 
 	/* establish the parent relation */
 	child->parent = parent;
@@ -1625,17 +1543,24 @@ void      axl_node_set_child (axlNode * parent, axlNode * child)
 	child->doc    = parent->doc;
 
 	/* get the current last child */
-	last = axl_list_get_last (parent->childs);
-	if (last != NULL) {
-		/* establish the next relation for the last node to
-		 * point to the new last node */
-		last->next = child;
-	}
-	
-	/* add the child node to the parent node */
-	axl_list_append (parent->childs, child);
+	if (parent->first == NULL) {
+		/* init first and last reference to the only one
+		 * child */
+		parent->first = child;
+		parent->last  = child;
+	}else {
+		/* configure the next item to the current last
+		 * child */
+		parent->last->next = child;
 
-	return;
+		/* update the last child reference */
+		parent->last       = child;
+	}
+
+	/* update the number of childs */
+	parent->child_num++;
+		
+        return;
 }
 
 /** 
@@ -1651,7 +1576,7 @@ void      axl_node_set_child (axlNode * parent, axlNode * child)
  */
 void      axl_node_set_have_childs (axlNode * node, bool     childs)
 {
-	/* */
+	/* do nothing */
 	return;
 }
 
@@ -1673,13 +1598,8 @@ bool          axl_node_have_childs        (axlNode * node)
 {
 	axl_return_val_if_fail (node, false);
 
-	/* if childs list is NULL, assume the node doesn't have
-	 * childs */
-	if (node->childs == NULL)
-		return false;
-	
-	/* return current configuration */
-	return (axl_list_length (node->childs) > 0);
+	/* return true if the first child node is defined */
+	return (node->first != NULL);
 }
 
 /** 
@@ -1695,30 +1615,28 @@ bool          axl_node_have_childs        (axlNode * node)
 axlNode * axl_node_get_child_called   (axlNode * parent, char * name)
 {
 	axlNode * node;
-	int       iterator = 0;
-	int       length   = 0;
+/*	int       iterator = 0;
+	int       length   = 0; */
 	
 	axl_return_val_if_fail (parent, NULL);
 	axl_return_val_if_fail (name, NULL);
 
 	/* if the child list is not defined, assume there is no node
 	 * called the name requested */
-	if (parent->childs == NULL)
+	if (parent->first == NULL)
 		return NULL;
 	
 	/* if no childs, no result */
-	length = axl_list_length (parent->childs);
-	if (length == 0)
-		return NULL;
-
-	/* iterate over the childs until get the one called
-	 * <b>name</b> */
-	while (iterator < length) {
-		node = axl_list_get_nth (parent->childs, iterator);
+	node = parent->first;
+	do {
+		/* compare for find the child */ 
 		if (NODE_CMP_NAME (node, name))
 			return node;
-		iterator++;
-	}
+
+		/* next child */
+		node = node->next;
+		
+	}while (node != NULL);
 
 	/* no child was found */
 	return NULL;
@@ -1737,19 +1655,33 @@ axlNode * axl_node_get_child_called   (axlNode * parent, char * name)
  */
 axlNode * axl_node_get_child_nth      (axlNode * parent, int position)
 {
-	/* perform some environment checks */
-	axl_return_val_if_fail (parent, 
-				NULL);
-	axl_return_val_if_fail (position >= 0 && position < axl_list_length (parent->childs),
-				NULL);
+	int       iterator;
+	axlNode * node;
 
-	/* if not initialized childs list, assume there is no node at
-	 * the provided position */
-	if (parent->childs == NULL)
+	/* perform some environment checks */
+	axl_return_val_if_fail (parent, NULL);
+
+	/* check for first reference */
+	if (parent->first == NULL)
 		return NULL;
 
+	/* return first position child */
+	if (position == 0)
+		return parent->first;
 
-	return axl_list_get_nth (parent->childs, position);
+	/* if not, we are in the nth case */
+	iterator = 1;
+	node     = parent->first;
+	while ((node != NULL) && (iterator <= position)) {
+		/* check if can update until reached position */
+		node = node->next;
+
+		/* update iterator */
+		iterator++;
+	} /* end while */
+
+	/* return current node status */
+	return node;
 }
 
 /** 
@@ -1762,15 +1694,10 @@ axlNode * axl_node_get_child_nth      (axlNode * parent, int position)
 int       axl_node_get_child_num      (axlNode * parent)
 {
 	/* perform some environment checks */
-	axl_return_val_if_fail (parent, 
-				-1);
+	axl_return_val_if_fail (parent, -1);
 
-	/* if no child list is created, assume 0 */
-	if (parent->childs == NULL)
-		return 0;
-
-	/* return current child number */
-	return axl_list_length (parent->childs);
+	/* return the number of chils */
+	return parent->child_num;
 }
 
 
@@ -1778,17 +1705,77 @@ int       axl_node_get_child_num      (axlNode * parent)
  * @brief Allows to get childs nodes for the given xml node (\ref
  * axlNode).
  *
+ * This function creates a newly allocated list. In the case a
+ * iterating over all childs for the provided node is its better to
+ * use the following:
+ * \code
+ * axlNode * child;
+ *
+ * // get the first child 
+ * child = axl_node_get_first_child (parent);
+ * 
+ * // iterate over all nodes 
+ * while (child != NULL) {
+ *
+ *    // do something with the child 
+ *    do_some_work (child);
+ * 
+ *    // update the reference to the next child
+ *    child = axl_node_get_next (child);   
+ * }
+ * \endcode
+ *
  * @param node The node where the childs will be returned.
  * 
  * @return An \ref axlList containing \ref axlNode items or NULL if it
- * fails. The list returned must not be deallocated.
+ * fails. The list returned MUST be deallocated.
  */
 axlList * axl_node_get_childs         (axlNode * node)
 {
+	axlNode * child;
+	axlList * result;
+
 	axl_return_val_if_fail (node, NULL);
+	
+	/* create the result list without destroy function */
+	result  = axl_list_new (__axl_node_equal, NULL);
+	
+	/* get the first child */
+	child = node->first;
+
+	while (child != NULL) {
+		/* add the child to the list */
+		axl_list_add (result, child);
+
+		/* update the reference to the next child */
+		child = axl_node_get_next (child);
+	} /* end while */
 
 	/* return current childs */
-	return node->childs;
+	return result;
+}
+
+bool __axl_node_are_equal_attr (axlPointer key, 
+				axlPointer value, 
+				axlPointer user_data, 
+				axlPointer user_data2)
+{
+	char                * value2;
+	bool                * result = user_data2;
+	
+	/* get the attr value and compare it with data */
+	value2 = axl_hash_get ((axlHash *) user_data, (char *) key);
+
+	if (! axl_cmp ((char *) value, value2)) {
+		/* flag that node attributes aren't equal */
+		(* result) = false;
+
+		/* stop foreach */
+		return true;
+	}
+			
+	/* make the process to continue */
+	return false;
 }
 
 /** 
@@ -1805,11 +1792,7 @@ axlList * axl_node_get_childs         (axlNode * node)
  */
 bool          axl_node_are_equal          (axlNode * node, axlNode * node2)
 {
-	int             iterator = 0;
-	int             length;
-	
-	axlAttribute  * attr;
-	axlAttribute  * attr2;
+	bool result;
 	
 	axl_return_val_if_fail (node,  false);
 	axl_return_val_if_fail (node2, false);
@@ -1835,30 +1818,39 @@ bool          axl_node_are_equal          (axlNode * node, axlNode * node2)
 	}
 
 	/* check attribute values */
-	if (node->attributes != NULL) {
-		if (axl_list_length (node->attributes) != axl_list_length (node2->attributes)) {
+	if ((node->attributes != NULL && node2->attributes != NULL)) {
+
+		/* check the number of attributes that has the hash */
+		if (axl_hash_items (node->attributes) != axl_hash_items (node2->attributes)) {
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "both nodes have different number of attributes (%d != %d)",
+				   axl_hash_items (node->attributes), axl_hash_items (node2->attributes));
 			return false;
 		}
-		
-		length = axl_list_length (node->attributes);
-		while (iterator < length) {
-			/* get a reference to the attributes to compare */
-			attr  = axl_list_get_nth (node->attributes, iterator);
-			attr2 = axl_list_get_nth (node2->attributes, iterator);
-			
-			/* check attribute name */
-			if (! axl_cmp (attr->name, attr2->name))
-				return false;
-			
-			/* check attribute name */
-			if (! axl_cmp (attr->value, attr2->value))
-				return false;
-			
-			/* update the iterator index */
-			iterator++;
-		}
-	} /* end if */
 
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "both nodes have attributes and the same amount");
+		
+		/* now both hashes */
+		result = true;
+		axl_hash_foreach2 (node->attributes, __axl_node_are_equal_attr, node2->attributes, &result);
+
+		if (! result) {
+			/* attribute missmatch */
+			return false;
+		}
+	} else {
+		if (node->attributes == NULL && node2->attributes != NULL) {
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "node <%s> has no attributes but <%s> has",
+				   axl_node_get_name (node), axl_node_get_name (node2));
+			return false;
+		}
+
+		if (node2->attributes == NULL && node->attributes != NULL) {
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "node <%s> has no attributes but <%s> has",
+				   axl_node_get_name (node2), axl_node_get_name (node));
+			return false;
+		}
+
+	} /* end if */
 
 	/* both nodes seems to be equal */
 	return true;
@@ -2054,33 +2046,40 @@ axlList * axl_node_get_pi_target_list       (axlNode * node)
 	return node->piTargets;
 }
 
+bool __axl_node_get_flat_size_attributes_foreach (axlPointer attr, 
+						  axlPointer value, 
+						  axlPointer user_data)
+{
+	int * length = user_data;
+
+	/* " attribute='value' */
+	(*length) += 4 + strlen ((char*) attr) + strlen ((char*) value);
+
+	/* make the process to continue */
+	return false;
+}
+
 /** 
  * @internal
  * @brief Returns the space required to write the attribute part.
  */
 int __axl_node_get_flat_size_attributes (axlNode * node)
 {
-	axlAttribute * attr;
-	int            length;
-	int            iterator;
+
+	int            length = 0;
 	
 	/* if attribute list is not defined just return 0 */
 	if (node->attributes == NULL)
 		return 0;
 
-	length   = 0;
-	iterator = 0;
-	while (iterator < axl_list_length (node->attributes)) {
+	/* perform a foreach and accumulate */
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "get flat size for node <%s>", 
+		   axl_node_get_name (node));
+	
+	axl_hash_foreach (node->attributes, __axl_node_get_flat_size_attributes_foreach, &length);
 
-		/* get a reference to the attributes to compare */
-		attr   = axl_list_get_nth (node->attributes, iterator);
-
-		/* " attribute='value' */
-		length += 4 + strlen (attr->name) + strlen (attr->value);
-
-		/* update iterator */
-		iterator++;
-	}
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "after foreach flat size for node <%s> is %d", 
+		   axl_node_get_name (node), length);
 
 	/* return the length */
 	return length;
@@ -2142,6 +2141,40 @@ int       axl_node_get_flat_size            (axlNode * node)
 	return result;
 }
 
+bool __axl_node_dump_attributes_at_foreach (axlPointer key, 
+					    axlPointer value, 
+					    axlPointer user_data,
+					    axlPointer user_data2)
+{
+	char * content  = user_data;
+	int  * _desp    = user_data2;
+	int    desp     = (*_desp);
+	int    length;
+
+	memcpy (content + desp, " ", 1);
+	desp += 1;
+	
+	length = strlen ((char*) key);
+	memcpy (content + desp, (char *) key, length);
+	desp += length;
+	
+	memcpy (content + desp, "='", 2);
+	desp += 2;
+	
+	length = strlen ((char*) value);
+	memcpy (content + desp, (char*) value, length);
+	desp += length;
+	
+	memcpy (content + desp, "'", 1);
+	desp += 1;
+
+	/* update desp */
+	(*_desp) = desp;
+
+	/* make the process to continue */
+	return false;
+}
+
 /** 
  * @internal
  * 
@@ -2150,39 +2183,13 @@ int       axl_node_get_flat_size            (axlNode * node)
  */
 int axl_node_dump_attributes_at (axlNode * node, char * content, int desp)
 {
-	axlAttribute * attr;
-	int            length;
-	int            iterator;
 	
 	/* if attribute list is not defined just return 0 */
 	if (node->attributes == NULL)
 		return desp;
 
-	length   = 0;
-	iterator = 0;
-	while (iterator < axl_list_length (node->attributes)) {
-
-		/* get a reference to the attributes to compare */
-		attr   = axl_list_get_nth (node->attributes, iterator);
-
-		memcpy (content + desp, " ", 1);
-		desp += 1;
-
-		memcpy (content + desp, attr->name, strlen (attr->name));
-		desp += strlen (attr->name);
-
-		memcpy (content + desp, "='", 2);
-		desp += 2;
-
-		memcpy (content + desp, attr->value, strlen (attr->value));
-		desp += strlen (attr->value);
-
-		memcpy (content + desp, "'", 1);
-		desp += 1;
-
-		/* update iterator */
-		iterator++;
-	}
+	/* foreach attribute dump */
+	axl_hash_foreach2 (node->attributes, __axl_node_dump_attributes_at_foreach, content, &desp);
 
 	/* return the length */
 	return desp;
@@ -2296,6 +2303,8 @@ int       axl_node_dump_at                  (axlNode * node,
 
 void __axl_node_free_internal (axlNode * node)
 {
+	axlNode * child;
+
 	axl_return_if_fail (node);
 
 	/* free current node */
@@ -2314,15 +2323,24 @@ void __axl_node_free_internal (axlNode * node)
 
 	if (node->piTargets != NULL)
 		axl_list_free (node->piTargets);
-
+	
 	/* release memory hold by attributes */
 	if (node->attributes)
-		axl_list_free (node->attributes);
+		axl_hash_free (node->attributes);
 
 	/* release memory hold by childs */
-	if (node->childs != NULL) {
-		axl_list_free (node->childs);
+	child = node->first;
+	while (child != NULL) {
+		/* get a reference to the node */
+		node  = child;
+
+		/* update the child to the next */
+		child = child->next;
+
+		/* free the node */
+		axl_node_free (node);
 	}
+
 
 	/* do not free the node itself */
 	return;

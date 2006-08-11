@@ -45,6 +45,10 @@ BEGIN_C_DECLS
 axlHash       * axl_hash_new          (axlHashFunc    hash,
 				       axlEqualFunc   equal);
 
+axlHash       * axl_hash_new_full     (axlHashFunc    hash,
+				       axlEqualFunc   equal,
+				       int            step);
+
 unsigned int    axl_hash_string       (axlPointer key);
 
 
@@ -73,6 +77,11 @@ axlPointer      axl_hash_get          (axlHash * hash,
 void            axl_hash_foreach      (axlHash            * hash, 
 				       axlHashForeachFunc   func, 
 				       axlPointer           user_data);
+
+void            axl_hash_foreach2     (axlHash            * hash, 
+				       axlHashForeachFunc2  func, 
+				       axlPointer           user_data,
+				       axlPointer           user_data2);
 				
 int             axl_hash_items        (axlHash * hash);
 
