@@ -43,28 +43,19 @@
 #define LOG_DOMAIN "axl-stack"
 
 struct _axlStack {
-	axlList * list;
+	axlPointer * stack;
+	int          size;
+	int          items;
 };
 
 /**
- * \defgroup axl_stack_module Axl Stack: A stack built on top of axlList, used across AXL library
+ * \defgroup axl_stack_module Axl Stack: A stack built used across AXL library
  */
 
 /** 
  * \addtogroup axl_stack_module
  * @{
  */
-
-/** 
- * @internal
- *
- * Make the list to behave as it were a stack. Always return that the
- * element should be installed a the very begin of the list.
- */
-int __axl_stack_compare_func (axlPointer a, axlPointer b)
-{
-	return -1;
-}
 
 /** 
  * @brief Creates a new stack.
@@ -84,9 +75,9 @@ axlStack * axl_stack_new (axlDestroyFunc destroy_data)
 {
 	axlStack * stack;
 
+	/* create an empty stack */
 	stack       = axl_new (axlStack, 1);
-	stack->list = axl_list_new (__axl_stack_compare_func, destroy_data);
-	
+
 	return stack;
 }
 
@@ -105,8 +96,24 @@ void       axl_stack_push (axlStack * stack, axlPointer data)
 	axl_return_if_fail (stack);
 	axl_return_if_fail (data);
 
-	/* simply add the element */
-	axl_list_prepend (stack->list, data);
+	/* check if we have enough space to store the pointer */
+	if (stack->size == stack->items) {
+		if (stack->size == 0) {
+			/* ask for a single pointer */
+			stack->stack = axl_new (axlPointer, 1);
+		}else {
+			/* ask to grow the memory already allocated */
+			stack->stack = realloc (stack->stack, sizeof (axlPointer) * (stack->size + 1));
+		}
+		/* update the size available */
+		stack->size++;
+	}
+
+	/* store the item */
+	stack->stack[stack->items] = data;
+	
+	/* update items stored */
+	stack->items++;
 	
 	return;
 }
@@ -129,12 +136,12 @@ axlPointer axl_stack_pop  (axlStack * stack)
 	if (axl_stack_is_empty (stack))
 		return NULL;
 
-	/* get the first element of the stack */
-	pointer = axl_list_get_first (stack->list);
-	
-	/* remove the reference from the stack */
-	axl_list_unlink_first (stack->list);
-	
+	/* reduce the items stored */
+	stack->items--;
+
+	/* return the pointer */
+	pointer = stack->stack[stack->items];
+
 	return pointer;
 }
 
@@ -154,20 +161,71 @@ axlPointer axl_stack_peek (axlStack * stack)
 {
 	axl_return_val_if_fail (stack, NULL);
 
-#ifdef SHOW_DEBUG_LOG
-	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "peeking the stack with current size=%d", axl_list_length (stack->list));
-#endif
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "peeking the stack with current size=%d", stack->items);
 
 	/* do not perform any operation if the stack is empty */
 	if (axl_stack_is_empty (stack)) {
-#ifdef SHOW_DEBUG_LOG
-		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "peek operation over a empty stack was detected, returning NULL");
-#endif
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "peek operation over a empty stack was detected, returning NULL");
 		return NULL;
 	}
 
-	/* return the very first element */
-	return axl_list_get_first (stack->list);
+	/* return the very first element without poping */
+	return stack->stack[stack->items - 1];
+}
+
+/** 
+ * @brief Allows to perform a foreach operation from the head of the
+ * stack (the next item to be poped) to the tail of the stack (the
+ * very first item pushed).
+ *
+ * The foreach process is non intrusive: it doesn't perform any change
+ * of the stack, but allows to traverse all items in the natural order
+ * in which items are stored (push) and removed (pop).
+ *
+ * The function provided to perform the foreach operation will be
+ * called providing the stack data found, and the two user defined
+ * pointers provided. 
+ * 
+ * @param stack The stack where the foreach operation will be
+ * performed.
+ *
+ * @param func The foreach function to be called for each item found
+ * in the stack.
+ *
+ * @param user_data User defined pointer to be passed to the function
+ * provided.
+ *
+ * @param user_data2 User defined pointer to be passed to the function
+ * provided.
+ * 
+ * @return \ref true if the foreach process was performed completely
+ * through all items inside the stack or \ref false if not. The
+ * function will also return \ref false to indicate a failure the
+ * stack and func parameters are null.
+ */
+bool       axl_stack_foreach (axlStack         * stack, 
+			      axlStackForeach2   func,
+			      axlPointer         user_data, 
+			      axlPointer         user_data2)
+{
+	int iterator;
+
+	axl_return_val_if_fail (stack, false);
+	axl_return_val_if_fail (func, false);
+
+	/* for each item inside the stack */
+	iterator = 0;
+	while (iterator < stack->items) {
+		/* call fo the function and check returning value  */
+		if (func (stack->stack [stack->items - iterator - 1],  user_data,  user_data2))
+			return false;
+
+		/* update the iterator */
+		iterator ++;
+	}
+
+	/* iteration performed completely */
+	return true;
 }
 
 
@@ -183,7 +241,8 @@ int        axl_stack_size (axlStack * stack)
 {
 	axl_return_val_if_fail (stack, -1);
 
-	return axl_list_length (stack->list);
+	/* current items stored */
+	return stack->items;
 }
 
 
@@ -197,10 +256,9 @@ int        axl_stack_size (axlStack * stack)
 bool       axl_stack_is_empty (axlStack * stack)
 {
 	axl_return_val_if_fail (stack, false);
-
-	if (axl_list_length (stack->list) == 0)
-		return true;
-	return false;
+	
+	/* return if there are stored items in the stack */
+	return (stack->items == 0);
 }
 
 /** 
@@ -213,7 +271,8 @@ void       axl_stack_free (axlStack * stack)
 	axl_return_if_fail (stack);
 
 	/* destroy the list inside */
-	axl_list_free (stack->list);
+	if (stack->size > 0)
+		axl_free (stack->stack);
 	
 	/* destroy the stack */
 	axl_free (stack);

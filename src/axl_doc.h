@@ -61,9 +61,14 @@ axlDoc  * axl_doc_parse_strings            (axlError ** error,
 axlDoc  * axl_doc_parse_from_file          (char      * file_path,
 					    axlError ** error);
 
-void      axl_doc_dump                     (axlDoc  * doc, 
+bool      axl_doc_dump                     (axlDoc  * doc, 
 					    char   ** content, 
 					    int     * size);
+
+bool      axl_doc_dump_pretty              (axlDoc  * doc,
+					    char   ** content,
+					    int     * size,
+					    int       tabular);
 
 int       axl_doc_get_flat_size            (axlDoc * doc);
 
@@ -117,10 +122,23 @@ char    * axl_pi_get_content               (axlPI  * pi);
 
 void      axl_pi_free                      (axlPI  * pi);
 
-void      axl_doc_iterate                  (axlDoc           * doc,
+bool      axl_doc_iterate                  (axlDoc           * doc,
 					    AxlIterationMode   mode,
-					    AxlIterationFunc   func,
+					    axlIterationFunc   func,
 					    axlPointer         ptr);
+
+bool      axl_doc_iterate_full             (axlDoc           * doc,
+					    AxlIterationMode   mode,
+					    axlIterationFunc2  func,
+					    axlPointer         ptr,
+					    axlPointer         ptr2);
+
+bool      axl_doc_iterate_full_from        (axlDoc           * doc,
+					    axlNode          * starting_from,
+					    AxlIterationMode   mode,
+					    axlIterationFunc2  func,
+					    axlPointer         ptr,
+					    axlPointer         ptr2);
 
 /* private API starts from here, do not use this API */
 

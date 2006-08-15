@@ -752,6 +752,15 @@ typedef enum {
 	WIDE_ITERATION
 } AxlIterationMode;
 
+/**
+ * \defgroup axl_handlers Axl Handlers: Handlers declarations used by Axl Library functions.
+ */
+
+/** 
+ * \addtogroup axl_handlers
+ * @{
+ */
+
 /** 
  * @brief Axl iteration function definition.
  *
@@ -781,7 +790,42 @@ typedef enum {
  * @return The callback must return false in the case the iteration
  * must be stopped. Otherwise, true must be returned.
  */
-typedef bool (*AxlIterationFunc) (axlNode * node, axlNode * parent, axlDoc * doc, axlPointer ptr);
+typedef bool (*axlIterationFunc) (axlNode * node, axlNode * parent, axlDoc * doc, axlPointer ptr);
+
+/** 
+ * @brief Axl iteration function definition (with two user defined
+ * pointer support).
+ *
+ * This handler definition is used by \ref axl_doc_iterate_full as the
+ * function definition that will be called for each node found in the
+ * document.
+ *
+ * The function provides a pointer to the node found, the first
+ * paramenter, and additionally, provides a pointer to the parent node
+ * for the node found, the document where the node is found and an
+ * optional user defined pointer provided at the function calling
+ * (\ref axl_doc_iterate_full).
+ *
+ * The function returns a boolean value to signal the library to stop
+ * iterating over the XML structure if \ref false is returned. So, to
+ * continue the iteration, you must always return \ref true.
+ * 
+ * @param node The node found inside the document.
+ *
+ * @param parent The parent node for the node found (first parameter).
+ *
+ * @param doc The document that contains the node found.
+ * 
+ * @param ptr A user defined pointer that the user provided at \ref
+ * axl_doc_iterate_full.
+ *
+ * @param ptr2 Second user defined pointer that the user provided at
+ * \ref axl_doc_iterate_full.
+ * 
+ * @return The callback must return false in the case the iteration
+ * must be stopped. Otherwise, true must be returned.
+ */
+typedef bool (*axlIterationFunc2) (axlNode * node, axlNode * parent, axlDoc * doc, axlPointer ptr, axlPointer ptr2);
 
 /** 
  * @brief Defines a signature for a set of function that are used to
@@ -822,8 +866,10 @@ typedef bool (*axlLookupFunc) (axlPointer ptr, axlPointer data);
  * be stored into the hash. The value provided here usually is an
  * string but it could be any other data used as key. 
  * 
- * @return The function must return a positive value from 0 up to
- * 2^32-1 that will be used to index the content into the hash table.
+ * @return The function must return a positive value that will be used
+ * to index the content into the hash table. It doesn't matter if the
+ * number is greater than the table size. A modulo operation is
+ * applied to the result.
  */
 typedef unsigned int (*axlHashFunc) (axlPointer key);
 
@@ -868,6 +914,28 @@ typedef bool (* axlHashForeachFunc) (axlPointer key, axlPointer data, axlPointer
  */
 typedef bool (* axlHashForeachFunc2) (axlPointer key, axlPointer data, axlPointer user_data, axlPointer user_data2);
 
+/** 
+ * @brief Foreach function handler used at \ref axl_stack_foreach
+ * function to iterate all elements inside the stack, from the head to
+ * the tail.
+ *
+ * The function receives two user defined pointers that are defined at
+ * the \ref axl_stack_foreach function. 
+ * 
+ * @param stack_data A reference to the stack data stored.
+ *
+ * @param user_data A reference to a user defined pointer passed to
+ * \ref axl_stack_foreach.
+ *
+ * @param user_data2 A second reference to a user defined pointer
+ * passed to \ref axl_stack_foreach.
+ * 
+ * @return \ref true to make the foreach process to stop. \ref false
+ * to make the process to continue.
+ */
+typedef bool (* axlStackForeach2) (axlPointer stack_data, axlPointer user_data, axlPointer user_data2);
+
+/* @} */
 #endif
 
 /* @} */

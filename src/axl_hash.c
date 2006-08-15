@@ -71,7 +71,7 @@ struct _axlHash {
 	/* the hash table, implemented using chaining for collition
 	 * resolution. */
 	axlHashNode ** table;
-	
+
 	/* stored items in the hash */
 	int items;
 
@@ -94,8 +94,8 @@ unsigned int axl_hash_string (axlPointer _key)
 {
 	/* never is received a NULL value at this function, so, don't
 	 * check it */
-	unsigned int g, h = 0;
-	char       * key  = _key;
+	int    g, h = 0;
+	char * key  = _key;
   
 	/* hashing taken from the Red Dragon book!! */
 	while (*key) {
@@ -450,6 +450,10 @@ void            axl_hash_remove       (axlHash    * hash,
 	axl_return_if_fail (hash);
 	axl_return_if_fail (key);
 	
+	/* do not perform any operation if the hash is empty */
+	if (hash->hash_size == 0)
+		return;
+	
 	/* get the node at the provided position */
 	pos  = (hash->hash (key)) % hash->hash_size;
 	node = hash->table [pos];
@@ -523,9 +527,11 @@ axlPointer axl_hash_get         (axlHash * hash,
 
 	axl_return_val_if_fail (hash, NULL);
 	axl_return_val_if_fail (key, NULL);
-	
+
 	/* get the node at the provided position */
-	node = hash->table [(hash->hash (key)) % hash->hash_size];
+	if (hash->hash_size == 0)
+		return NULL;
+	node = hash->table [hash->hash (key) % hash->hash_size];
 
 	/* node not found */
 	if (node == NULL)
@@ -707,6 +713,10 @@ bool            axl_hash_exists       (axlHash    * hash,
 	if (hash == NULL)
 		return false;
 	axl_return_val_if_fail (key, false);
+
+	/* check empty hash value */
+	if (hash->hash_size == 0)
+		return false;
 	
 	/* get the node at the provided position */
 	node = hash->table [(hash->hash (key)) % hash->hash_size];
@@ -747,6 +757,71 @@ int             axl_hash_items        (axlHash * hash)
 	
 	/* return current items stored */
 	return hash->items;
+}
+
+/** 
+ * @internal Shows current hash status to the console.
+ * 
+ * The function is only useful for internal hash module purposes. It
+ * shows the numbers of items stored, the table size, the number of
+ * collitions, etc.
+ * 
+ * @param hash The hash where the status is requested.
+ */
+void            axl_hash_show_status  (axlHash * hash)
+{
+	axlHashNode * node;
+	int           iterator;
+	int           count;
+	axl_return_if_fail (hash);
+
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "axl hash table status:");
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "table size: %d   items: %d   step: %d",
+		   hash->hash_size, hash->items, hash->step);
+	/* get the number of empty blocks */
+	iterator = 0;
+	count    = 0;
+	while (iterator < hash->hash_size) {
+		/* empty item found */
+		if (hash->table[iterator] == NULL)
+			count++;
+
+		/* update iterator */
+		iterator++;
+	}
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "number of empty cells: %d", count);
+
+	/* get the number properly used cells (no collitions) */
+	iterator = 0;
+	count    = 0;
+	while (iterator < hash->hash_size) {
+		/* empty item found */
+		node = hash->table[iterator];
+		if (node != NULL && node->next == NULL)
+			count++;
+
+		/* update iterator */
+		iterator++;
+	}
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "number of properly used cells (no collition): %d", count);
+
+	/* get the number of collitioned cells */
+	iterator = 0;
+	count    = 0;
+	while (iterator < hash->hash_size) {
+		/* empty item found */
+		node = hash->table[iterator];
+		if (node != NULL && node->next != NULL)
+			count++;
+
+		/* update iterator */
+		iterator++;
+	}
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "number of collitioned cells: %d", count);
+
+
+	
+	return;
 }
 
 /** 

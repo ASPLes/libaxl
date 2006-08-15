@@ -57,6 +57,11 @@ axlPointer axl_stack_pop  (axlStack * stack);
 
 axlPointer axl_stack_peek (axlStack * stack);
 
+bool       axl_stack_foreach (axlStack         * stack, 
+			      axlStackForeach2   func,
+			      axlPointer         user_data, 
+			      axlPointer         user_data2);
+
 int        axl_stack_size (axlStack * stack);
 
 bool       axl_stack_is_empty (axlStack * stack);
