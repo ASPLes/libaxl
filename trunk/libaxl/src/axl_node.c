@@ -117,6 +117,12 @@ struct _axlNode {
 	axlNode       * next;
 
 	/** 
+	 * @internal Stores a reference to the previous node inside
+	 * the same level.
+	 */
+	axlNode       * previous;
+
+	/** 
 	 * @internal
 	 *
 	 * Internal reference to the whole xml document where the node
@@ -1053,6 +1059,28 @@ axlNode * axl_node_get_next           (axlNode * node)
 }
 
 /** 
+ * @brief Allows to get the previous reference from the reference node
+ * provided. 
+ *
+ * See \ref axl_node_get_next. Previous reference is the considered
+ * the previous node to the referenced provided that shares the same
+ * parent and it is situated in the same level.
+ * 
+ * @param node The node where the previous reference to the previous node will be returned.
+ * 
+ * @return The previous node reference or NULL if the node doesn't
+ * have previous reference or NULL if the function fails (the function
+ * only fails if the node reference provided is null).
+ */
+axlNode * axl_node_get_previous (axlNode * node)
+{
+	axl_return_val_if_fail (node, NULL);
+
+	/* return the previous reference */
+	return node->previous;
+}
+
+/** 
  * @brief Allows to get the first child that holds the node.
  * 
  * @param node The node that is requested to return its first child.
@@ -1554,6 +1582,7 @@ void      axl_node_set_child (axlNode * parent, axlNode * child)
 		parent->last->next = child;
 
 		/* update the last child reference */
+		child->previous    = parent->last;
 		parent->last       = child;
 	}
 
@@ -1561,6 +1590,141 @@ void      axl_node_set_child (axlNode * parent, axlNode * child)
 	parent->child_num++;
 		
         return;
+}
+
+
+/** 
+ * @brief Allows to replace a selected node, with the new reference
+ * inside its context (updating all references: next, previous and
+ * parent).
+ *
+ * If the node replace is inserted in a document, the replace also
+ * works. In fact, this function is designed to replace a node already
+ * inserted in an xml document (\ref axlDoc). If the node being
+ * replaced is the root one, this function will configured the new
+ * root node.
+ *
+ * Previous \ref axlNode will be unreference according to dealloc
+ * value. This function will replace the node provided by the second
+ * reference (no matter if the node is inside a document or not).
+ * 
+ * @param node The node to be replaced by the following reference.
+ *
+ * @param new_node The node that will replace the previous value.
+ *
+ * @param dealloc Signal if the previous node must be deallocated.
+ */
+void      axl_node_replace             (axlNode * node, 
+					axlNode * new_node,
+					bool      dealloc)
+{
+	axl_return_if_fail (node);
+	axl_return_if_fail (new_node);
+
+	if (node->parent == NULL) {
+		/* seems to be a root document */
+		if (node->doc != NULL) {
+			axl_doc_set_root (node->doc, new_node);
+		}
+	} else {
+
+		/* configure common values */
+		new_node->parent   = node->parent;
+		new_node->next     = node->next;
+		new_node->previous = node->previous;
+		new_node->doc      = node->doc;
+		
+		/* make previous node to point to the new node */
+		if (node->previous != NULL) {
+			node->previous->next = new_node;
+		}
+		
+		/* make next node to point to the new node */
+		if (node->next != NULL) {
+			node->next->previous = new_node;
+		}
+
+		/* now, update the parent reference */
+		if (node->previous == NULL) {
+			/* seems the node is the first child of the parent,
+			 * update the reference */
+			node->parent->first = new_node;
+		}
+		
+		if (node->next == NULL) {
+			/* seems the node is the last child of the parent,
+			 * update the reference */
+			node->parent->last = new_node;
+		}
+	}
+
+	/* dealloc node if configured so */
+	if (dealloc) {
+		/* free the node */
+		axl_node_free (node);
+	}
+	
+	return;
+}
+
+/** 
+ * @brief Allows to the remove the selected reference from the
+ * document containing it.
+ *
+ * The function remove the selected reference from the document. If
+ * the node asked to be removed is the root one, the node won't be
+ * removed because the \ref axl_doc_set_root doesn't accept to remove
+ * the root node.  removed the document
+ * 
+ * @param node The node to remove.
+ *
+ * @param dealloc \ref true to not only unlink relations but also
+ * remove the node.
+ */
+void      axl_node_remove             (axlNode * node,
+				       bool      dealloc)
+{
+	axl_return_if_fail (node);
+
+	if (node->parent != NULL) {
+
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "removing node <%s> with parent <%s>", 
+			   axl_node_get_name (node), axl_node_get_name (node->parent));
+
+		/* make previous node to point to the new node */
+		if (node->previous != NULL) {
+			node->previous->next = node->next;
+		}
+		
+		/* make next node to point to the new node */
+		if (node->next != NULL) {
+			node->next->previous = node->previous;
+		}
+
+		/* now, update the parent reference */
+		if (node->previous == NULL) {
+			/* seems the node is the first child of the parent,
+			 * update the reference */
+			node->parent->first = node->next;
+		}
+		
+		if (node->next == NULL) {
+			/* seems the node is the last child of the parent,
+			 * update the reference */
+			node->parent->last = node->previous;
+		}
+
+		/* decrease the number of childs the parent has */
+		node->parent->child_num--;
+	}
+	
+	/* dealloc node if configured so */
+	if (dealloc) {
+		/* free the node */
+		axl_node_free (node);
+	}
+	
+	return;
 }
 
 /** 
@@ -2092,13 +2256,17 @@ int __axl_node_get_flat_size_attributes (axlNode * node)
  * the are represented into a flat xml stream.
  * 
  * @param node The node that is requested its stream xml size.
+ *
+ * @param pretty_print If pretty print is activated.
+ *
+ * @param level Which is the relative level of the node respected to
+ * the root node.
  * 
  * @return The stream size or -1 if fails.
  */
-int       axl_node_get_flat_size            (axlNode * node)
+int       axl_node_get_flat_size            (axlNode * node, bool pretty_print, int level, int tabular)
 {
 	int       result   = 0;
-	int       iterator = 0;
 	axlNode * child;
 
 	axl_return_val_if_fail (node, -1);
@@ -2107,7 +2275,16 @@ int       axl_node_get_flat_size            (axlNode * node)
 	if (axl_node_is_empty (node)) {
 		if (! axl_node_have_childs (node)) {
 			/* "<" + strlen (node-name) + " />" */
-			return strlen (node->name) + 4 + __axl_node_get_flat_size_attributes (node);
+			result = strlen (node->name) + 4 + __axl_node_get_flat_size_attributes (node);
+
+			/* check pretty print */
+			if (pretty_print) {
+				/* one tabular plus one carry return \r\n */
+				result += (level * tabular) + 2;
+			}
+
+			/* return sum */
+			return result;
 		}
 	}
 
@@ -2118,22 +2295,35 @@ int       axl_node_get_flat_size            (axlNode * node)
 	if (node->content != NULL) {
 		/* the content is defined, get it */
 		result = 5 + (2 * strlen (node->name)) + node->content->content_size + __axl_node_get_flat_size_attributes (node);
+
+		/* check pretty_print */
+		if (pretty_print) {
+			/* two tabulations plus two carry return \r\n */
+			result += (level * tabular) + 2; 
+		}
+
 	} else {
 		result = 5 + (2 * strlen (node->name)) + __axl_node_get_flat_size_attributes (node);
+
+		/* check pretty_print */
+		if (pretty_print) {
+			/* two tabulations plus two carry return \r\n */
+			result += (level * tabular * 2) + 4; 
+		}
 	}
+
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "<%s> node size=%d", node->name, result);
 
 	/* if the node have childs */
 	if (axl_node_have_childs (node)) {
 
-		while (iterator < axl_node_get_child_num (node)) {
-			/* get a reference to the child */
-			child   = axl_node_get_child_nth (node, iterator);
-
+		child = axl_node_get_first_child (node);
+		while (child != NULL) {
 			/* count how many bytes the node holds */
-			result += axl_node_get_flat_size (child);
+			result += axl_node_get_flat_size (child, pretty_print, level + 1, tabular);
 
-			/* update the iterator reference */
-			iterator++;
+			/* update the reference */
+			child = axl_node_get_next (child);
 		}
 	}
 
@@ -2212,7 +2402,10 @@ int axl_node_dump_attributes_at (axlNode * node, char * content, int desp)
  */
 int       axl_node_dump_at                  (axlNode * node,
 					     char    * content,
-					     int       desp)
+					     int       desp,
+					     bool      pretty_print,
+					     int       level,
+					     int       tabular)
 {
 	int       iterator = 0;
 	axlNode * child;
@@ -2222,13 +2415,31 @@ int       axl_node_dump_at                  (axlNode * node,
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "dumping node=<%s> at %d", 
 		   axl_node_get_name (node), desp);
 
+	/* check for pretty print and tabular */
+	if (pretty_print) {
+		int iterator = 0;
+		while (iterator < (tabular * level)) {
+			/* write tabular info */
+			memcpy (content + desp, " ", 1);
+			
+			/* update desp */
+			desp++;
+			
+			/* update iterator */
+			iterator++;
+		} /* end while */
+
+	} /* end if */
+
 	/* check if the node is empty */
 	if (axl_node_is_empty (node)) {
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "the node <%s> is empty", 
 			   axl_node_get_name (node));
+
 		if (! axl_node_have_childs (node)) {
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "dumping an empty node without childs=<%s>",
 				   axl_node_get_name (node));
+			
 			/* "<" + strlen (node-name) + " />" */
 			memcpy (content + desp, "<", 1);
 			desp += 1;
@@ -2241,6 +2452,12 @@ int       axl_node_dump_at                  (axlNode * node,
 
 			memcpy (content + desp, " />", 3);
 			desp += 3;
+
+			/* write traling node information */
+			if (pretty_print) {
+				memcpy (content + desp, "\r\n", 2);
+				desp += 2;
+			}
 
 			return desp;
 		}
@@ -2264,19 +2481,40 @@ int       axl_node_dump_at                  (axlNode * node,
 
 	memcpy (content + desp, ">", 1);
 	desp += 1;
-		
+
 	/* if the node have childs */
 	if (axl_node_have_childs (node)) {
+
+		/* write traling node information */
+		if (node->content == NULL && pretty_print) {
+			memcpy (content + desp, "\r\n", 2);
+			desp += 2;
+		}
+
+		iterator = 0;
 		while (iterator < axl_node_get_child_num (node)) {
 			/* get a reference to the child */
 			child = axl_node_get_child_nth (node, iterator);
 
 			/* count how many bytes the node holds */
-			desp  = axl_node_dump_at (child, content, desp);
+			desp  = axl_node_dump_at (child, content, desp, pretty_print, level + 1, tabular);
 
 			/* update the iterator reference */
 			iterator++;
 		}
+
+		int iterator = 0;
+		while (iterator < (tabular * level)) {
+			/* write tabular info */
+			memcpy (content + desp, " ", 1);
+			
+			/* update desp */
+			desp++;
+			
+			/* update iterator */
+			iterator++;
+		} /* end while */
+
 	}else {
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "the node is not empty and have no childs");
 
@@ -2296,6 +2534,12 @@ int       axl_node_dump_at                  (axlNode * node,
 	
 	memcpy (content + desp,	">", 1);
 	desp += 1;
+
+	/* write traling node information */
+	if (pretty_print) {
+		memcpy (content + desp, "\r\n", 2);
+		desp += 2;
+	}
 
 	/* return the result */
 	return desp;

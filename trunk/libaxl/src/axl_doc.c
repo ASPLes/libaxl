@@ -591,9 +591,6 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 	int       length;
 	bool      delim;
 	
-	axl_return_val_if_fail (stream, false);
-	axl_return_val_if_fail (doc, false);
-	
 	/* consume a possible comment */
 	if (! axl_doc_consume_comments (doc, stream, error))
 		return false;
@@ -1074,40 +1071,79 @@ axlDoc  * axl_doc_create                   (char     * version,
 }
 
 /** 
- * @brief Allows to get the xml representation for the provided \ref
- * axlDoc reference.
- *
- * Given the \ref axlDoc reference, which represents a XML document,
- * this function allows to get its stringify representation.
+ * @internal Returns how many bytes will hold the document provided.
  * 
- * @param doc The \ref axlDoc to stringify
+ * @param doc The document to measure.
  *
- * @param content The reference where the result will be returned.
- *
- * @param size The reference where the document content size will be
- * returned.
+ * @param pretty_print If pretty print is activated.
+ * 
+ * @return The number of bytes or -1 if it fails.
  */
-void      axl_doc_dump                     (axlDoc  * doc, 
-					    char   ** content, 
-					    int     * size)
+int __axl_doc_get_flat_size_common (axlDoc * doc, bool pretty_print, int tabular) 
 {
+	
+	int result;
+	axl_return_val_if_fail (doc, -1);
+
+	/* count the xml header: 
+	 *
+	 * "<?xml version='1.0'" = 19 characters 
+	 * " standalone='yes'"   = 17 characters
+	 * " encoding='enc'"     = 12 characters + strlen (enc)
+	 * " ?>"                 = 3  characters
+	 *
+	 * if pretty print add: "\r\n" +2
+	 */
+	result = 22;
+
+	if (pretty_print)
+		result += 2;
+
+	if (doc->standalone)
+		result += 17;
+	
+	if (doc->encoding != NULL) {
+		result += 12 + strlen (doc->encoding);
+	}
+	
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "xml document header size=%d",
+		   result);
+
+	/* now, count every node that the document have */
+	result += axl_node_get_flat_size (doc->rootNode, pretty_print, 0, tabular);
+
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "xml document body size=%d",
+		   result);
+	
+	/* return current result */
+	return result;
+}
+
+/** 
+ * @internal
+ * Common implementation for the dumping functions.
+ */
+bool __axl_doc_dump_common (axlDoc * doc, char ** content, int * size, bool pretty_print, int tabular)
+{
+
 	char * result;
 	int    index;
 
 	/* perform some envrironmental checks */
-	axl_return_if_fail (doc);
-	axl_return_if_fail (content);
-	axl_return_if_fail (size);
+	axl_return_val_if_fail (doc, false);
+	axl_return_val_if_fail (content, false);
+	axl_return_val_if_fail (size, false);
 
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "getting document size..");
 
 	/* get the about of memory to allocate so the whole xml
 	 * document fit in only one memory block */
-	(* size) = axl_doc_get_flat_size (doc);
+	(* size)    = __axl_doc_get_flat_size_common (doc, pretty_print, tabular);
+	(* content) = NULL;
 
 	/* check returned size */
 	if ((* size) == -1)
-		return;
+		return false;
 
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "document dump size: %d", *size);
 	
@@ -1143,22 +1179,90 @@ void      axl_doc_dump                     (axlDoc  * doc,
 	/* header trailing */
 	memcpy (result + index, "?>", 2);
 	index += 2;
+
+	if (pretty_print) {
+		memcpy (result + index, "\r\n", 2);
+		index += 2;
+	}
 	
 	/* dump node information */
-
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "starting dump at: %d", index);
-	index    = axl_node_dump_at (doc->rootNode, result, index);
+	index    = axl_node_dump_at (doc->rootNode, result, index, pretty_print, 0, tabular);
+
+	/* check dump size */
+	if (*size != index) {
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "internal dump error, inconsitent size: calculated=%d != returned=%d",
+			   *size, index);
+
+		/* free allocated result */
+		axl_free (result);
+
+		*size    = -1;
+		*content = NULL;
+
+		return false;
+	}
 
 	/* set results */
 	*content = result;
 	*size    = index;
 	
-	return;
+	return true;
+}
+/** 
+ * @brief Allows to get the xml representation for the provided \ref
+ * axlDoc reference.
+ *
+ * Given the \ref axlDoc reference, which represents a XML document,
+ * this function allows to get its stringify representation.
+ * 
+ * @param doc The \ref axlDoc to stringify
+ *
+ * @param content The reference where the result will be returned.
+ *
+ * @param size The reference where the document content size will be
+ * returned.
+ *
+ * @return The function returns \ref true if the dump operation was
+ * performed. Otherwise \ref false is returned.
+ */
+bool      axl_doc_dump                     (axlDoc  * doc, 
+					    char   ** content, 
+					    int     * size)
+{
+	/* use common implementation */
+	return __axl_doc_dump_common (doc, content, size, false, 0);
+}
+
+
+/** 
+ * @brief Allows to perform a dump operation like \ref axl_doc_dump,
+ * but making the output to be pretty printed.
+ * 
+ * @param doc The \ref axlDoc reference to be dumped.
+ *
+ * @param content The reference that will hold the dumped information.
+ *
+ * @param size Result size for the dumped information.
+ *
+ * @param tabular The tabular size basic unit used for level
+ * tabulation. An appropiate value could be 4.
+ * 
+ * @return \ref true if the document was dumped, \ref false if
+ * something has failed.
+ */
+bool      axl_doc_dump_pretty              (axlDoc  * doc,
+					    char   ** content,
+					    int     * size,
+					    int       tabular)
+{
+	/* use common implementation */
+	return __axl_doc_dump_common (doc, content, size, true, tabular);
 }
 
 /** 
  * @brief Allows to get how much will take the \ref axlDoc instance
- * represented as an XML document.
+ * represented as an XML document in an storage device (like memory).
  *
  * @param doc The \ref axlDoc reference that is being requested to return its size.
  * 
@@ -1168,31 +1272,8 @@ void      axl_doc_dump                     (axlDoc  * doc,
  */
 int axl_doc_get_flat_size (axlDoc * doc)
 {
-	int result;
-	axl_return_val_if_fail (doc, -1);
-
-	/* count the xml header: 
-	 *
-	 * "<?xml version='1.0'" = 19 characters 
-	 * " standalone='yes'"   = 17 characters
-	 * " encoding='enc'"     = 12 characters + strlen (enc)
-	 * " ?>"                 = 3  characters
-	 *
-	 */
-	result = 22;
-	if (doc->standalone)
-		result += 17;
-	
-	if (doc->encoding != NULL) {
-		result += 12 + strlen (doc->encoding);
-	}
-	
-
-	/* now, count every node that the document have */
-	result += axl_node_get_flat_size (doc->rootNode);
-	
-	/* return current result */
-	return result;
+	/* use common implementation */
+	return __axl_doc_get_flat_size_common (doc, false, 0);
 }
 
 
@@ -1441,14 +1522,17 @@ bool __axl_doc_are_equal (axlNode * node, axlNode * node2)
 
 		/* check if these nodes are also equal */
 		if (! axl_node_are_equal (child, child2)) {
-			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "nodes <%s> and <%s> aren't equal", 
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "nodes <%s> and <%s> aren't equal, document is not equal", 
 				   axl_node_get_name (child), axl_node_get_name (child2));
 			return false;
 		}
 
 		/* check its childs */
-		if (! __axl_doc_are_equal (child, child2))
+		if (! __axl_doc_are_equal (child, child2)) {
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "nodes <%s> and <%s> aren't equal, document is not equal", 
+				   axl_node_get_name (child), axl_node_get_name (child2));
 			return false;
+		}
 
 		/* update iterator count */
 		iterator++;
@@ -2132,12 +2216,108 @@ void axl_pi_free (axlPI * pi)
 }
 
 /** 
+ * @internal
+ *
+ * Common implementation for \ref axl_doc_iterate and \ref axl_doc_iterate2.
+ */
+bool __axl_doc_iterate_common (axlDoc            * doc, 
+			       axlNode           * root,
+			       AxlIterationMode    mode, 
+			       axlIterationFunc    func, 
+			       axlIterationFunc2   func2, 
+			       axlPointer          ptr, 
+			       axlPointer          ptr2)
+{
+	int        iterator;
+	axlNode  * node;
+	axlNode  * nodeAux;
+
+	axlList  * pending;
+
+	/* check first node */
+	axl_return_val_if_fail (root, false);
+
+	/* notify first node found we pass in a null value because it
+	   doesn't have a * parent. */
+	if (func && ! func (root, NULL, doc, ptr))
+		return false;
+
+	if (func2 && ! func2 (root, NULL, doc, ptr, ptr2))
+		return false;
+
+	/* get childs */
+	pending  = axl_node_get_childs (root);
+
+	/* for each pending node */
+	while (axl_list_length (pending) > 0) {
+
+		/* get the first node inside the pending list */
+		node = axl_list_get_first (pending);
+
+		/* notify node found */
+		if (func && ! func (node, axl_node_get_parent (node), doc, ptr)) {
+			axl_list_free (pending);
+			return false;
+		}
+
+		/* notify node found */
+		if (func2 && ! func2 (node, axl_node_get_parent (node), doc, ptr, ptr2)) {
+			axl_list_free (pending);
+			return false;
+		}
+		
+		/* remove the node node from the pending list and add
+		 * all childs */
+		axl_list_remove_first (pending);
+
+		/* add all its childs */
+		if (axl_node_have_childs (node)) {
+			/* get first child */
+			nodeAux = axl_node_get_first_child (node);
+
+			/* get all items of the next level and add
+			 * them properly */
+			iterator = 0;
+			while (nodeAux != NULL) {
+
+				/* add to the pending list */
+				switch (mode) {
+				case DEEP_ITERATION:
+					/* add the element */
+					axl_list_add_at (pending, nodeAux, iterator);
+					
+					/* update the iterator */
+					iterator++;
+					break;
+
+				case WIDE_ITERATION:
+					/* add to the pending list */
+					axl_list_add (pending, nodeAux);
+					break;
+				} /* end switch */
+	
+
+				/* update to the next */
+				nodeAux = axl_node_get_next (nodeAux);
+				
+			} /* end while */
+		} /* end if */
+		
+	} /* end while */
+	
+	axl_list_free (pending);
+	
+	/* iteration performed completely */
+	return true;
+}
+
+/** 
  * @brief Allows to perform an iteration over the documented provided,
  * visiting all nodes inside it.
  *
  * The function allows to configure the iteration module using \ref
  * AxlIterationMode (mode variable) and providing a callback function
- * that will be called for each node found (\ref AxlIterationFunc).
+ * that will be called for each node found (\ref axlIterationFunc).
  *
  * The function, optionall, allows to provide a user pointer that will
  * be passed to the callback function. See documentation for the
@@ -2162,8 +2342,16 @@ void axl_pi_free (axlPI * pi)
  * {
  *      // show node found 
  *      printf ("Node found: %s\n", axl_node_get_name (node));
+ *
+ *      // don't stop iteration
+ *      return true;
  * }
  * \endcode
+ *
+ * See also alternative APIs:
+ * 
+ *   - \ref axl_doc_iterate_full
+ *   - \ref axl_doc_iterate_full_from
  * 
  * @param doc The xml document that will be iterated.
  *
@@ -2173,74 +2361,135 @@ void axl_pi_free (axlPI * pi)
  *
  * @param ptr An user defined pointer that will be passed to the
  * callback function.
+ *
+ * @return The function returns \ref true if the iteration was
+ * performed over all nodes or \ref false it it was stoped by the
+ * iteration function (by returning \ref false to stop the
+ * iteration). The function also false if the parameters provided doc
+ * or func are not defined.
  */
-void      axl_doc_iterate                  (axlDoc           * doc,
+bool      axl_doc_iterate                  (axlDoc           * doc,
 					    AxlIterationMode   mode,
-					    AxlIterationFunc   func,
+					    axlIterationFunc   func,
 					    axlPointer         ptr)
 {
-	axlNode  * node;
-	axlNode  * nodeAux;
-
-	axlList  * pending;
+	axlNode * root;
 
 	/* check basic data */
-	axl_return_if_fail (doc);
-	axl_return_if_fail (func);
+	axl_return_val_if_fail (doc, false);
+	axl_return_val_if_fail (func, false);
 
-	/* get first node */
-	node = axl_doc_get_root (doc);
-	axl_return_if_fail (node);
+	/* get the root node where the iteration will start */
+	root = axl_doc_get_root (doc);
 
-	/* notify first node found we pass in a null value because it
-	   doesn't have a * parent. */
-	if (! func (node, NULL, doc, ptr))
-		return;
+	/* call to common implementation */
+	return __axl_doc_iterate_common (doc, root, mode, func, NULL, ptr, NULL);
 
-	/* get childs */
-	pending  = axl_node_get_childs (node);
+}
 
-	/* for each pending node */
-	while (axl_list_length (pending) > 0) {
 
-		/* get the first node inside the pending list */
-		node = axl_list_get_first (pending);
+/** 
+ * @brief Allows to perform an iteration over the documented provided,
+ * visiting all nodes inside it (with two user defined pointers support).
+ *
+ * The function allows to configure the iteration module using \ref
+ * AxlIterationMode (mode variable) and providing a callback function
+ * that will be called for each node found (\ref axlIterationFunc).
+ *
+ * The function, optionall, allows to provide two user pointer that will
+ * be passed to the callback function. See documentation for the
+ * callback and the iteration module for more details. See also \ref axl_doc_iterate.
+ *
+ * 
+ * @param doc The xml document that will be iterated.
+ *
+ * @param mode The iterarion type to be performed.
+ *
+ * @param func The function to be called for each node found.
+ *
+ * @param ptr An user defined pointer that will be passed to the
+ * callback function.
+ *
+ * @param ptr2 Second user defined pointer that will be passed to the
+ * callback function.
+ * 
+ *
+ * @return The function returns \ref true if the iteration was
+ * performed over all nodes or \ref false it it was stoped by the
+ * iteration function (by returning \ref false to stop the
+ * iteration). The function also false if the parameters provided doc
+ * or func are not defined.
+ */
+bool      axl_doc_iterate_full             (axlDoc            * doc,
+					    AxlIterationMode    mode,
+					    axlIterationFunc2   func,
+					    axlPointer          ptr,
+					    axlPointer          ptr2)
 
-		/* notify node found */
-		if (! func (node, axl_node_get_parent (node), doc, ptr)) {
-			axl_list_free (pending);
-			return;
-		}
-		
-		/* remove the node node from the pending list and add
-		 * all childs */
-		axl_list_remove_first (pending);
+{
+	axlNode * root;
 
-		/* add all its childs */
-		if (axl_node_have_childs (node)) {
-			/* get first child */
-			nodeAux = axl_node_get_first_child (node);
-			while (nodeAux != NULL) {
-				/* add to the pending list */
-				switch (mode) {
-				case DEEP_ITERATION:
-					axl_list_prepend (pending, nodeAux);
-					break;
-				case WIDE_ITERATION:
-					axl_list_add (pending, nodeAux);
-					break;
-				}
+	/* check basic data */
+	axl_return_val_if_fail (doc, false);
+	axl_return_val_if_fail (func, false);
 
-				/* update to the next */
-				nodeAux = axl_node_get_next (nodeAux);
-			}
-		} /* end if */
-		
-	} /* end while */
+	/* get the root node where the iteration will start */
+	root = axl_doc_get_root (doc);
 	
-	axl_list_free (pending);
-	
-	return;
+	/* call to common implementation */
+	return __axl_doc_iterate_common (doc, root, mode, NULL, func, ptr, ptr2);
+}
+
+/** 
+ * @brief Allows to perform a iteration operation but configuring
+ * where to start, discarding the rest content.
+ *
+ * See \ref axl_doc_iterate and \ref axl_doc_iterate_full for more
+ * details. This function works the same like previous but, unlike
+ * previous, this function doesn't use the default starting point: the
+ * root node (\ref axl_doc_get_root). The function allows to configure
+ * the node where to start the iteration operation. 
+ *
+ * This function is equivalent to \ref axl_doc_iterate_full calling if
+ * it use the root node document as value for <b>starting_from</b>.
+ * 
+ * @param doc The xml document that will be iterated.
+ *
+ * @param starting_from The \ref axlNode where the operation will
+ * start, discarding all content from ascending nodes, previous
+ * siblings and following sibligins. From a iteration perspective, the
+ * iteration opeeration.
+ *
+ * @param mode The iterarion type to be performed.
+ *
+ * @param func The function to be called for each node found.
+ *
+ * @param ptr An user defined pointer that will be passed to the
+ * callback function.
+ *
+ * @param ptr2 Second user defined pointer that will be passed to the
+ * callback function.
+ * 
+ *
+ * @return The function returns \ref true if the iteration was
+ * performed over all nodes or \ref false it it was stoped by the
+ * iteration function (by returning \ref false to stop the
+ * iteration). The function also false if the parameters provided doc
+ * or func are not defined.
+ */
+bool      axl_doc_iterate_full_from        (axlDoc           * doc,
+					    axlNode          * starting_from,
+					    AxlIterationMode   mode,
+					    axlIterationFunc2  func,
+					    axlPointer         ptr,
+					    axlPointer         ptr2)
+{
+	/* check basic data */
+	axl_return_val_if_fail (doc, false);
+	axl_return_val_if_fail (func, false);
+
+	/* call to common implementation */
+	return __axl_doc_iterate_common (doc, starting_from, mode, NULL, func, ptr, ptr2);
 }
 
 

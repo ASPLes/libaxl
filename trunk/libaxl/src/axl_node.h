@@ -107,12 +107,21 @@ axlNode * axl_node_get_parent         (axlNode * node);
 
 axlNode * axl_node_get_next           (axlNode * node);
 
+axlNode * axl_node_get_previous       (axlNode * node);
+
 axlNode * axl_node_get_first_child    (axlNode * node);
 
 axlNode * axl_node_get_last_child     (axlNode * node);
 
 void      axl_node_set_child          (axlNode * parent, 
 				       axlNode * child);
+
+void      axl_node_replace            (axlNode * node, 
+				       axlNode * new_node,
+				       bool      dealloc);
+
+void      axl_node_remove             (axlNode * node,
+				       bool      dealloc);
 
 void      axl_node_set_is_empty       (axlNode  * node, 
 				       bool       empty);
@@ -169,11 +178,17 @@ char    * axl_node_get_pi_target_content    (axlNode * node,
 
 axlList * axl_node_get_pi_target_list       (axlNode * node);
 
-int       axl_node_get_flat_size            (axlNode * node);
+int       axl_node_get_flat_size            (axlNode * node,
+					     bool      pretty_print,
+					     int       level,
+					     int       tabular);
 
 int       axl_node_dump_at                  (axlNode * node,
 					     char    * content,
-					     int       desp);
+					     int       desp,
+					     bool      pretty_print,
+					     int       level,
+					     int       tabular);
 
 void      axl_node_free            (axlNode * node);
 

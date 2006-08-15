@@ -462,6 +462,7 @@
  *    - \ref axl_node_module
  *    - \ref axl_dtd_module
  *    - \ref axl_decl_module
+ *    - \ref axl_handlers
  *  </li>
  *  <li><b>Error reporting and debuging functions: </b></li>
  * 

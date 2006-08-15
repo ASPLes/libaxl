@@ -416,6 +416,91 @@ void      axl_list_add    (axlList * list, axlPointer pointer)
 }
 
 /** 
+ * @brief Allows to adds the provided item to the given list at the
+ * selected position.
+ *
+ * The function will perform an indexed addition, using the value
+ * <b>position</b>, by-passing current list configuration (\ref
+ * axl_list_new).
+ *
+ * If the position is greater than the length of the list, the item is
+ * added at the end of the list. If the position is 0, the item is
+ * added at the begin (equivalent to call \ref axl_list_prepend). 
+ *
+ * If an item is found at the provided position, the element is added
+ * before the already found.
+ * 
+ * @param list The list where the addition operation will be performed.
+ * 
+ * @param pointer The item to add to the list.
+ *
+ * @param position Position where the addition operation will be
+ * performed. Values allowed ranges from 0 up to list length - 1.
+ */
+void       axl_list_add_at (axlList * list, axlPointer pointer, int position)
+{
+	int           iterator;
+	axlListNode * node;
+	axlListNode * new_node;
+
+	/* check incoming values */
+	axl_return_if_fail (list);
+	axl_return_if_fail (pointer);
+
+	/* check if we have a prepend operation */
+	if (position <= 0) {
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "adding item using prepend");
+		/* prepend */
+		axl_list_prepend (list, pointer);
+
+		return;
+	}
+	/* check if we have an append operation */
+	if (position >= list->length) {
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "adding item using append (position=%d >= length=%d)",
+			   position, list->length);
+		/* append */
+		axl_list_append (list, pointer);
+		
+		return;
+	}
+	
+	/* allocate a new node */
+	new_node         = __axl_list_get_next_node_available (list); 
+	new_node->data   = pointer;
+	
+
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "looking node position: %d", position);
+
+	/* basic case isn't reached here (remove first and last
+	 * cases) */
+	iterator = 1;
+	node     = list->first_node->next;
+	while (iterator < position) {
+
+		/* get the next element */
+		node = node->next;
+		
+		/* update the iterator */
+		iterator++;
+	}
+
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "adding item at: %d", iterator);
+
+	/* add the element */
+	new_node->previous = node->previous;
+	if (node->previous != NULL)
+		node->previous->next = new_node;
+	
+	new_node->next     = node;
+	node->previous     = new_node;
+
+	/* update number of items inside */
+	list->length++;
+	return;
+}
+
+/** 
  * @brief Allows to add a node to the provided list, at the first
  * position, without taking into consideration current \ref axlList
  * configuration (\ref axlEqualFunc at \ref axl_list_new). 

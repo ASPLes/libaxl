@@ -52,6 +52,8 @@ axlList  * axl_list_copy   (axlList * list, axlDuplicateFunc func);
 
 void       axl_list_add    (axlList * list, axlPointer pointer);
 
+void       axl_list_add_at (axlList * list, axlPointer pointer, int position);
+
 void       axl_list_prepend (axlList * list, axlPointer pointer);
 
 void       axl_list_append  (axlList * list, axlPointer pointer);

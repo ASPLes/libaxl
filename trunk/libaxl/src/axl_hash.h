@@ -51,7 +51,6 @@ axlHash       * axl_hash_new_full     (axlHashFunc    hash,
 
 unsigned int    axl_hash_string       (axlPointer key);
 
-
 int             axl_hash_equal_string (axlPointer keya, 
 				       axlPointer keyb);
 
@@ -84,6 +83,8 @@ void            axl_hash_foreach2     (axlHash            * hash,
 				       axlPointer           user_data2);
 				
 int             axl_hash_items        (axlHash * hash);
+
+void            axl_hash_show_status  (axlHash * hash);
 
 void            axl_hash_free         (axlHash * hash);
 			   
