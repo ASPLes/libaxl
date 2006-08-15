@@ -101,7 +101,78 @@ bool test_01 ()
 	}
 
 	axl_list_free (list);
+
+	/* create a new list */
+	list = axl_list_new (axl_list_equal_string, NULL);
+
+	axl_list_add (list, "test 1");
+	axl_list_add (list, "test 3");
+	axl_list_add (list, "test 5");
+
+	axl_list_add_at (list, "test 0", 0);
+	axl_list_add_at (list, "test 2", 2);
+	axl_list_add_at (list, "test 4", 4);
+	axl_list_add_at (list, "test 6", 6);
+
+	if (! axl_list_exists_at (list, "test 0", 0)) {
+		printf ("\"Exists at\" functionality seems to not work (0)\n");
+		return false;
+	}
+
+	if (! axl_list_exists_at (list, "test 1", 1)) {
+		printf ("\"Exists at\" functionality seems to not work (1)\n");
+		return false;
+	}
+
+	if (! axl_list_exists_at (list, "test 2", 2)) {
+		printf ("\"Exists at\" functionality seems to not work (2)\n");
+		return false;
+	}
+
+	if (! axl_list_exists_at (list, "test 3", 3)) {
+		printf ("\"Exists at\" functionality seems to not work (3)\n");
+		return false;
+	}
+
+	if (! axl_list_exists_at (list, "test 4", 4)) {
+		printf ("\"Exists at\" functionality seems to not work (4)\n");
+		return false;
+	}
+
+	if (! axl_list_exists_at (list, "test 5", 5)) {
+		printf ("\"Exists at\" functionality seems to not work (5)\n");
+		return false;
+	}
+
+	if (! axl_list_exists_at (list, "test 6", 6)) {
+		printf ("\"Exists at\" functionality seems to not work (6)\n");
+		return false;
+	}
+
+	/* free the list */
+	axl_list_free (list);
 	
+	return true;
+}
+
+bool test_02_foreach (axlPointer stack_data, 
+		      axlPointer user_data, 
+		      axlPointer user_data2)
+{
+	int * iterator = user_data;
+
+	if ((*iterator == 0) && axl_cmp ((char*) stack_data, "test 3")) {
+		(*iterator)++;
+		return false;
+	} else if ((*iterator == 1) && axl_cmp ((char*) stack_data, "test 2")) {
+		(*iterator)++;
+		return false;
+	} else if ((*iterator == 2) && axl_cmp ((char*) stack_data, "test 1")) {
+		(*iterator)++;
+		return false;
+	}
+	
+	/* return true to stop operations */
 	return true;
 }
 
@@ -117,6 +188,7 @@ bool test_02 ()
 {
 	axlStack * stack;
 	char     * value;
+	int        iterator = 0;
 
 	/* create the stack */
 	stack = axl_stack_new (NULL);
@@ -124,6 +196,14 @@ bool test_02 ()
 	axl_stack_push (stack, "test 1");
 	axl_stack_push (stack, "test 2");
 	axl_stack_push (stack, "test 3");
+
+	/* check foreach function */
+	axl_stack_foreach (stack, test_02_foreach, &iterator, NULL);
+
+	if (iterator != 3) {
+		printf ("Wrong value expected while using the foreach function\n");
+		return false;
+	}
 
 	if (axl_stack_size (stack) != 3) {
 		printf ("Wrong stack size expected ..\n");
