@@ -487,6 +487,9 @@ bool test_01 ()
 	axl_hash_insert (hash, "wine11", "wine11");
 	axl_hash_insert (hash, "bread11", "bread11");
 
+	/* show hash status */
+	axl_hash_show_status  (hash);
+
 	/* perform checks */
 	iterator = 0;
 	while (iterator < 1000) {

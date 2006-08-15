@@ -8,6 +8,203 @@
  * 
  * @return true if the validity test is passed, false if not.
  */
+bool test_19 (axlError ** error)
+{
+	axlDoc  * doc;
+	axlDoc  * reference;
+	axlNode * node;
+	axlNode * replace;
+
+	/* create replace node */
+	replace = axl_node_create ("replace");
+	axl_node_set_content (replace, "test", -1);
+
+	doc = axl_doc_parse_from_file ("test_19.xml", error);
+	if (doc == NULL)
+		return false;
+	
+	/* document */
+	node = axl_doc_get_root (doc);
+	/* child1 */
+	node = axl_node_get_first_child (node);
+	/* child2 */
+	node = axl_node_get_first_child (node);
+	
+	/* replace */
+	axl_node_replace (node, replace, false);
+
+	reference = axl_doc_parse_from_file ("test_19a.xml", error);
+	if (reference == NULL)
+		return false;
+
+	/* check both documents to be equal */
+	if (! axl_doc_are_equal (doc, reference)) {
+		axl_error_new (-1, "Expected to find equal documents, but not found on first child replace", NULL, error);
+		return false;
+	}
+
+	/* free reference */
+	axl_doc_free (reference);
+
+	/* restore */
+	axl_node_replace (replace, node, false);
+
+	/* get child2 */
+	node = axl_node_get_next (node);
+	
+	/* replace */
+	axl_node_replace (node, replace, false);
+
+
+	reference = axl_doc_parse_from_file ("test_19b.xml", error);
+	if (reference == NULL)
+		return false;
+
+	/* check both documents to be equal */
+	if (! axl_doc_are_equal (doc, reference)) {
+		axl_error_new (-1, "Expected to find equal documents, but not found on first child replace", NULL, error);
+		return false;
+	}
+
+	/* free reference */
+	axl_doc_free (reference);	
+
+	/* restore */
+	axl_node_replace (replace, node, false);
+
+	/* get child2 */
+	node = axl_node_get_next (node);
+	/* get child2 */
+	node = axl_node_get_next (node);
+	
+	/* replace */
+	axl_node_replace (node, replace, true);
+
+	reference = axl_doc_parse_from_file ("test_19c.xml", error);
+	if (reference == NULL)
+		return false;
+
+	/* check both documents to be equal */
+	if (! axl_doc_are_equal (doc, reference)) {
+		axl_error_new (-1, "Expected to find equal documents, but not found on first child replace", NULL, error);
+		return false;
+	}
+
+	/* free reference */
+	axl_doc_free (reference);	
+
+	node = axl_node_create ("child5");
+	axl_node_set_content (node, "test", -1);
+
+	/* replace */
+	axl_node_replace (replace, node, true);
+
+	/* document */
+	node = axl_doc_get_root (doc);
+	/* child1 */
+	node = axl_node_get_first_child (node);
+	/* child2 */
+	node = axl_node_get_first_child (node);	
+
+	/* remove child2 */
+	axl_node_remove (node, true);
+
+	reference = axl_doc_parse_from_file ("test_19d.xml", error);
+	if (reference == NULL)
+		return false;
+
+	/* check both documents to be equal */
+	if (! axl_doc_are_equal (doc, reference)) {
+		axl_error_new (-1, "Expected to find equal documents, but not found on first child remove", NULL, error);
+		return false;
+	}
+
+	/* free reference */
+	axl_doc_free (reference);	
+
+	/* document */
+	node = axl_doc_get_root (doc);
+	/* child1 */
+	node = axl_node_get_first_child (node);
+	/* child3 */
+	node = axl_node_get_first_child (node);	
+
+	/* remove child3 */
+	axl_node_remove (node, true);
+
+	reference = axl_doc_parse_from_file ("test_19e.xml", error);
+	if (reference == NULL)
+		return false;
+
+	/* check both documents to be equal */
+	if (! axl_doc_are_equal (doc, reference)) {
+		axl_error_new (-1, "Expected to find equal documents, but not found on first child remove", NULL, error);
+		return false;
+	}
+
+	/* free reference */
+	axl_doc_free (reference);	
+
+	/* document */
+	node = axl_doc_get_root (doc);
+	/* child1 */
+	node = axl_node_get_first_child (node);
+	/* child4 */
+	node = axl_node_get_first_child (node);	
+
+	/* remove child4 */
+	axl_node_remove (node, true);
+
+	reference = axl_doc_parse_from_file ("test_19f.xml", error);
+	if (reference == NULL)
+		return false;
+
+	/* check both documents to be equal */
+	if (! axl_doc_are_equal (doc, reference)) {
+		axl_error_new (-1, "Expected to find equal documents, but not found on first child remove", NULL, error);
+		return false;
+	}
+
+	/* free reference */
+	axl_doc_free (reference);	
+
+	/* document */
+	node = axl_doc_get_root (doc);
+	/* child1 */
+	node = axl_node_get_first_child (node);
+	/* child5 */
+	node = axl_node_get_first_child (node);	
+
+	/* remove child5 */
+	axl_node_remove (node, true);
+
+	reference = axl_doc_parse_from_file ("test_19g.xml", error);
+	if (reference == NULL)
+		return false;
+
+	/* check both documents to be equal */
+	if (! axl_doc_are_equal (doc, reference)) {
+		axl_error_new (-1, "Expected to find equal documents, but not found on first child remove", NULL, error);
+		return false;
+	}
+
+	/* free reference */
+	axl_doc_free (reference);	
+	
+	/* free document */
+	axl_doc_free (doc);
+
+	/* free reference */
+	return true;
+}
+
+/** 
+ * @brief Test entity support (basic entity support).
+ * 
+ * @param error The optional axlError to be used to report errors.
+ * 
+ * @return true if the validity test is passed, false if not.
+ */
 bool test_18 (axlError ** error)
 {
 	axlDtd * dtd = NULL;
@@ -366,6 +563,57 @@ bool test_13 (axlError ** error)
 	axl_doc_free (doc);
 
 	/* free axl document */
+	axl_doc_free (doc2);
+
+	doc = axl_doc_parse_from_file ("test_13c.xml", error);
+	if (doc == NULL)
+		return false;
+
+	if (! axl_doc_dump_pretty (doc, &content, &size, 4)) {
+		axl_error_new (-1, "Failed to dump pretty print, while expected a proper execution", NULL, error);
+		return false;
+	}
+
+	doc2 = axl_doc_parse (content, size, error);
+	if (doc2 == NULL)
+		return false;
+
+	/* free content */
+	axl_free (content);
+
+	if (! axl_doc_are_equal (doc, doc2)) {
+		axl_error_new (-1, "Expected to find documents to be equal.", NULL, error);
+		return false;
+	}
+
+	/* free both document references */
+	axl_doc_free (doc);
+	axl_doc_free (doc2);
+
+	/* check pretty printing function */
+	doc = axl_doc_parse_from_file ("test_13b.xml", error);
+	if (doc == NULL) 
+		return false;
+
+	if (! axl_doc_dump_pretty (doc, &content, &size, 4)) {
+		axl_error_new (-1, "Failed to dump pretty print, while expected a proper execution", NULL, error);
+		return false;
+	}
+
+	doc2 = axl_doc_parse (content, size, error);
+	if (doc2 == NULL)
+		return false;
+
+	if (! axl_doc_are_equal (doc, doc2)) {
+		axl_error_new (-1, "Expected to find documents to be equal.", NULL, error);
+		return false;
+	}
+
+	/* free content */
+	axl_free (content);
+
+	/* free both document references */
+	axl_doc_free (doc);
 	axl_doc_free (doc2);
 	
 	return true;
@@ -1454,6 +1702,470 @@ bool test_01a (axlError ** error)
 	return true;
 }
 
+
+
+
+bool test_01b_show_node_found (axlNode * node, 
+			       axlNode * parent,
+			       axlDoc  * doc,  
+			       axlPointer ptr, axlPointer ptr2)
+{
+	int * iterator = ptr;
+
+	/* show node found  */
+	switch (*iterator) {
+	case 0:
+		/* <document> case */
+		if (! NODE_CMP_NAME (node, "document")) {
+			/* fill the error */
+			axl_error_new (-1, "Expected to find a document node not found <document>", NULL, (axlError **) ptr2);
+
+			/* stop iterating */
+			return false;
+		}
+		break;
+	case 1:
+		/* <child1> case */
+		if (! NODE_CMP_NAME (node, "child1")) {
+			/* fill the error */
+			axl_error_new (-1, "Expected to find a document node not found <document>", NULL, (axlError **) ptr2);
+
+			/* stop iterating */
+			return false;
+		}
+		break;
+	case 2:
+		/* <child2> case */
+		if (! NODE_CMP_NAME (node, "child2")) {
+			/* fill the error */
+			axl_error_new (-1, "Expected to find a document node not found <child2>", NULL, (axlError **) ptr2);
+
+			/* stop iterating */
+			return false;
+		}
+		break;
+	case 3:
+		/* <child3> case */
+		if (! NODE_CMP_NAME (node, "child3")) {
+			/* fill the error */
+			axl_error_new (-1, "Expected to find a document node not found <child3>", NULL, (axlError **) ptr2);
+
+			/* stop iterating */
+			return false;
+		}
+		break;
+	case 4:
+		/* <a> case */
+		if (! NODE_CMP_NAME (node, "a")) {
+			/* fill the error */
+			axl_error_new (-1, "Expected to find a document node not found <a>", NULL, (axlError **) ptr2);
+
+			/* stop iterating */
+			return false;
+		}
+		break;
+	case 5:
+		/* <b> case */
+		if (! NODE_CMP_NAME (node, "b")) {
+			/* fill the error */
+			axl_error_new (-1, "Expected to find a document node not found <b>", NULL, (axlError **) ptr2);
+
+			/* stop iterating */
+			return false;
+		}
+		break;
+	case 6:
+		/* <c> case */
+		if (! NODE_CMP_NAME (node, "c")) {
+			/* fill the error */
+			axl_error_new (-1, "Expected to find a document node not found <c>", NULL, (axlError **) ptr2);
+
+			/* stop iterating */
+			return false;
+		}
+		break;
+	case 7:
+		/* <d> case */
+		if (! NODE_CMP_NAME (node, "d")) {
+			/* fill the error */
+			axl_error_new (-1, "Expected to find a document node not found <d>", NULL, (axlError **) ptr2);
+
+			/* stop iterating */
+			return false;
+		}
+		break;
+	case 8:
+		/* <e> case */
+		if (! NODE_CMP_NAME (node, "e")) {
+			/* fill the error */
+			axl_error_new (-1, "Expected to find a document node not found <e>", NULL, (axlError **) ptr2);
+
+			/* stop iterating */
+			return false;
+		}
+		break;
+	case 9:
+		/* <e> case */
+		if (! NODE_CMP_NAME (node, "f")) {
+			/* fill the error */
+			axl_error_new (-1, "Expected to find a document node not found <f>", NULL, (axlError **) ptr2);
+
+			/* stop iterating */
+			return false;
+		}
+		break;
+	case 10:
+		/* <g> case */
+		if (! NODE_CMP_NAME (node, "g")) {
+			/* fill the error */
+			axl_error_new (-1, "Expected to find a document node not found <g>", NULL, (axlError **) ptr2);
+
+			/* stop iterating */
+			return false;
+		}
+		break;
+	case 11:
+		/* <child4> case */
+		if (! NODE_CMP_NAME (node, "child4")) {
+			/* fill the error */
+			axl_error_new (-1, "Expected to find a document node not found <child4>", NULL, (axlError **) ptr2);
+
+			/* stop iterating */
+			return false;
+		}
+		break;
+	case 12:
+		/* <child5> case */
+		if (! NODE_CMP_NAME (node, "child5")) {
+			/* fill the error */
+			axl_error_new (-1, "Expected to find a document node not found <child5>", NULL, (axlError **) ptr2);
+
+			/* stop iterating */
+			return false;
+		}
+		break;
+	}
+
+	/* update count */
+	(*iterator)++;
+
+	/* keep iterating */
+	return true;
+}
+
+
+bool test_01b_show_node_found2 (axlNode * node, 
+				axlNode * parent,
+				axlDoc  * doc,  
+				axlPointer ptr, axlPointer ptr2)
+{
+	int * iterator = ptr;
+
+	/* show node found  */
+	switch (*iterator) {
+	case 0:
+		/* <document> case */
+		if (! NODE_CMP_NAME (node, "document")) {
+			/* fill the error */
+			axl_error_new (-1, "Expected to find a document node not found <document>", NULL, (axlError **) ptr2);
+
+			/* stop iterating */
+			return false;
+		}
+		break;
+	case 1:
+		/* <child1> case */
+		if (! NODE_CMP_NAME (node, "child1")) {
+			/* fill the error */
+			axl_error_new (-1, "Expected to find a document node not found <document>", NULL, (axlError **) ptr2);
+
+			/* stop iterating */
+			return false;
+		}
+		break;
+	case 2:
+		/* <child2> case */
+		if (! NODE_CMP_NAME (node, "child2")) {
+			/* fill the error */
+			axl_error_new (-1, "Expected to find a document node not found <child2>", NULL, (axlError **) ptr2);
+
+			/* stop iterating */
+			return false;
+		}
+		break;
+	case 3:
+		/* <child3> case */
+		if (! NODE_CMP_NAME (node, "child3")) {
+			/* fill the error */
+			axl_error_new (-1, "Expected to find a document node not found <child3>", NULL, (axlError **) ptr2);
+
+			/* stop iterating */
+			return false;
+		}
+		break;
+	case 4:
+		/* <child4> case */
+		if (! NODE_CMP_NAME (node, "child4")) {
+			/* fill the error */
+			axl_error_new (-1, "Expected to find a document node not found <child4>", NULL, (axlError **) ptr2);
+
+			/* stop iterating */
+			return false;
+		}
+		break;
+	case 5:
+		/* <child5> case */
+		if (! NODE_CMP_NAME (node, "child5")) {
+			/* fill the error */
+			axl_error_new (-1, "Expected to find a document node not found <child5>", NULL, (axlError **) ptr2);
+
+			/* stop iterating */
+			return false;
+		}
+		break;
+	case 6:
+		/* <a> case */
+		if (! NODE_CMP_NAME (node, "a")) {
+			/* fill the error */
+			axl_error_new (-1, "Expected to find a document node not found <a>", NULL, (axlError **) ptr2);
+
+			/* stop iterating */
+			return false;
+		}
+		break;
+	case 7:
+		/* <b> case */
+		if (! NODE_CMP_NAME (node, "b")) {
+			/* fill the error */
+			axl_error_new (-1, "Expected to find a document node not found <b>", NULL, (axlError **) ptr2);
+
+			/* stop iterating */
+			return false;
+		}
+		break;
+	case 8:
+		/* <c> case */
+		if (! NODE_CMP_NAME (node, "c")) {
+			/* fill the error */
+			axl_error_new (-1, "Expected to find a document node not found <c>", NULL, (axlError **) ptr2);
+
+			/* stop iterating */
+			return false;
+		}
+		break;
+	case 9:
+		/* <f> case */
+		if (! NODE_CMP_NAME (node, "f")) {
+			/* fill the error */
+			axl_error_new (-1, "Expected to find a document node not found <f>", NULL, (axlError **) ptr2);
+
+			/* stop iterating */
+			return false;
+		}
+		break;
+	case 10:
+		/* <g> case */
+		if (! NODE_CMP_NAME (node, "g")) {
+			/* fill the error */
+			axl_error_new (-1, "Expected to find a document node not found <g>", NULL, (axlError **) ptr2);
+
+			/* stop iterating */
+			return false;
+		}
+		break;
+	case 11:
+		/* <d> case */
+		if (! NODE_CMP_NAME (node, "d")) {
+			/* fill the error */
+			axl_error_new (-1, "Expected to find a document node not found <d>", NULL, (axlError **) ptr2);
+
+			/* stop iterating */
+			return false;
+		}
+		break;
+	case 12:
+		/* <e> case */
+		if (! NODE_CMP_NAME (node, "e")) {
+			/* fill the error */
+			axl_error_new (-1, "Expected to find a document node not found <e>", NULL, (axlError **) ptr2);
+
+			/* stop iterating */
+			return false;
+		}
+		break;
+	}
+
+	/* update count */
+	(*iterator)++;
+
+	/* keep iterating */
+	return true;
+}
+
+
+
+
+/** 
+ * @brief Axl stream boundary checks.
+ * 
+ * 
+ * @return false if the function fails to parse the
+ * document. true if the test was properly executed.
+ */
+bool test_01b (axlError ** error)  
+{
+	axlDoc   * doc;
+	axlNode  * node;
+	int        test_01b_id;
+	
+	/* parse document */
+	doc = axl_doc_parse_from_file ("test_01b.xml", error);
+	if (doc == NULL) 
+		return false;
+
+	/* get document root */
+	node = axl_doc_get_root (doc);
+	if (! NODE_CMP_NAME (node, "document")) {
+		axl_error_new (-1, "Expected to find root <document>, but it wasn't found", NULL, error);
+		return false;
+	}
+
+	/* get first child node */
+	node = axl_node_get_first_child (node);
+	if (! NODE_CMP_NAME (node, "child1")) {
+		axl_error_new (-1, "Expected to find child node <child1>, but it wasn't found", NULL, error);
+		return false;
+	}
+
+	/* get sibling node */
+	node = axl_node_get_next (node);
+	if (! NODE_CMP_NAME (node, "child2")) {
+		axl_error_new (-1, "Expected to find child node <child2>, but it wasn't found", NULL, error);
+		return false;
+	}
+
+	/* now iterate over all nodes inside the document */
+	test_01b_id = 0;
+	if (! axl_doc_iterate_full (doc, DEEP_ITERATION, test_01b_show_node_found, &test_01b_id, error))
+		return false;
+
+	/* now iterate over all nodes inside (wide mode) the document */
+	test_01b_id = 0;
+	if (! axl_doc_iterate_full (doc, WIDE_ITERATION, test_01b_show_node_found2, &test_01b_id, error))
+		return false; 
+	
+
+	/* test ok */
+	axl_doc_free (doc);
+	return true;
+}
+
+/** 
+ * @brief Axl stream boundary checks.
+ * 
+ * 
+ * @return false if the function fails to parse the
+ * document. true if the test was properly executed.
+ */
+bool test_01c (axlError ** error)  
+{
+	axlDoc   * doc;
+	axlNode  * node;
+	
+	/* parse document (uses the same xml document as test_01b) */
+	doc = axl_doc_parse_from_file ("test_01b.xml", error);
+	if (doc == NULL) 
+		return false;
+
+	/* get document root */
+	node = axl_doc_get_root (doc);
+	if (! NODE_CMP_NAME (node, "document")) {
+		axl_error_new (-1, "Expected to find root <document>, but it wasn't found", NULL, error);
+		return false;
+	}
+
+	/* get first child */
+	node = axl_node_get_first_child (node);
+	
+	if (! NODE_CMP_NAME (node, "child1")) {
+		axl_error_new (-1, "Expected to find <child1>, but it wasn't found", NULL, error);
+		return false;
+	}
+
+	node = axl_node_get_next (node);
+
+	if (! NODE_CMP_NAME (node, "child2")) {
+		axl_error_new (-1, "Expected to find <child2>, but it wasn't found", NULL, error);
+		return false;
+	}
+
+	node = axl_node_get_next (node);
+
+	if (! NODE_CMP_NAME (node, "child3")) {
+		axl_error_new (-1, "Expected to find <child3>, but it wasn't found", NULL, error);
+		return false;
+	}
+
+	node = axl_node_get_next (node);
+
+	if (! NODE_CMP_NAME (node, "child4")) {
+		axl_error_new (-1, "Expected to find <child4>, but it wasn't found", NULL, error);
+		return false;
+	}
+
+	node = axl_node_get_next (node);
+
+	if (! NODE_CMP_NAME (node, "child5")) {
+		axl_error_new (-1, "Expected to find <child5>, but it wasn't found", NULL, error);
+		return false;
+	}
+
+	if (axl_node_get_next (node) != NULL) {
+		axl_error_new (-1, "Expected to find NULL value while calling to axl_node_get_next, but it wasn't found", NULL, error);
+		return false;
+	}
+
+	node = axl_node_get_previous (node);
+
+	if (! NODE_CMP_NAME (node, "child4")) {
+		axl_error_new (-1, "Expected to find <child4>, but it wasn't found", NULL, error);
+		return false;
+	}
+
+	node = axl_node_get_previous (node);
+
+	if (! NODE_CMP_NAME (node, "child3")) {
+		axl_error_new (-1, "Expected to find <child3>, but it wasn't found", NULL, error);
+		return false;
+	}
+
+	node = axl_node_get_previous (node);
+
+	if (! NODE_CMP_NAME (node, "child2")) {
+		axl_error_new (-1, "Expected to find <child2>, but it wasn't found", NULL, error);
+		return false;
+	}
+
+	node = axl_node_get_previous (node);
+
+	if (! NODE_CMP_NAME (node, "child1")) {
+		axl_error_new (-1, "Expected to find <child1>, but it wasn't found", NULL, error);
+		return false;
+	}
+
+	if (axl_node_get_previous (node) != NULL) {
+		axl_error_new (-1, "Expected to find NULL value while calling to axl_node_get_next, but it wasn't found", NULL, error);
+		return false;
+	}
+
+
+	/* free document */
+	axl_doc_free (doc);
+
+	return true;
+}
+
+
 /** 
  * Test01: Initial xml header checking.
  */
@@ -1480,6 +2192,24 @@ int main (int argc, char ** argv)
 		printf ("Test 01-a: Axl Stream boundary checks [   OK   ]\n");
 	} else {
 		printf ("Test 01-a: Axl Stream boundary checks [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}	
+
+	if (test_01b (&error)) {
+		printf ("Test 01-b: Basic XML parsing, XML document position [   OK   ]\n");
+	} else {
+		printf ("Test 01-b: Basic XML parsing, XML document position [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}	
+
+	if (test_01c (&error)) {
+		printf ("Test 01-c: Basic XML parsing, XML document traversing [   OK   ]\n");
+	} else {
+		printf ("Test 01-c: Basic XML parsing, XML document traversing [ FAILED ]\n  (CODE: %d) %s\n",
 			axl_error_get_code (error), axl_error_get (error));
 		axl_error_free (error);
 		return -1;
@@ -1637,6 +2367,15 @@ int main (int argc, char ** argv)
 		printf ("Test 18: DTD ENTITY support [   OK   ]\n");
 	} else {
 		printf ("Test 18: DTD ENTITY support [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}	
+
+	if (test_19 (&error)) {
+		printf ("Test 19: Axl document node replacing [   OK   ]\n");
+	} else {
+		printf ("Test 19: Axl document node replacing [ FAILED ]\n  (CODE: %d) %s\n",
 			axl_error_get_code (error), axl_error_get (error));
 		axl_error_free (error);
 		return -1;
