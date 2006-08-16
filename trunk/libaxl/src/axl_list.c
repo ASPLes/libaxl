@@ -153,6 +153,11 @@ axlListNode * __axl_list_get_next_node_available (axlList * list)
 	/* get the next node available */
 	node = list->preallocated[list->available - 1];
 	list->available--;
+
+	/* clean node */
+	node->next     = NULL;
+	node->previous = NULL;
+	node->data     = NULL;
 		
 	return node;
 }
@@ -1014,19 +1019,19 @@ int       axl_list_length (axlList * list)
  */
 void      axl_list_free (axlList * list)
 {
-	int iterator;
 	axlListNode * node;
 	axlListNode * node2;
 
-	
 	axl_return_if_fail (list);
 
-	node = list->first_node;
+	node     = list->first_node;
 	while (node != NULL) {
-		if (list->destroy_data != NULL)
+		if (list->destroy_data != NULL) {
 			list->destroy_data (node->data);
+		}
 		node2 = node;
 		node  = node->next;
+
 		axl_free (node2);
 	}
 

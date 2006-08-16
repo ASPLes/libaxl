@@ -2254,18 +2254,6 @@ bool __axl_doc_iterate_common (axlDoc            * doc,
 		/* get the first node inside the pending list */
 		node = axl_list_get_first (pending);
 
-		/* notify node found */
-		if (func && ! func (node, axl_node_get_parent (node), doc, ptr)) {
-			axl_list_free (pending);
-			return false;
-		}
-
-		/* notify node found */
-		if (func2 && ! func2 (node, axl_node_get_parent (node), doc, ptr, ptr2)) {
-			axl_list_free (pending);
-			return false;
-		}
-		
 		/* remove the node node from the pending list and add
 		 * all childs */
 		axl_list_remove_first (pending);
@@ -2302,8 +2290,23 @@ bool __axl_doc_iterate_common (axlDoc            * doc,
 				
 			} /* end while */
 		} /* end if */
+
+		/* notify node found */
+		if (func && ! func (node, axl_node_get_parent (node), doc, ptr)) {
+			axl_list_free (pending);
+			return false;
+		}
+
+		/* notify node found */
+		if (func2 && ! func2 (node, axl_node_get_parent (node), doc, ptr, ptr2)) {
+			axl_list_free (pending);
+			return false;
+		}
 		
 	} /* end while */
+
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "terminated iteration process, deallocating list: %d",
+		   axl_list_length (pending));
 	
 	axl_list_free (pending);
 	
