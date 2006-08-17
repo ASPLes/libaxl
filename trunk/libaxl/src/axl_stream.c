@@ -1009,7 +1009,7 @@ char * __axl_stream_get_untilv_wide (axlStream * stream)
 
 			/* check the length returned */
 			matched = false;
-			if (length > 0) {
+			if (length > 0 && ((_index + length) <= stream->stream_size)) {
 
 				/* try to figure out if the next
 				 * string match */

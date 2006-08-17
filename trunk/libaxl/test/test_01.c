@@ -8,6 +8,44 @@
  * 
  * @return true if the validity test is passed, false if not.
  */
+bool test_20 (axlError ** error)
+{
+	axlNode * node;
+	axlNode * root;
+	axlDoc  * doc;
+
+	/* load the document */
+	doc = axl_doc_parse_from_file ("test_20.xml", error);
+	if (doc == NULL)
+		return false;
+
+	/* get document root */
+	root = axl_doc_get_root (doc);
+	node = axl_node_copy (root, true, true);
+
+	/* check if both nodes are equal */
+	if (! axl_node_are_equal (root, node)) {
+		axl_error_new (-1, "Expected to find equal nodes but they weren't", NULL, error);
+		return false;
+	}
+	
+	/* free copy created */
+	axl_node_free (node);
+
+	/* free document created */
+	axl_doc_free (doc);
+
+	return true;
+
+}
+
+/** 
+ * @brief Test entity support (basic entity support).
+ * 
+ * @param error The optional axlError to be used to report errors.
+ * 
+ * @return true if the validity test is passed, false if not.
+ */
 bool test_19 (axlError ** error)
 {
 	axlDoc  * doc;
@@ -2158,6 +2196,39 @@ bool test_01c (axlError ** error)
 		return false;
 	}
 
+	/* check next called and previous called api */
+	node = axl_doc_get_root (doc);
+	printf ("node found: <%s>\n", axl_node_get_name (node));
+	node = axl_node_get_first_child (node);
+	printf ("node found child: <%s>\n", axl_node_get_name (node));
+	
+
+	/* get <child5> */
+	node = axl_node_get_next_called (node, "child5");
+	printf ("node found next called: <%s>\n", axl_node_get_name (node));
+	if (! NODE_CMP_NAME (node, "child5")) {
+		axl_error_new (-1, "Expected to find <child5> node while calling to axl_node_get_next_called, but it wasn't found", NULL, error);
+		return false;
+	}
+
+	/* check next empty */
+	if (axl_node_get_next_called (node, "child5") != NULL) {
+		axl_error_new (-1, "Expected to find empty node following to <child5> node while calling to axl_node_get_next_called, but it was found", NULL, error);
+		return false;
+	}
+
+	/* get <child1> */
+	node = axl_node_get_previous_called (node, "child1");
+	if (! NODE_CMP_NAME (node, "child1")) {
+		axl_error_new (-1, "Expected to find <child1> node while calling to axl_node_get_previous_called, but it wasn't found", NULL, error);
+		return false;
+	}
+
+	/* check next empty */
+	if (axl_node_get_previous_called (node, "child1") != NULL) {
+		axl_error_new (-1, "Expected to find empty node following to <child1> node while calling to axl_node_get_previous_called, but it was found", NULL, error);
+		return false;
+	}
 
 	/* free document */
 	axl_doc_free (doc);
@@ -2376,6 +2447,15 @@ int main (int argc, char ** argv)
 		printf ("Test 19: Axl document node replacing [   OK   ]\n");
 	} else {
 		printf ("Test 19: Axl document node replacing [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}	
+
+	if (test_20 (&error)) {
+		printf ("Test 20: Axl node copy [   OK   ]\n");
+	} else {
+		printf ("Test 20: Axl node copy [ FAILED ]\n  (CODE: %d) %s\n",
 			axl_error_get_code (error), axl_error_get (error));
 		axl_error_free (error);
 		return -1;

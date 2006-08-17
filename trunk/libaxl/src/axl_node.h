@@ -111,7 +111,13 @@ axlNode * axl_node_get_parent         (axlNode * node);
 
 axlNode * axl_node_get_next           (axlNode * node);
 
-axlNode * axl_node_get_previous       (axlNode * node);
+axlNode * axl_node_get_next_called    (axlNode * node, 
+				       char    * name);
+
+axlNode * axl_node_get_previous         (axlNode * node);
+
+axlNode * axl_node_get_previous_called  (axlNode * node, 
+					 char    * name);
 
 axlNode * axl_node_get_first_child    (axlNode * node);
 
