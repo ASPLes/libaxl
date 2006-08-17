@@ -194,6 +194,7 @@ int             axl_hash_equal_string (axlPointer keya,
  *
  * - \ref axl_hash_remove
  * - \ref axl_hash_free
+ *
  * 
  * @param hash  The hashing function to be used for this table.
  *
@@ -563,8 +564,12 @@ axlPointer axl_hash_get         (axlHash * hash,
 void __axl_hash_foreach (axlHash             * hash, 
 			 axlHashForeachFunc    func, 
 			 axlHashForeachFunc2   func2, 
+			 axlHashForeachFunc3   func3, 
+			 axlHashForeachFunc4   func4,
 			 axlPointer            user_data, 
-			 axlPointer            user_data2)
+			 axlPointer            user_data2,
+			 axlPointer            user_data3,
+			 axlPointer            user_data4)
 {
 
 	int           iterator = 0;
@@ -583,23 +588,31 @@ void __axl_hash_foreach (axlHash             * hash,
 
 			do {
 				/* check for one user defined pointer
-				 * foreach */
-				if (func != NULL) {
-					/* notify the item found */
-					if (func (node->key, node->data, user_data)) {
-						/* user have decided to stop */
-						return;
-					}
+				 * foreach: notify the item found */
+				if (func != NULL && func (node->key, node->data, user_data)) {
+					/* user have decided to stop */
+					return;
 				} /* end if */
 
-				/* check for two user defined
-				 * pointers */
-				if (func2 != NULL) {
-					/* notify the item found */
-					if (func2 (node->key, node->data, user_data, user_data2)) {
-						/* user have decided to stop */
-						return;
-					}
+				/* check for two user defined pointers
+				 * notify the item found */
+				if (func2 != NULL && func2 (node->key, node->data, user_data, user_data2)) {
+					/* user have decided to stop */
+					return;
+				} /* end if */
+
+				/* check for three user defined pointers
+				 * notify the item found */
+				if (func3 != NULL && func3 (node->key, node->data, user_data, user_data2, user_data3)) {
+					/* user have decided to stop */
+					return;
+				} /* end if */
+
+				/* check for four user defined
+				 * pointers notify the item found */
+				if (func4 != NULL && func4 (node->key, node->data, user_data, user_data2, user_data3, user_data4)) {
+					/* user have decided to stop */
+					return;
 				} /* end if */
 				
 				/* next item inside the same collition
@@ -645,7 +658,11 @@ void            axl_hash_foreach      (axlHash            * hash,
 {
 
 	/* perform the foreach operation using common support */
-	__axl_hash_foreach (hash, func, NULL, user_data, NULL);
+	__axl_hash_foreach (hash, 
+			    /* foreach function */
+			    func, NULL, NULL, NULL, 
+			    /* user defined data */
+			    user_data, NULL, NULL, NULL);
 
 	return;
 }
@@ -677,9 +694,85 @@ void            axl_hash_foreach2     (axlHash            * hash,
 
 {
 	/* perform the foreach operation using common support */
-	__axl_hash_foreach (hash, NULL, func, user_data, user_data2);
+	__axl_hash_foreach (hash, 
+			    /* foreach function */
+			    NULL, func, NULL, NULL,
+			    /* user defined data */
+			    user_data, user_data2, NULL, NULL);
 
 	return;
+}
+
+/** 
+ * @brief Three user defined pointers foreach function over a hash.
+ *
+ * See \ref axl_hash_foreach2 and \ref axl_hash_foreach3 for more
+ * information.
+ * 
+ * @param hash The hash where the foreach operation will take place.
+ *
+ * @param func The function to be called for each item found in the
+ * hash.
+ *
+ * @param user_data The user defined pointer to be configured in the
+ * hash.
+ *
+ * @param user_data2 Second user defined pointer to be configured in
+ * the hash.
+ *
+ * @param user_data3 Third user defined pointer to be configured in
+ * the hash.
+ */
+void            axl_hash_foreach3     (axlHash            * hash, 
+				       axlHashForeachFunc3  func, 
+				       axlPointer           user_data,
+				       axlPointer           user_data2,
+				       axlPointer           user_data3)
+{
+	/* perform the foreach operation using common support */
+	__axl_hash_foreach (hash, 
+			    /* foreach function */
+			    NULL, NULL, func, NULL,
+			    /* user defined data */
+			    user_data, user_data2, user_data3, NULL);
+}
+
+/** 
+ * @brief Four user defined pointers foreach function over a hash.
+ *
+ * See \ref axl_hash_foreach2 and \ref axl_hash_foreach3 for more
+ * information.
+ * 
+ * @param hash The hash where the foreach operation will take place.
+ *
+ * @param func The function to be called for each item found in the
+ * hash.
+ *
+ * @param user_data The user defined pointer to be configured in the
+ * hash.
+ *
+ * @param user_data2 Second user defined pointer to be configured in
+ * the hash.
+ *
+ * @param user_data3 Third user defined pointer to be configured in
+ * the hash.
+ *
+ * @param user_data4 Forth user defined pointer to be configured in
+ * the hash.
+ */
+void            axl_hash_foreach4     (axlHash              * hash, 
+				       axlHashForeachFunc4    func, 
+				       axlPointer             user_data,
+				       axlPointer             user_data2,
+				       axlPointer             user_data3,
+				       axlPointer             user_data4)
+{
+	/* perform the foreach operation using common support */
+	__axl_hash_foreach (hash, 
+			    /* foreach functions */
+			    NULL, NULL, NULL, func, 
+			    /* user defined data */
+			    user_data, user_data2, user_data3, user_data4);
 }
 
 /** 
@@ -717,7 +810,7 @@ bool            axl_hash_exists       (axlHash    * hash,
 	/* check empty hash value */
 	if (hash->hash_size == 0)
 		return false;
-	
+
 	/* get the node at the provided position */
 	node = hash->table [(hash->hash (key)) % hash->hash_size];
 
@@ -740,6 +833,98 @@ bool            axl_hash_exists       (axlHash    * hash,
 	
 	/* no item was found on the hash */
 	return false;
+}
+
+/** 
+ * @internal function for axl_hash_copy.
+ */
+bool __axl_hash_copy_foreach (axlPointer key,       
+			      axlPointer data, 
+			      /* user defined pointers */
+			      axlPointer user_data,  /* hash       */
+			      axlPointer user_data2, /* result     */
+			      axlPointer user_data3, /* key_copy   */
+			      axlPointer user_data4) /* value_copy */
+{
+	/* get a reference to the received data */
+	axlHash          * hash       = user_data;
+	axlHash          * result     = user_data2;
+	axlHashItemCopy    key_copy   = user_data3;
+	axlHashItemCopy    value_copy = user_data4;
+	
+	/* additional variables */
+	axlHashNode * node;
+	
+	/* get node to copy */
+	node = hash->table [(hash->hash (key)) % hash->hash_size];
+
+	/* copy */
+	axl_hash_insert_full (result, 
+			      /* insert the key and its destroy function. */
+			      key_copy (node->key, node->key_destroy, node->data, node->data_destroy),   node->key_destroy,
+			      /* insert data and its destroy function. */
+			      value_copy (node->key, node->key_destroy, node->data, node->data_destroy), node->data_destroy);
+	
+	/* make the foreach process to continue until the last element */
+	return false;
+}
+
+/** 
+ * @brief Allows to copy the provided hash, providing the copy
+ * function used to duplicate key and value items stored.
+ *
+ * The function are optional, so, if they are null, the same value is
+ * stored in the hash (for the key and the value). In this case, if
+ * the source hash has defined destroy function for either key or
+ * values, they will not be configured in the returning hash.
+ *
+ * If function are provided, \ref axl_hash_copy will use it to get a
+ * duplicated version for either the key or the value. In this case,
+ * if the source hash has defined the destroy function either for the
+ * key or the value, it will be configured in the returning hash.
+ * 
+ * @param hash The \ref axlHash that will work as data source.
+ *
+ * @param key_copy The function to be used to duplicate keys.
+ *
+ * @param value_copy The function used to duplicate values.
+ * 
+ * @return A newly allocated reference to a \ref axlHash containing
+ * all values from the source hash. The function will fail if the hash
+ * provided is a null reference or copy functions aren't provided.
+ */
+axlHash       * axl_hash_copy         (axlHash         * hash,
+				       axlHashItemCopy   key_copy,
+				       axlHashItemCopy   value_copy)
+{
+	axlHash         * result;
+	
+	/* return if the hash reference is null */
+	axl_return_val_if_fail (hash, NULL);
+	axl_return_val_if_fail (key_copy, NULL);
+	axl_return_val_if_fail (value_copy, NULL);
+
+	/* create the hash */
+	result = axl_hash_new_full (hash->hash, 
+				    hash->equal,
+				    /* make initial step to be equal
+				     * to the current hash size copied
+				     * to avoid resizing operations
+				     * during the foreach. */
+				    hash->items);
+	/* restore step */
+	result->step = hash->step;
+
+	/* check empty hash value */
+	if (hash->hash_size == 0)
+		return result;
+
+	/* copy all items */
+	axl_hash_foreach4 (hash, __axl_hash_copy_foreach, hash, result, key_copy, value_copy);
+
+
+	/* return created hash */
+	return result;
 }
 	
 /** 

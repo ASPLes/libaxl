@@ -1021,6 +1021,7 @@ void      axl_list_free (axlList * list)
 {
 	axlListNode * node;
 	axlListNode * node2;
+	int           iterator;
 
 	axl_return_if_fail (list);
 

@@ -81,8 +81,26 @@ void            axl_hash_foreach2     (axlHash            * hash,
 				       axlHashForeachFunc2  func, 
 				       axlPointer           user_data,
 				       axlPointer           user_data2);
+
+void            axl_hash_foreach3     (axlHash            * hash, 
+				       axlHashForeachFunc3  func, 
+				       axlPointer           user_data,
+				       axlPointer           user_data2,
+				       axlPointer           user_data3);
+
+void            axl_hash_foreach4     (axlHash            * hash, 
+				       axlHashForeachFunc4  func, 
+				       axlPointer           user_data,
+				       axlPointer           user_data2,
+				       axlPointer           user_data3,
+				       axlPointer           user_data4);
 				
 int             axl_hash_items        (axlHash * hash);
+
+axlHash       * axl_hash_copy         (axlHash             * hash,
+				       axlHashItemCopy       key_copy,
+				       axlHashItemCopy       value_copy);
+				       
 
 void            axl_hash_show_status  (axlHash * hash);
 
