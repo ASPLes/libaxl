@@ -492,6 +492,9 @@ axlNode * axl_node_copy                     (axlNode * node,
 					     bool      copy_childs)
 {
 	axlNode * result;
+	axlNode * child;
+	
+
 	axl_return_val_if_fail (node, NULL);
 
 	/* create the copy */
@@ -514,6 +517,26 @@ axlNode * axl_node_copy                     (axlNode * node,
 						    /* value copy function */
 						    __axl_node_copy_value);
 	}
+
+	/* check if child nodes must be also copied */
+	if (copy_childs && (node->first != NULL)) {
+		/* get the first child */
+		child = node->first;
+
+		/* for each child, copy and set the child to the
+		 * parent */
+		while (child != NULL) {
+
+			/* set the child created */
+			axl_node_set_child (result, 
+					    /* copy the child as provided by received arguments */
+					    axl_node_copy (child, copy_attributes, copy_childs));
+
+			/* update to the next child reference */
+			child = axl_node_get_next (child);
+
+		} /* end while */
+	} /* end if */
 	
 	
 	/* return the node created */
@@ -1109,6 +1132,10 @@ axlNode * axl_node_get_parent         (axlNode * node)
  * This function allows to get the next childs that is stored at the
  * next position, inside the same level, for the given child node.
  *
+ * There are an alternative API that allows to get the next node,
+ * following to the node selected, providing the name to match. See
+ * \ref axl_node_get_next_called.
+ *
  * @param node The node to get the next xml node reference.
  * 
  * @return Returns an internal reference to the next xml node or NULL
@@ -1122,6 +1149,37 @@ axlNode * axl_node_get_next           (axlNode * node)
 
 	/* return the next reference */
 	return node->next;
+}
+
+/** 
+ * @brief Allows to get the next node, following to the node provided,
+ * matching the given name.
+ * 
+ * @param node The node that is requested to return its next sibling node.
+ * @param name The name to match for the next node.
+ * 
+ * @return A reference to the next node or NULL if it fails. The
+ * returned reference mustn't be deallocated.
+ */
+axlNode * axl_node_get_next_called    (axlNode * node, 
+				       char    * name)
+{
+	axl_return_val_if_fail (node, NULL);
+	axl_return_val_if_fail (node, NULL);
+
+	/* while there is a next node */
+	while (node->next != NULL) {
+
+		/* check the node */
+		if (NODE_CMP_NAME (node->next, name))
+			return node->next;
+
+		/* update to the next */
+		node = node->next;
+	} /* end while */
+
+	/* no node was found */
+	return NULL;
 }
 
 /** 
@@ -1145,6 +1203,38 @@ axlNode * axl_node_get_previous (axlNode * node)
 	/* return the previous reference */
 	return node->previous;
 }
+
+/** 
+ * @brief Allows to get the previous node, preceding to the node
+ * provided, matching the given name.
+ * 
+ * @param node The node that is requested to return its previous sibling node.
+ * @param name The name to match for the previous node.
+ * 
+ * @return A reference to the previous node or NULL if it fails. The
+ * returned reference mustn't be deallocated.
+ */
+axlNode * axl_node_get_previous_called    (axlNode * node, 
+					   char    * name)
+{
+	axl_return_val_if_fail (node, NULL);
+	axl_return_val_if_fail (node, NULL);
+
+	/* while there is a next node */
+	while (node->previous != NULL) {
+		/* check the node */
+		if (NODE_CMP_NAME (node->previous, name))
+			return node->previous;
+
+		/* update to the next */
+		node = node->previous;
+	} /* end while */
+
+	/* no node was found */
+	return NULL;
+
+} 
+
 
 /** 
  * @brief Allows to get the first child that holds the node.

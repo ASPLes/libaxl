@@ -22,6 +22,8 @@ test_03_LDADD   = ../src/libaxl.la
 test_03a_SOURCES = test_03a.c
 test_03a_LDADD   = ../src/libaxl.la
 
+leak-check:
+	libtool --mode=execute valgrind --leak-check=yes ./test_01
 
 compref:
 	gcc -g -Wall `pkg-config --libs --cflags libxml-2.0` test_01b.c -o test_01b
