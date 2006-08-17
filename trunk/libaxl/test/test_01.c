@@ -13,6 +13,7 @@ bool test_20 (axlError ** error)
 	axlNode * node;
 	axlNode * root;
 	axlDoc  * doc;
+	char    * data;
 
 	/* load the document */
 	doc = axl_doc_parse_from_file ("test_20.xml", error);
@@ -31,6 +32,38 @@ bool test_20 (axlError ** error)
 	
 	/* free copy created */
 	axl_node_free (node);
+
+	/* configure some anotation data */
+	axl_node_anotate_data (root, "key", "value");
+	
+	/* get child1 */
+	node = axl_node_get_first_child (root);
+
+	/* get child2 */
+	node = axl_node_get_first_child (node);
+
+	/* anotate data */
+	axl_node_anotate_data (node, "key1", "value1");
+
+	/* perform searches */
+	data = axl_node_anotate_get (node, "key", false);
+	if (data != NULL) {
+		axl_error_new (-1, "Expected to find nothing while looking for 'key'(1)", NULL, error);
+		return false;
+	}
+
+	data = axl_node_anotate_get (node, "key", true);
+	if (data == NULL || !axl_cmp (data, "value")) {
+		axl_error_new (-1, "Expected to find data while looking for 'key' at parents (2)", NULL, error);
+		return false;
+	}
+
+	/* perform searches inside the node */
+	data = axl_node_anotate_get (node, "key1", false);
+	if (data == NULL || !axl_cmp (data, "value1")) {
+		axl_error_new (-1, "Expected to find nothing while looking for 'key1'(3)", NULL, error);
+		return false;
+	}
 
 	/* free document created */
 	axl_doc_free (doc);
@@ -2198,14 +2231,11 @@ bool test_01c (axlError ** error)
 
 	/* check next called and previous called api */
 	node = axl_doc_get_root (doc);
-	printf ("node found: <%s>\n", axl_node_get_name (node));
 	node = axl_node_get_first_child (node);
-	printf ("node found child: <%s>\n", axl_node_get_name (node));
 	
 
 	/* get <child5> */
 	node = axl_node_get_next_called (node, "child5");
-	printf ("node found next called: <%s>\n", axl_node_get_name (node));
 	if (! NODE_CMP_NAME (node, "child5")) {
 		axl_error_new (-1, "Expected to find <child5> node while calling to axl_node_get_next_called, but it wasn't found", NULL, error);
 		return false;
@@ -2453,9 +2483,9 @@ int main (int argc, char ** argv)
 	}	
 
 	if (test_20 (&error)) {
-		printf ("Test 20: Axl node copy [   OK   ]\n");
+		printf ("Test 20: Axl node copy and anotation data [   OK   ]\n");
 	} else {
-		printf ("Test 20: Axl node copy [ FAILED ]\n  (CODE: %d) %s\n",
+		printf ("Test 20: Axl node copy and anotation data [ FAILED ]\n  (CODE: %d) %s\n",
 			axl_error_get_code (error), axl_error_get (error));
 		axl_error_free (error);
 		return -1;

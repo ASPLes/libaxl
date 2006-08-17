@@ -871,7 +871,7 @@ char    * axl_node_get_attribute_value_trans (axlNode * node, char * attribute)
  */
 void __init_node_anotation (axlNode * node)
 {
-	if (node->anotate_data != NULL)
+	if (node->anotate_data == NULL)
 		node->anotate_data =  axl_hash_new (axl_hash_string, axl_hash_equal_string);
 	return;
 }
@@ -970,22 +970,18 @@ void      axl_node_anotate_data_full            (axlNode       * node,
  * nodes. This mechanism allows to store data on parent nodes that are
  * shared by child nodes.
  *
- * @param lookup_in_doc The same as lookup_in_parent but allowing to
- * perform the lookup in the document reference.
- * 
  * @return The data associated to the key according to the lookup
  * configuration (lookup_in_parent and lookup_in_doc).
  */
 axlPointer axl_node_anotate_get                 (axlNode * node,
 						 char    * key,
-						 bool      lookup_in_parent,
-						 bool      lookup_in_doc)
+						 bool      lookup_in_parent)
 {
 	axlPointer   result = NULL;
 	axlNode    * parent;
-
+	
 	/* lookup the data in the current node */
-	if (node->anotate_data) {
+	if (node->anotate_data != NULL) {
 		/* lookup the data */
 		result = axl_hash_get (node->anotate_data, key);
 
@@ -1012,12 +1008,6 @@ axlPointer axl_node_anotate_get                 (axlNode * node,
 			/* get the next parent */
 			parent = parent->parent;
 		}
-	}
-
-	/* seems the data wasn't found */
-	if (lookup_in_doc) {
-		/* implement doc lookup: not really sure it is
-		 * needed */
 	}
 
 	/* no node was found */
@@ -2701,7 +2691,7 @@ int       axl_node_dump_at                  (axlNode * node,
 	return desp;
 }
 
-void __axl_node_free_internal (axlNode * node)
+void __axl_node_free_internal (axlNode * node, bool also_childs)
 {
 	axlNode * child;
 
@@ -2729,18 +2719,19 @@ void __axl_node_free_internal (axlNode * node)
 		axl_hash_free (node->attributes);
 
 	/* release memory hold by childs */
-	child = node->first;
-	while (child != NULL) {
-		/* get a reference to the node */
-		node  = child;
-
-		/* update the child to the next */
-		child = child->next;
-
-		/* free the node */
-		axl_node_free (node);
-	}
-
+	if (also_childs) {
+		child = node->first;
+		while (child != NULL) {
+			/* get a reference to the node */
+			node  = child;
+			
+			/* update the child to the next */
+			child = child->next;
+			
+			/* free the node */
+			axl_node_free (node);
+		}
+	} /* end while */
 
 	/* do not free the node itself */
 	return;
@@ -2758,12 +2749,33 @@ void axl_node_free (axlNode * node)
 	axl_return_if_fail (node);
 
 	/* free internal content */
-	__axl_node_free_internal (node);
+	__axl_node_free_internal (node, true);
 
 	/* free attributes */
 	axl_free (node);
 	
 	/* the node to release */
+	return;
+}
+
+/** 
+ * @brief Allows to remove the provided node without removing childs
+ * inside it.
+ * 
+ * @param node The node to deallocate.
+ *
+ * @param also_childs Signal the function to dealloc childs or not.
+ */
+void      axl_node_free_full       (axlNode * node, bool also_childs)
+{
+	axl_return_if_fail (node);
+	
+	/* free node */
+	__axl_node_free_internal (node, false);
+
+	/* free the node itself */
+	axl_free (node);
+
 	return;
 }
 
