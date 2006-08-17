@@ -1,0 +1,9 @@
+<?xml version='1.0' ?>
+<document>
+  <child1 value='value' value1='value1' value2='value2'>
+     <child2 value='value' value1='value1' value2='value2'>test</child2>
+     <child3 value='value' value1='value1' value2='value2'>test</child3>
+     <child4 value='value' value1='value1' value2='value2'>test</child4>
+     <child5 value='value' value1='value1' value2='value2'>test</child5>
+  </child1>
+</document>
