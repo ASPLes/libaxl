@@ -85,9 +85,7 @@ void      axl_node_anotate_data_full            (axlNode       * node,
 
 axlPointer axl_node_anotate_get                 (axlNode * node,
 						 char    * key,
-						 bool      lookup_in_parent,
-						 bool      lookup_in_doc);
-
+						 bool      lookup_in_parent);
 /** 
  * @brief Allows to easily check that the given xml node (\ref
  * axlNode) have the provided name.
@@ -201,6 +199,8 @@ int       axl_node_dump_at                  (axlNode * node,
 					     int       tabular);
 
 void      axl_node_free            (axlNode * node);
+
+void      axl_node_free_full       (axlNode * node, bool also_childs);
 
 /* @} */
 
