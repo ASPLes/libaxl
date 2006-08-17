@@ -454,6 +454,72 @@ axlNode * axl_node_create_ref         (char * name)
 	return __axl_node_create_internal (name);
 }
 
+axlPointer __axl_node_copy_key (axlPointer key, axlDestroyFunc key_destroy, 
+				axlPointer data, axlDestroyFunc data_destroy)
+{
+	/* copy the key */
+	return axl_strdup (key);
+}
+
+axlPointer __axl_node_copy_value (axlPointer key, axlDestroyFunc key_destroy,
+				  axlPointer data, axlDestroyFunc data_destroy)
+{
+	/* copy data */
+	return axl_strdup (data);
+}
+
+/** 
+ * @brief Allows to perform a copy operation for the provided node.
+ *
+ * The function can perform a simple copy, without attributes and
+ * childs, if both attributes are false. If the copy attributes and
+ * copy childs are activated, childs copied will have attributes
+ * copied.
+ * 
+ * @param node The node source of information.
+ *
+ * @param copy_attributes Signals the function to copy node attributes
+ * into the newly created node.
+ *
+ * @param copy_childs Signals the function to copy childs for the
+ * source node.
+ * 
+ * @return A newly created node copy or null if it fails. The function
+ * will fail if the node reference provided is null.
+ */
+axlNode * axl_node_copy                     (axlNode * node,
+					     bool      copy_attributes,
+					     bool      copy_childs)
+{
+	axlNode * result;
+	axl_return_val_if_fail (node, NULL);
+
+	/* create the copy */
+	result = axl_node_create (axl_node_get_name (node));
+	
+	/* check content to be copied */
+	if (node->content != NULL) {
+		/* copy the content */
+		axl_node_set_content (result, 
+				      node->content->content, 
+				      node->content->content_size);
+	} /* end if */
+
+	/* check for attributes */
+	if (node->attributes != NULL && copy_attributes) {
+		/* copy the hash */
+		result->attributes = axl_hash_copy (node->attributes, 
+						    /* key copy function */
+						    __axl_node_copy_key,
+						    /* value copy function */
+						    __axl_node_copy_value);
+	}
+	
+	
+	/* return the node created */
+	return result;
+}
+
 /** 
  * @brief Allows to get the xml document (\ref axlDoc) where the
  * provided xml node is stored.

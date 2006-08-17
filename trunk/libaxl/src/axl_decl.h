@@ -621,6 +621,32 @@ typedef enum {
 	AXL_LEVEL_CRITICAL}  
 AxlDebugLevel;
 
+/** 
+ * @brief Allows to convert integer value (including constant values)
+ * into a pointer representation. 
+ *
+ * Use the oposite function to restore the value from a pointer to a
+ * integer: \ref PTR_TO_INT.
+ *
+ * @param integer The integer value to cast to pointer.
+ *
+ * @return A \ref axlPointer reference.
+ */
+#define INT_TO_PTR(integer)   ((axlPointer) integer)
+
+/** 
+ * @brief Allows to convert a pointer reference (\ref axlPointer),
+ * which stores an integer that was stored using \ref INT_TO_PTR.
+ *
+ * Use the oposite function to restore the pointer value stored in the
+ * integer value.
+ * 
+ * @param ptr The pointer to cast to a integer value.
+ * 
+ * @return A int value.
+ */
+#define PTR_TO_INT(ptr) ((int) ptr)
+
 
 /** 
  * @brief Support macro to allocate memory using the calloc function,
@@ -907,12 +933,103 @@ typedef bool (* axlHashForeachFunc) (axlPointer key, axlPointer data, axlPointer
  * @param key The key for the item stored.
  * @param data The data associated to the key found
  * @param user_data User defined data that was provided to the axl_hash_foreach2 function.
- * @param user_data Second User defined data that was provided to the axl_hash_foreach2 function.
+ * @param user_data2 Second User defined data that was provided to the axl_hash_foreach2 function.
  * 
  * @return \ref true to make the foreach process to stop. \ref false
  * to make the process to continue.
  */
 typedef bool (* axlHashForeachFunc2) (axlPointer key, axlPointer data, axlPointer user_data, axlPointer user_data2);
+
+/** 
+ * @brief Foreach function signature used to represent the set of
+ * functions used at \ref axl_hash_foreach3.
+ * 
+ * The function receives the item found (key and data values) as well
+ * as tree user defined pointers also defined at \ref
+ * axl_hash_foreach3. The function must return \ref true (<i>"item
+ * found"</i>) to make the search to stop. In the case a full
+ * iteration over all items inside the hash is required, the function
+ * must always return \ref false.
+ * 
+ * @param key The key for the item stored.
+ *
+ * @param data The data associated to the key found
+ *
+ * @param user_data User defined data that was provided to the
+ * axl_hash_foreach3 function.
+ *
+ * @param user_data2 Second User defined data that was provided to the
+ * axl_hash_foreach3 function.
+ *
+ * @param user_data3 Third User defined data that was provided to the
+ * axl_hash_foreach3 function.
+ * 
+ * @return \ref true to make the foreach process to stop. \ref false
+ * to make the process to continue.
+ */
+typedef bool (* axlHashForeachFunc3) (axlPointer key, axlPointer data, axlPointer user_data, axlPointer user_data2, axlPointer user_data3);
+
+/**
+ * @brief Foreach function signature used to represent the set of
+ * functions used at \ref axl_hash_foreach4.
+ * 
+ * The function receives the item found (key and data values) as well
+ * as tree user defined pointers also defined at \ref
+ * axl_hash_foreach4. The function must return \ref true (<i>"item
+ * found"</i>) to make the search to stop. In the case a full
+ * iteration over all items inside the hash is required, the function
+ * must always return \ref false.
+ * 
+ * @param key The key for the item stored.
+ *
+ * @param data The data associated to the key found
+ *
+ * @param user_data User defined data that was provided to the
+ * axl_hash_foreach4 function.
+ *
+ * @param user_data2 Second User defined data that was provided to the
+ * axl_hash_foreach4 function.
+ *
+ * @param user_data3 Third User defined data that was provided to the
+ * axl_hash_foreach4 function.
+ *
+ * @param user_data4 Forth User defined data that was provided to the
+ * axl_hash_foreach4 function.
+ * 
+ * @return \ref true to make the foreach process to stop. \ref false
+ * to make the process to continue.
+ */
+typedef bool (* axlHashForeachFunc4) (axlPointer key, axlPointer data, axlPointer user_data, axlPointer user_data2, axlPointer user_data3, axlPointer user_data4);
+
+/** 
+ * @brief Function handler definition for to allowing copying items at
+ * the hash by \ref axl_hash_copy function.
+ *
+ * The function receive both pointers the key and the data value but,
+ * only one of them must be copied. This is done to provide more
+ * control at the copy process, but only the required value must be
+ * returned. There is no indication to about which pointer must be
+ * returned, so, don't use the same function to copy both pointers.
+ *
+ * The function also receive pointers to the current function
+ * deallocation associated to the key and value being copied. This
+ * could also work as information to know if the data must be
+ * replicated or not. Having the destroy function defined for the item
+ * is a clue to return an allocated item.
+ * 
+ * @param key The key to be copied if the function was provided to copy the key.
+ *
+ * @param key_destroy The key destroy function associated to the value
+ * being copied.
+ *
+ * @param data The data to be copied if the function was provided to copy the data.
+ *
+ * @param data_destroy The data destroy function associated to the
+ * data value being copied.
+ * 
+ * @return A newly allocated reference representing the copy. 
+ */
+typedef axlPointer (*axlHashItemCopy) (axlPointer key, axlDestroyFunc key_destroy, axlPointer data, axlDestroyFunc data_destroy);
 
 /** 
  * @brief Foreach function handler used at \ref axl_stack_foreach

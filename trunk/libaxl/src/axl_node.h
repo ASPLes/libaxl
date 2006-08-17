@@ -51,6 +51,10 @@ axlNode * axl_node_create                   (char * name);
 
 axlNode * axl_node_create_ref               (char * name);
 
+axlNode * axl_node_copy                     (axlNode * node,
+					     bool      copy_attributes,
+					     bool      copy_childs);
+
 axlDoc  * axl_node_get_doc                  (axlNode * node);
 
 void      axl_node_set_doc                  (axlNode * node, axlDoc * doc);
