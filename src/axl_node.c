@@ -2715,8 +2715,12 @@ void __axl_node_free_internal (axlNode * node, bool also_childs)
 		axl_list_free (node->piTargets);
 	
 	/* release memory hold by attributes */
-	if (node->attributes)
+	if (node->attributes != NULL)
 		axl_hash_free (node->attributes);
+
+	/* free anotation */
+	if (node->anotate_data != NULL)
+		axl_hash_free (node->anotate_data);
 
 	/* release memory hold by childs */
 	if (also_childs) {

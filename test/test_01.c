@@ -13,7 +13,9 @@ bool test_20 (axlError ** error)
 	axlNode * node;
 	axlNode * root;
 	axlDoc  * doc;
+	axlDoc  * doc2;
 	char    * data;
+
 
 	/* load the document */
 	doc = axl_doc_parse_from_file ("test_20.xml", error);
@@ -30,8 +32,19 @@ bool test_20 (axlError ** error)
 		return false;
 	}
 	
-	/* free copy created */
-	axl_node_free (node);
+
+	/* create a new document */
+	doc2 = axl_doc_create (NULL, NULL, false);
+	axl_doc_set_root (doc2, node);
+
+
+	if (! axl_doc_are_equal (doc, doc2)) {
+		axl_error_new (-1, "Expected to find equal documents but they weren't", NULL, error);
+		return false;
+	}
+
+	/* free document */
+	axl_doc_free (doc2);
 
 	/* configure some anotation data */
 	axl_node_anotate_data (root, "key", "value");
