@@ -1831,7 +1831,10 @@ void      axl_node_replace             (axlNode * node,
  * The function remove the selected reference from the document. If
  * the node asked to be removed is the root one, the node won't be
  * removed because the \ref axl_doc_set_root doesn't accept to remove
- * the root node.  removed the document
+ * the root node.  
+ *
+ * All childs hold by the node removed from the document whill also be
+ * removed if dealloc is selected.
  * 
  * @param node The node to remove.
  *
@@ -1936,8 +1939,6 @@ bool          axl_node_have_childs        (axlNode * node)
 axlNode * axl_node_get_child_called   (axlNode * parent, char * name)
 {
 	axlNode * node;
-/*	int       iterator = 0;
-	int       length   = 0; */
 	
 	axl_return_val_if_fail (parent, NULL);
 	axl_return_val_if_fail (name, NULL);

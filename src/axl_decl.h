@@ -811,6 +811,15 @@ typedef enum {
  * @param parent The parent node for the node found (first parameter).
  *
  * @param doc The document that contains the node found.
+ *
+ * @param was_removed If contains a reference to a boolean value that
+ * helps the invoked funtion to notify the iteration system that the
+ * node was removed from the tree, using \ref axl_node_remove or \ref
+ * axl_node_replace. Iteration support inside axl library is built in
+ * a way that allows the programmer to remove a node (including its
+ * childs) without breaking the loop, however, you must use this
+ * variable to notify that the node was removed, so the iteration
+ * system won't iterate over its childs.
  * 
  * @param ptr A user defined pointer that the user provided at \ref
  * axl_doc_iterate.
@@ -818,7 +827,7 @@ typedef enum {
  * @return The callback must return false in the case the iteration
  * must be stopped. Otherwise, true must be returned.
  */
-typedef bool (*axlIterationFunc) (axlNode * node, axlNode * parent, axlDoc * doc, axlPointer ptr);
+typedef bool (*axlIterationFunc) (axlNode * node, axlNode * parent, axlDoc * doc, bool * was_removed, axlPointer ptr);
 
 /** 
  * @brief Axl iteration function definition (with two user defined
@@ -843,6 +852,15 @@ typedef bool (*axlIterationFunc) (axlNode * node, axlNode * parent, axlDoc * doc
  * @param parent The parent node for the node found (first parameter).
  *
  * @param doc The document that contains the node found.
+ *
+ * @param was_removed If contains a reference to a boolean value that
+ * helps the invoked funtion to notify the iteration system that the
+ * node was removed from the tree, using \ref axl_node_remove or \ref
+ * axl_node_replace. Iteration support inside axl library is built in
+ * a way that allows the programmer to remove a node (including its
+ * childs) without breaking the loop, however, you must use this
+ * variable to notify that the node was removed, so the iteration
+ * system won't iterate over its childs.
  * 
  * @param ptr A user defined pointer that the user provided at \ref
  * axl_doc_iterate_full.
@@ -853,7 +871,7 @@ typedef bool (*axlIterationFunc) (axlNode * node, axlNode * parent, axlDoc * doc
  * @return The callback must return false in the case the iteration
  * must be stopped. Otherwise, true must be returned.
  */
-typedef bool (*axlIterationFunc2) (axlNode * node, axlNode * parent, axlDoc * doc, axlPointer ptr, axlPointer ptr2);
+typedef bool (*axlIterationFunc2) (axlNode * node, axlNode * parent, axlDoc * doc, bool * was_removed, axlPointer ptr, axlPointer ptr2);
 
 /** 
  * @brief Defines a signature for a set of function that are used to
