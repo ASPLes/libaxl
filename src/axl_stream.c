@@ -1723,11 +1723,21 @@ bool        axl_stream_remains         (axlStream * stream)
 	return true;
 }
 
+
+/* @} */
+
+/**
+ * \defgroup axl_string_module Axl String: String functions provided by the Axl Stream module.
+ */
+
 /** 
- * @internal
- *
+ * \addtogroup axl_string_module
+ * @{
+ */
+
+/** 
  * @brief Allows to copy the given chunk, supposing that is a properly
- * format C string that ends with a \0 value.
+ * format C string that ends with a '\\0' value.
  *
  * This function allows to perform a copy for the given string. If a
  * copy limited by a size is required, use \ref axl_stream_strdup_n.
@@ -2370,5 +2380,5 @@ char * axl_strdup (const char * string)
 	return (string != NULL) ? (char *) axl_stream_strdup ((char *) string) : NULL;
 }
 
-
 /* @} */
+
