@@ -16,7 +16,6 @@ bool test_20 (axlError ** error)
 	axlDoc  * doc2;
 	char    * data;
 
-
 	/* load the document */
 	doc = axl_doc_parse_from_file ("test_20.xml", error);
 	if (doc == NULL)
@@ -36,7 +35,6 @@ bool test_20 (axlError ** error)
 	/* create a new document */
 	doc2 = axl_doc_create (NULL, NULL, false);
 	axl_doc_set_root (doc2, node);
-
 
 	if (! axl_doc_are_equal (doc, doc2)) {
 		axl_error_new (-1, "Expected to find equal documents but they weren't", NULL, error);

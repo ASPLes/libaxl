@@ -531,7 +531,7 @@
  * 
  *
  * \section Including Axl Library headers
- *
+ *cd 
  * For all platforms, Axl Library headers has to be included as follows:
  * \code
  * #include <axl.h>
@@ -578,6 +578,5 @@ void axl_end ()
 	/* nothing to do jack */
 	return;
 }
-
 
 /* @} */

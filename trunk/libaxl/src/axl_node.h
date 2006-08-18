@@ -99,7 +99,7 @@ axlPointer axl_node_anotate_get                 (axlNode * node,
  *
  * @param name The name to compare.
  * 
- * @return AXL_TRUE if names are equal or AXL_FALSE if not.
+ * @return \ref true if names are equal or \ref false if not.
  */
 #define NODE_CMP_NAME(node,name) (axl_cmp ((node != NULL) ? axl_node_get_name(node) : "><", (name != NULL) ? name : "<>"))
 

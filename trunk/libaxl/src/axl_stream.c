@@ -150,7 +150,7 @@ struct _axlStream {
 
 
 /**
- * \defgroup axl_stream_module Axl Stream Document: Internal functions used to implement a abstract stream where a xml document is expected.
+ * \defgroup axl_stream_module Axl Stream Document: Abstract stream where a xml document is expected (also provided string functions)
  */
 
 /** 
@@ -1829,7 +1829,7 @@ char      * axl_stream_strdup_printf   (char * chunk, ...)
 char  * axl_stream_strdup_printfv    (char * chunk, va_list args)
 {
 
-#if ! defined (__GNUC__) || defined (__G_OS_WIN32__)
+#ifdef __AXL_WIN32__
 	int       size;
 #endif
 	char    * result   = NULL;
@@ -1837,7 +1837,7 @@ char  * axl_stream_strdup_printfv    (char * chunk, va_list args)
 
 	axl_return_val_if_fail (chunk, NULL);
 
-#if defined (__GNUC__) && ! defined (__G_OS_WIN32__)
+#ifdef __AXL_POSIX__
 	/* do the operation using the GNU extension */
 	new_size = vasprintf (&result, chunk, args);
 #else
@@ -1871,7 +1871,7 @@ char  * axl_stream_strdup_printfv    (char * chunk, va_list args)
  */
 char    * axl_stream_strdup_printf_len (char * chunk, int * chunk_size, ...)
 {
-#if ! defined (__GNUC__) || defined (__G_OS_WIN32__)
+#ifdef __AXL_WIN32__
 	int       size;
 #endif
 	int       new_size;
@@ -1883,7 +1883,7 @@ char    * axl_stream_strdup_printf_len (char * chunk, int * chunk_size, ...)
 	/* open std args */
 	va_start (args, chunk_size);
 
-#if defined (__GNUC__) && ! defined (__G_OS_WIN32__)
+#ifdef __AXL_POSIX__
 	/* do the operation using the GNU extension */
 	new_size = vasprintf (&result, chunk, args);
 #else
@@ -2285,5 +2285,90 @@ char      * axl_stream_to_lower_copy   (char  * chunk)
 	/* return the result */
 	return result;
 }
+
+/** 
+ * @brief Allows to compare two strings provided, s1 and s1 to be
+ * equal.
+ *
+ * In the case both are equal, \ref true is returned. Otherwise \ref
+ * false. The function compares that both are equal not only by making
+ * the first to be contained inside the second string. The check also
+ * ensures that "test" isn't equal to "test1".
+ *
+ * @param string First string to check.
+ *
+ * @param string2 Second string to check.
+ * 
+ * @return \ref true if both string are equal, otherwise \ref false is
+ * returned.
+ */
+bool axl_cmp (char * string, char * string2)
+{
+	int iterator = 0;
+
+	if (string == NULL)
+		return false;
+	if (string2 == NULL)
+		return false;
+	
+	/* for each item inside the iterator */
+	while (string [iterator] != 0 && string2 [iterator] != 0) {
+		
+		/* check the content */
+		if (string [iterator] != string2 [iterator])
+			return false;
+
+		/* update the iterator */
+		iterator++;
+		
+	} /* end while */
+	
+	/* check that both string ends at the same point */
+	if (string [iterator] != 0 ||
+	    string2 [iterator] != 0)
+		return false;
+	
+	return true;
+}
+
+
+/** 
+ * @brief Allows to check if both strings provided are equal on its
+ * initial size bytes.
+ *
+ * This function is more efficient than common memcmp because it
+ * doesn't perform the additional work to figure out which are the
+ * bytes that differ both strings.
+ * 
+ * @param string The string to check.
+ *
+ * @param string2 The second string to check.
+ *
+ * @param size The size to check for both strings to be equal.
+ * 
+ * @return \ref true if the both strings are equal for its initial
+ * size bytes or \ref false if not.
+ */
+bool axl_memcmp (char * string, char * string2, int size)
+{
+	int iterator = 0;
+
+	_memcmp(iterator,string,string2,size);
+}
+
+/** 
+ *
+ * @brief Call to strdup function check if received is a NULL
+ * reference
+ * 
+ * @param string The string to copy.
+ * 
+ * @return A newly allocated value or NULL.
+ */
+char * axl_strdup (const char * string)
+{
+	return (string != NULL) ? (char *) axl_stream_strdup ((char *) string) : NULL;
+}
+
 
 /* @} */

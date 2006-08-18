@@ -1092,12 +1092,17 @@ int __axl_doc_get_flat_size_common (axlDoc * doc, bool pretty_print, int tabular
 	 * " encoding='enc'"     = 12 characters + strlen (enc)
 	 * " ?>"                 = 3  characters
 	 *
-	 * if pretty print add: "\r\n" +2
+	 * if pretty print add: "\r\n" +2 on windows
+	 * and \n on unix.
 	 */
 	result = 22;
 
 	if (pretty_print)
+#ifdef __AXL_WIN32__
 		result += 2;
+#else
+	        result += 1;
+#endif
 
 	if (doc->standalone)
 		result += 17;
@@ -1181,8 +1186,13 @@ bool __axl_doc_dump_common (axlDoc * doc, char ** content, int * size, bool pret
 	index += 2;
 
 	if (pretty_print) {
+#ifdef __AXL_WIN32__
 		memcpy (result + index, "\r\n", 2);
 		index += 2;
+#else
+		memcpy (result + index, "\n", 1);
+		index += 1;
+#endif
 	}
 	
 	/* dump node information */
