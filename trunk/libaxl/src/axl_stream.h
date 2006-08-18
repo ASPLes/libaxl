@@ -149,6 +149,8 @@ void        axl_stream_consume_white_spaces (axlStream * stream);
 
 bool        axl_stream_remains         (axlStream * stream);
 
+/* @} */
+
 /* string handling interface */
 
 void        axl_stream_trim              (char * chunk);
@@ -189,8 +191,6 @@ bool        axl_cmp (char * string, char * string2);
 bool        axl_memcmp (char * string, char * string2, int size);
 
 char      * axl_strdup (const char * string);
-
-/* @} */
 
 END_C_DECLS
 
