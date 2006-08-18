@@ -696,16 +696,6 @@ if (!(expr)) { __axl_log ("", AXL_LEVEL_CRITICAL, "Expresion '%s' have failed, r
 
 
 /** 
- * @brief Alias definition for \ref axl_stream_strdup_printf.
- */
-#define axl_strdup_printf axl_stream_strdup_printf
-
-/** 
- * @brief Alias definition for \ref axl_stream_strdup_printfv.
- */
-#define axl_strdup_printfv axl_stream_strdup_printfv
-
-/** 
  * @brief Consumes all spaces found and tabulars on the given stream
  * until a different char is found.
  *

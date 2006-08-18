@@ -192,6 +192,23 @@ bool        axl_memcmp (char * string, char * string2, int size);
 
 char      * axl_strdup (const char * string);
 
+/** 
+ * \addtogroup axl_string_module
+ * @{
+ */
+
+/** 
+ * @brief Alias definition for \ref axl_stream_strdup_printf.
+ */
+#define axl_strdup_printf axl_stream_strdup_printf
+
+/** 
+ * @brief Alias definition for \ref axl_stream_strdup_printfv.
+ */
+#define axl_strdup_printfv axl_stream_strdup_printfv
+
+/* @} */
+
 END_C_DECLS
 
 #endif

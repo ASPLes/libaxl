@@ -2368,12 +2368,12 @@ bool axl_memcmp (char * string, char * string2, int size)
 
 /** 
  *
- * @brief Call to strdup function check if received is a NULL
- * reference
+ * @brief Perform a memory copy from the string provided.
  * 
  * @param string The string to copy.
  * 
- * @return A newly allocated value or NULL.
+ * @return A newly allocated value or NULL if it fails. The value
+ * returned, must be deallocated using \ref axl_free.
  */
 char * axl_strdup (const char * string)
 {
