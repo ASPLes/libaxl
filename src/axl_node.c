@@ -458,6 +458,7 @@ axlPointer __axl_node_copy_key (axlPointer key, axlDestroyFunc key_destroy,
 				axlPointer data, axlDestroyFunc data_destroy)
 {
 	/* copy the key */
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "copying node key=%s", key);
 	return axl_strdup (key);
 }
 
@@ -465,6 +466,7 @@ axlPointer __axl_node_copy_value (axlPointer key, axlDestroyFunc key_destroy,
 				  axlPointer data, axlDestroyFunc data_destroy)
 {
 	/* copy data */
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "copying node data=%s", data);
 	return axl_strdup (data);
 }
 
@@ -497,11 +499,16 @@ axlNode * axl_node_copy                     (axlNode * node,
 
 	axl_return_val_if_fail (node, NULL);
 
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "copying node=<%s> attr=%d childs=%d",
+		   axl_node_get_name (node), copy_attributes, copy_childs);
+
 	/* create the copy */
 	result = axl_node_create (axl_node_get_name (node));
 	
 	/* check content to be copied */
 	if (node->content != NULL) {
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "setting node content");
+
 		/* copy the content */
 		axl_node_set_content (result, 
 				      node->content->content, 
@@ -510,6 +517,8 @@ axlNode * axl_node_copy                     (axlNode * node,
 
 	/* check for attributes */
 	if (node->attributes != NULL && copy_attributes) {
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "copying attributes");
+
 		/* copy the hash */
 		result->attributes = axl_hash_copy (node->attributes, 
 						    /* key copy function */
@@ -520,6 +529,8 @@ axlNode * axl_node_copy                     (axlNode * node,
 
 	/* check if child nodes must be also copied */
 	if (copy_childs && (node->first != NULL)) {
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "coying childs");
+
 		/* get the first child */
 		child = node->first;
 
@@ -2425,8 +2436,12 @@ int       axl_node_get_flat_size            (axlNode * node, bool pretty_print, 
 
 			/* check pretty print */
 			if (pretty_print) {
-				/* one tabular plus one carry return \r\n */
-				result += (level * tabular) + 2;
+				/* one tabular plus one carry return
+				 * \r\n on windows and \n on unix */
+				result += (level * tabular) + 1;
+#ifdef __AXL_WIN32__
+				result += 1;
+#endif
 			}
 
 			/* return sum */
@@ -2444,8 +2459,12 @@ int       axl_node_get_flat_size            (axlNode * node, bool pretty_print, 
 
 		/* check pretty_print */
 		if (pretty_print) {
-			/* two tabulations plus two carry return \r\n */
-			result += (level * tabular) + 2; 
+			/* two tabulations plus two carry return \r\n
+			 * on windows and \n on unix */
+			result += (level * tabular) + 1; 
+#ifdef __AXL_WIN32__
+			result += 1;
+#endif
 		}
 
 	} else {
@@ -2453,8 +2472,12 @@ int       axl_node_get_flat_size            (axlNode * node, bool pretty_print, 
 
 		/* check pretty_print */
 		if (pretty_print) {
-			/* two tabulations plus two carry return \r\n */
-			result += (level * tabular * 2) + 4; 
+			/* two tabulations plus two carry return \r\n
+			 * on windows and \n on unix */
+			result += (level * tabular * 2) + 2; 
+#ifdef __AXL_WIN32__
+				result += 2;
+#endif
 		}
 	}
 
@@ -2601,8 +2624,13 @@ int       axl_node_dump_at                  (axlNode * node,
 
 			/* write traling node information */
 			if (pretty_print) {
+#ifdef __AXL_WIN32__
 				memcpy (content + desp, "\r\n", 2);
 				desp += 2;
+#else
+				memcpy (content + desp, "\n", 1);
+				desp += 1;
+#endif
 			}
 
 			return desp;
@@ -2633,8 +2661,13 @@ int       axl_node_dump_at                  (axlNode * node,
 
 		/* write traling node information */
 		if (node->content == NULL && pretty_print) {
+#ifdef __AXL_WIN32__
 			memcpy (content + desp, "\r\n", 2);
 			desp += 2;
+#else
+			memcpy (content + desp, "\n", 1);
+			desp += 1;
+#endif
 		}
 
 		iterator = 0;
@@ -2683,8 +2716,13 @@ int       axl_node_dump_at                  (axlNode * node,
 
 	/* write traling node information */
 	if (pretty_print) {
+#ifdef __AXL_WIN32__
 		memcpy (content + desp, "\r\n", 2);
 		desp += 2;
+#else
+		memcpy (content + desp, "\n", 1);
+		desp += 1;
+#endif
 	}
 
 	/* return the result */

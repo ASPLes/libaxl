@@ -858,6 +858,15 @@ bool __axl_hash_copy_foreach (axlPointer key,
 	/* get node to copy */
 	node = hash->table [(hash->hash (key)) % hash->hash_size];
 
+	/* check this is the node to copy */
+	while (node != NULL) {
+		if (hash->equal (node->key, key) == 0)
+			break;
+
+		/* it isn't the node looked up */
+		node = node->next;
+	} /* end while */
+
 	/* copy */
 	axl_hash_insert_full (result, 
 			      /* insert the key and its destroy function. */

@@ -38,6 +38,14 @@
 #ifndef __AXL_DECL_H__
 #define __AXL_DECL_H__
 
+#if ! defined (__GNUC__) || defined (__G_OS_WIN32__)
+#define __AXL_WIN32__
+#undef  __AXL_POSIX__
+#else
+#define __AXL_POSIX__
+#undef  __AXL_WIN32__
+#endif
+
 /* include this at this place to load GNU extensions */
 #ifdef __GNUC__
 #  ifndef _GNU_SOURCE
@@ -687,8 +695,6 @@ if (!(expr)) {__axl_log ("", AXL_LEVEL_CRITICAL, "Expresion '%s' have failed at 
 if (!(expr)) { __axl_log ("", AXL_LEVEL_CRITICAL, "Expresion '%s' have failed, returning: %s at %s (%s:%d)", #expr, #val, __AXL_PRETTY_FUNCTION__, __AXL_FILE__, __AXL_LINE__); return val;}
 
 
-char * axl_strdup (const char * string);
-
 /** 
  * @brief Alias definition for \ref axl_stream_strdup_printf.
  */
@@ -742,10 +748,6 @@ axl_stream_consume_white_spaces (stream)
 # define BEGIN_C_DECLS /* empty */
 # define END_C_DECLS /* empty */
 #endif
-
-bool axl_cmp (char * string, char * string2);
-
-bool axl_memcmp (char * string, char * string2, int size);
 
 #define _memcmp(i,s1,s2,size)\
 i = 0;\

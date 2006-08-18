@@ -184,6 +184,12 @@ char      * axl_stream_to_upper_copy   (char  * chunk);
 
 char      * axl_stream_to_lower_copy   (char  * chunk);
 
+bool        axl_cmp (char * string, char * string2);
+
+bool        axl_memcmp (char * string, char * string2, int size);
+
+char      * axl_strdup (const char * string);
+
 /* @} */
 
 END_C_DECLS
