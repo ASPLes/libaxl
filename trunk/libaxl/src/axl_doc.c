@@ -2239,6 +2239,8 @@ bool __axl_doc_iterate_common (axlDoc            * doc,
 			       axlPointer          ptr2)
 {
 	int        iterator;
+	bool       was_removed = false;
+
 	axlNode  * node;
 	axlNode  * nodeAux;
 
@@ -2247,14 +2249,21 @@ bool __axl_doc_iterate_common (axlDoc            * doc,
 	/* check first node */
 	axl_return_val_if_fail (root, false);
 
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "notifying first node inside the iteration");
+
 	/* notify first node found we pass in a null value because it
 	   doesn't have a * parent. */
-	if (func && ! func (root, NULL, doc, ptr))
+	if (func && ! func (root, NULL, doc, &was_removed, ptr))
+		return false;
+	if (func2 && ! func2 (root, NULL, doc, &was_removed, ptr, ptr2)) 
 		return false;
 
-	if (func2 && ! func2 (root, NULL, doc, ptr, ptr2))
+	/* if the root node was removed, don't continue */
+	if (was_removed)
 		return false;
 
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "continuing with next nodes");
+	
 	/* get childs */
 	pending  = axl_node_get_childs (root);
 
@@ -2268,8 +2277,22 @@ bool __axl_doc_iterate_common (axlDoc            * doc,
 		 * all childs */
 		axl_list_remove_first (pending);
 
+		/* notify node found */
+		was_removed = false;
+		if (func && ! func (node, axl_node_get_parent (node), doc, &was_removed, ptr)) {
+			axl_list_free (pending);
+			return false;
+		}
+
+		/* notify node found */
+		if (func2 && ! func2 (node, axl_node_get_parent (node), doc, &was_removed, ptr, ptr2)) {
+			axl_list_free (pending);
+			return false;
+		}
+
 		/* add all its childs */
-		if (axl_node_have_childs (node)) {
+		if (!was_removed && axl_node_have_childs (node)) {
+			
 			/* get first child */
 			nodeAux = axl_node_get_first_child (node);
 
@@ -2301,17 +2324,6 @@ bool __axl_doc_iterate_common (axlDoc            * doc,
 			} /* end while */
 		} /* end if */
 
-		/* notify node found */
-		if (func && ! func (node, axl_node_get_parent (node), doc, ptr)) {
-			axl_list_free (pending);
-			return false;
-		}
-
-		/* notify node found */
-		if (func2 && ! func2 (node, axl_node_get_parent (node), doc, ptr, ptr2)) {
-			axl_list_free (pending);
-			return false;
-		}
 		
 	} /* end while */
 
@@ -2351,10 +2363,19 @@ bool __axl_doc_iterate_common (axlDoc            * doc,
  * }
  *
  * bool show_node_found (axlNode * node, axlNode * parent,
- *                       axlDoc  * doc, axlPointer ptr)
+ *                       axlDoc  * doc, bool * was_removed, 
+ *                       axlPointer ptr)
  * {
- *      // show node found 
+ *      // Show node found 
  *      printf ("Node found: %s\n", axl_node_get_name (node));
+ *
+ *      // If the node is removed inside the iteration
+ *      // using axl_node_remove or axl_node_replace, you
+ *      // must notify the iteration system using was_removed
+ *      // as follow: (* was_removed) = true;
+ *      //
+ *      // If you don't remove anything, you don't need to do
+ *      // anything especial with was_removed.
  *
  *      // don't stop iteration
  *      return true;

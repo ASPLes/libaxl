@@ -1787,10 +1787,12 @@ bool test_01a (axlError ** error)
 
 
 
-bool test_01b_show_node_found (axlNode * node, 
+bool test_01b_show_node_found (axlNode * node,
 			       axlNode * parent,
-			       axlDoc  * doc,  
-			       axlPointer ptr, axlPointer ptr2)
+			       axlDoc  * doc,
+			       bool    * was_removed,
+			       axlPointer ptr, 
+			       axlPointer ptr2)
 {
 	int * iterator = ptr;
 
@@ -1799,6 +1801,7 @@ bool test_01b_show_node_found (axlNode * node,
 	case 0:
 		/* <document> case */
 		if (! NODE_CMP_NAME (node, "document")) {
+
 			/* fill the error */
 			axl_error_new (-1, "Expected to find a document node not found <document>", NULL, (axlError **) ptr2);
 
@@ -1810,7 +1813,7 @@ bool test_01b_show_node_found (axlNode * node,
 		/* <child1> case */
 		if (! NODE_CMP_NAME (node, "child1")) {
 			/* fill the error */
-			axl_error_new (-1, "Expected to find a document node not found <document>", NULL, (axlError **) ptr2);
+			axl_error_new (-1, "Expected to find a document node not found <child1>", NULL, (axlError **) ptr2);
 
 			/* stop iterating */
 			return false;
@@ -1939,6 +1942,7 @@ bool test_01b_show_node_found (axlNode * node,
 bool test_01b_show_node_found2 (axlNode * node, 
 				axlNode * parent,
 				axlDoc  * doc,  
+				bool    * was_removed,
 				axlPointer ptr, axlPointer ptr2)
 {
 	int * iterator = ptr;
@@ -1959,7 +1963,7 @@ bool test_01b_show_node_found2 (axlNode * node,
 		/* <child1> case */
 		if (! NODE_CMP_NAME (node, "child1")) {
 			/* fill the error */
-			axl_error_new (-1, "Expected to find a document node not found <document>", NULL, (axlError **) ptr2);
+			axl_error_new (-1, "Expected to find a document node not found <child1>", NULL, (axlError **) ptr2);
 
 			/* stop iterating */
 			return false;
