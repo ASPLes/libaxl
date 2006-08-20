@@ -418,6 +418,33 @@ bool test_04 () {
 }
 
 /** 
+ * @brief Checks error reporting functions.
+ * 
+ * 
+ * @return \ref true if ok, \ref false on rainy days.
+ */
+bool test_05 () 
+{
+	axlError * error = NULL;
+
+	if (! axl_error_was_ok (error)) {
+		printf ("Error: expected to find ok on a non-initialized error\n");
+		return false;
+	}
+
+	axl_error_new (-1, "An error to report", NULL, &error);
+
+	if (axl_error_was_ok (error)) {
+		printf ("Error: expected to find error reported on an initialized error\n");
+		return false;
+	}
+
+	axl_error_free (error);
+
+	return true;
+}
+
+/** 
  * @brief Perform some operations using some interfaces provided by
  * the libaxl library.
  * 
@@ -446,6 +473,12 @@ int main (int argc, char ** argv)
 		printf ("LibAxl list implementation (II) [   OK   ]\n");
 	}else {
 		printf ("LibAxl list implementation (II) [ FAILED ]\n");
+	}
+
+	if (test_05 ()) {
+		printf ("LibAxl error reporting [   OK   ]\n");
+	}else {
+		printf ("LibAxl error reporting [ FAILED ]\n");
 	}
 
 	return 0;

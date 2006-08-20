@@ -15,6 +15,7 @@ bool test_20 (axlError ** error)
 	axlDoc  * doc;
 	axlDoc  * doc2;
 	char    * data;
+	
 
 	/* load the document */
 	doc = axl_doc_parse_from_file ("test_20.xml", error);

@@ -493,6 +493,15 @@ int         axl_stream_peek            (axlStream * stream, char * chunk, int in
  * @brief Allows to perform several, not excluyen inspect operations,
  * over the given stream.
  *
+ * Here is an example:
+ * \code
+ * if (axl_stream_inspect_several (stream,         // the stream 
+ *                                 2,              // two chunks to recognize 
+ *                                 "or", 2,        // first chunk and its length
+ *                                 "||", 2) > 0) { // second chunk and its length
+ *      // chunk matched!!
+ * }
+ * \endcode
  * @param stream The stream where the operation will be performed.
  *
  * @param chunk_num The chunk number to inspect.
@@ -949,7 +958,9 @@ char * __axl_stream_get_untilv_wide (axlStream * stream)
 				 * at the end of the loop, it is required to
 				 * decrease the index in one unit in the case
 				 * a prebuffer operation happens */
-				index--;
+				if (index > 0) {
+					index--;
+				}
 				
 			} /* end if */
 		}
@@ -1265,6 +1276,13 @@ char      * axl_stream_get_near_to     (axlStream * stream, int count)
 char      * axl_stream_get_following   (axlStream * stream, int count)
 {
 	axl_return_val_if_fail (stream, NULL);
+
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "getting next characters from stream: index=%d size=%d",
+		   stream->stream_index, stream->stream_size);
+
+	/* check index */
+	if (stream->stream_index >= stream->stream_size)
+		return NULL;
 
 	if ((count + stream->stream_index) > stream->stream_size) {
 		count = stream->stream_size - stream->stream_index;
@@ -1693,13 +1711,11 @@ bool         axl_stream_check           (axlStream * stream, char * chunk, int i
 }
 
 /** 
- * @internal
- *
  * @brief Allows to get current status of the stream. 
  *
  * If the is exhausted and have no more data to be read.
  * 
- * @param stream 
+ * @param stream The stream that is being checked.
  * 
  * @return true if the stream is exhausted or false if not.
  */
@@ -1712,7 +1728,7 @@ bool        axl_stream_remains         (axlStream * stream)
 		   stream->stream_index, stream->stream_size);
 		
 	/* check if the stream is exhausted */
-	if (stream->stream_index >= (stream->stream_size - 1)) {
+	if (stream->stream_index >= (stream->stream_size)) {
 
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "prebufferring from remains");
 

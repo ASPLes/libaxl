@@ -1,4 +1,4 @@
-/**
+/*
  *  LibAxl:  Another XML library
  *  Copyright (C) 2006 Advanced Software Production Line, S.L.
  *
@@ -42,12 +42,9 @@
 
 BEGIN_C_DECLS
 
-/** 
- * \addtogroup axl_error_module
- * @{
- */
-
 void   axl_error_new      (int code, char * error, axlStream * stream, axlError ** _error);
+
+bool   axl_error_was_ok   (axlError * _error);
 
 int    axl_error_get_code (axlError * _error);
 
@@ -55,7 +52,6 @@ char * axl_error_get      (axlError * _error);
 
 void   axl_error_free     (axlError * _error);
 
-/* @} */
 
 END_C_DECLS
 

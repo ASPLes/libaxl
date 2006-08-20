@@ -40,6 +40,7 @@
 struct _axlError {
 	int    code;
 	char * error;
+	int    defined;
 };
 
 /**
@@ -52,26 +53,92 @@ struct _axlError {
  */
 
 /** 
- *
- * @internal
- *
  * @brief Allows to create a new \ref axlError value that contains an
  * error code and a error string.
+ *
+ * \ref axlError error reporting abstraction is a convenient way for
+ * the developer and the user that makes use of the API to report and
+ * get textual diagnostic errors produced. Many times, API provided do
+ * not allow to get more information if something wrong happen making
+ * it difficult to reach and solve the problem (including the
+ * development phase).
+ *
+ * From a developer's perspective, here is how works \ref axlError,
+ * 
+ * \code
+ * void some_public_exported_function (int param, axlError ** error)
+ * {
+ *      // do some work, but if it fails call to produce the error
+ *      // reporting.
+ *      axl_error_new (-2,     // reporting an error code
+ *                     "Something wasn't ok while processing..", 
+ *                     NULL,   // a reference to the stream (optional)
+ *                     error); // variable received.
+ *      return;
+ * }
+ * \endcode
+ *
+ * Previous construction makes error reporting optional but at the
+ * same time, available, because the programmer doesn't requires to
+ * check if the user did define the error variable, making it
+ * available at user option.
+ *
+ * Now, if the user defines the \ref axlError reference, by calling to
+ * the function, it can get the error reported as follows:
+ * 
+ * \code
+ * // declare the variable and it to null 
+ * axlError * error = NULL;
+ *
+ * // call to function
+ * some_pulic_exported_function (10, &error);
+ * if (! axl_error_was_ok (error)) {
+ *     // drop the message 
+ *     printf ("Something has failed: (code: %d) %s\n",
+ *             axl_error_get_code (error),
+ *             axl_error_get (error));
+ *     // dealloc the reference 
+ *     axl_error_free (error);
+ * }
+ * \endcode
+ *
+ * Alternatively, the user can just bypass the error reporting
+ * mechanism, without affecting the written code inside the source of
+ * the function supporting the \ref axlError notification (even if the
+ * code calls to \ref axl_error_new): 
+ * 
+ * \code
+ * // call to the function without error reporting 
+ * some_pulic_exported_function (10, NULL);
+ * \endcode
+ * 
+ * In most cases, \ref axl_error_new is not used by API consumers but
+ * by API developers. Once returned the \ref axlError reference the
+ * following functions could be checked.
+ *
+ * - \ref axl_error_get returns textual diagnostic reported.
+ *
+ * - \ref axl_error_get_code returns error code reported.
+ *
+ * - \ref axl_error_was_ok allows to check if some error was
+ * reported, base on the value initialization.
+ *
+ * 
  * 
  * @param code The error code to set and the error code string.
+ *
+ * @param error_code String to report.
  *
  * @param stream If provided, the error will try to get current stream
  * position to add more information to the place where the error was
  * found.
  *
- * @param error The error string to be used to initialize the received \ref axlError.
- *
- * 
- * @param _error The \ref axlError to initialize.
+ * @param _error The error string to be used to initialize the received \ref axlError.
  */
 void axl_error_new (int code, char * error_code, axlStream * stream, axlError ** _error)
 {
 	axlError * error;
+	char     * following;
 
 	/* get a reference to the error to be created */
 	if (_error == NULL)
@@ -80,22 +147,52 @@ void axl_error_new (int code, char * error_code, axlStream * stream, axlError **
 	/* create the error to be reported */
 	error             = axl_new (axlError, 1); 
 	error->code       = code;
+	error->defined    = -346715;
 	if (stream == NULL)
-		error->error      = axl_stream_strdup_printf ("Error found: %s\n", error_code);
-	else
-		error->error      = axl_stream_strdup_printf ("Error found (stream size: %d, at byte %d (global index: %d), near to ...%s..., while reading: %s): %s\n", 
-							      axl_stream_get_size (stream),
-							      axl_stream_get_index (stream),
-							      axl_stream_get_global_index (stream),
-							      axl_stream_get_near_to (stream, 10),
-							      axl_stream_get_following (stream, 10),
-							      error_code);
+		error->error = axl_stream_strdup_printf ("Error found: %s\n", error_code);
+	else {
+		following    = axl_stream_get_following (stream, 10),
+		error->error = axl_stream_strdup_printf ("Error found (stream size: %d, at byte %d (global index: %d), near to ...%s..., while reading: %s): %s\n", 
+							 axl_stream_get_size (stream),
+							 axl_stream_get_index (stream),
+							 axl_stream_get_global_index (stream),
+							 axl_stream_get_near_to (stream, 10),
+							 (following != NULL) ? following : "",
+							 error_code);
+	}
 	
 	axl_log (NULL, AXL_LEVEL_CRITICAL, "(code: %d) %s", code, error_code);
 	
 	/* set the error into the recevied reference */
 	(* _error )       = error;
 	return;
+}
+
+/** 
+ * @brief Allows to check if the provided reference was used to report
+ * an error.
+ *
+ * Those APIs that return an \ref axlError reference filled with the
+ * textual error diagnostic, can take advantage of this function. It
+ * Allows to check if the error was used to report an error, instead
+ * of checking a returning value containing a particular error code.
+ *
+ * See \ref axl_error_new for more information.
+ * 
+ * @param _error The error that is being checked.
+ * 
+ * @return \ref true if the error reference doesn't contains an
+ * "ERROR" (an error wasn't reported), otherwise, \ref false is
+ * returned.
+ */
+bool   axl_error_was_ok   (axlError * _error)
+{
+	/* check if it was ok */
+	if (_error == NULL || _error->error == NULL || (_error->defined != -346715))
+		return true;
+	
+	/* axl error is defined */
+	return false;
 }
 
 /** 
