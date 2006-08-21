@@ -1,5 +1,6 @@
 #include <axl.h>
 #include <stdio.h>
+#define LOG_DOMAIN "test-04"
 
 int lookups = 0;
 
@@ -1054,6 +1055,102 @@ bool test_01 ()
 }
 
 /** 
+ * @brief Test current libaxl hash implementation.
+ *
+ * @return true if it works properly or false if not.
+ */
+bool test_03 () 
+{
+	axlHash * hash;
+
+	/* create the hash */
+	hash = axl_hash_new (axl_hash_string, axl_hash_equal_string);
+	
+	axl_hash_insert (hash, "value", "value");
+	axl_hash_insert (hash, "value", "value");
+	axl_hash_insert (hash, "value", "value");
+	axl_hash_insert (hash, "value", "value");
+	axl_hash_insert (hash, "value", "value");
+	axl_hash_insert (hash, "value", "value");
+	axl_hash_insert (hash, "value", "value");
+	axl_hash_insert (hash, "value", "value");
+	axl_hash_insert (hash, "value", "value");
+	axl_hash_insert (hash, "value", "value");
+
+	axl_hash_show_status (hash);
+
+	if (axl_hash_items (hash) != 1) {
+		printf ("ERROR: expected to find a hash size of 1 but found: %d\n",
+			axl_hash_items (hash));
+		return false;
+	}
+
+	/* free the hash */
+	axl_hash_free (hash);
+
+	return true;
+}
+
+void show_item_test_04 (axlPointer key, axlPointer data)
+{
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "  %s -> %s", (char *) key, (char *) data);
+}
+
+bool test_04 () 
+{
+	axlHash * hash;
+	
+	/* create the hash */
+	hash = axl_hash_new (axl_hash_string, axl_hash_equal_string);
+
+	/* insert data */
+	axl_hash_insert (hash, "sword", "sword"); 
+	axl_hash_insert (hash, "mace", "mace");
+	axl_hash_insert (hash, "axe", "axe");
+	axl_hash_insert (hash, "arrow", "arrow");
+	axl_hash_insert (hash, "shield", "shield");
+	axl_hash_insert (hash, "bag", "bag");
+	axl_hash_insert (hash, "stone", "stone");
+	axl_hash_insert (hash, "key", "key");
+	axl_hash_insert (hash, "skull", "skull");
+	axl_hash_insert (hash, "jar", "jar");
+	axl_hash_insert (hash, "bottle", "bottle");
+	axl_hash_insert (hash, "fairy", "fairy");
+	axl_hash_insert (hash, "potion", "potion");
+	axl_hash_insert (hash, "water", "water");
+	axl_hash_insert (hash, "spoon", "spoon");
+	axl_hash_insert (hash, "book", "book");
+	axl_hash_insert (hash, "spear", "spear");
+	axl_hash_insert (hash, "dagger", "dagger");
+	axl_hash_insert (hash, "katana", "katana");
+	axl_hash_insert (hash, "helmet", "helmet");
+	axl_hash_insert (hash, "chain", "chain");
+	axl_hash_insert (hash, "halberd", "halberd");
+	axl_hash_insert (hash, "pipe", "pipe");
+	axl_hash_insert (hash, "hat", "hat");
+	axl_hash_insert (hash, "eyeofnewt", "eyeofnewt");
+	axl_hash_insert (hash, "soup", "soup");
+	axl_hash_insert (hash, "wolfbane", "wolfbane");
+	axl_hash_insert (hash, "instantcoffee", "instantcoffee");
+	axl_hash_insert (hash, "bugspray", "bugspray");
+	axl_hash_insert (hash, "flint", "flint");
+	axl_hash_insert (hash, "soap", "soap");
+	axl_hash_insert (hash, "bones", "bones");
+	axl_hash_insert (hash, "orb", "orb");
+	axl_hash_insert (hash, "gold", "gold");
+	axl_hash_insert (hash, "silver", "silver");
+	axl_hash_insert (hash, "wine", "wine");
+	axl_hash_insert (hash, "bread", "bread");
+
+	axl_hash_show_status_full (hash, show_item_test_04);
+
+	axl_hash_free (hash);
+
+	return true;
+
+}
+
+/** 
  * @brief Perform some operations using some interfaces provided by
  * the libaxl library.
  */
@@ -1062,13 +1159,25 @@ int main (int argc, char ** argv)
 	if (test_01 ()) {
 		printf ("LibAxl hash implementation [   OK   ]\n");
 	}else {
-		printf ("LibAxl hash implementation [ FAILED ]\n");
+		printf ("LibAxl hash implementation [ FAILEDp ]\n");
 	}
 
 	if (test_02 ()) {
 		printf ("LibAxl hash implementation (lookup) [   OK   ]\n");
 	}else {
 		printf ("LibAxl hash implementation (lookup) [ FAILED ]\n");
+	}
+
+	if (test_03 ()) {
+		printf ("LibAxl hash implementation (replace) [   OK   ]\n");
+	}else {
+		printf ("LibAxl hash implementation (replace) [ FAILED ]\n");
+	}
+
+	if (test_04 ()) {
+		printf ("LibAxl hash implementation (remove) [   OK   ]\n");
+	}else {
+		printf ("LibAxl hash implementation (remove) [ FAILED ]\n");
 	}
 
 	return 0;

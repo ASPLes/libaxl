@@ -104,6 +104,12 @@ axlHash       * axl_hash_copy         (axlHash             * hash,
 
 void            axl_hash_show_status  (axlHash * hash);
 
+typedef void (*axlHashPrintKeyData) (axlPointer key, axlPointer data);
+
+void            axl_hash_show_status_full (axlHash * hash, 
+					   axlHashPrintKeyData show_item);
+
+
 void            axl_hash_free         (axlHash * hash);
 			   
 

@@ -1062,6 +1062,30 @@ typedef axlPointer (*axlHashItemCopy) (axlPointer key, axlDestroyFunc key_destro
  */
 typedef bool (* axlStackForeach2) (axlPointer stack_data, axlPointer user_data, axlPointer user_data2);
 
+/** 
+ * @brief Foreach function handler used at \ref axl_stack_foreach3
+ * function to iterate all elements inside the stack, from the head to
+ * the tail.
+ *
+ * The function receives three user defined pointers that are defined
+ * at the \ref axl_stack_foreach3 function.
+ * 
+ * @param stack_data A reference to the stack data stored.
+ *
+ * @param user_data A reference to a user defined pointer passed to
+ * \ref axl_stack_foreach3.
+ *
+ * @param user_data2 A second reference to a user defined pointer
+ * passed to \ref axl_stack_foreach3.
+ *
+ * @param user_data3 Third reference to a user defined pointer passed
+ * to \ref axl_stack_foreach3.
+ * 
+ * @return \ref true to make the foreach process to stop. \ref false
+ * to make the process to continue.
+ */
+typedef bool (* axlStackForeach3) (axlPointer stack_data, axlPointer user_data, axlPointer user_data2, axlPointer user_data3);
+
 /* @} */
 #endif
 

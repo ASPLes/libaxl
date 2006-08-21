@@ -174,6 +174,40 @@ axlPointer axl_stack_peek (axlStack * stack)
 }
 
 /** 
+ * @internal Common support function for foreach over an stack for all
+ * foreach functions defined.
+ */
+bool       __axl_stack_foreach_common (axlStack         * stack, 
+				       axlStackForeach2   func,
+				       axlStackForeach3   func3,
+				       axlPointer         user_data, 
+				       axlPointer         user_data2,
+				       axlPointer         user_data3)
+{
+	int iterator;
+
+	axl_return_val_if_fail (stack, false);
+
+	/* for each item inside the stack */
+	iterator = 0;
+	while (iterator < stack->items) {
+		/* call fo the function and check returning value  */
+		if (func != NULL && func (stack->stack [stack->items - iterator - 1],  user_data,  user_data2))
+			return false;
+
+		/* call fo the function and check returning value  */
+		if (func3 != NULL && func3 (stack->stack [stack->items - iterator - 1],  user_data,  user_data2, user_data3))
+			return false;
+
+		/* update the iterator */
+		iterator ++;
+	}
+
+	/* iteration performed completely */
+	return true;
+}
+
+/** 
  * @brief Allows to perform a foreach operation from the head of the
  * stack (the next item to be poped) to the tail of the stack (the
  * very first item pushed).
@@ -208,26 +242,53 @@ bool       axl_stack_foreach (axlStack         * stack,
 			      axlPointer         user_data, 
 			      axlPointer         user_data2)
 {
-	int iterator;
-
-	axl_return_val_if_fail (stack, false);
-	axl_return_val_if_fail (func, false);
-
-	/* for each item inside the stack */
-	iterator = 0;
-	while (iterator < stack->items) {
-		/* call fo the function and check returning value  */
-		if (func (stack->stack [stack->items - iterator - 1],  user_data,  user_data2))
-			return false;
-
-		/* update the iterator */
-		iterator ++;
-	}
-
-	/* iteration performed completely */
-	return true;
+	/* call to common function */
+	return __axl_stack_foreach_common (stack, func, NULL, user_data, user_data2, NULL);
 }
 
+
+/** 
+ * @brief Allows to perform a foreach operation from the head of the
+ * stack (the next item to be poped) to the tail of the stack (the
+ * very first item pushed).
+ *
+ * The foreach process is non intrusive: it doesn't perform any change
+ * of the stack, but allows to traverse all items in the natural order
+ * in which items are stored (push) and removed (pop).
+ *
+ * The function provided to perform the foreach operation will be
+ * called providing the stack data found, and the three user defined
+ * pointers provided.
+ * 
+ * @param stack The stack where the foreach operation will be
+ * performed.
+ *
+ * @param func The foreach function to be called for each item found
+ * in the stack.
+ *
+ * @param user_data User defined pointer to be passed to the function
+ * provided.
+ *
+ * @param user_data2 User defined pointer to be passed to the function
+ * provided.
+ *
+ * @param user_data3 User defined pointer to be passed to the function
+ * provided.
+ * 
+ * @return \ref true if the foreach process was performed completely
+ * through all items inside the stack or \ref false if not. The
+ * function will also return \ref false to indicate a failure the
+ * stack and func parameters are null.
+ */
+bool       axl_stack_foreach3 (axlStack         * stack, 
+			       axlStackForeach3   func,
+			       axlPointer         user_data,
+			       axlPointer         user_data2,
+			       axlPointer         user_data3)
+{
+	/* call to common function */
+	return __axl_stack_foreach_common (stack, NULL, func, user_data, user_data2, user_data3);
+}
 
 /** 
  * @brief Returns current stack size, that is, elements stored on the

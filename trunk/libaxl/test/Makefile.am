@@ -1,6 +1,10 @@
 EXTRA_DIST      = $(wildcard *.c) $(wildcard *.dtd) $(wildcard *.xml) $(wildcard *.xdl) Makefile.win
 
-INCLUDES = -I../src/ -Wall
+if ENABLE_AXL_LOG
+LOG = -DSHOW_DEBUG_LOG
+endif
+
+INCLUDES = -I../src/ -Wall $(LOG)
 
 noinst_PROGRAMS = test_01 test_02 test_01a test_02a test_03 test_03a
 
