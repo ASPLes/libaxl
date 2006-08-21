@@ -149,6 +149,46 @@ int             axl_hash_equal_string (axlPointer keya,
 	return 0;
 }
 
+
+/** 
+ * @internal Internal lookup function, returns the hole hash node.
+ * 
+ * @param hash The hash where the lookup will be performed.
+ *
+ * @param key The key that is being looked up.
+ * 
+ * @return The axlHashNode reference or NULL if not found.
+ */
+axlHashNode * __axl_hash_internal_lookup (axlHash * hash, axlPointer key)
+{
+	axlHashNode * node;
+
+	/* get the node at the provided position */
+	if (hash->hash_size == 0)
+		return NULL;
+	node = hash->table [hash->hash (key) % hash->hash_size];
+
+	/* node not found */
+	if (node == NULL)
+		return NULL;
+
+	/* check for equal keys */
+	if (hash->equal (node->key, key) == 0)
+		return node;
+
+	while (node->next != NULL) {
+		/* seems we have more nodes */
+		node = node->next;		
+
+		/* check for equal keys */
+		if (hash->equal (node->key, key) == 0)
+			return node;
+	}  /* end */
+
+	/* node not found */
+	return NULL;
+}
+
 /** 
  * @brief Creates a new hash table using the function provided as
  * hashing function.
@@ -317,7 +357,7 @@ void       axl_hash_insert_full (axlHash        * hash,
 				 axlPointer       data,
 				 axlDestroyFunc   data_destroy)
 {
-	int           pos;
+	int           pos       = 0;
 	axlHashNode * node      = NULL;
 	axlHashNode * aux       = NULL;
 	int           iterator  = 0;
@@ -340,11 +380,31 @@ void       axl_hash_insert_full (axlHash        * hash,
 		__axl_hash_insert_node (pos, hash, key, node, true);
 
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "stored data into position (I): %d", pos);
+		if (node->key_destroy != NULL) {
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "storing data with key destroy function: 0x%x", 
+				   node->key_destroy);
+		}
+
+		if (node->data_destroy != NULL) {
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "storing data with data destroy function: 0x%x", 
+				   node->data_destroy);
+		}
+
 		return;
 	} 
 
 	/* now check for a more complex case */
-	if (hash->hash_size == hash->items) {
+	node = __axl_hash_internal_lookup (hash, key);
+
+	if (node != NULL) {
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "node already stored in the hash, replace it");
+	}else {
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "node isn't found on the hash, insert it");
+	}
+
+
+	/* if the node is not found and the hash size can't hold more items, expand it and rehash */
+	if ((hash->hash_size == hash->items) && (node == NULL)) {
 		/* seems we need to rehash items, reallocating enough
 		 * memory */
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "seems there is no more space left, increase size and rehash (items=%d size=%d)",
@@ -410,15 +470,39 @@ void       axl_hash_insert_full (axlHash        * hash,
 
 			/* update the reference */
 			node = aux;
-		}
+		} /* end while */
+
+		/* clear node reference */
+		node = NULL;
 	} /* rehashing if end */
 
 	/* we have enough space to store the item create the
 	   node to store */
-	__axl_hash_create_node (node, key, key_destroy, data, data_destroy);
+	if (node == NULL) {
+		/* create a new node */
+		__axl_hash_create_node (node, key, key_destroy, data, data_destroy);
 
-	/* insert the node into the hash */
-	__axl_hash_insert_node (pos, hash, key, node, true);
+		/* insert the node into the hash as usual */
+		__axl_hash_insert_node (pos, hash, key, node, true);
+	} else {
+		/* don't create a node, replace previous content and use new content */
+		if (node->key_destroy != NULL) {
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "key destroy defined on 0x%x",
+				   node->key_destroy);
+			node->key_destroy (node->key);
+		}
+		if (node->data_destroy != NULL) {
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "data destroy defined on 0x%x",
+				   node->data_destroy);
+			node->data_destroy (node->data);
+		}
+
+		/* now use new data */
+		node->key          = key;
+		node->key_destroy  = key_destroy;
+		node->data         = data;
+		node->data_destroy = data_destroy;
+	}
 
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "stored data into position (III): %d", pos);
 
@@ -467,7 +551,7 @@ void            axl_hash_remove       (axlHash    * hash,
 	if (hash->equal (node->key, key) == 0) {
 		/* set that no items are available at the provided
 		 * position */
-		hash->table [pos] = NULL;
+		hash->table [pos] = node->next;
 
 	remove_element:
 		/* key destruction is defined */
@@ -529,29 +613,12 @@ axlPointer axl_hash_get         (axlHash * hash,
 	axl_return_val_if_fail (hash, NULL);
 	axl_return_val_if_fail (key, NULL);
 
-	/* get the node at the provided position */
-	if (hash->hash_size == 0)
-		return NULL;
-	node = hash->table [hash->hash (key) % hash->hash_size];
+	/* lookup using internal function */
+	node =  __axl_hash_internal_lookup (hash, key);
 
-	/* node not found */
-	if (node == NULL)
-		return NULL;
-
-	/* check for equal keys */
-	if (hash->equal (node->key, key) == 0)
+	/* return the content or NULL if not defined the node */
+	if (node != NULL)
 		return node->data;
-
-	while (node->next != NULL) {
-		/* seems we have more nodes */
-		node = node->next;		
-
-		/* check for equal keys */
-		if (hash->equal (node->key, key) == 0)
-			return node->data;
-	}  /* end */
-	
-	/* no item was found on the hash */
 	return NULL;
 }
 
@@ -800,39 +867,8 @@ void            axl_hash_foreach4     (axlHash              * hash,
 bool            axl_hash_exists       (axlHash    * hash,
 				       axlPointer   key)
 {
-	axlHashNode * node;
-
 	/* check if the hash is provided without loggin an error */
-	if (hash == NULL)
-		return false;
-	axl_return_val_if_fail (key, false);
-
-	/* check empty hash value */
-	if (hash->hash_size == 0)
-		return false;
-
-	/* get the node at the provided position */
-	node = hash->table [(hash->hash (key)) % hash->hash_size];
-
-	/* node not found */
-	if (node == NULL)
-		return false;
-
-	/* check for equal keys */
-	if (hash->equal (node->key, key) == 0)
-		return true;
-
-	while (node->next != NULL) {
-		/* seems we have more nodes */
-		node = node->next;		
-
-		/* check for equal keys */
-		if (hash->equal (node->key, key) == 0)
-			return true;
-	}  /* end */
-	
-	/* no item was found on the hash */
-	return false;
+	return (__axl_hash_internal_lookup (hash, key) != NULL);
 }
 
 /** 
@@ -964,6 +1000,23 @@ int             axl_hash_items        (axlHash * hash)
  */
 void            axl_hash_show_status  (axlHash * hash)
 {
+	/* use full implementation */
+	axl_hash_show_status_full (hash, NULL);
+
+	return;
+}
+
+/** 
+ * @internal Shows current hash content to the console using the
+ * provided function to show the hash content.
+ * 
+ * @param hash The hash that is requested to show its content.
+ *
+ * @param show_item The function to be used to show the content.
+ */
+void            axl_hash_show_status_full (axlHash * hash, 
+					   axlHashPrintKeyData show_item)
+	{
 	axlHashNode * node;
 	int           iterator;
 	int           count;
@@ -977,8 +1030,10 @@ void            axl_hash_show_status  (axlHash * hash)
 	count    = 0;
 	while (iterator < hash->hash_size) {
 		/* empty item found */
-		if (hash->table[iterator] == NULL)
+		if (hash->table[iterator] == NULL) {
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "empty cell at: %d", iterator);
 			count++;
+		}
 
 		/* update iterator */
 		iterator++;
@@ -991,8 +1046,14 @@ void            axl_hash_show_status  (axlHash * hash)
 	while (iterator < hash->hash_size) {
 		/* empty item found */
 		node = hash->table[iterator];
-		if (node != NULL && node->next == NULL)
+		if (node != NULL && node->next == NULL) {
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "properly used cell at: %d", iterator);
 			count++;
+
+			if (show_item != NULL) {
+				show_item (node->key, node->data);
+			}
+		}
 
 		/* update iterator */
 		iterator++;
@@ -1005,8 +1066,20 @@ void            axl_hash_show_status  (axlHash * hash)
 	while (iterator < hash->hash_size) {
 		/* empty item found */
 		node = hash->table[iterator];
-		if (node != NULL && node->next != NULL)
+		if (node != NULL && node->next != NULL) {
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "collitioned cell at: %d", iterator);
 			count++;
+		}
+
+		/* for each node show the content */
+		while ((show_item) != NULL && (node != NULL)) {
+			if (show_item != NULL) {
+				show_item (node->key, node->data);
+			}
+			
+			/* update to the next node */
+			node = node->next;
+		}
 
 		/* update iterator */
 		iterator++;

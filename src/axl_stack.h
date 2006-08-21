@@ -62,6 +62,12 @@ bool       axl_stack_foreach (axlStack         * stack,
 			      axlPointer         user_data, 
 			      axlPointer         user_data2);
 
+bool       axl_stack_foreach3 (axlStack         * stack, 
+			       axlStackForeach3   func,
+			       axlPointer         user_data,
+			       axlPointer         user_data2,
+			       axlPointer         user_data3);
+
 int        axl_stack_size (axlStack * stack);
 
 bool       axl_stack_is_empty (axlStack * stack);
