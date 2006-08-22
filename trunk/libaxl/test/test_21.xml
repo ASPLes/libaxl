@@ -1,0 +1,18 @@
+<?xml version='1.0' ?>
+<document>
+  Some content inside the document <strong>this content goes
+  bold</strong> more data stored directly inside the document node.
+
+  <!-- ##PLACE this comment just after the <childs> declaration to get a bug## here goes a comment before text block -->
+ <childs>
+   More text after child declaration.
+   <child1 />
+   <child2 />
+   <child3> 
+     This more content inside the child3 element
+     <strong>value</strong> more text <italic> italic text </italic>
+     and finaly more text.
+   </child3>
+ </childs>
+
+</document>

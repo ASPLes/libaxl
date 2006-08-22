@@ -1484,6 +1484,9 @@ void      axl_node_set_content        (axlNode * node, char * content, int conte
  * received has to be escaped, the function will fail. To use this
  * function the caller must ensure that entity references are used to
  * especify the &, ', ", < or >.
+ *
+ * If the node have content already configured, it is deallocated,
+ * configuring new content received.
  * 
  * @param node The \ref axlNode where the content will be set.
  *
@@ -1505,7 +1508,13 @@ void      axl_node_set_content_ref    (axlNode * node,
 
 	if (node->content == NULL)
 		node->content = axl_new (axlNodeContent, 1);
-
+	else {
+		/* content node is defined release previously
+		 * allocated memory */
+		axl_free (node->content->content);
+	}
+		
+	/* configure content size */
 	node->content->content_size = content_size;
 
 	/* set current content */

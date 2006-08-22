@@ -2,6 +2,28 @@
 #include <stdio.h>
 
 /** 
+ * @brief Test mixed content documents support (TEST NOT FINISHED).
+ * 
+ * @param error The optional axlError to be used to report errors.
+ * 
+ * @return true if the validity test is passed, false if not.
+ */
+bool test_21 (axlError ** error)
+{
+	axlDoc  * doc;
+
+	/* load the document */
+	doc = axl_doc_parse_from_file ("test_21.xml", error);
+	if (doc == NULL)
+		return false;
+
+	/* free axl document */
+	axl_doc_free (doc);
+
+	return true;
+}
+
+/** 
  * @brief Test entity support (basic entity support).
  * 
  * @param error The optional axlError to be used to report errors.
@@ -2502,6 +2524,15 @@ int main (int argc, char ** argv)
 		printf ("Test 20: Axl node copy and anotation data [   OK   ]\n");
 	} else {
 		printf ("Test 20: Axl node copy and anotation data [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}	
+
+	if (test_21 (&error)) {
+		printf ("Test 21: Axl node mixed content [   OK   ]\n");
+	} else {
+		printf ("Test 21: Axl node mixed content [ FAILED ]\n  (CODE: %d) %s\n",
 			axl_error_get_code (error), axl_error_get (error));
 		axl_error_free (error);
 		return -1;
