@@ -71,7 +71,7 @@
  * Internal definition used to represent the maximum value used for
  * calls done to match a set of chunks. 
  */
-#define MAX_INSPECTED_CHUNKS 10
+#define MAX_INSPECTED_CHUNKS 30
 
 typedef  enum {
 	STREAM_FD,
@@ -893,6 +893,13 @@ char * __axl_stream_get_untilv_wide (axlStream * stream)
 	/* perform some environmental checks */
 	axl_return_val_if_fail (stream, NULL);
 	axl_return_val_if_fail (stream->chunk_num > 0, NULL);
+
+	/* check max inspected chunks */
+	if (stream->chunk_num > MAX_INSPECTED_CHUNKS) {
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "unable to parse stream for the number of chunks to recognize. Max number supported is %d, but received %d",
+			   MAX_INSPECTED_CHUNKS, stream->chunk_num);
+		return NULL;
+	}
 
 	/* set current matched value */
 	stream->chunk_matched = -1;

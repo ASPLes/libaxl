@@ -289,6 +289,11 @@ axlHash       * axl_hash_new_full     (axlHashFunc    hash,
  * The function will store the data provided on the hash setting no
  * destroy function for the key and the data stored. See \ref
  * axl_hash_insert_full for more details.
+ *
+ * <b>NOTE:</b> The insert operation will replace a previously
+ * inserted item with the same key. If no item is found, and insert
+ * will take place, otherwise previous item is replaced calling to the
+ * key destroy and data destroy defined.
  * 
  * @param hash The hash table where the insert operation will be
  * produced.
@@ -333,9 +338,14 @@ if (_increase)\
     _hash->items++;
 
 /** 
- * @brief Inserts a key index value into the provided hash table,
- * allowing to provide deallocation functions for the key and the data
- * to be stored.
+ * @brief Inserts a key value into the provided hash table, allowing
+ * to provide deallocation functions for the key and the data to be
+ * stored.
+ *
+ * <b>NOTE:</b> The insert operation will replace a previously
+ * inserted item with the same key. If no item is found, and insert
+ * will take place, otherwise previous item is replaced calling to the
+ * key destroy and data destroy defined.
  * 
  * @param hash The hash table where the data will be added.
  *
