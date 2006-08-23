@@ -991,6 +991,10 @@ axlPointer axl_node_anotate_get                 (axlNode * node,
 	axlPointer   result = NULL;
 	axlNode    * parent;
 	
+	/* check node received before nothing */
+	axl_return_val_if_fail (node, NULL);
+	axl_return_val_if_fail (key, NULL);
+	
 	/* lookup the data in the current node */
 	if (node->anotate_data != NULL) {
 		/* lookup the data */
