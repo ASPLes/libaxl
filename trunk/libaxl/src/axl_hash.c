@@ -163,6 +163,9 @@ axlHashNode * __axl_hash_internal_lookup (axlHash * hash, axlPointer key)
 {
 	axlHashNode * node;
 
+	axl_return_val_if_fail (hash, NULL);
+	axl_return_val_if_fail (key, NULL);
+
 	/* get the node at the provided position */
 	if (hash->hash_size == 0)
 		return NULL;
