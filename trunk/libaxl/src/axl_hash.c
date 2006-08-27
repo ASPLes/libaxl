@@ -150,6 +150,38 @@ int             axl_hash_equal_string (axlPointer keya,
 	return 0;
 }
 
+/** 
+ * @brief Convenience hashing function to store keys that are
+ * integers.
+ * 
+ * @param key The key that is supported to contain a int value stored
+ * using \ref INT_TO_PTR.
+ * 
+ * @return The index in the hash where is located the associated data.
+ */
+unsigned int    axl_hash_int          (axlPointer key)
+{
+	int value = PTR_TO_INT (key);
+
+	return (unsigned int) value;
+}
+
+/** 
+ * @brief Convenience hash function to compare two keys that holds
+ * integers values.
+ * 
+ * @param keya The first key to compare.
+ * @param keyb The second key to compare.
+ * 
+ * @return 0 if both keys are equal, 1 if not.
+ */
+int             axl_hash_equal_int    (axlPointer keya, 
+				       axlPointer keyb)
+{
+	/* return if both keys containing int values are equal */
+	return (PTR_TO_INT (keya) == PTR_TO_INT(keyb)) ? 0 : 1;
+}
+
 
 /** 
  * @internal Internal lookup function, returns the hole hash node.
@@ -220,6 +252,9 @@ axlHashNode * __axl_hash_internal_lookup (axlHash * hash, axlPointer key)
  * // create a string indexed hash 
  * axlHash * hash = axl_hash_new (axl_hash_string, axl_hash_equal_string);
  * \endcode
+ *
+ * Additionally, two functions are provided to create hash containing
+ * integer values as keys: \ref axl_hash_int and \ref axl_hash_equal_int.
  *
  * Once the hash is created the following functions must be used to
  * store data:
