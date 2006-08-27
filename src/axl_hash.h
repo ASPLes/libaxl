@@ -54,6 +54,11 @@ unsigned int    axl_hash_string       (axlPointer key);
 int             axl_hash_equal_string (axlPointer keya, 
 				       axlPointer keyb);
 
+unsigned int    axl_hash_int          (axlPointer key);
+
+int             axl_hash_equal_int    (axlPointer keya, 
+				       axlPointer keyb);
+
 void            axl_hash_insert       (axlHash    * hash, 
 				       axlPointer   key,
 				       axlPointer   data);
