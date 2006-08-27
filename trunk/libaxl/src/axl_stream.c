@@ -196,16 +196,10 @@ bool axl_stream_prebuffer (axlStream * stream)
 			   stream->stream_index, stream->stream_size - stream->stream_index,
 			   stream->stream + stream->stream_index);
 
-		/* clear the memory */
-		memset (stream->temp, 0, STREAM_BUFFER_SIZE);
-		
 		/* displace memory already read to be at the begining
 		 * of the stream */
 		memcpy (stream->temp, stream->stream + stream->stream_index,
 			STREAM_BUFFER_SIZE - stream->stream_index);
-
-		/* clear the memory */
-		memset (stream->stream, 0, STREAM_BUFFER_SIZE);
 
 		/* now copy displaced content back to the stream */
 		memcpy (stream->stream, stream->temp, 

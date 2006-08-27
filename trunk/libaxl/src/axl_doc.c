@@ -908,9 +908,17 @@ axlDoc * __axl_doc_parse_common (char * entity, int entity_size,
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "current index: %d (global: %d)", index,
 				   axl_stream_get_global_index (stream));
 
-			/* consume a possible comment */
-			if (! axl_doc_consume_comments (doc, stream, error))
-				return false;
+			/* get rid from spaces */
+			AXL_CONSUME_SPACES(stream);
+
+			/* consume a possible comment and process instructions */
+			if (axl_stream_peek (stream, "<?", 2) > 0 || axl_stream_peek (stream, "<!--", 4) > 0) {
+				if (! axl_doc_consume_comments (doc, stream, error))
+					return false;
+				
+				/* continue on the next index */
+				continue;
+			}
 			
 			if ((axl_stream_peek (stream, "</", 2) > 0)) {
 				/* accept previous peek */
@@ -2629,7 +2637,7 @@ bool      axl_doc_consume_comments         (axlDoc * doc, axlStream * stream, ax
 		/* check to break-the-loop */
 	}while (found_item);
 
-
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "comments and pi parsed");
 
 	/* true value */
 	return true;

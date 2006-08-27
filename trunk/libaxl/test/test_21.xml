@@ -3,8 +3,9 @@
   Some content inside the document <strong>this content goes
   bold</strong> more data stored directly inside the document node.
 
-  <!-- ##PLACE this comment just after the <childs> declaration to get a bug## here goes a comment before text block -->
+  
  <childs>
+   <!-- here goes a comment before text block -->
    More text after child declaration.
    <child1 />
    <child2 />
