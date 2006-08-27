@@ -35,7 +35,8 @@
  *      Email address:
  *         info@aspl.es - http://fact.aspl.es
  */
-#include <axl.h>
+#include <axl_hash.h>
+#include <axl_log.h>
 
 #define LOG_DOMAIN "axl-hash"
 
