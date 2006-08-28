@@ -864,8 +864,8 @@ bool __axl_doc_parse_close_node (axlStream * stream, axlDoc * doc, axlNode ** _n
  * Internal function which works as a common base for all functions
  * that parse XML documents from different inputs.
  */
-axlDoc * __axl_doc_parse_common (char * entity, int entity_size, 
-                                 char * file_path, int fd_handle, 
+axlDoc * __axl_doc_parse_common (const char * entity, int entity_size, 
+                                 const char * file_path, int fd_handle, 
 			         axlError ** error)
 {
 	axlStream * stream        = NULL;
@@ -1054,8 +1054,8 @@ axlDoc * __axl_doc_parse_common (char * entity, int entity_size,
  * @return Returns a newly allocated \ref axlDoc instance that must be
  * deallocated by using \ref axl_doc_free.
  */
-axlDoc  * axl_doc_create                   (char     * version, 
-					    char     * encoding,
+axlDoc  * axl_doc_create                   (const char     * version, 
+					    const char     * encoding,
 					    bool   standalone)
 {
 	axlDoc * doc;
@@ -1348,7 +1348,7 @@ int axl_doc_get_flat_size (axlDoc * doc)
  * received parameter are wrong. -2 will be returned if there some
  * error is found while processing the document.
  */
-axlDoc * axl_doc_parse (char * entity, int entity_size, axlError ** error)
+axlDoc * axl_doc_parse (const char * entity, int entity_size, axlError ** error)
 {
 	return __axl_doc_parse_common (entity, entity_size, NULL, -1, error);
 }
@@ -1415,8 +1415,8 @@ int __axl_doc_get_file_size (char * file_path)
  * 
  * @return 
  */
-axlDoc  * axl_doc_parse_from_file          (char      * file_path,
-					    axlError ** error)
+axlDoc  * axl_doc_parse_from_file          (const char * file_path,
+					    axlError  ** error)
 {
 	return __axl_doc_parse_common (NULL, -1, file_path, -1, error);
 }

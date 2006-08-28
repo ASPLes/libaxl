@@ -1554,8 +1554,8 @@ bool __axl_dtd_parse_entity (axlDtd * dtd, axlStream * stream, axlError ** error
  * Implements DTD parsing, reading it from a direct buffer, or a file
  * path or a file handle.
  */
-axlDtd * __axl_dtd_parse_common (char * entity, int entity_size, 
-				 char * file_path, int fd_handle, 
+axlDtd * __axl_dtd_parse_common (const char * entity, int entity_size, 
+				 const char * file_path, int fd_handle, 
 				 axlError ** error)
 {
 	axlStream * stream;
@@ -1654,8 +1654,8 @@ axlDtd * __axl_dtd_parse_common (char * entity, int entity_size,
  * NULL on failure detected. On that case, it is requred to check \ref
  * axlError variable, if defined.
  */
-axlDtd   * axl_dtd_parse (char      * entity, 
-			  int         entity_size,
+axlDtd   * axl_dtd_parse (const char * entity, 
+			  int          entity_size,
 			  axlError ** error)
 {
 
@@ -1673,7 +1673,7 @@ axlDtd   * axl_dtd_parse (char      * entity,
  * 
  * @return A newly allocated \ref axlDtd instance or NULL if it fails.
  */
-axlDtd   * axl_dtd_parse_from_file (char * file_path,
+axlDtd   * axl_dtd_parse_from_file (const char * file_path,
 				    axlError ** error)
 {
 	return __axl_dtd_parse_common (NULL, -1, file_path, -1, error);

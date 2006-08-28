@@ -47,9 +47,9 @@ BEGIN_C_DECLS
  * @{
  */
 
-axlStream * axl_stream_new             (char * stream_source, 
+axlStream * axl_stream_new             (const char * stream_source, 
 					int stream_size,
-					char * file_path,
+					const char * file_path,
 					int    fd_handler,
 					axlError ** error);
 
