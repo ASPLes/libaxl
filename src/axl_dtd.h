@@ -47,11 +47,11 @@ BEGIN_C_DECLS
  * @{
  */
 
-axlDtd             * axl_dtd_parse            (char      * entity, 
-					       int         entity_size,
+axlDtd             * axl_dtd_parse            (const char * entity, 
+					       int          entity_size,
 					       axlError ** error);
 
-axlDtd             * axl_dtd_parse_from_file  (char * file_path,
+axlDtd             * axl_dtd_parse_from_file  (const char * file_path,
 					       axlError ** error);
 
 bool                 axl_dtd_validate         (axlDoc * doc, 

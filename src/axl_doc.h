@@ -47,19 +47,19 @@ BEGIN_C_DECLS
  * @{
  */
 
-axlDoc  * axl_doc_create                   (char     * version, 
-					    char     * encoding,
+axlDoc  * axl_doc_create                   (const char     * version, 
+					    const char     * encoding,
 					    bool   standalone);
 
-axlDoc  * axl_doc_parse                    (char * entity, 
+axlDoc  * axl_doc_parse                    (const char * entity, 
 					    int entity_size, 
 					    axlError ** error);
 
 axlDoc  * axl_doc_parse_strings            (axlError ** error,
 					    ...);
 
-axlDoc  * axl_doc_parse_from_file          (char      * file_path,
-					    axlError ** error);
+axlDoc  * axl_doc_parse_from_file          (const char * file_path,
+					    axlError  ** error);
 
 bool      axl_doc_dump                     (axlDoc  * doc, 
 					    char   ** content, 

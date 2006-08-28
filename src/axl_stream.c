@@ -320,8 +320,8 @@ bool axl_stream_prebuffer (axlStream * stream)
  * return a NULL value is received a NULL stream or a non positive
  * stream size.
  */
-axlStream * axl_stream_new (char * stream_source, int stream_size,
-			    char * file_path, int    fd_handler,
+axlStream * axl_stream_new (const char * stream_source, int stream_size,
+			    const char * file_path, int    fd_handler,
 			    axlError ** error)
 {
 	axlStream * stream;
