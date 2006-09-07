@@ -1448,6 +1448,13 @@ void      axl_node_set_content        (axlNode * node, char * content, int conte
 	if (content_size == -1)
 		content_size = strlen (content);
 
+	/* check if there were previous content installed */
+	if (node->content != NULL) {
+		axl_free (node->content->content);
+		axl_free (node->content);
+		node->content = NULL;
+	}
+
 
 	/* check if the string received have escapable characters */
 	if (__axl_node_content_have_not_valid_sequences (content, content_size, 
