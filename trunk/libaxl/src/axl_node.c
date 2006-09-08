@@ -2526,9 +2526,10 @@ bool __axl_node_dump_attributes_at_foreach (axlPointer key,
 					    axlPointer user_data,
 					    axlPointer user_data2)
 {
-	char * content  = user_data;
-	int  * _desp    = user_data2;
-	int    desp     = (*_desp);
+	char * content    = user_data;
+	int  * _desp      = user_data2;
+	bool   terminator = false;
+	int    desp       = (*_desp);
 	int    length;
 
 	memcpy (content + desp, " ", 1);
@@ -2537,15 +2538,28 @@ bool __axl_node_dump_attributes_at_foreach (axlPointer key,
 	length = strlen ((char*) key);
 	memcpy (content + desp, (char *) key, length);
 	desp += length;
-	
-	memcpy (content + desp, "='", 2);
-	desp += 2;
+
+	/* check if the content contains a ' so, enclose the attribute
+	 * with " */
+	if (strstr (value, "'") == NULL) {
+		memcpy (content + desp, "='", 2);
+		desp += 2;
+	}else {
+		terminator = true;
+		memcpy (content + desp, "=\"", 2);
+		desp += 2;
+	}
 	
 	length = strlen ((char*) value);
 	memcpy (content + desp, (char*) value, length);
 	desp += length;
-	
-	memcpy (content + desp, "'", 1);
+
+	/* dump attribute termination */
+	if (terminator) {
+		memcpy (content + desp, "\"", 1);
+	}else {
+		memcpy (content + desp, "'", 1);		
+	}
 	desp += 1;
 
 	/* update desp */
