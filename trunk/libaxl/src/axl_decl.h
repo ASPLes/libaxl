@@ -105,6 +105,13 @@
  */
 typedef struct _axlDoc axlDoc;
 
+/** 
+ * @brief An abstraction that allows to hold an xml node or any other
+ * content that can be found inside an xml node: comments, content,
+ * CDATA-content, PI, entity references.
+ */
+typedef struct _axlItem axlItem;
+
 /**
  * @brief Axl XML node type definition.
  *
@@ -433,6 +440,18 @@ typedef enum {
 	 */
 	ONE_OR_MANY       = 4
 }AxlDtdTimes;
+
+/** 
+ * @brief Item types that can hold an xml node (\ref axlNode)
+ */
+typedef enum {
+	ITEM_NODE      = 1,
+	ITEM_CONTENT   = 2,
+	ITEM_PI        = 3,
+	ITEM_COMMENT   = 4,
+	ITEM_REF       = 5,
+	ITEM_CDATA     = 6
+}AxlItemType;
 
 /** 
  * @brief Simple alias for the AxlDtdElementType.

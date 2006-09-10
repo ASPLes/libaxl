@@ -88,19 +88,46 @@ struct _axlNode {
 	 */
 	axlNodeContent * content;
 
-	/** 
-	 * @internal A reference to the frist child, the last child
-	 * and the number of childs stored.
+	/**
+	 * @internal A reference to the frist child.
 	 */
-	axlNode      * first;
-	axlNode      * last;
-	int            child_num;
+	axlItem      * first;
 
 	/** 
-	 * @internal
-	 * Pi targets storing.
+	 * @internal A reference to the last child.
 	 */
-	axlList       * piTargets;
+	axlItem      * last;
+
+	/** 
+	 * @internal The number of childs that contains the node.
+	 */
+	int            child_num;
+
+	/**
+	 * @internal A hash used to store arbitrary data associated to
+	 * the node.
+	 */
+	axlHash       * anotate_data; 
+
+	/** 
+	 * @internal Internal reference to the holder axlItem
+	 * containing the axl node reference.
+	 */
+	axlItem       * holder;
+};
+
+struct _axlItem {
+	/** 
+	 * @internal A reference to the type that is being hold by the
+	 * encapsulation reference.
+	 */
+	AxlItemType type;
+	
+	/** 
+	 * @internal The reference to the pointer that is actually
+	 * stored.
+	 */
+	axlPointer  data;
 
 	/** 
 	 * @internal
@@ -114,13 +141,13 @@ struct _axlNode {
 	 * A pointer to the brother node, the node that is found on
 	 * the next position.
 	 */
-	axlNode       * next;
+	axlItem       * next;
 
 	/** 
 	 * @internal Stores a reference to the previous node inside
 	 * the same level.
 	 */
-	axlNode       * previous;
+	axlItem       * previous;
 
 	/** 
 	 * @internal
@@ -129,12 +156,6 @@ struct _axlNode {
 	 * is contained.
 	 */
 	axlDoc        * doc;
-	
-	/**
-	 * @internal A hash used to store arbitrary data associated to
-	 * the node.
-	 */
-	axlHash       * anotate_data; 
 };
 
 /** 
@@ -532,7 +553,7 @@ axlNode * axl_node_copy                     (axlNode * node,
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "coying childs");
 
 		/* get the first child */
-		child = node->first;
+		child = axl_node_get_first_child (node);
 
 		/* for each child, copy and set the child to the
 		 * parent */
@@ -573,7 +594,7 @@ axlDoc  * axl_node_get_doc                  (axlNode * node)
 	axl_return_val_if_fail (node, NULL);
 	
 	/* return the internal reference */
-	return node->doc;
+	return axl_item_get_doc (node->holder);
 }
 
 /** 
@@ -592,7 +613,14 @@ void      axl_node_set_doc                  (axlNode * node, axlDoc * doc)
 	axl_return_if_fail (node);
 	axl_return_if_fail (doc);
 
-	node->doc = doc;
+	if (node->holder == NULL) {
+		/* create an empty reference */
+		node->holder       = axl_new (axlItem, 1);
+		node->holder->type = ITEM_NODE;
+	}
+
+	/* call to set item at the document */
+	axl_item_set_doc (node->holder, doc);
 
 	return;
 }
@@ -607,11 +635,11 @@ void      axl_node_set_doc                  (axlNode * node, axlDoc * doc)
 void __axl_node_init_pitargets (axlNode * node)
 {
 	/* do not init pi targets once done */
-	if (node->piTargets != NULL)
-		return;
+/*	if (node->piTargets != NULL)
+	return;*/
 
 	/* create PI list */
-	node->piTargets  = axl_list_new (axl_list_always_return_1, (axlDestroyFunc) axl_pi_free);	
+/*	node->piTargets  = axl_list_new (axl_list_always_return_1, (axlDestroyFunc) axl_pi_free);	 */
 }
 
 /** 
@@ -1008,7 +1036,7 @@ axlPointer axl_node_anotate_get                 (axlNode * node,
 	/* check if we have to lookup the data in parent nodes */
 	if (lookup_in_parent) {
 		/* get the first parent reference */
-		parent = node->parent;
+		parent = axl_item_get_parent (node->holder);
 		
 		/* for each parent, try to lookup the data */
 		while (parent != NULL) {
@@ -1021,7 +1049,7 @@ axlPointer axl_node_anotate_get                 (axlNode * node,
 				return result;
 
 			/* get the next parent */
-			parent = parent->parent;
+			parent = axl_item_get_parent (parent->holder);
 		}
 	}
 
@@ -1121,8 +1149,12 @@ axlNode * axl_node_get_parent         (axlNode * node)
 {
 	axl_return_val_if_fail (node, NULL);
 
-	/* returns a reference to the parent */
-	return node->parent;
+	/* if holder is NULL, no parent is posible */
+	if (node->holder == NULL)
+		return NULL;
+	
+	/* return the parent */
+	return node->holder->parent;
 }
 
 /** 
@@ -1150,10 +1182,29 @@ axlNode * axl_node_get_parent         (axlNode * node)
  */
 axlNode * axl_node_get_next           (axlNode * node)
 {
+	axlItem * item;
+
 	axl_return_val_if_fail (node, NULL);
 
-	/* return the next reference */
-	return node->next;
+	/* get the next axlNode situated at the same level of the
+	 * provided axlNode reference */
+	item = axl_item_get_next (node->holder);
+
+	/* while the item is not null and different from item node,
+	 * get the next */
+	while (item != NULL) {
+
+		/* get the item found */
+		if (axl_item_get_type (item) == ITEM_NODE)
+			return item->data;
+
+		/* get next item */
+		item = item->next;
+		
+	} /* end while */
+
+	/* or null if no reference is defined */
+	return NULL;
 }
 
 /** 
@@ -1169,18 +1220,19 @@ axlNode * axl_node_get_next           (axlNode * node)
 axlNode * axl_node_get_next_called    (axlNode * node, 
 				       char    * name)
 {
+	axlNode * next;
 	axl_return_val_if_fail (node, NULL);
 	axl_return_val_if_fail (node, NULL);
 
 	/* while there is a next node */
-	while (node->next != NULL) {
-
+	next = axl_node_get_next (node);
+	while (next != NULL) {
 		/* check the node */
-		if (NODE_CMP_NAME (node->next, name))
-			return node->next;
+		if (NODE_CMP_NAME (next, name))
+			return next;
 
 		/* update to the next */
-		node = node->next;
+		next = axl_node_get_next (next);
 	} /* end while */
 
 	/* no node was found */
@@ -1203,10 +1255,25 @@ axlNode * axl_node_get_next_called    (axlNode * node,
  */
 axlNode * axl_node_get_previous (axlNode * node)
 {
+	axlItem * item;
+
 	axl_return_val_if_fail (node, NULL);
 
+	/* get the previous axlNode situated at the same level of the
+	 * provided axlNode reference */
+	item = axl_item_get_previous (node->holder);
+
+	/* while the item is not null and different from item node,
+	 * get the previous */
+	while ((item != NULL) && axl_item_get_type (item) !=ITEM_NODE)
+		item = axl_item_get_previous (item);
+
 	/* return the previous reference */
-	return node->previous;
+	if (item != NULL)
+		return item->data;
+
+	/* or null if no reference is defined */
+	return NULL;
 }
 
 /** 
@@ -1222,17 +1289,20 @@ axlNode * axl_node_get_previous (axlNode * node)
 axlNode * axl_node_get_previous_called    (axlNode * node, 
 					   char    * name)
 {
+	axlNode * previous;
+
 	axl_return_val_if_fail (node, NULL);
 	axl_return_val_if_fail (node, NULL);
 
-	/* while there is a next node */
-	while (node->previous != NULL) {
+	/* while there is a previous node */
+	previous = axl_node_get_previous (node);
+	while (previous != NULL) {
 		/* check the node */
-		if (NODE_CMP_NAME (node->previous, name))
-			return node->previous;
+		if (NODE_CMP_NAME (previous, name))
+			return previous;
 
 		/* update to the next */
-		node = node->previous;
+		previous = axl_node_get_previous (previous);
 	} /* end while */
 
 	/* no node was found */
@@ -1250,11 +1320,25 @@ axlNode * axl_node_get_previous_called    (axlNode * node,
  */
 axlNode * axl_node_get_first_child    (axlNode * node)
 {
+	axlItem * item;
+
 	/* check values */
 	axl_return_val_if_fail (node, NULL);
 
-	/* return first child */
-	return node->first;
+	/* get first item child and lookup for the first child that is
+	 * a node */
+	item = node->first;
+	while (item != NULL) {
+		/* check the item type */
+		if (item->type == ITEM_NODE)
+			return item->data;
+
+		/* get the next */
+		item = item->next;
+	}
+
+	/* return NULL: no child axlNode was found */
+	return NULL;
 }
 
 /** 
@@ -1266,11 +1350,25 @@ axlNode * axl_node_get_first_child    (axlNode * node)
  */
 axlNode * axl_node_get_last_child     (axlNode * node)
 {
+	axlItem * item;
+
 	/* check values */
 	axl_return_val_if_fail (node, NULL);
 
-	/* return last child */
-	return node->last;
+	/* get first item child and lookup for the first child that is
+	 * a node */
+	item = node->last;
+	while (item != NULL) {
+		/* check the item type */
+		if (item->type == ITEM_NODE)
+			return item->data;
+
+		/* get the next */
+		item = item->previous;
+	}
+
+	/* return NULL: no child axlNode was found */
+	return NULL;
 }
 
 /** 
@@ -1734,34 +1832,13 @@ char    * axl_node_get_content_trans (axlNode * node, int * content_size)
  */
 void      axl_node_set_child (axlNode * parent, axlNode * child)
 {
-
 	axl_return_if_fail (parent);
 	axl_return_if_fail (child);
 
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "received parent=0x%x and child=0x%x",  parent, child);
 
-	/* establish the parent relation */
-	child->parent = parent;
-
-	/* configure the document that contains the xml node by using
-	 * the one configured at the parent. */
-	child->doc    = parent->doc;
-
-	/* get the current last child */
-	if (parent->first == NULL) {
-		/* init first and last reference to the only one
-		 * child */
-		parent->first = child;
-		parent->last  = child;
-	}else {
-		/* configure the next item to the current last
-		 * child */
-		parent->last->next = child;
-
-		/* update the last child reference */
-		child->previous    = parent->last;
-		parent->last       = child;
-	}
+	/* set a xml node child */
+	axl_item_set_child (parent, ITEM_NODE, child);
 
 	/* update the number of childs */
 	parent->child_num++;
@@ -1795,44 +1872,39 @@ void      axl_node_replace             (axlNode * node,
 					axlNode * new_node,
 					bool      dealloc)
 {
+	axlItem * p_item;
+
 	axl_return_if_fail (node);
 	axl_return_if_fail (new_node);
 
-	if (node->parent == NULL) {
+	if (axl_item_get_parent (node->holder) == NULL) {
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "replacing the root node=<%s> with <%s>..", 
+			   axl_node_get_name (node), axl_node_get_name (new_node));
 		/* seems to be a root document */
-		if (node->doc != NULL) {
-			axl_doc_set_root (node->doc, new_node);
+		if (axl_item_get_doc (node->holder) != NULL) {
+			axl_doc_set_root (axl_item_get_doc (node->holder), new_node);
 		}
 	} else {
 
-		/* configure common values */
-		new_node->parent   = node->parent;
-		new_node->next     = node->next;
-		new_node->previous = node->previous;
-		new_node->doc      = node->doc;
-		
-		/* make previous node to point to the new node */
-		if (node->previous != NULL) {
-			node->previous->next = new_node;
-		}
-		
-		/* make next node to point to the new node */
-		if (node->next != NULL) {
-			node->next->previous = new_node;
-		}
+		/* check for holder reference */
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "replacing a non-root node=<%s> with <%s>..",
+			   axl_node_get_name (node), axl_node_get_name (new_node));
+		if (node->holder != NULL) {
 
-		/* now, update the parent reference */
-		if (node->previous == NULL) {
-			/* seems the node is the first child of the parent,
-			 * update the reference */
-			node->parent->first = new_node;
-		}
-		
-		if (node->next == NULL) {
-			/* seems the node is the last child of the parent,
-			 * update the reference */
-			node->parent->last = new_node;
-		}
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "axl item holder is defined for node=<%s>",
+				   axl_node_get_name (node));
+			/* get a reference to the holder item */
+			p_item       = node->holder;
+
+			/* configure the new node */
+			p_item->data = new_node;
+
+			/* nullify the holder reference, and configure
+			 * the holder reference in the node */
+			node->holder     = NULL;
+			new_node->holder = p_item;
+			
+		} /* end if */
 	}
 
 	/* dealloc node if configured so */
@@ -1866,36 +1938,33 @@ void      axl_node_remove             (axlNode * node,
 {
 	axl_return_if_fail (node);
 
-	if (node->parent != NULL) {
-
-		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "removing node <%s> with parent <%s>", 
-			   axl_node_get_name (node), axl_node_get_name (node->parent));
+	if (axl_item_get_parent (node->holder) != NULL) {
 
 		/* make previous node to point to the new node */
-		if (node->previous != NULL) {
-			node->previous->next = node->next;
+		if (node->holder->previous != NULL) {
+			node->holder->previous->next = node->holder->next;
 		}
 		
 		/* make next node to point to the new node */
-		if (node->next != NULL) {
-			node->next->previous = node->previous;
+		if (node->holder->next != NULL) {
+			node->holder->next->previous = node->holder->previous;
 		}
 
 		/* now, update the parent reference */
-		if (node->previous == NULL) {
+		if (node->holder->previous == NULL) {
 			/* seems the node is the first child of the parent,
 			 * update the reference */
-			node->parent->first = node->next;
+			node->holder->parent->first = node->holder->next;
 		}
 		
-		if (node->next == NULL) {
+		if (node->holder->next == NULL) {
 			/* seems the node is the last child of the parent,
 			 * update the reference */
-			node->parent->last = node->previous;
+			node->holder->parent->last = node->holder->previous;
 		}
 
 		/* decrease the number of childs the parent has */
-		node->parent->child_num--;
+		node->holder->parent->child_num--;
 	}
 	
 	/* dealloc node if configured so */
@@ -1959,6 +2028,7 @@ bool          axl_node_have_childs        (axlNode * node)
 axlNode * axl_node_get_child_called   (axlNode * parent, char * name)
 {
 	axlNode * node;
+	axlItem * item;
 	
 	axl_return_val_if_fail (parent, NULL);
 	axl_return_val_if_fail (name, NULL);
@@ -1969,16 +2039,22 @@ axlNode * axl_node_get_child_called   (axlNode * parent, char * name)
 		return NULL;
 	
 	/* if no childs, no result */
-	node = parent->first;
-	do {
-		/* compare for find the child */ 
-		if (NODE_CMP_NAME (node, name))
-			return node;
+	item = parent->first;
+	while (item != NULL) {
+		/* check item type */
+		if (item->type == ITEM_NODE) {
+			/* get a reference to the node */
+			node = item->data;
+
+			/* compare for find the child */ 
+			if (NODE_CMP_NAME (node, name))
+				return node;
+			
+		} /* end if */
 
 		/* next child */
-		node = node->next;
-		
-	}while (node != NULL);
+		item = axl_item_get_next (item);
+	}
 
 	/* no child was found */
 	return NULL;
@@ -1998,7 +2074,7 @@ axlNode * axl_node_get_child_called   (axlNode * parent, char * name)
 axlNode * axl_node_get_child_nth      (axlNode * parent, int position)
 {
 	int       iterator;
-	axlNode * node;
+	axlItem * item;
 
 	/* perform some environment checks */
 	axl_return_val_if_fail (parent, NULL);
@@ -2007,23 +2083,27 @@ axlNode * axl_node_get_child_nth      (axlNode * parent, int position)
 	if (parent->first == NULL)
 		return NULL;
 
-	/* return first position child */
-	if (position == 0)
-		return parent->first;
+	/* get the first item */
+	item = parent->first;
 
-	/* if not, we are in the nth case */
-	iterator = 1;
-	node     = parent->first;
-	while ((node != NULL) && (iterator <= position)) {
-		/* check if can update until reached position */
-		node = node->next;
+	/* get the first node found */
+	iterator = 0;
+	while (item != NULL) {
+		/* check the item type */
+		if (item->type == ITEM_NODE) {
+			if (iterator == position)
+				return item->data;
+			else
+				iterator++;
+		} /* end if */
 
-		/* update iterator */
-		iterator++;
+		/* get the next */
+		item = item->next;
+
 	} /* end while */
 
-	/* return current node status */
-	return node;
+	/* no first child found */
+	return NULL;
 }
 
 /** 
@@ -2074,7 +2154,7 @@ int       axl_node_get_child_num      (axlNode * parent)
  */
 axlList * axl_node_get_childs         (axlNode * node)
 {
-	axlNode * child;
+	axlItem * child;
 	axlList * result;
 
 	axl_return_val_if_fail (node, NULL);
@@ -2086,11 +2166,15 @@ axlList * axl_node_get_childs         (axlNode * node)
 	child = node->first;
 
 	while (child != NULL) {
-		/* add the child to the list */
-		axl_list_add (result, child);
+		/* check the node type */
+		if (child->type == ITEM_NODE) {
+			/* add the child to the list */
+			axl_list_add (result, child->data);
+			
+		} /* end if */
 
 		/* update the reference to the next child */
-		child = axl_node_get_next (child);
+		child = child->next;
 	} /* end while */
 
 	/* return current childs */
@@ -2216,7 +2300,7 @@ void      axl_node_add_pi_target            (axlNode * node,
 					     char * target, 
 					     char * content)
 {
-	axlPI * pi;
+	axlPI   * pi;
 
 	/* perform some environmental checks */
 	axl_return_if_fail (node);
@@ -2225,11 +2309,8 @@ void      axl_node_add_pi_target            (axlNode * node,
 	/* create the PI element */
 	pi = axl_pi_create (target, content);
 
-	/* init pi targets */
-	__axl_node_init_pitargets (node);
-
-	/* add the PI */
-	axl_list_add (node->piTargets, pi);
+	/* set the new process instruction found */
+	axl_item_set_child (node, ITEM_PI, pi);
 
 	return;
 }
@@ -2254,39 +2335,32 @@ void      axl_node_add_pi_target            (axlNode * node,
 bool          axl_node_has_pi_target            (axlNode * node, 
 						 char * pi_target)
 {
-	axlPI * pi;
-	int     iterator = 0;
-	int     length   = 0;
-
+	axlPI   * pi;
+	axlItem * item;
 	
 	axl_return_val_if_fail (node,      false);
 	axl_return_val_if_fail (pi_target, false);
 
 	/* assume the pi target doesn't exist if it is not
 	 * initialized */
-	if (node->piTargets == NULL)
-		return false;
+	item = node->first;
+	while (item != NULL) {
+		
+		/* check the type */
+		if (item->type == ITEM_PI) {
+			/* get a reference */
+			pi = item->data;
 
-#ifdef SHOW_DEBUG_LOG
-	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "checking it target element: %s is defined on the node", pi_target);
-#endif
+			/* only check the first ocurrency */
+			if (axl_cmp (axl_pi_get_name (pi), pi_target))
+				return true;
+		} /* end if */
 
-	/* get the length for the items inserted */
-	length = axl_list_length (node->piTargets);
-	while (iterator < length) {
-		/* for each item inserted */
-		pi = axl_list_get_nth (node->piTargets, iterator);
-		/* only check the first ocurrency */
-		if (axl_cmp (axl_pi_get_name (pi), pi_target)) {
-#ifdef SHOW_DEBUG_LOG
-			axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "element %s found, %s", pi_target, axl_pi_get_name (pi));
-#endif
-			return true;
-		}
+		/* get the next item */
+		item = item->next;
 
-		iterator++;
-	}
-	
+	} /* end while */
+
 	return false;
 }
 
@@ -2304,29 +2378,31 @@ bool          axl_node_has_pi_target            (axlNode * node,
 char    * axl_node_get_pi_target_content    (axlNode * node, 
 					    char * pi_target)
 {
-	axlPI * pi;
-	int     iterator = 0;
-	int     length   = 0;
+	axlPI   * pi;
+	axlItem * item;
+	
+	axl_return_val_if_fail (node,      false);
+	axl_return_val_if_fail (pi_target, false);
 
-	axl_return_val_if_fail (node,       NULL);
-	axl_return_val_if_fail (pi_target, NULL);
-
-	/* assume NULL content if the pitarget list is not
+	/* assume the pi target doesn't exist if it is not
 	 * initialized */
-	if (node->piTargets == NULL)
-		return NULL;
+	item = node->first;
+	while (item != NULL) {
+		
+		/* check the type */
+		if (item->type == ITEM_PI) {
+			/* get a reference */
+			pi = item->data;
 
-	/* get the length for the items inserted */
-	length = axl_list_length (node->piTargets);
-	while (iterator < length) {
-		/* for each item inserted */
-		pi = axl_list_get_nth (node->piTargets, iterator);
-		/* only check the first ocurrency */
-		if (axl_cmp (axl_pi_get_name (pi), pi_target))
-			return axl_pi_get_name (pi);
+			/* only check the first ocurrency */
+			if (axl_cmp (axl_pi_get_name (pi), pi_target))
+				return axl_pi_get_content (pi);
+		} /* end if */
 
-		iterator++;
-	}
+		/* get the next item */
+		item = item->next;
+
+	} /* end while */
 
 	return NULL;
 }
@@ -2371,6 +2447,9 @@ char    * axl_node_get_pi_target_content    (axlNode * node,
  *            // update the iterator
  *            iterator++;
  *      }
+ *
+ *      // once finished, free the list 
+ *      axl_list_free (PIs);
  *      return;
  * }
  * \endcode
@@ -2379,13 +2458,38 @@ char    * axl_node_get_pi_target_content    (axlNode * node,
  * instruction will be returned.
  * 
  * @return A reference to the list of processing instruction that the
- * xml node (\ref axlNode) has.
+ * xml node (\ref axlNode) has. The returned list, if defined, must be
+ * deallocated.
  */
 axlList * axl_node_get_pi_target_list       (axlNode * node)
 {
-	axl_return_val_if_fail (node,       NULL);
+	axlList * result = NULL;
+	axlItem * item;
+	
+	axl_return_val_if_fail (node,      false);
 
-	return node->piTargets;
+	/* assume the pi target doesn't exist if it is not
+	 * initialized */
+	item = node->first;
+	while (item != NULL) {
+		
+		/* check the type */
+		if (item->type == ITEM_PI) {
+			/* create the result list */
+			if (result == NULL)
+				result = axl_list_new (axl_list_always_return_1, (axlDestroyFunc) axl_pi_free);	 
+
+			/* add the list */
+			axl_list_add (result, item->data);
+			
+		} /* end if */
+
+		/* get the next item */
+		item = item->next;
+
+	} /* end while */
+
+	return result;
 }
 
 bool __axl_node_get_flat_size_attributes_foreach (axlPointer attr, 
@@ -2507,6 +2611,8 @@ int       axl_node_get_flat_size            (axlNode * node, bool pretty_print, 
 	/* if the node have childs */
 	if (axl_node_have_childs (node)) {
 
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "<%s> have childs, getting first child", node->name);
+
 		child = axl_node_get_first_child (node);
 		while (child != NULL) {
 			/* count how many bytes the node holds */
@@ -2514,7 +2620,9 @@ int       axl_node_get_flat_size            (axlNode * node, bool pretty_print, 
 
 			/* update the reference */
 			child = axl_node_get_next (child);
-		}
+		} /* end while */
+
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "child processing for: <%s>", node->name);
 	}
 
 	/* return the result */
@@ -2611,7 +2719,6 @@ int       axl_node_dump_at                  (axlNode * node,
 					     int       level,
 					     int       tabular)
 {
-	int       iterator = 0;
 	axlNode * child;
 
 	axl_return_val_if_fail (node, -1);
@@ -2705,16 +2812,13 @@ int       axl_node_dump_at                  (axlNode * node,
 #endif
 		}
 
-		iterator = 0;
-		while (iterator < axl_node_get_child_num (node)) {
-			/* get a reference to the child */
-			child = axl_node_get_child_nth (node, iterator);
-
+		child = axl_node_get_first_child (node);
+		while (child != NULL) {
 			/* count how many bytes the node holds */
 			desp  = axl_node_dump_at (child, content, desp, pretty_print, level + 1, tabular);
 
-			/* update the iterator reference */
-			iterator++;
+			/* get the next reference */
+			child = axl_node_get_next (child);
 		}
 
 		int iterator = 0;
@@ -2766,7 +2870,8 @@ int       axl_node_dump_at                  (axlNode * node,
 
 void __axl_node_free_internal (axlNode * node, bool also_childs)
 {
-	axlNode * child;
+	axlItem * item;
+	axlItem * itemAux;
 
 	axl_return_if_fail (node);
 
@@ -2784,9 +2889,6 @@ void __axl_node_free_internal (axlNode * node, bool also_childs)
 		axl_free (node->content);
 	}
 
-	if (node->piTargets != NULL)
-		axl_list_free (node->piTargets);
-	
 	/* release memory hold by attributes */
 	if (node->attributes != NULL)
 		axl_hash_free (node->attributes);
@@ -2796,19 +2898,54 @@ void __axl_node_free_internal (axlNode * node, bool also_childs)
 		axl_hash_free (node->anotate_data);
 
 	/* release memory hold by childs */
-	if (also_childs) {
-		child = node->first;
-		while (child != NULL) {
-			/* get a reference to the node */
-			node  = child;
-			
-			/* update the child to the next */
-			child = child->next;
-			
-			/* free the node */
-			axl_node_free (node);
-		}
-	} /* end while */
+	if (node->first != NULL) {
+		/* get the first item */
+		item = node->first;
+
+		/* foreach item stored */
+		while (item != NULL) {
+
+			/* get the next item */
+			itemAux = item->next;			
+
+			/* according the type */
+			switch (item->type) {
+			case ITEM_NODE:
+				/* free the node */
+				axl_node_free (item->data);
+				break;
+			case ITEM_CONTENT:
+				/* normal content that is not CDATA'ed */
+				break;
+			case ITEM_CDATA:
+				/* content that has the CDATA flag
+				 * (enclosed with CDATA struct) */
+				break;
+			case ITEM_COMMENT:
+				/* a comment */
+				break;
+			case ITEM_PI:
+				/* an process instruction */
+				axl_pi_free (item->data);
+				
+				/* free the item */
+				axl_free (item);
+				break;
+			case ITEM_REF:
+				/* a entity reference */
+				break;
+			}
+
+			/* update reference */
+			item = itemAux;
+
+		} /* end while */
+
+	} /* end if */
+
+	/* free the item itself */
+	if (node->holder)
+		axl_free (node->holder);
 
 	/* do not free the node itself */
 	return;
@@ -2856,4 +2993,167 @@ void      axl_node_free_full       (axlNode * node, bool also_childs)
 	return;
 }
 
+/** 
+ * @brief Allows to get the reference to the document that is holding
+ * the provided item without taking into consideration the item type.
+ * 
+ * @param item The item that is required to return its document.
+ * 
+ * @return A reference to the \ref axlDoc that is holding the item.
+ */
+axlDoc  * axl_item_get_doc         (axlItem * item)
+{
+	axl_return_val_if_fail (item, NULL);
+
+	/* return the document reference */
+	return item->doc;
+}
+
+/** 
+ * @internal Internal function that allows to configure the document
+ * that is holding the item provided.
+ * 
+ * @param item The axlItem to be configured.
+ * @param doc The axlDoc reference to configure.
+ */
+void      axl_item_set_doc         (axlItem * item, axlDoc * doc)
+{
+	axl_return_if_fail (item);
+
+	/* configure document */
+	item->doc = doc;
+
+	return;
+}
+
+/** 
+ * @brief Allows to get the parent that is containing the \ref axlItem
+ * provider. The parent of a \ref axlItem is always a node.
+ * 
+ * @param item The \ref axlItem reference that is required to return
+ * its parent.
+ * 
+ * @return A reference to the \ref axlNode.
+ */
+axlNode * axl_item_get_parent      (axlItem * item)
+{
+	/* return that we don't have parent */
+	if (item == NULL)
+		return NULL;
+
+	/* return the parent */
+	return item->parent;
+}
+
+/** 
+ * @brief Allows to get the following element that is next to the item
+ * reference provided (\ref axlItem), at the same level.
+ * 
+ * @param item The item that is required to return its next reference.
+ * 
+ * @return A reference to the next element or NULL if no it fails or
+ * no element is found next to the element provided.
+ */
+axlItem * axl_item_get_next        (axlItem * item)
+{
+	axl_return_val_if_fail (item, NULL);
+
+	/* return the next element */
+	return item->next;
+}
+
+/** 
+ * @brief Allows to get the following element that is previous to the item
+ * reference provided (\ref axlItem), at the same level.
+ * 
+ * @param item The item that is required to return its previous reference.
+ * 
+ * @return A reference to the previous element or NULL if no it fails or
+ * no element is found previous to the element provided.
+ */
+axlItem * axl_item_get_previous        (axlItem * item)
+{
+	axl_return_val_if_fail (item, NULL);
+
+	/* return the previous element */
+	return item->previous;
+}
+
+/** 
+ * @brief Allows to get the item type that represents the reference
+ * received (\ref axlItem).
+ *
+ * Every \ref axlItem represents a particular content that could be
+ * found inside an xml document parsed by the library (\ref
+ * axlDoc). This function allows to return the type associated to the
+ * element encapsulated by the \ref axlItem. See \ref AxlItemType for
+ * more details.
+ * 
+ * @param item The reference that is required to return its type.
+ * 
+ * @return The type that is inside the reference or -1 if it fails.
+ */
+AxlItemType   axl_item_get_type        (axlItem * item)
+{
+	axl_return_val_if_fail (item, -1);
+
+	/* return stored type */
+	return item->type;
+}
+
+/** 
+ * @internal Function that helps adding a new item to the provided
+ * parent node.
+ *
+ * The new item will be added as flaged by the type provided. The
+ * function isn't exposed to the public API because there are better
+ * alternatives to add items to a \ref axlNode. Don't use this API
+ * directly.
+ * 
+ * @param parent The axl node that will receive the new content.
+ *
+ * @param type The type to configure to the new item.
+ *
+ * @param data The data associated to the data being stored.
+ *
+ * NOTE: the function doesn't check data received as it is supposed to
+ * receive calls from the library.
+ */
+void axl_item_set_child (axlNode * parent, AxlItemType type, axlPointer data)
+{
+	axlItem * item;
+
+	/* create an item to hold the child, configuring the node, the
+	 * parent and the document */
+	item           = axl_new (axlItem, 1);
+	item->type     = type;
+	item->data     = data;
+	item->parent   = parent;
+	item->doc      = (parent->holder != NULL) ? parent->holder->doc : NULL;
+
+	if (type == ITEM_NODE) {
+
+		/* now configure the item that will hold the new child */
+		((axlNode *)data)->holder  = item;
+		
+	} /* end if */
+
+	/* get the current last child */
+	if (parent->first == NULL) {
+		/* init first and last reference to the only one
+		 * child */
+		parent->first = item;
+		parent->last  = item;
+	}else {
+		/* configure the next item to the current last
+		 * child */
+		parent->last->next = item;
+
+		/* update the last child reference */
+		item->previous    = parent->last;
+		parent->last      = item;
+	}
+
+	return;
+}
 /* @} */

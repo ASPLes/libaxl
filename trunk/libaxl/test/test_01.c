@@ -130,11 +130,13 @@ bool test_19 (axlError ** error)
 	
 	/* document */
 	node = axl_doc_get_root (doc);
+
 	/* child1 */
 	node = axl_node_get_first_child (node);
+
 	/* child2 */
 	node = axl_node_get_first_child (node);
-	
+
 	/* replace */
 	axl_node_replace (node, replace, false);
 
@@ -2162,7 +2164,6 @@ bool test_01b (axlError ** error)
 	test_01b_id = 0;
 	if (! axl_doc_iterate_full (doc, WIDE_ITERATION, test_01b_show_node_found2, &test_01b_id, error))
 		return false; 
-	
 
 	/* test ok */
 	axl_doc_free (doc);
