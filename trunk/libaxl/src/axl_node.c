@@ -48,7 +48,7 @@
  * @{
  */
 
-typedef struct _axlNodeContent {
+struct _axlNodeContent {
 	/** 
 	 * @internal
 	 *
@@ -63,7 +63,7 @@ typedef struct _axlNodeContent {
 	 */
 	int             content_size;
 	
-} axlNodeContent;
+};
 
 struct _axlNode {
 	/** 
@@ -79,14 +79,6 @@ struct _axlNode {
 	 * @brief The attributes this node has.
 	 */
 	axlHash      * attributes;
-
-	/* @internal Content configuratino. 
-	 *
-	 * If the node has content, this pointer is defined,
-	 * containing the content and the content size. If the pointer
-	 * is not defined, the node has no content.
-	 */
-	axlNodeContent * content;
 
 	/**
 	 * @internal A reference to the frist child.
@@ -515,7 +507,8 @@ axlNode * axl_node_copy                     (axlNode * node,
 					     bool      copy_childs)
 {
 	axlNode * result;
-	axlNode * child;
+	axlItem * child;
+	axlItem * copy;
 	
 
 	axl_return_val_if_fail (node, NULL);
@@ -525,16 +518,6 @@ axlNode * axl_node_copy                     (axlNode * node,
 
 	/* create the copy */
 	result = axl_node_create (axl_node_get_name (node));
-	
-	/* check content to be copied */
-	if (node->content != NULL) {
-		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "setting node content");
-
-		/* copy the content */
-		axl_node_set_content (result, 
-				      node->content->content, 
-				      node->content->content_size);
-	} /* end if */
 
 	/* check for attributes */
 	if (node->attributes != NULL && copy_attributes) {
@@ -552,20 +535,23 @@ axlNode * axl_node_copy                     (axlNode * node,
 	if (copy_childs && (node->first != NULL)) {
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "coying childs");
 
-		/* get the first child */
-		child = axl_node_get_first_child (node);
-
-		/* for each child, copy and set the child to the
-		 * parent */
+		/* copy all content inside */
+		child = node->first;
 		while (child != NULL) {
+			
+			/* copy the child found */
+			copy       = axl_item_copy (child);
 
-			/* set the child created */
-			axl_node_set_child (result, 
-					    /* copy the child as provided by received arguments */
-					    axl_node_copy (child, copy_attributes, copy_childs));
+			/* set the content */
+			axl_item_set_child_ref (result, copy);
 
-			/* update to the next child reference */
-			child = axl_node_get_next (child);
+			/* increase child number if the item type if
+			 * node */
+			if (child->type == ITEM_NODE)
+				result->child_num++;
+
+			/* get the next element */
+			child = child->next;
 
 		} /* end while */
 	} /* end if */
@@ -1072,22 +1058,35 @@ axlPointer axl_node_anotate_get                 (axlNode * node,
  */
 void      axl_node_set_is_empty (axlNode * node, bool     empty)
 {
+	axlItem * child;
+	axlItem * aux;
+
 	axl_return_if_fail (node);
 
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "received set to empty node=<%s> is_empty=\"%s\"",
 		   node->name, empty ? "true" : "false");
-	
-	if (node->content != NULL) {
-		/* free the content inside */
-		if (node->content->content)
-			axl_free (node->content->content);
 
-		/* free the content node */
-		axl_free (node->content);
-	}
+	/* get the first child and eliminate all content */
+	child = node->first;
+	while (child != NULL) {
 
-	/* flag the content as null */
-	node->content = NULL;
+		/* get a reference to the next */
+		aux = child->next;
+
+		/* check item node that represents content, and
+		 * therefore, an emptyless state */
+		if (child->type == ITEM_CONTENT || 
+		    child->type == ITEM_CDATA) {
+
+			/* remove the node */
+			axl_item_remove (child, true);
+			
+		} /* end if */
+
+		/* update to the next */
+		child = aux;
+		
+	} /* end while */
 	
 	return;
 }
@@ -1410,12 +1409,29 @@ axlNode * axl_node_get_last_child     (axlNode * node)
  */
 bool          axl_node_is_empty        (axlNode * node)
 {
+	axlItem * child;
 	axl_return_val_if_fail (node, false);
 
-	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "received get empty configuration for node=<%s>",
-		   node->name);
+	/* get the first child */
+	child = node->first;
+	while (child != NULL) {
+		
+		/* check item node that represents content, and
+		 * therefore, an emptyless state */
+		if (child->type == ITEM_CONTENT || 
+		    child->type == ITEM_CDATA) {
 
-	return (node->content == NULL);
+			/* the node has content */
+			return false;
+			
+		} /* end if */
+
+		/* go to the next */
+		child = child->next;
+
+	} /* end while */
+
+	return true;
 }
 
 /** 
@@ -1471,22 +1487,36 @@ bool          axl_node_is_empty        (axlNode * node)
  */
 char    * axl_node_get_content     (axlNode * node, int * content_size)
 {
+	axlNodeContent * content;
+	axlItem        * child;
+
 	axl_return_val_if_fail (node, NULL);
 
-	/* return empty string for node without content */
-	if (node->content == NULL) {
-		/* set content size to zero */
-		if (content_size != NULL)
-			*content_size = 0;
-		return "";
-	}
+	/* get the first child */
+	child = node->first;
+	while (child != NULL) {
+		
+		/* check item node that represents content, and
+		 * therefore, an emptyless state */
+		if (child->type == ITEM_CONTENT || 
+		    child->type == ITEM_CDATA) {
+			/* cast a reference */
+			content = child->data;
 
-	/* return the content */
-        if (content_size != NULL)
-		*content_size = node->content->content_size;
+			/* return the content */
+			if (content_size != NULL)
+				*content_size = content->content_size;
 
-        /* return the node content or empty string */
-	return node->content->content;
+			/* return a local reference */
+			return content->content;
+		} /* end if */
+
+	} /* end while */
+
+	/* set content size to zero */
+	if (content_size != NULL)
+		*content_size = 0;
+	return "";
 }
 
 /** 
@@ -1537,7 +1567,8 @@ char    * axl_node_get_content     (axlNode * node, int * content_size)
  */
 void      axl_node_set_content        (axlNode * node, char * content, int content_size)
 {
-	int additional_size = 0;
+	axlNodeContent * itemContent;
+	int              additional_size = 0;
 
 	axl_return_if_fail (node);
 	axl_return_if_fail (content);
@@ -1546,36 +1577,30 @@ void      axl_node_set_content        (axlNode * node, char * content, int conte
 	if (content_size == -1)
 		content_size = strlen (content);
 
-	/* check if there were previous content installed */
-	if (node->content != NULL) {
-		axl_free (node->content->content);
-		axl_free (node->content);
-		node->content = NULL;
-	}
-
+	/* allocate the content */
+	itemContent  = axl_new (axlNodeContent, 1);
 
 	/* check if the string received have escapable characters */
 	if (__axl_node_content_have_not_valid_sequences (content, content_size, 
 							 &additional_size)) {
-		/* allocate the content */
-		node->content                 = axl_new (axlNodeContent, 1);
-		node->content->content        = __axl_node_content_copy_and_escape (content, 
-										    content_size, 
-										    additional_size);
+		/* copy content */
+		itemContent->content        = __axl_node_content_copy_and_escape (content, 
+										  content_size, 
+										  additional_size);
 		/* set node content size */
-		node->content->content_size   = content_size + additional_size;
+		itemContent->content_size   = content_size + additional_size;
 	}else {
 		/* set current content */
-		node->content                 = axl_new (axlNodeContent, 1);
-		node->content->content_size   = content_size;
-		node->content->content        = axl_new (char, content_size + 1);
+		itemContent->content_size   = content_size;
+		itemContent->content        = axl_new (char, content_size + 1);
 
 		/* copy content */
-		memcpy (node->content->content, content, node->content->content_size);
+		memcpy (itemContent->content, content, itemContent->content_size);
 	}
 
-	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "setting xml node (name: %s) content (size: %d) %s",
-		   node->name, node->content->content_size, node->content->content);
+	/* add it to the current node */
+	axl_item_set_child (node, ITEM_CONTENT, itemContent);
+	
 
 	/* job done */
 	return;
@@ -1608,6 +1633,8 @@ void      axl_node_set_content_ref    (axlNode * node,
 				       char * content, 
 				       int content_size)
 {
+	axlNodeContent * itemContent;
+
 	axl_return_if_fail (node);
 	axl_return_if_fail (content);
 
@@ -1615,22 +1642,20 @@ void      axl_node_set_content_ref    (axlNode * node,
 	if (content_size == -1)
 		content_size = strlen (content);
 
-	if (node->content == NULL)
-		node->content = axl_new (axlNodeContent, 1);
-	else {
-		/* content node is defined release previously
-		 * allocated memory */
-		axl_free (node->content->content);
-	}
+	/* create a content */
+	itemContent = axl_new (axlNodeContent, 1);
 		
 	/* configure content size */
-	node->content->content_size = content_size;
+	itemContent->content_size = content_size;
 
 	/* set current content */
-	node->content->content  = content;
+	itemContent->content  = content;
+
+	/* store it */
+	axl_item_set_child (node, ITEM_CONTENT, itemContent);
 
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "setting xml node (name: %s) content (size: %d) %s",
-		   node->name, node->content->content_size, node->content->content);
+		   node->name, itemContent->content_size, itemContent->content);
 
 	/* job done */
 	return;	
@@ -1755,26 +1780,42 @@ char    * axl_node_get_content_trim   (axlNode * node,
 {
 	int    trimmed;
 
-	/* if no content is defined return "" */
-	if (node->content == NULL) {
-		/* set that no content was defined */
-		if (content_size != NULL)
-			*content_size = 0;
-		return "";
-	}
+	axlNodeContent * content;
+	axlItem        * child;
 
-	/* trim the content */
-	axl_stream_trim_with_size (node->content->content, &trimmed);
+	axl_return_val_if_fail (node, NULL);
 
-	/* updates current internal content size */
-	node->content->content_size -= trimmed;
+	/* get the first child */
+	child = node->first;
+	while (child != NULL) {
+		
+		/* check item node that represents content, and
+		 * therefore, an emptyless state */
+		if (child->type == ITEM_CONTENT || 
+		    child->type == ITEM_CDATA) {
+			/* cast a reference */
+			content = child->data;
 
-	/* notify content size to the caller */
+			/* trim the content */
+			axl_stream_trim_with_size (content->content, &trimmed);
+
+			/* updates current internal content size */
+			content->content_size -= trimmed;
+
+			/* return the content */
+			if (content_size != NULL)
+				*content_size = content->content_size;
+
+			/* return a local reference */
+			return content->content;
+		} /* end if */
+
+	} /* end while */
+
+	/* set content size to zero */
 	if (content_size != NULL)
-		*content_size = node->content->content_size;
-
-	/* return an internal reference to the node content */
-	return node->content->content;
+		*content_size = 0;
+	return "";
 }
 
 /** 
@@ -2009,10 +2050,24 @@ void      axl_node_set_have_childs (axlNode * node, bool     childs)
  */
 bool          axl_node_have_childs        (axlNode * node)
 {
+	axlItem * item;
+
 	axl_return_val_if_fail (node, false);
 
-	/* return true if the first child node is defined */
-	return (node->first != NULL);
+	item = node->first;
+	while (item != NULL) {
+		/* check item type */
+		if (item->type == ITEM_NODE)
+			return true;
+
+		/* go to the next */
+		item = item->next;
+
+	} /* end while */
+
+	/* return false because no item was found with ITEM_NODE
+	 * type */
+	return false;
 }
 
 /** 
@@ -2225,21 +2280,29 @@ bool          axl_node_are_equal          (axlNode * node, axlNode * node2)
 
 	/* check document root name */
 	if (! axl_cmp (axl_node_get_name (node), axl_node_get_name (node2))) {
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "node names aren't equal <%s> != <%s>",
+			   node->name, node2->name);
 		return false;
 	}
 
 	/* check empty ness configuration */
 	if (axl_node_is_empty (node) != axl_node_is_empty (node2)) {
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "emptyness configuration differs <%s> != <%s>",
+			   node->name, node2->name);
 		return false;
 	}
 	
 	/* check childs configuration */
 	if (axl_node_have_childs (node) != axl_node_have_childs (node2)) {
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "childs configuration differs <%s> != <%s>",
+			   node->name, node2->name);
 		return false;
 	}
 
 	/* check childs number */
 	if (axl_node_get_child_num (node) != axl_node_get_child_num (node2)) {
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "child number differs <%s> != <%s>",
+			   node->name, node2->name);
 		return false;
 	}
 
@@ -2260,6 +2323,8 @@ bool          axl_node_are_equal          (axlNode * node, axlNode * node2)
 		axl_hash_foreach2 (node->attributes, __axl_node_are_equal_attr, node2->attributes, &result);
 
 		if (! result) {
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "node attributes differs <%s> != <%s>",
+				   node->name, node2->name);
 			/* attribute missmatch */
 			return false;
 		}
@@ -2548,17 +2613,42 @@ int __axl_node_get_flat_size_attributes (axlNode * node)
  */
 int       axl_node_get_flat_size            (axlNode * node, bool pretty_print, int level, int tabular)
 {
-	int       result   = 0;
-	axlNode * child;
+	int              result   = 0;
+	axlItem        * item;
+	axlNodeContent * content;
+	bool             is_empty;
+	bool             have_childs;
 
 	axl_return_val_if_fail (node, -1);
 
-	/* check if the node is empty */
-	if (axl_node_is_empty (node)) {
-		if (! axl_node_have_childs (node)) {
+	/* get values */
+	is_empty    = axl_node_is_empty (node);
+	have_childs = axl_node_have_childs (node);
+
+	if (have_childs || (!have_childs && !is_empty)) {
+		/* the node is emtpy because it has no content but it has
+		 * childs:
+		 *
+		 * "<" + strlen (node-name) + ">" + ... + "</" + strlen (node-name) + ">" */
+		result = 5 + (2 * strlen (node->name)) + __axl_node_get_flat_size_attributes (node);
+		
+		/* check pretty_print */
+		if (pretty_print) {
+			/* two tabulations plus two carry return \r\n
+			 * on windows and \n on unix */
+			if (have_childs) 
+				result += (level * tabular * 2) + 2; 
+			else
+				result += (level * tabular) + 1; 
+#ifdef __AXL_WIN32__
+			result += 2;
+#endif
+		}
+	} else {
+		if (is_empty) {
 			/* "<" + strlen (node-name) + " />" */
 			result = strlen (node->name) + 4 + __axl_node_get_flat_size_attributes (node);
-
+			
 			/* check pretty print */
 			if (pretty_print) {
 				/* one tabular plus one carry return
@@ -2568,62 +2658,55 @@ int       axl_node_get_flat_size            (axlNode * node, bool pretty_print, 
 				result += 1;
 #endif
 			}
-
+			
 			/* return sum */
 			return result;
 		}
 	}
 
-	/* the node is emtpy because it has no content but it has
-	 * childs:
-	 * "<" + strlen (node-name) + ">" + strlen (node-content) + 
-	 * "</" + strlen (node-name) + ">" */
-	if (node->content != NULL) {
-		/* the content is defined, get it */
-		result = 5 + (2 * strlen (node->name)) + node->content->content_size + __axl_node_get_flat_size_attributes (node);
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "node count=%d", result);
+	
 
-		/* check pretty_print */
-		if (pretty_print) {
-			/* two tabulations plus two carry return \r\n
-			 * on windows and \n on unix */
-			result += (level * tabular) + 1; 
-#ifdef __AXL_WIN32__
-			result += 1;
-#endif
-		}
-
-	} else {
-		result = 5 + (2 * strlen (node->name)) + __axl_node_get_flat_size_attributes (node);
-
-		/* check pretty_print */
-		if (pretty_print) {
-			/* two tabulations plus two carry return \r\n
-			 * on windows and \n on unix */
-			result += (level * tabular * 2) + 2; 
-#ifdef __AXL_WIN32__
-				result += 2;
-#endif
-		}
-	}
-
-	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "<%s> node size=%d", node->name, result);
-
-	/* if the node have childs */
-	if (axl_node_have_childs (node)) {
-
-		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "<%s> have childs, getting first child", node->name);
-
-		child = axl_node_get_first_child (node);
-		while (child != NULL) {
+	/* get first child */
+	item = node->first;
+	while (item != NULL) {
+		/* according to the type, check a size */
+		switch (item->type) {
+		case ITEM_NODE:
 			/* count how many bytes the node holds */
-			result += axl_node_get_flat_size (child, pretty_print, level + 1, tabular);
-
-			/* update the reference */
-			child = axl_node_get_next (child);
-		} /* end while */
-
-		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "child processing for: <%s>", node->name);
-	}
+			result += axl_node_get_flat_size (item->data, pretty_print, level + 1, tabular);
+			break;
+		case ITEM_CONTENT:
+			/* content */
+			content = (axlNodeContent *) item->data;
+			result += content->content_size;
+			break;
+		case ITEM_CDATA:
+			/* content + '<![CDATA[' + ']]>' */
+			content = (axlNodeContent *) item->data;
+			result += content->content_size + 12;
+			break;
+		case ITEM_PI:
+			/* get current size */
+			result += axl_pi_get_size (item->data);
+			break;
+		case ITEM_COMMENT:
+			/* content + '<!-- ' + ' -->' */
+			content = (axlNodeContent *) item->data;
+			result += content->content_size + 9;
+			break;
+		case ITEM_REF:
+			/* item ref + '&' + ';' */
+			content = (axlNodeContent *) item->data;
+			result += content->content_size + 2;
+			break;
+		}
+		/* get next item */
+		item = item->next;
+			
+	} /* end while */
+		
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "child processing finished for: parent=<%s>, count=%d", node->name, result);
 
 	/* return the result */
 	return result;
@@ -2697,6 +2780,108 @@ int axl_node_dump_attributes_at (axlNode * node, char * content, int desp)
 	return desp;
 }
 
+/* dump content */
+int __axl_node_dump_items (axlItem * item, char * content, int level, bool pretty_print, int desp, int tabular)
+{
+
+	axlNodeContent * nodeContent;
+	char           * string_aux;
+
+	/* get first child */
+	while (item != NULL) {
+		/* according to the type, check a size */
+		switch (item->type) {
+		case ITEM_NODE:
+			/* write axl node content */
+			desp  = axl_node_dump_at (item->data, content, desp, pretty_print, level + 1, tabular);
+			break;
+		case ITEM_CONTENT:
+			/* write content information */
+			nodeContent = (axlNodeContent *)item->data;
+			memcpy (content + desp, nodeContent->content, nodeContent->content_size);
+			desp += nodeContent->content_size;
+			break;
+		case ITEM_CDATA:
+			/* write content information */
+			nodeContent = (axlNodeContent *)item->data;
+			
+			/* write cdata content */
+			memcpy (content + desp, "<![CDATA[", 9);
+			desp += 9;
+			
+			/* write content */
+			memcpy (content + desp, nodeContent->content, nodeContent->content_size);
+			desp += nodeContent->content_size;
+			
+			/* write cdata end */
+			memcpy (content + desp, "]]>", 3);
+			desp += 3;
+			break;
+		case ITEM_PI:
+			/* write pi start */
+			memcpy (content + desp, "<?", 2);
+			desp += 2;
+			
+			/* write pi name */
+			string_aux = axl_pi_get_name (item->data);
+			memcpy (content + desp, string_aux, strlen (string_aux));
+			desp += strlen (string_aux);
+			
+			/* write pi start */
+			memcpy (content + desp, " ", 1);
+			desp += 1;
+			
+			/* write pi content */
+			string_aux = axl_pi_get_content (item->data);
+			memcpy (content + desp, string_aux, strlen (string_aux));
+			desp += strlen (string_aux);
+			
+			/* write pi start */
+			memcpy (content + desp, "?>", 2);
+			desp += 2;
+			break;
+		case ITEM_COMMENT:
+			/* content + '<!-- ' + ' -->' */
+			memcpy (content + desp, "<!-- ", 5);
+			desp += 5;
+			
+			/* get a reference to the content */
+			nodeContent = (axlNodeContent *)item->data;
+			
+			/* write content */
+			memcpy (content + desp, nodeContent->content, nodeContent->content_size);
+			desp += nodeContent->content_size;
+			
+			memcpy (content + desp, " -->", 4);
+			desp += 4;
+			break;
+		case ITEM_REF:
+			/* content + '&' + ';' */
+			memcpy (content + desp, "&", 1);
+			desp += 1;
+			
+			/* get a reference to the content */
+			nodeContent = (axlNodeContent *)item->data;
+			
+			/* write content */
+			memcpy (content + desp, nodeContent->content, nodeContent->content_size);
+			desp += nodeContent->content_size;
+			
+			memcpy (content + desp, ";", 1);
+			desp += 1;
+			break;
+		}
+		
+		/* get next item */
+		item = item->next;
+		
+	} /* end while */
+
+	/* return desp calculated */
+	return desp;
+
+} /* end __axl_node_dump_items */
+
 /** 
  * @internal
  *
@@ -2719,7 +2904,7 @@ int       axl_node_dump_at                  (axlNode * node,
 					     int       level,
 					     int       tabular)
 {
-	axlNode * child;
+	axlItem        * item;
 
 	axl_return_val_if_fail (node, -1);
 
@@ -2800,9 +2985,9 @@ int       axl_node_dump_at                  (axlNode * node,
 
 	/* if the node have childs */
 	if (axl_node_have_childs (node)) {
-
+		
 		/* write traling node information */
-		if (node->content == NULL && pretty_print) {
+		if (pretty_print) {
 #ifdef __AXL_WIN32__
 			memcpy (content + desp, "\r\n", 2);
 			desp += 2;
@@ -2810,38 +2995,34 @@ int       axl_node_dump_at                  (axlNode * node,
 			memcpy (content + desp, "\n", 1);
 			desp += 1;
 #endif
-		}
+		} /* end if */
 
-		child = axl_node_get_first_child (node);
-		while (child != NULL) {
-			/* count how many bytes the node holds */
-			desp  = axl_node_dump_at (child, content, desp, pretty_print, level + 1, tabular);
-
-			/* get the next reference */
-			child = axl_node_get_next (child);
-		}
-
-		int iterator = 0;
-		while (iterator < (tabular * level)) {
-			/* write tabular info */
-			memcpy (content + desp, " ", 1);
-			
-			/* update desp */
-			desp++;
-			
-			/* update iterator */
-			iterator++;
-		} /* end while */
+		/* dump content */
+		item = node->first;
+		desp = __axl_node_dump_items (item, content, level, pretty_print, desp, tabular);
+		
+		/* check for pretty print and tabular */
+		if (pretty_print) {
+			int iterator = 0;
+			while (iterator < (tabular * level)) {
+				/* write tabular info */
+				memcpy (content + desp, " ", 1);
+				
+				/* update desp */
+				desp++;
+				
+				/* update iterator */
+				iterator++;
+			} /* end while */
+		} /* end if */
 
 	}else {
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "the node is not empty and have no childs");
 
-		/* dump node content */
-		if (node->content != NULL) {
-			memcpy (content + desp, node->content->content, node->content->content_size);
-			desp += node->content->content_size;
-		}
-	}
+		/* dump content */
+		item = node->first;
+		desp = __axl_node_dump_items (item, content, level, pretty_print, desp, tabular);
+	} /* end if */
 
 	/* dump close tag */
 	memcpy (content + desp,	"</", 2);
@@ -2879,16 +3060,6 @@ void __axl_node_free_internal (axlNode * node, bool also_childs)
 	if (node->name != NULL)
 		axl_free (node->name);
 
-	/* free node content */
-	if (node->content != NULL) {
-		/* free the internal content reference */
-		if (node->content->content != NULL)
-			axl_free (node->content->content);
-		
-		/* free the node itself */
-		axl_free (node->content);
-	}
-
 	/* release memory hold by attributes */
 	if (node->attributes != NULL)
 		axl_hash_free (node->attributes);
@@ -2908,34 +3079,9 @@ void __axl_node_free_internal (axlNode * node, bool also_childs)
 			/* get the next item */
 			itemAux = item->next;			
 
-			/* according the type */
-			switch (item->type) {
-			case ITEM_NODE:
-				/* free the node */
-				axl_node_free (item->data);
-				break;
-			case ITEM_CONTENT:
-				/* normal content that is not CDATA'ed */
-				break;
-			case ITEM_CDATA:
-				/* content that has the CDATA flag
-				 * (enclosed with CDATA struct) */
-				break;
-			case ITEM_COMMENT:
-				/* a comment */
-				break;
-			case ITEM_PI:
-				/* an process instruction */
-				axl_pi_free (item->data);
-				
-				/* free the item */
-				axl_free (item);
-				break;
-			case ITEM_REF:
-				/* a entity reference */
-				break;
-			}
-
+			/* free the item */
+			axl_item_free (item, true);
+			
 			/* update reference */
 			item = itemAux;
 
@@ -3131,12 +3277,23 @@ void axl_item_set_child (axlNode * parent, AxlItemType type, axlPointer data)
 	item->parent   = parent;
 	item->doc      = (parent->holder != NULL) ? parent->holder->doc : NULL;
 
-	if (type == ITEM_NODE) {
-
+	if (item->type == ITEM_NODE) {
 		/* now configure the item that will hold the new child */
 		((axlNode *)data)->holder  = item;
 		
 	} /* end if */
+
+	/* call to set child with a created item */
+	axl_item_set_child_ref (parent, item);
+
+	return;
+}
+
+/* call to set child with a created item */
+void axl_item_set_child_ref (axlNode * parent, axlItem * item)
+{
+	axl_return_if_fail (parent);
+	axl_return_if_fail (item);
 
 	/* get the current last child */
 	if (parent->first == NULL) {
@@ -3156,4 +3313,196 @@ void axl_item_set_child (axlNode * parent, AxlItemType type, axlPointer data)
 
 	return;
 }
+
+/** 
+ * @brief Copies the reference provided creating a newly allocated
+ * copy, including he content inside.
+ * 
+ * @param item The item 
+ * 
+ * @return 
+ */
+axlItem * axl_item_copy (axlItem * item)
+{
+	axlItem        * copy;
+	axlNodeContent * content;
+
+	/* check values received */
+	axl_return_val_if_fail (item, NULL);
+
+	/* allocate an copy type */
+	copy       = axl_new (axlItem, 1);
+	copy->type = item->type;
+
+	switch (item->type) {
+	case ITEM_NODE:
+		/* copy the node */
+		copy->data = axl_node_copy (item->data, true, true);
+		((axlNode *) copy->data)->holder = copy;
+		break;
+	case ITEM_CONTENT:
+	case ITEM_CDATA:
+	case ITEM_COMMENT:
+		/* copy content */
+		content               = axl_new (axlNodeContent, 1);
+		content->content      = axl_strdup (((axlNodeContent * ) item->data)->content);
+		content->content_size = ((axlNodeContent * ) item->data)->content_size;
+
+		/* copy content */
+		copy->data = content;
+		break;
+	case ITEM_PI:
+		/* copy pi */
+		copy->data = axl_pi_copy (item->data);
+		break;
+	case ITEM_REF:
+		/* not implemented yet */
+		break;
+	} /* end switch */
+
+	/* return copy created */
+	return copy;
+}
+
+/** 
+ * @brief Allows to remove the \ref axlItem instance from the document
+ * that is currently linked, optionally deallocating the memory used
+ * by the structure.
+ * 
+ * @param item The item to remove from its container (without taking
+ * into consideration the item type).
+ *
+ * @param dealloc Deallocs the memory used by the \ref axlItem
+ * reference.
+ */
+void          axl_item_remove          (axlItem * item,
+					bool      dealloc)
+{
+
+	/* free the item */
+	axl_return_if_fail (item);
+
+	/* realloc references */
+	if (item->previous != NULL)
+		item->previous->next = item->next;
+
+	if (item->next != NULL)
+		item->next->previous = item->previous;
+
+	/* realloc parent references in the case of a node */
+	if (item->type == ITEM_NODE) {
+		if (item->previous == NULL)
+			item->parent->first = item->next;
+
+		if (item->next == NULL)
+			item->parent->last  = item->previous;
+	} /* end if */
+	
+	/* free the item */
+	item->next     = NULL;
+	item->previous = NULL;
+
+	if (dealloc) {
+		axl_item_free (item, true);
+	} /* end if */
+
+} /* end axl_item_remove */
+
+/** 
+ * @brief Allows to replace the content held by the \ref axlItem
+ * reference with a new \ref axlItem, updating all references, and
+ * optionally, deallocating the memory used by the previous node.
+ * 
+ * @param item The item to be replaced.
+ *
+ * @param new_item The new item to be placed where the previous one is
+ * located.
+ *
+ * @param dealloc Signal to function to dealloc the memory hold the
+ * the item replaced.
+ */
+void          axl_item_replace        (axlItem * item, 
+				       axlItem * new_item,
+				       bool      dealloc)
+{
+	/* free the item */
+	axl_return_if_fail (item);
+	axl_return_if_fail (new_item);
+
+	/* realloc references */
+	if (item->previous != NULL)
+		item->previous->next = new_item;
+
+	if (item->next != NULL)
+		item->next->previous = new_item;
+
+	/* realloc parent references in the case of a node */
+	if (item->type == ITEM_NODE) {
+		if (item->previous == NULL)
+			item->parent->first = new_item;
+
+		if (item->next == NULL)
+			item->parent->last = new_item;
+	} /* end if */
+
+	/* free the item */
+	item->next     = NULL;
+	item->previous = NULL;
+
+	/* configure values */
+	new_item->parent = item->parent;
+	new_item->doc    = item->doc;
+
+	if (dealloc) {
+		axl_item_free (item, true);
+
+	} /* end if */
+
+	return;
+
+} /* end axl_item_replace */
+
+/** 
+ * @brief Allows to release the memory hold the item reference
+ * provided, and the value stored inside it.
+ * 
+ * @param item The item to dealloc.
+ *
+ * @param dealloc true to also dealloc the value inside. 
+ */
+void          axl_item_free           (axlItem * item,
+				       bool      dealloc)
+{
+	axl_return_if_fail (item);
+
+	
+	/* according the type */
+	switch (item->type) {
+	case ITEM_NODE:
+		/* free the node */
+		axl_node_free (item->data);
+		break;
+	case ITEM_CONTENT:
+	case ITEM_CDATA:
+	case ITEM_COMMENT:
+	case ITEM_REF:
+		/* all of them, managed equally */
+		axl_free (((axlNodeContent *)item->data)->content);
+		axl_free ((axlNodeContent *)item->data);
+		axl_free (item);
+		break;
+	case ITEM_PI:
+		/* an process instruction */
+		axl_pi_free (item->data);
+		
+		/* free the item */
+		axl_free (item);
+		break;
+		
+	} /* end switch */
+
+
+	return;
+}
+
 /* @} */

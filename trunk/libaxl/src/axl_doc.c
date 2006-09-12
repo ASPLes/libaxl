@@ -2185,6 +2185,31 @@ axlPI * axl_pi_create (char * name, char * content)
 }
 
 /** 
+ * @brief Returns a newly allocated copy representing the same value
+ * as the provided \ref axlPI reference.
+ * 
+ * @param pi The pi reference received.
+ * 
+ * @return A reference to the \ref axlPI element or null if it fails.
+ */
+axlPI   * axl_pi_copy                      (axlPI  * pi)
+{
+	axlPI * _pi;
+
+	axl_return_val_if_fail (pi, NULL);
+
+	/* create the PI */
+	_pi          = axl_new (axlPI, 1);
+	_pi->name    = axl_strdup (pi->name);
+	
+	/* copy the content if defined */
+	if (pi->content != NULL)
+		_pi->content = axl_strdup (pi->content);
+
+	return _pi;
+}
+
+/** 
  * @brief Allows to get current pi name from the given \ref axlPI
  * reference.
  *
@@ -2231,6 +2256,22 @@ void axl_pi_free (axlPI * pi)
 		axl_free (pi->content);
 	axl_free (pi);
 	return;
+}
+
+/** 
+ * @internal Allows to get the number of bytes that the process
+ * instruction will take.
+ * 
+ * @param pi The process instruction.
+ * 
+ * @return A size or -1 if it fails.
+ */
+int       axl_pi_get_size                  (axlPI  * pi)
+{
+	axl_return_val_if_fail (pi, -1);
+
+	/* <?name content?> */
+	return strlen (pi->name) + strlen (pi->content) + 5;
 }
 
 /** 

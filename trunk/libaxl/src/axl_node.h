@@ -219,6 +219,21 @@ void          axl_item_set_child       (axlNode * parent,
 					AxlItemType type, 
 					axlPointer data);
 
+void          axl_item_set_child_ref   (axlNode * parent, 
+					axlItem * item);
+
+axlItem     * axl_item_copy            (axlItem * item);
+
+void          axl_item_remove          (axlItem * item,
+					bool      dealloc);
+
+void          axl_item_replace        (axlItem * item, 
+				       axlItem * new_item,
+				       bool      dealloc);
+
+void          axl_item_free           (axlItem * item,
+				       bool      dealloc);
+
 /* @} */
 
 END_C_DECLS

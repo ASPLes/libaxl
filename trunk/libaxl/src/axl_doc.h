@@ -116,11 +116,15 @@ axlList * axl_doc_get_pi_target_list       (axlDoc * doc);
 axlPI   * axl_pi_create                    (char * name,
 					    char * content);
 
+axlPI   * axl_pi_copy                      (axlPI  * pi);
+
 char    * axl_pi_get_name                  (axlPI  * pi);
 
 char    * axl_pi_get_content               (axlPI  * pi);
 
 void      axl_pi_free                      (axlPI  * pi);
+
+int       axl_pi_get_size                  (axlPI  * pi);
 
 bool      axl_doc_iterate                  (axlDoc           * doc,
 					    AxlIterationMode   mode,
