@@ -1183,7 +1183,6 @@ bool test_07 (axlError ** error)
 		return  false;
 	}
 	
-	
 	/* free document */
 	axl_doc_free (doc);
 
@@ -2447,6 +2446,8 @@ int main (int argc, char ** argv)
 		axl_error_free (error);
 		return -1;
 	}	
+
+
 
 	if (test_12 (&error)) 
 		printf ("Test 12: Complex DTD validation (IV) [   OK   ]\n");

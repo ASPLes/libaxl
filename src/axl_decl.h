@@ -157,6 +157,16 @@ typedef struct _axlItem axlItem;
  */
 typedef struct _axlNode axlNode;
 
+/** 
+ * @brief An abstraction that represents an single content unit that
+ * can be found inside an \ref axlNode as element that is located at
+ * the same level compared to other content (\ref axlNodeContent) or
+ * other nodes (\ref axlNode), as well processing instructions (\ref
+ * axlPI) and comments (\ref axlNodeComment).
+ *
+ */
+typedef struct _axlNodeContent axlNodeContent;
+
 /**
  * @brief Axl XML Attribute type definition.
  */
