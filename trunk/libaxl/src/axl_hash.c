@@ -428,36 +428,16 @@ void       axl_hash_insert_full (axlHash        * hash,
 		/* insert the node into the hash */
 		__axl_hash_insert_node (pos, hash, key, node, true);
 
-		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "stored data into position (I): %d", pos);
-		if (node->key_destroy != NULL) {
-			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "storing data with key destroy function: 0x%x", 
-				   node->key_destroy);
-		}
-
-		if (node->data_destroy != NULL) {
-			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "storing data with data destroy function: 0x%x", 
-				   node->data_destroy);
-		}
-
 		return;
 	} 
 
 	/* now check for a more complex case */
 	node = __axl_hash_internal_lookup (hash, key);
 
-	if (node != NULL) {
-		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "node already stored in the hash, replace it");
-	}else {
-		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "node isn't found on the hash, insert it");
-	}
-
-
 	/* if the node is not found and the hash size can't hold more items, expand it and rehash */
 	if ((hash->hash_size == hash->items) && (node == NULL)) {
 		/* seems we need to rehash items, reallocating enough
 		 * memory */
-		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "seems there is no more space left, increase size and rehash (items=%d size=%d)",
-			   hash->items, hash->hash_size);
 
 		/* before allocating more memory, extract all items to
 		 * be reallocated */
@@ -507,7 +487,6 @@ void       axl_hash_insert_full (axlHash        * hash,
 		memset (hash->table, 0, sizeof (axlHashNode*) * (hash->hash_size));
 
 		/* for each item inside the list rehash it */
-		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "rehasing..");
 		while (node != NULL) {
 			/* store next item to rehash in aux */
 			aux = node->next;
@@ -515,8 +494,6 @@ void       axl_hash_insert_full (axlHash        * hash,
 			/* insert the node into the hash */
 			__axl_hash_insert_node (pos, hash, node->key, node, false);
 			
-			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "stored data into position (II): %d key=0x%x", pos, node->key);
-
 			/* update the reference */
 			node = aux;
 		} /* end while */
@@ -536,13 +513,9 @@ void       axl_hash_insert_full (axlHash        * hash,
 	} else {
 		/* don't create a node, replace previous content and use new content */
 		if (node->key_destroy != NULL) {
-			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "key destroy defined on 0x%x",
-				   node->key_destroy);
 			node->key_destroy (node->key);
 		}
 		if (node->data_destroy != NULL) {
-			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "data destroy defined on 0x%x",
-				   node->data_destroy);
 			node->data_destroy (node->data);
 		}
 
@@ -552,8 +525,6 @@ void       axl_hash_insert_full (axlHash        * hash,
 		node->data         = data;
 		node->data_destroy = data_destroy;
 	}
-
-	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "stored data into position (III): %d", pos);
 
 	/* nothing more man!! */
 	return;
