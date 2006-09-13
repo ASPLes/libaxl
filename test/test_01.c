@@ -1832,6 +1832,7 @@ bool test_01b_show_node_found (axlNode * node,
 			/* stop iterating */
 			return false;
 		}
+
 		break;
 	case 1:
 		/* <child1> case */
@@ -1842,6 +1843,15 @@ bool test_01b_show_node_found (axlNode * node,
 			/* stop iterating */
 			return false;
 		}
+
+		if (! NODE_CMP_NAME (parent, "document")) {
+			/* fill the error */
+			axl_error_new (-1, "Expected to find parent node <document> for child1", NULL, (axlError **) ptr2);
+
+			/* stop iterating */
+			return false;
+		}
+
 		break;
 	case 2:
 		/* <child2> case */
@@ -1852,6 +1862,15 @@ bool test_01b_show_node_found (axlNode * node,
 			/* stop iterating */
 			return false;
 		}
+
+		if (! NODE_CMP_NAME (parent, "document")) {
+			/* fill the error */
+			axl_error_new (-1, "Expected to find parent node <document> for child2", NULL, (axlError **) ptr2);
+
+			/* stop iterating */
+			return false;
+		}
+
 		break;
 	case 3:
 		/* <child3> case */
@@ -1862,6 +1881,15 @@ bool test_01b_show_node_found (axlNode * node,
 			/* stop iterating */
 			return false;
 		}
+
+		if (! NODE_CMP_NAME (parent, "document")) {
+			/* fill the error */
+			axl_error_new (-1, "Expected to find parent node <document> for child3", NULL, (axlError **) ptr2);
+
+			/* stop iterating */
+			return false;
+		}
+
 		break;
 	case 4:
 		/* <a> case */
@@ -1872,6 +1900,15 @@ bool test_01b_show_node_found (axlNode * node,
 			/* stop iterating */
 			return false;
 		}
+
+		if (! NODE_CMP_NAME (parent, "child3")) {
+			/* fill the error */
+			axl_error_new (-1, "Expected to find parent node <child3> for a", NULL, (axlError **) ptr2);
+
+			/* stop iterating */
+			return false;
+		}
+
 		break;
 	case 5:
 		/* <b> case */
@@ -1882,6 +1919,15 @@ bool test_01b_show_node_found (axlNode * node,
 			/* stop iterating */
 			return false;
 		}
+
+		if (! NODE_CMP_NAME (parent, "child3")) {
+			/* fill the error */
+			axl_error_new (-1, "Expected to find parent node <child3> for b", NULL, (axlError **) ptr2);
+
+			/* stop iterating */
+			return false;
+		}
+
 		break;
 	case 6:
 		/* <c> case */
@@ -1892,6 +1938,15 @@ bool test_01b_show_node_found (axlNode * node,
 			/* stop iterating */
 			return false;
 		}
+
+		if (! NODE_CMP_NAME (parent, "child3")) {
+			/* fill the error */
+			axl_error_new (-1, "Expected to find parent node <child3> for c", NULL, (axlError **) ptr2);
+
+			/* stop iterating */
+			return false;
+		}
+
 		break;
 	case 7:
 		/* <d> case */
@@ -1902,6 +1957,15 @@ bool test_01b_show_node_found (axlNode * node,
 			/* stop iterating */
 			return false;
 		}
+
+		if (! NODE_CMP_NAME (parent, "c")) {
+			/* fill the error */
+			axl_error_new (-1, "Expected to find parent node <c> for d", NULL, (axlError **) ptr2);
+
+			/* stop iterating */
+			return false;
+		}
+
 		break;
 	case 8:
 		/* <e> case */
@@ -1912,6 +1976,15 @@ bool test_01b_show_node_found (axlNode * node,
 			/* stop iterating */
 			return false;
 		}
+
+		if (! NODE_CMP_NAME (parent, "c")) {
+			/* fill the error */
+			axl_error_new (-1, "Expected to find parent node <c> for e", NULL, (axlError **) ptr2);
+
+			/* stop iterating */
+			return false;
+		}
+
 		break;
 	case 9:
 		/* <e> case */
@@ -1922,6 +1995,15 @@ bool test_01b_show_node_found (axlNode * node,
 			/* stop iterating */
 			return false;
 		}
+
+		if (! NODE_CMP_NAME (parent, "child3")) {
+			/* fill the error */
+			axl_error_new (-1, "Expected to find parent node <child3> for f", NULL, (axlError **) ptr2);
+
+			/* stop iterating */
+			return false;
+		}
+
 		break;
 	case 10:
 		/* <g> case */
@@ -1932,12 +2014,29 @@ bool test_01b_show_node_found (axlNode * node,
 			/* stop iterating */
 			return false;
 		}
+
+		if (! NODE_CMP_NAME (parent, "child3")) {
+			/* fill the error */
+			axl_error_new (-1, "Expected to find parent node <chile3> for g", NULL, (axlError **) ptr2);
+
+			/* stop iterating */
+			return false;
+		}
+
 		break;
 	case 11:
 		/* <child4> case */
 		if (! NODE_CMP_NAME (node, "child4")) {
 			/* fill the error */
 			axl_error_new (-1, "Expected to find a document node not found <child4>", NULL, (axlError **) ptr2);
+
+			/* stop iterating */
+			return false;
+		}
+
+		if (! NODE_CMP_NAME (parent, "document")) {
+			/* fill the error */
+			axl_error_new (-1, "Expected to find parent node <document> for child4", NULL, (axlError **) ptr2);
 
 			/* stop iterating */
 			return false;
@@ -1952,6 +2051,15 @@ bool test_01b_show_node_found (axlNode * node,
 			/* stop iterating */
 			return false;
 		}
+
+		if (! NODE_CMP_NAME (parent, "document")) {
+			/* fill the error */
+			axl_error_new (-1, "Expected to find parent node <document> for child4", NULL, (axlError **) ptr2);
+
+			/* stop iterating */
+			return false;
+		}
+
 		break;
 	}
 
@@ -2180,6 +2288,7 @@ bool test_01c (axlError ** error)
 {
 	axlDoc   * doc;
 	axlNode  * node;
+	axlNode  * parent;
 	
 	/* parse document (uses the same xml document as test_01b) */
 	doc = axl_doc_parse_from_file ("test_01b.xml", error);
@@ -2201,31 +2310,59 @@ bool test_01c (axlError ** error)
 		return false;
 	}
 
+	/* check parent */
+	parent = axl_node_get_parent (node);
+	if (! NODE_CMP_NAME (parent, "document")) {
+		axl_error_new (-1, "Expected to find parent <document>, but it wasn't found", NULL, error);
+		return false;
+	}
+	
 	node = axl_node_get_next (node);
-
 	if (! NODE_CMP_NAME (node, "child2")) {
 		axl_error_new (-1, "Expected to find <child2>, but it wasn't found", NULL, error);
 		return false;
 	}
 
-	node = axl_node_get_next (node);
+	/* check parent */
+	parent = axl_node_get_parent (node);
+	if (! NODE_CMP_NAME (parent, "document")) {
+		axl_error_new (-1, "Expected to find parent <document>, but it wasn't found", NULL, error);
+		return false;
+	}
 
+	node = axl_node_get_next (node);
 	if (! NODE_CMP_NAME (node, "child3")) {
 		axl_error_new (-1, "Expected to find <child3>, but it wasn't found", NULL, error);
 		return false;
 	}
-
-	node = axl_node_get_next (node);
-
-	if (! NODE_CMP_NAME (node, "child4")) {
-		axl_error_new (-1, "Expected to find <child4>, but it wasn't found", NULL, error);
+	/* check parent */
+	parent = axl_node_get_parent (node);
+	if (! NODE_CMP_NAME (parent, "document")) {
+		axl_error_new (-1, "Expected to find parent <document>, but it wasn't found", NULL, error);
 		return false;
 	}
 
 	node = axl_node_get_next (node);
+	if (! NODE_CMP_NAME (node, "child4")) {
+		axl_error_new (-1, "Expected to find <child4>, but it wasn't found", NULL, error);
+		return false;
+	}
+	/* check parent */
+	parent = axl_node_get_parent (node);
+	if (! NODE_CMP_NAME (parent, "document")) {
+		axl_error_new (-1, "Expected to find parent <document>, but it wasn't found", NULL, error);
+		return false;
+	}
 
+	node = axl_node_get_next (node);
 	if (! NODE_CMP_NAME (node, "child5")) {
 		axl_error_new (-1, "Expected to find <child5>, but it wasn't found", NULL, error);
+		return false;
+	}
+	/* check parent */
+	parent = axl_node_get_parent (node);
+	if (! NODE_CMP_NAME (parent, "document")) {
+		axl_error_new (-1, "Expected to find parent <document>, but it wasn't found", NULL, error);
 		return false;
 	}
 
@@ -2235,30 +2372,47 @@ bool test_01c (axlError ** error)
 	}
 
 	node = axl_node_get_previous (node);
-
 	if (! NODE_CMP_NAME (node, "child4")) {
 		axl_error_new (-1, "Expected to find <child4>, but it wasn't found", NULL, error);
 		return false;
 	}
+	/* check parent */
+	if (! NODE_CMP_NAME (parent, "document")) {
+		axl_error_new (-1, "Expected to find parent <document>, but it wasn't found", NULL, error);
+		return false;
+	}
 
 	node = axl_node_get_previous (node);
-
 	if (! NODE_CMP_NAME (node, "child3")) {
 		axl_error_new (-1, "Expected to find <child3>, but it wasn't found", NULL, error);
 		return false;
 	}
-
-	node = axl_node_get_previous (node);
-
-	if (! NODE_CMP_NAME (node, "child2")) {
-		axl_error_new (-1, "Expected to find <child2>, but it wasn't found", NULL, error);
+	/* check parent */
+	if (! NODE_CMP_NAME (parent, "document")) {
+		axl_error_new (-1, "Expected to find parent <document>, but it wasn't found", NULL, error);
 		return false;
 	}
 
 	node = axl_node_get_previous (node);
+	if (! NODE_CMP_NAME (node, "child2")) {
+		axl_error_new (-1, "Expected to find <child2>, but it wasn't found", NULL, error);
+		return false;
+	}
+	/* check parent */
+ 	if (! NODE_CMP_NAME (parent, "document")) {
+		axl_error_new (-1, "Expected to find parent <document>, but it wasn't found", NULL, error);
+		return false;
+	}
 
+	node = axl_node_get_previous (node);
 	if (! NODE_CMP_NAME (node, "child1")) {
 		axl_error_new (-1, "Expected to find <child1>, but it wasn't found", NULL, error);
+		return false;
+	}
+	/* check parent */
+	parent = axl_node_get_parent (node);
+	if (! NODE_CMP_NAME (parent, "document")) {
+		axl_error_new (-1, "Expected to find parent <document>, but it wasn't found", NULL, error);
 		return false;
 	}
 
@@ -2278,7 +2432,7 @@ bool test_01c (axlError ** error)
 		axl_error_new (-1, "Expected to find <child5> node while calling to axl_node_get_next_called, but it wasn't found", NULL, error);
 		return false;
 	}
-
+	
 	/* check next empty */
 	if (axl_node_get_next_called (node, "child5") != NULL) {
 		axl_error_new (-1, "Expected to find empty node following to <child5> node while calling to axl_node_get_next_called, but it was found", NULL, error);
@@ -2304,11 +2458,10 @@ bool test_01c (axlError ** error)
 	return true;
 }
 
-
 /** 
  * Test01: Initial xml header checking.
  */
-int main (int argc, char ** argv) 
+int main (int argc, char ** argv)
 {
 	axlError * error;
 	
@@ -2343,7 +2496,7 @@ int main (int argc, char ** argv)
 			axl_error_get_code (error), axl_error_get (error));
 		axl_error_free (error);
 		return -1;
-	}	
+	}
 
 	if (test_01c (&error)) {
 		printf ("Test 01-c: Basic XML parsing, XML document traversing [   OK   ]\n");

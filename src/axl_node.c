@@ -471,7 +471,6 @@ axlPointer __axl_node_copy_key (axlPointer key, axlDestroyFunc key_destroy,
 				axlPointer data, axlDestroyFunc data_destroy)
 {
 	/* copy the key */
-	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "copying node key=%s", key);
 	return axl_strdup (key);
 }
 
@@ -479,7 +478,6 @@ axlPointer __axl_node_copy_value (axlPointer key, axlDestroyFunc key_destroy,
 				  axlPointer data, axlDestroyFunc data_destroy)
 {
 	/* copy data */
-	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "copying node data=%s", data);
 	return axl_strdup (data);
 }
 
@@ -513,16 +511,11 @@ axlNode * axl_node_copy                     (axlNode * node,
 
 	axl_return_val_if_fail (node, NULL);
 
-	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "copying node=<%s> attr=%d childs=%d",
-		   axl_node_get_name (node), copy_attributes, copy_childs);
-
 	/* create the copy */
 	result = axl_node_create (axl_node_get_name (node));
 
 	/* check for attributes */
 	if (node->attributes != NULL && copy_attributes) {
-		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "copying attributes");
-
 		/* copy the hash */
 		result->attributes = axl_hash_copy (node->attributes, 
 						    /* key copy function */
@@ -533,7 +526,6 @@ axlNode * axl_node_copy                     (axlNode * node,
 
 	/* check if child nodes must be also copied */
 	if (copy_childs && (node->first != NULL)) {
-		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "coying childs");
 
 		/* copy all content inside */
 		child = node->first;
@@ -1149,8 +1141,13 @@ axlNode * axl_node_get_parent         (axlNode * node)
 	axl_return_val_if_fail (node, NULL);
 
 	/* if holder is NULL, no parent is posible */
-	if (node->holder == NULL)
+	if (node->holder == NULL) {
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "received a node without holder (an axlItem reference), unable to get the parent reference: %s", 
+			   node->name);
 		return NULL;
+	}
+
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "the node has a holder reference, returning current parent");
 	
 	/* return the parent */
 	return node->holder->parent;
@@ -1977,37 +1974,51 @@ void      axl_node_replace             (axlNode * node,
 void      axl_node_remove             (axlNode * node,
 				       bool      dealloc)
 {
+	axlItem * item;
 	axl_return_if_fail (node);
 
-	if (axl_item_get_parent (node->holder) != NULL) {
+	/* get a reference to the item element */
+	item = node->holder;
+	
+	if (axl_item_get_parent (item) != NULL) {
 
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "doing reference relocation (remove operation) for=<%s>",
+			   node->name);
+		
 		/* make previous node to point to the new node */
-		if (node->holder->previous != NULL) {
-			node->holder->previous->next = node->holder->next;
+		if (item->previous != NULL) {
+			item->previous->next = item->next;
 		}
 		
 		/* make next node to point to the new node */
-		if (node->holder->next != NULL) {
-			node->holder->next->previous = node->holder->previous;
+		if (item->next != NULL) {
+			item->next->previous = item->previous;
 		}
 
 		/* now, update the parent reference */
-		if (node->holder->previous == NULL) {
+		if (item->previous == NULL) {
 			/* seems the node is the first child of the parent,
 			 * update the reference */
-			node->holder->parent->first = node->holder->next;
+			item->parent->first = item->next;
 		}
 		
-		if (node->holder->next == NULL) {
+		if (item->next == NULL) {
 			/* seems the node is the last child of the parent,
 			 * update the reference */
-			node->holder->parent->last = node->holder->previous;
+			item->parent->last = item->previous;
 		}
 
 		/* decrease the number of childs the parent has */
-		node->holder->parent->child_num--;
-	}
-	
+		item->parent->child_num--;
+
+		if (item != NULL) {
+			/* disconnect the item */
+			item->previous = NULL;
+			item->next     = NULL;
+		} /* end if */
+
+	} /* end if */
+
 	/* dealloc node if configured so */
 	if (dealloc) {
 		/* free the node */
@@ -3069,7 +3080,7 @@ void __axl_node_free_internal (axlNode * node, bool also_childs)
 		axl_hash_free (node->anotate_data);
 
 	/* release memory hold by childs */
-	if (node->first != NULL) {
+	if (node->first != NULL && also_childs) {
 		/* get the first item */
 		item = node->first;
 
@@ -3269,6 +3280,9 @@ void axl_item_set_child (axlNode * parent, AxlItemType type, axlPointer data)
 {
 	axlItem * item;
 
+	/* return if the parent is defined */
+	axl_return_if_fail (parent);
+
 	/* create an item to hold the child, configuring the node, the
 	 * parent and the document */
 	item           = axl_new (axlItem, 1);
@@ -3405,6 +3419,8 @@ void          axl_item_remove          (axlItem * item,
 	if (dealloc) {
 		axl_item_free (item, true);
 	} /* end if */
+
+	return;
 
 } /* end axl_item_remove */
 
