@@ -131,6 +131,9 @@ void      axl_node_replace            (axlNode * node,
 void      axl_node_remove             (axlNode * node,
 				       bool      dealloc);
 
+void      axl_node_deattach           (axlNode * node);
+				       
+
 void      axl_node_set_is_empty       (axlNode  * node, 
 				       bool       empty);
 
@@ -222,7 +225,8 @@ void          axl_item_set_child       (axlNode * parent,
 void          axl_item_set_child_ref   (axlNode * parent, 
 					axlItem * item);
 
-axlItem     * axl_item_copy            (axlItem * item);
+axlItem     * axl_item_copy            (axlItem * item,
+					axlNode * set_parent);
 
 void          axl_item_remove          (axlItem * item,
 					bool      dealloc);

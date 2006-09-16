@@ -1517,6 +1517,7 @@ bool __axl_doc_are_equal (axlNode * node, axlNode * node2)
 {
 	int       iterator;
 	int       length;
+	int       length2;
 
 	axlNode * child;
 	axlNode * child2;
@@ -1525,18 +1526,32 @@ bool __axl_doc_are_equal (axlNode * node, axlNode * node2)
 	if (! axl_node_are_equal (node, node2))
 		return false;
 
-
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "<%s>=<%s>", 
 		   axl_node_get_name (node), axl_node_get_name (node2));
 
 	/* iterate over all childs inside the node */
 	iterator = 0;
 	length   = axl_node_get_child_num (node);
+	length2  = axl_node_get_child_num (node2);
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "checking node childs: (%d == %d)?", 
+		   length, length2);
+
+	if (length != length2) {
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "child number differs, documents aren't equal");
+		return false;
+	}
+
 	while (iterator < length) {
 
 		/* get a referece to the childs to check */
 		child  = axl_node_get_child_nth (node, iterator);
 		child2 = axl_node_get_child_nth (node2, iterator);
+
+		if (child == NULL) 
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "child from the first document is null..");
+
+		if (child2 == NULL) 
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "child from the second document is null..");
 
 		/* check if these nodes are also equal */
 		if (! axl_node_are_equal (child, child2)) {
@@ -1583,7 +1598,13 @@ bool      axl_doc_are_equal                (axlDoc * doc,
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "checking that both documents are equal");
 
 	node  = axl_doc_get_root (doc);
+	if (node == NULL) {
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "document(a) doesn't have document root ..");
+	}
 	node2 = axl_doc_get_root (doc2);
+	if (node2 == NULL) {
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "document(b) doesn't have document root ..");
+	}
 
 	/* check document root for both */
 	return __axl_doc_are_equal (node, node2);
