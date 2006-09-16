@@ -514,6 +514,9 @@ axlNode * axl_node_copy                     (axlNode * node,
 	/* create the copy */
 	result = axl_node_create (axl_node_get_name (node));
 
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "node=<%s> (copy operation)",
+		   result->name);
+
 	/* check for attributes */
 	if (node->attributes != NULL && copy_attributes) {
 		/* copy the hash */
@@ -532,7 +535,11 @@ axlNode * axl_node_copy                     (axlNode * node,
 		while (child != NULL) {
 			
 			/* copy the child found */
-			copy       = axl_item_copy (child);
+			copy       = axl_item_copy (child, result);
+			
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "  new item created (copy operation) with parent=<%s> and type=%d",
+				   copy->parent->name,
+				   copy->type);
 
 			/* set the content */
 			axl_item_set_child_ref (result, copy);
@@ -2009,6 +2016,7 @@ void      axl_node_remove             (axlNode * node,
 		}
 
 		/* decrease the number of childs the parent has */
+		
 		item->parent->child_num--;
 
 		if (item != NULL) {
@@ -2025,6 +2033,33 @@ void      axl_node_remove             (axlNode * node,
 		axl_node_free (node);
 	}
 	
+	return;
+}
+
+/** 
+ * @brief Supposing the node is attached to a xml document (\ref
+ * axlDoc), this function allows to deattach the node from the
+ * document that is holding it.
+ * 
+ * This function is useful while requiring to reallocate nodes from
+ * parent to parent, making the parent node that is holding it to lost
+ * references to the node, decreasing all internal counts to the node,
+ * etc.
+ *
+ * If the node isn't attached to any document, the function does
+ * nothing.
+ * 
+ * @param node The node to deattach.
+ */
+void axl_node_deattach (axlNode * node)
+{
+	axl_return_if_fail (node);
+
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "deattaching node..");
+
+	/* call to remove */
+	axl_node_remove (node, false);
+
 	return;
 }
 
@@ -2146,8 +2181,9 @@ axlNode * axl_node_get_child_nth      (axlNode * parent, int position)
 	axl_return_val_if_fail (parent, NULL);
 
 	/* check for first reference */
-	if (parent->first == NULL)
+	if (parent->first == NULL) {
 		return NULL;
+	}
 
 	/* get the first item */
 	item = parent->first;
@@ -2157,9 +2193,9 @@ axlNode * axl_node_get_child_nth      (axlNode * parent, int position)
 	while (item != NULL) {
 		/* check the item type */
 		if (item->type == ITEM_NODE) {
-			if (iterator == position)
+			if (iterator == position) {
 				return item->data;
-			else
+			} else
 				iterator++;
 		} /* end if */
 
@@ -2312,8 +2348,8 @@ bool          axl_node_are_equal          (axlNode * node, axlNode * node2)
 
 	/* check childs number */
 	if (axl_node_get_child_num (node) != axl_node_get_child_num (node2)) {
-		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "child number differs <%s> != <%s>",
-			   node->name, node2->name);
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "child number differs <%s>(%d) != <%s>(%d)",
+			   node->name, axl_node_get_child_num (node), node2->name, axl_node_get_child_num (node2));
 		return false;
 	}
 
@@ -3278,22 +3314,33 @@ AxlItemType   axl_item_get_type        (axlItem * item)
  */
 void axl_item_set_child (axlNode * parent, AxlItemType type, axlPointer data)
 {
-	axlItem * item;
+	axlItem * item = NULL;
+	axlNode * node = NULL;
 
 	/* return if the parent is defined */
 	axl_return_if_fail (parent);
 
+	/* check if the node received already have a pointer to a
+	 * holder created */
+	if (type == ITEM_NODE) {
+		/* get a reference to the node */
+		node = (axlNode *) data;
+
+		/* get a reference to the holder */
+		item = node->holder;
+	}
+
 	/* create an item to hold the child, configuring the node, the
 	 * parent and the document */
-	item           = axl_new (axlItem, 1);
+	if (item == NULL)
+		item   = axl_new (axlItem, 1);
 	item->type     = type;
 	item->data     = data;
-	item->parent   = parent;
 	item->doc      = (parent->holder != NULL) ? parent->holder->doc : NULL;
 
-	if (item->type == ITEM_NODE) {
+	if (type == ITEM_NODE) {
 		/* now configure the item that will hold the new child */
-		((axlNode *)data)->holder  = item;
+		node->holder  = item;
 		
 	} /* end if */
 
@@ -3308,6 +3355,9 @@ void axl_item_set_child_ref (axlNode * parent, axlItem * item)
 {
 	axl_return_if_fail (parent);
 	axl_return_if_fail (item);
+
+	/* configure the parent node */
+	item->parent   = parent;
 
 	/* get the current last child */
 	if (parent->first == NULL) {
@@ -3332,27 +3382,36 @@ void axl_item_set_child_ref (axlNode * parent, axlItem * item)
  * @brief Copies the reference provided creating a newly allocated
  * copy, including he content inside.
  * 
- * @param item The item 
+ * @param item The item to copy.
+ *
+ * @param set_parent Optionally, allows to provide the parent to be
+ * configured to the item created. This is really required while
+ * copying items that contains nodes.
  * 
- * @return 
+ * @return A newly allocated \ref axlItem reference, containing the
+ * same data (a deep copy) and optionally configured with the provided
+ * parent.
  */
-axlItem * axl_item_copy (axlItem * item)
+axlItem * axl_item_copy (axlItem * item, axlNode * set_parent)
 {
 	axlItem        * copy;
+	axlNode        * node;
 	axlNodeContent * content;
 
 	/* check values received */
 	axl_return_val_if_fail (item, NULL);
 
 	/* allocate an copy type */
-	copy       = axl_new (axlItem, 1);
-	copy->type = item->type;
+	copy         = axl_new (axlItem, 1);
+	copy->type   = item->type;
+	copy->parent = set_parent;
 
 	switch (item->type) {
 	case ITEM_NODE:
 		/* copy the node */
-		copy->data = axl_node_copy (item->data, true, true);
-		((axlNode *) copy->data)->holder = copy;
+		node                 = axl_node_copy (item->data, true, true);
+		node->holder         = copy;
+		copy->data           = node;
 		break;
 	case ITEM_CONTENT:
 	case ITEM_CDATA:

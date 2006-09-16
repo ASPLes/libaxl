@@ -30,6 +30,143 @@ bool test_21 (axlError ** error)
  * 
  * @return true if the validity test is passed, false if not.
  */
+bool test_20b (axlError ** error)
+{
+	axlNode * node;
+
+	axlNode * aux;
+	axlNode * aux2;
+
+	axlNode * child1;
+	axlNode * root;
+
+	axlDoc  * doc;
+	axlDoc  * doc2;
+	axlDoc  * doc3;
+
+
+	int       iterator = 0;
+	int       sum = 0;
+	int       content_size;
+	char    * content;
+	
+	/* load the document */
+	doc = axl_doc_parse_from_file ("test_20.xml", error);
+	if (doc == NULL)
+		return false;
+
+	/* get document root */
+	root = axl_doc_get_root (doc);
+
+	/* load reference */
+	doc2 = axl_doc_parse_from_file ("test_20a.xml", error);
+	if (doc2 == NULL)
+		return false;
+
+	printf ("doing iteration...\n");
+
+	while (iterator < 10) {
+	
+		/* copy and release */
+		node = axl_node_copy (root, true, true);
+		printf ("child name=<%s>\n", axl_node_get_name (node));
+
+		/* get the child1 reference */
+		child1 = axl_node_get_first_child (node);
+		printf ("child name=<%s>\n", axl_node_get_name (child1));
+		
+		/* get child2 refrence */
+		aux    = axl_node_get_first_child (child1);
+		printf ("child name=<%s>\n", axl_node_get_name (aux));
+		while (aux != NULL) {
+			
+			sum = axl_node_get_child_num (child1);
+			
+			printf ("Document child number is: %d\n", sum);
+
+			/* get the next child before deattaching the
+			 * node */
+			aux2 = axl_node_get_next (aux);
+
+			/* dettach the node from the <child1> parent
+			 * and attach it to the document */
+			axl_node_deattach (aux);
+
+			if ((sum - 1) != (axl_node_get_child_num (child1))) {
+				/* after doing the deattach process,
+				 * the copy node doesn't have the
+				 * expected child number */
+				axl_error_new (-1, "After doing the deattach process, the copy node doesn't have the expected child number", NULL, error);
+				return false;
+			}
+
+			/* set the node to the document root */
+			axl_node_set_child (node, aux);
+
+			if (! NODE_CMP_NAME (axl_node_get_parent (aux), "document")) {
+				
+				axl_error_new (-1, "Expected to find a parent not found", NULL, error);
+				return false;
+			}
+
+			/* get the next child */
+			aux = aux2;
+			
+		} /* end while */
+
+		/* remove the child1 node */
+		aux = axl_node_get_first_child (node);
+
+		axl_node_free (aux);
+
+		/* create the document holding the result */
+		doc3 = axl_doc_create (NULL, NULL, false);
+		axl_doc_set_root (doc3, node);
+
+		/* compare the document */
+		if (!axl_doc_are_equal (doc2, doc3)) {
+			/* dump content */
+			axl_doc_dump_pretty (doc2, &content, &content_size, 3);
+			printf ("Document(2, size: %d)\n%s", content_size, content);
+			axl_free (content);
+
+			/* dump content */
+			axl_doc_dump_pretty (doc3, &content, &content_size, 3);
+			printf ("Document(3, size: %d)\n%s", content_size, content);
+			axl_free (content);
+
+
+
+			axl_error_new (-1, "Expected to find equal documents but (modified doc2 != doc3), they wasn't found", NULL, error);
+			return false;
+		}
+
+		/* free the document */
+		axl_doc_free (doc3);
+
+		printf ("DOCUMENTS ARE EQUAL!!!\n");
+		
+
+		/* update iterator */
+		iterator++;
+
+	} /* end while */
+
+	/* free the document */
+	axl_doc_free (doc);
+
+	return true;
+
+}
+
+
+/** 
+ * @brief Test entity support (basic entity support).
+ * 
+ * @param error The optional axlError to be used to report errors.
+ * 
+ * @return true if the validity test is passed, false if not.
+ */
 bool test_20 (axlError ** error)
 {
 	axlNode * node;
@@ -54,7 +191,6 @@ bool test_20 (axlError ** error)
 		return false;
 	}
 	
-
 	/* create a new document */
 	doc2 = axl_doc_create (NULL, NULL, false);
 	axl_doc_set_root (doc2, node);
@@ -2459,6 +2595,104 @@ bool test_01c (axlError ** error)
 }
 
 /** 
+ * @brief Axl node nth access.
+ * 
+ * @return false if the function fails to parse the
+ * document. true if the test was properly executed.
+ */
+bool test_01d (axlError ** error)  
+{
+	axlDoc   * doc;
+	axlNode  * node;
+	axlNode  * child;
+	
+	/* parse document */
+	doc = axl_doc_parse_from_file ("test_01d.xml", error);
+	if (doc == NULL) 
+		return false;
+
+	/* get document root */
+	node = axl_doc_get_root (doc);
+	
+	/* get the node at the 0 position */
+	child = axl_node_get_child_nth (node, 0);
+	if (! NODE_CMP_NAME (child, "child1")) {
+		axl_error_new (-1, "Expected to find node <child1> at 0, but it wasn't found", NULL, error);
+		return false;
+	}
+
+	/* get the node at the 1 position */
+	child = axl_node_get_child_nth (node, 1);
+	if (! NODE_CMP_NAME (child, "child2")) {
+		axl_error_new (-1, "Expected to find node <child2> at 1, but it wasn't found", NULL, error);
+		return false;
+	}
+
+	/* get the node at the 2 position */
+	child = axl_node_get_child_nth (node, 2);
+	if (! NODE_CMP_NAME (child, "child3")) {
+		axl_error_new (-1, "Expected to find node <child3> at 2, but it wasn't found", NULL, error);
+		return false;
+	}
+
+	/* get the node at the 3 position */
+	child = axl_node_get_child_nth (node, 3);
+	if (! NODE_CMP_NAME (child, "child4")) {
+		axl_error_new (-1, "Expected to find node <child4> at 3, but it wasn't found", NULL, error);
+		return false;
+	}
+
+	/* get the node at the 4 position */
+	child = axl_node_get_child_nth (node, 4);
+	if (! NODE_CMP_NAME (child, "child5")) {
+		axl_error_new (-1, "Expected to find node <child5> at 4, but it wasn't found", NULL, error);
+		return false;
+	}
+
+	/* now with <child3> childs *> */
+	node = axl_node_get_child_nth (node, 2);
+	
+	/* get the node at the 0 position */
+	child = axl_node_get_child_nth (node, 0);
+	if (! NODE_CMP_NAME (child, "a")) {
+		axl_error_new (-1, "Expected to find node <a> at 0, but it wasn't found", NULL, error);
+		return false;
+	}
+
+	/* get the node at the 1 position */
+	child = axl_node_get_child_nth (node, 1);
+	if (! NODE_CMP_NAME (child, "b")) {
+		axl_error_new (-1, "Expected to find node <b> at 1, but it wasn't found", NULL, error);
+		return false;
+	}
+	   
+	/* get the node at the 2 position */
+	child = axl_node_get_child_nth (node, 2);
+	if (! NODE_CMP_NAME (child, "c")) {
+		axl_error_new (-1, "Expected to find node <c> at 2, but it wasn't found", NULL, error);
+		return false;
+	}
+
+	/* get the node at the 3 position */
+	child = axl_node_get_child_nth (node, 3);
+	if (! NODE_CMP_NAME (child, "f")) {
+		axl_error_new (-1, "Expected to find node <f> at 3, but it wasn't found", NULL, error);
+		return false;
+	}
+
+	/* get the node at the 4 position */
+	child = axl_node_get_child_nth (node, 4);
+	if (! NODE_CMP_NAME (child, "g")) {
+		axl_error_new (-1, "Expected to find node <g> at 4, but it wasn't found", NULL, error);
+		return false;
+	}
+
+	/* test ok */
+	axl_doc_free (doc);
+	return true;
+}
+
+/** 
  * Test01: Initial xml header checking.
  */
 int main (int argc, char ** argv)
@@ -2470,6 +2704,8 @@ int main (int argc, char ** argv)
 		printf ("Unable to initialize Axl library\n");
 		return -1;
 	}
+
+	goto test;
 
 	if (test_01 (&error))
 		printf ("Test 01: basic xml parsing [   OK   ]\n");
@@ -2502,6 +2738,15 @@ int main (int argc, char ** argv)
 		printf ("Test 01-c: Basic XML parsing, XML document traversing [   OK   ]\n");
 	} else {
 		printf ("Test 01-c: Basic XML parsing, XML document traversing [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}	
+
+	if (test_01d (&error)) {
+		printf ("Test 01-d: Basic XML parsing, node nth access [   OK   ]\n");
+	} else {
+		printf ("Test 01-d: Basic XML parsing, node nth access [ FAILED ]\n  (CODE: %d) %s\n",
 			axl_error_get_code (error), axl_error_get (error));
 		axl_error_free (error);
 		return -1;
@@ -2675,10 +2920,21 @@ int main (int argc, char ** argv)
 		return -1;
 	}	
 
+ test:
+
 	if (test_20 (&error)) {
 		printf ("Test 20: Axl node copy and anotation data [   OK   ]\n");
 	} else {
 		printf ("Test 20: Axl node copy and anotation data [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}	
+
+	if (test_20b (&error)) {
+		printf ("Test 20b: Axl node copy 2 [   OK   ]\n");
+	} else {
+		printf ("Test 20b: Axl node copy 2 [ FAILED ]\n  (CODE: %d) %s\n",
 			axl_error_get_code (error), axl_error_get (error));
 		axl_error_free (error);
 		return -1;
