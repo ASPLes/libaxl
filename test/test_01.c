@@ -47,43 +47,34 @@ bool test_20b (axlError ** error)
 
 	int       iterator = 0;
 	int       sum = 0;
-	int       content_size;
-	char    * content;
-	
+
 	/* load the document */
 	doc = axl_doc_parse_from_file ("test_20.xml", error);
 	if (doc == NULL)
 		return false;
-
-	/* get document root */
-	root = axl_doc_get_root (doc);
 
 	/* load reference */
 	doc2 = axl_doc_parse_from_file ("test_20a.xml", error);
 	if (doc2 == NULL)
 		return false;
 
-	printf ("doing iteration...\n");
-
 	while (iterator < 10) {
+
+		/* get document root */
+		root = axl_doc_get_root (doc);
 	
 		/* copy and release */
 		node = axl_node_copy (root, true, true);
-		printf ("child name=<%s>\n", axl_node_get_name (node));
 
 		/* get the child1 reference */
 		child1 = axl_node_get_first_child (node);
-		printf ("child name=<%s>\n", axl_node_get_name (child1));
 		
 		/* get child2 refrence */
 		aux    = axl_node_get_first_child (child1);
-		printf ("child name=<%s>\n", axl_node_get_name (aux));
 		while (aux != NULL) {
 			
 			sum = axl_node_get_child_num (child1);
 			
-			printf ("Document child number is: %d\n", sum);
-
 			/* get the next child before deattaching the
 			 * node */
 			aux2 = axl_node_get_next (aux);
@@ -116,8 +107,7 @@ bool test_20b (axlError ** error)
 
 		/* remove the child1 node */
 		aux = axl_node_get_first_child (node);
-
-		axl_node_free (aux);
+		axl_node_remove (aux, true);
 
 		/* create the document holding the result */
 		doc3 = axl_doc_create (NULL, NULL, false);
@@ -125,18 +115,6 @@ bool test_20b (axlError ** error)
 
 		/* compare the document */
 		if (!axl_doc_are_equal (doc2, doc3)) {
-			/* dump content */
-			axl_doc_dump_pretty (doc2, &content, &content_size, 3);
-			printf ("Document(2, size: %d)\n%s", content_size, content);
-			axl_free (content);
-
-			/* dump content */
-			axl_doc_dump_pretty (doc3, &content, &content_size, 3);
-			printf ("Document(3, size: %d)\n%s", content_size, content);
-			axl_free (content);
-
-
-
 			axl_error_new (-1, "Expected to find equal documents but (modified doc2 != doc3), they wasn't found", NULL, error);
 			return false;
 		}
@@ -144,13 +122,13 @@ bool test_20b (axlError ** error)
 		/* free the document */
 		axl_doc_free (doc3);
 
-		printf ("DOCUMENTS ARE EQUAL!!!\n");
-		
-
 		/* update iterator */
 		iterator++;
 
 	} /* end while */
+
+	/* free the document 2 */
+	axl_doc_free (doc2);
 
 	/* free the document */
 	axl_doc_free (doc);
@@ -2705,8 +2683,6 @@ int main (int argc, char ** argv)
 		return -1;
 	}
 
-	goto test;
-
 	if (test_01 (&error))
 		printf ("Test 01: basic xml parsing [   OK   ]\n");
 	else {
@@ -2920,7 +2896,6 @@ int main (int argc, char ** argv)
 		return -1;
 	}	
 
- test:
 
 	if (test_20 (&error)) {
 		printf ("Test 20: Axl node copy and anotation data [   OK   ]\n");
