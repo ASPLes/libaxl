@@ -113,13 +113,13 @@ struct _axlItem {
 	 * @internal A reference to the type that is being hold by the
 	 * encapsulation reference.
 	 */
-	AxlItemType type;
+	AxlItemType     type;
 	
 	/** 
 	 * @internal The reference to the pointer that is actually
 	 * stored.
 	 */
-	axlPointer  data;
+	axlPointer      data;
 
 	/** 
 	 * @internal
@@ -595,17 +595,29 @@ axlDoc  * axl_node_get_doc                  (axlNode * node)
  */
 void      axl_node_set_doc                  (axlNode * node, axlDoc * doc)
 {
+	axlItem * item;
+
 	axl_return_if_fail (node);
 	axl_return_if_fail (doc);
 
-	if (node->holder == NULL) {
+	/* get the item reference */
+	item = node->holder;
+
+	if (item == NULL) {
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "node received doesn't have a holder reference, creating");
+
 		/* create an empty reference */
-		node->holder       = axl_new (axlItem, 1);
-		node->holder->type = ITEM_NODE;
-	}
+		item         = axl_new (axlItem, 1);
+		item->type   = ITEM_NODE;
+		item->data   = node;
+		node->holder = item;
+		
+	} /* end if */
+
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "setting doc to the item node");
 
 	/* call to set item at the document */
-	axl_item_set_doc (node->holder, doc);
+	item->doc = doc;
 
 	return;
 }
@@ -2711,9 +2723,8 @@ int       axl_node_get_flat_size            (axlNode * node, bool pretty_print, 
 		}
 	}
 
-	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "node count=%d", result);
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "node=<%s> count=%d", node->name, result);
 	
-
 	/* get first child */
 	item = node->first;
 	while (item != NULL) {

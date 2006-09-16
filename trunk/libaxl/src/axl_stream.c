@@ -199,11 +199,11 @@ bool axl_stream_prebuffer (axlStream * stream)
 		/* displace memory already read to be at the begining
 		 * of the stream */
 		memcpy (stream->temp, stream->stream + stream->stream_index,
-			STREAM_BUFFER_SIZE - stream->stream_index);
+			stream->stream_size - stream->stream_index);
 
 		/* now copy displaced content back to the stream */
 		memcpy (stream->stream, stream->temp, 
-			STREAM_BUFFER_SIZE - stream->stream_index);
+			stream->stream_size - stream->stream_index);
 
 		/* update the index to the positioned at the next byte
 		 * available on the buffer */
