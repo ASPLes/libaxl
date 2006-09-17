@@ -163,6 +163,10 @@ void      axl_node_set_cdata_content  (axlNode * node,
 				       char * content,
 				       int content_size);
 
+void      axl_node_set_comment        (axlNode * node,
+				       char * comment,
+				       int    comment_size);
+
 void      axl_node_set_have_childs    (axlNode * node, bool     childs);
 
 bool      axl_node_have_childs        (axlNode * node);
@@ -205,6 +209,8 @@ void      axl_node_free            (axlNode * node);
 
 void      axl_node_free_full       (axlNode * node, bool also_childs);
 
+/* @} */
+
 /* item interface */
 axlDoc      * axl_item_get_doc         (axlItem * item);
 
@@ -214,9 +220,22 @@ axlNode     * axl_item_get_parent      (axlItem * item);
 
 axlItem     * axl_item_get_next        (axlItem * item);
 
+axlItem     * axl_item_node_next       (axlNode * node);
+
 axlItem     * axl_item_get_previous    (axlItem * item);
 
+axlItem     * axl_item_node_previous   (axlNode * node);
+
+axlItem     * axl_item_get_first_child (axlNode * node);
+
+axlItem     * axl_item_get_last_child  (axlNode * node);
+
 AxlItemType   axl_item_get_type        (axlItem * item);
+
+axlPointer    axl_item_get_data        (axlItem * item);
+
+char        * axl_item_get_content     (axlItem * item, 
+					int * size);
 
 void          axl_item_set_child       (axlNode * parent, 
 					AxlItemType type, 
@@ -237,8 +256,6 @@ void          axl_item_replace        (axlItem * item,
 
 void          axl_item_free           (axlItem * item,
 				       bool      dealloc);
-
-/* @} */
 
 END_C_DECLS
 

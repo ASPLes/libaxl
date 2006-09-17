@@ -674,7 +674,7 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "node found: [%s]", string_aux);
 
-	/* know, until the node ends, we have to find the node
+	/* now, until the node ends, we have to find the node
 	 * attributes or the node defintion end */
 	iterator = 0;
 	do {
@@ -890,7 +890,8 @@ axlDoc * __axl_doc_parse_common (const char * entity, int entity_size,
 	/* signal that this document have processed its header */
 	doc->headerProcess = true;
 	
-	/* parse the rest of the document */
+	/* parse the rest of the document, setting as parent NULL
+	 * because still no parent is found. */
 	if (!__axl_doc_parse_node (stream, doc, &node, &is_empty, error))
 		return NULL;
 	
@@ -935,8 +936,11 @@ axlDoc * __axl_doc_parse_common (const char * entity, int entity_size,
 				 * previous one */
 				axl_stack_pop (doc->parentNode);
 
-				__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "node properly closed, current parent node stack size: %d",
-					   axl_stack_size (doc->parentNode));
+				/* get the new parent */
+				node = axl_stack_peek (doc->parentNode);
+
+				__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "node properly closed, current parent node stack size: %d, parent=<%s>",
+					   axl_stack_size (doc->parentNode), (node != NULL) ? axl_node_get_name (node) : "--no parent--");
 
 				if (axl_stack_size (doc->parentNode) > 0)
 					continue;
@@ -2648,7 +2652,12 @@ void     axl_doc_free         (axlDoc * doc)
 bool      axl_doc_consume_comments         (axlDoc * doc, axlStream * stream, axlError ** error)
 {
 
-	bool found_item;
+	bool      found_item;
+	char    * content;
+	int       size;
+
+	/* get current parent node */
+	axlNode * parent = (doc != NULL) ? axl_stack_peek (doc->parentNode) : NULL;
 
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "checking for comemnts");
 
@@ -2665,13 +2674,19 @@ bool      axl_doc_consume_comments         (axlDoc * doc, axlStream * stream, ax
 
 		/* check for comments */
 		if (axl_stream_inspect (stream, "<!--", 4) > 0) {
-			
-			if (! axl_stream_get_until_ref (stream, NULL, NULL, true, NULL, 1, "-->")) {
+
+			/* get comment content */
+			content = axl_stream_get_until_ref (stream, NULL, NULL, true, &size, 1, "-->");
+			if (content == NULL) {
 				axl_error_new (-1, "detected an opened comment but not found the comment ending",
 					       stream, error);
 				axl_stream_free (stream);
 				return false;
 			} 
+
+			/* store it */
+			if (parent != NULL)
+				axl_node_set_comment (parent, content, size);
 			
 			/* flag that we have found a comment */
 			found_item = true;

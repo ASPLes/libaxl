@@ -460,6 +460,7 @@
  *    - \ref axl_module
  *    - \ref axl_doc_module
  *    - \ref axl_node_module
+ *    - \ref axl_item_module
  *    - \ref axl_dtd_module
  *    - \ref axl_decl_module
  *    - \ref axl_handlers
