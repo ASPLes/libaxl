@@ -1328,6 +1328,61 @@ axlNode * axl_node_get_previous_called    (axlNode * node,
 
 /** 
  * @brief Allows to get the first child that holds the node.
+ *
+ * This function is considered inside the CHILDREN API, which is the
+ * set of functions that are used to handle XML documents that have
+ * node that contains more nodes or content, but not mixed.
+ *
+ * This function allows to get the first child found that is an \ref
+ * axlNode. In the case your application is handling a document that
+ * don't mix nodes and content at the same level inside another xml
+ * nodes, you'll get the expected results.
+ *
+ * But, calling to this function on a node that contains content mixed
+ * with another nodes, you will skip all items stored before the first
+ * xml node found as child. 
+ *
+ * Let's see some examples to clarify this. Provided the following xml
+ * document:
+ *
+ * \code
+ * <document>
+ *   <child>
+ *     Content
+ *   </child>
+ * </document>
+ * \endcode
+ *
+ * If you want to get a reference to the <b>child</b> node you can do
+ * the following:
+ * 
+ * \code
+ * // supposing the document is already loaded in "doc"
+ * axlNode * node = axl_doc_get_root (doc);
+ *
+ * // get the first child 
+ * node = axl_node_get_first_child (node);
+ *
+ * // now you have in "node" a reference to the child node.
+ * \endcode
+ *
+ * However, in the case the previous content mix node with content as
+ * follows:
+ *
+ * \code
+ * <document>
+ *   Some content previous to the first child.
+ *   <child>
+ *     Content
+ *   </child>
+ * </document>
+ * \endcode
+ *
+ * Using this function will make you to skip the first content, that
+ * is, <i>"Some content previous to the first child"</i>, which is found
+ * before the &lt;child> node. In the case you want to have full
+ * access to all items stored as child for a particular node, check
+ * \ref axl_item_get_first_child.
  * 
  * @param node The node that is requested to return its first child.
  * 
@@ -1358,6 +1413,8 @@ axlNode * axl_node_get_first_child    (axlNode * node)
 
 /** 
  * @brief Allows to get the last child that holds the node.
+ *
+ * See also \ref axl_node_get_first_child and \ref axl_item_get_last_child.
  * 
  * @param node The node that is requested to return its last child.
  * 
@@ -1719,6 +1776,45 @@ void      axl_node_set_cdata_content  (axlNode * node,
 	
 	/* call to set node content */	
 	axl_node_set_content_ref (node, cdata, content_size);
+
+	return;
+}
+
+/** 
+ * @brief Allows to configure a new comment (<!-- -->) that will be
+ * stored as a child for the node provided.
+ *
+ * @param node The node that will contain the comment.
+ *
+ * @param comment The comment to be stored. The function will perform
+ * a copy from it.
+ *
+ * @param comment_size The comment size or -1 to make the function to
+ * calculate it.
+ */
+void      axl_node_set_comment        (axlNode * node,
+				       char * comment,
+				       int    comment_size)
+{
+	axlNodeContent * content;
+
+	axl_return_if_fail (node);
+	axl_return_if_fail (comment);
+
+	/* check current coment size */
+	if (comment_size == -1)
+		comment_size = strlen (comment);
+
+	/* create the comment */
+	content               = axl_new (axlNodeContent, 1);
+	content->content      = axl_new (char, comment_size + 1);
+	content->content_size = comment_size;
+
+	/* copy the content */
+	memcpy (content->content, comment, comment_size);
+
+	/* now store it on the node */
+	axl_item_set_child (node, ITEM_COMMENT, content);
 
 	return;
 }
@@ -3197,6 +3293,19 @@ void      axl_node_free_full       (axlNode * node, bool also_childs)
 	return;
 }
 
+/**
+ * @}
+ */
+
+/**
+ * \defgroup axl_item_module Axl Item: A basic item abstraction that represents a child node that could be another node, content, xml comment, etc.
+ */
+
+/** 
+ * \addtogroup axl_item_module
+ * @{
+ */
+
 /** 
  * @brief Allows to get the reference to the document that is holding
  * the provided item without taking into consideration the item type.
@@ -3267,6 +3376,29 @@ axlItem * axl_item_get_next        (axlItem * item)
 }
 
 /** 
+ * @brief Returns the following \ref axlItem to the \ref axlNode
+ * reference, in the same level.
+ * 
+ * @param node The node that is required to return the following item
+ * to it.
+ * 
+ * @return An reference to the following or NULL.
+ */
+axlItem * axl_item_node_next (axlNode * node)
+{
+	axl_return_val_if_fail (node, NULL);
+
+	if (node->holder != NULL) {
+		/* return the next */
+		return node->holder->next;
+	}
+
+	/* no holder, no next */
+	return NULL;
+
+}
+
+/** 
  * @brief Allows to get the following element that is previous to the item
  * reference provided (\ref axlItem), at the same level.
  * 
@@ -3281,6 +3413,85 @@ axlItem * axl_item_get_previous        (axlItem * item)
 
 	/* return the previous element */
 	return item->previous;
+}
+
+/** 
+ * @brief Returns the previous \ref axlItem to the \ref axlNode
+ * reference, in the same level.
+ * 
+ * @param node The node that is required to return the previous item
+ * to it.
+ * 
+ * @return An reference to the previous or NULL.
+ */
+axlItem * axl_item_node_previous (axlNode * node)
+{
+	axl_return_val_if_fail (node, NULL);
+
+	if (node->holder != NULL) {
+		/* return the previousx */
+		return node->holder->previous;
+	}
+
+	/* no holder, no previous */
+	return NULL;
+
+}
+
+/** 
+ * @brief Allows to get the very first child item stored on the
+ * provided \ref axlNode.
+ *
+ * This function is similar to \ref axl_node_get_first_child, but
+ * returning the first \ref axlItem no matter its type.
+ *
+ * This function is mainly used inside the MIXED API where nodes are
+ * expected to enclose content mixed with another xml nodes. See \ref
+ * axl_node_get_first_child for more details.
+ * 
+ * @param node The \ref axlNode reference that is required to return
+ * is first child reference (\ref axlItem).
+ * 
+ * @return The \ref axlItem reference or NULL if the axlNode is empty
+ * (\ref axl_node_is_empty) and have no childs (\ref
+ * axl_node_have_childs). The function also returns NULL if it fails
+ * (when it receives a NULL reference).
+ */
+axlItem     * axl_item_get_first_child (axlNode * node)
+{
+	/* check reference received */
+	axl_return_val_if_fail (node, NULL);
+
+	/* return the first item reference */
+	return node->first;
+}
+
+/** 
+ * @brief Allows to get the very last child item stored on the
+ * provided \ref axlNode.
+ *
+ * This function is similar to \ref axl_node_get_last_child, but
+ * returning the last \ref axlItem no matter its type.
+ *
+ * This function is mainly used inside the MIXED API where nodes are
+ * expected to enclose content mixed with another xml nodes. See \ref
+ * axl_node_get_last_child for more details.
+ * 
+ * @param node The \ref axlNode reference that is required to return
+ * is last child reference (\ref axlItem).
+ * 
+ * @return The \ref axlItem reference or NULL if the axlNode is empty
+ * (\ref axl_node_is_empty) and have no childs (\ref
+ * axl_node_have_childs). The function also returns NULL if it fails
+ * (when it receives a NULL reference).
+ */
+axlItem     * axl_item_get_last_child  (axlNode * node) 
+{
+	/* check reference received */
+	axl_return_val_if_fail (node, NULL);
+
+	/* return the last item reference */
+	return node->last;
 }
 
 /** 
@@ -3303,6 +3514,72 @@ AxlItemType   axl_item_get_type        (axlItem * item)
 
 	/* return stored type */
 	return item->type;
+}
+
+/** 
+ * @brief Returns the item data that is stored inside the \ref axlItem
+ * received.
+ *
+ * According to the type that is representing the \ref axlItem
+ * received, it will return a particular type. Check \ref AxlItemType
+ * for more information.
+ *
+ * @param item The item that is required to return the data
+ * encapsulated on it.
+ * 
+ * @return A pointer to the data stored, or NULL if it fails. The
+ * pointer returned, in the case it is defined, mustn't be
+ * released. It is a internal reference to the content.
+ */
+axlPointer axl_item_get_data (axlItem * item)
+{
+	axl_return_val_if_fail (item, NULL);
+
+	/* return stored type */
+	return item->data;
+}
+
+/** 
+ * @brief Convenience API that allows to get the content stored (and
+ * its size) from the received \ref axlItem, supposing it is storing
+ * an \ref ITEM_CONTENT, \ref ITEM_CDATA, \ref ITEM_COMMENT or \ref ITEM_REF.
+ *
+ * @param item The \ref axlItem that is supposed to store an \ref axlNodeContent element.
+ *
+ * @param size Optional variable reference. If defined, if returns the
+ * content size.
+ * 
+ * @return An internal reference to the content stored and optionally
+ * the content size notified on the variable received. In the case the
+ * function receives an incompatible \ref axlItem (which is not \ref
+ * ITEM_CONTENT, \ref ITEM_CDATA, \ref ITEM_COMMENT or \ref ITEM_REF),
+ * the function will return NULL, and the optional variable will be
+ * filled with -1.
+ */
+char        * axl_item_get_content     (axlItem * item, 
+					int     * size)
+{
+	axlNodeContent * content;
+
+	/* check content received */
+	if (size != NULL)
+		*size = -1;
+	
+	/* check if the item reference is NULL */
+	axl_return_val_if_fail (item, 
+				NULL);
+	axl_return_val_if_fail (item->type != ITEM_NODE && item->type != ITEM_PI, 
+				NULL);
+
+	/* get the content */
+	content = item->data;
+
+	/* fill the size */
+	if (size != NULL)
+		*size = content->content_size;
+
+	/* return a pointer to the content */
+	return content->content;
 }
 
 /** 

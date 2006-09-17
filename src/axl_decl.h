@@ -162,7 +162,7 @@ typedef struct _axlNode axlNode;
  * can be found inside an \ref axlNode as element that is located at
  * the same level compared to other content (\ref axlNodeContent) or
  * other nodes (\ref axlNode), as well processing instructions (\ref
- * axlPI) and comments (\ref axlNodeComment).
+ * axlPI) and comments (\ref axlNodeContent).
  *
  */
 typedef struct _axlNodeContent axlNodeContent;
@@ -452,14 +452,82 @@ typedef enum {
 }AxlDtdTimes;
 
 /** 
- * @brief Item types that can hold an xml node (\ref axlNode)
+ * @brief Item types that can hold an xml node (\ref axlNode).
+ *
+ * \ref AxlItemType is used to notify the type for a particular item
+ * (\ref axlItem) that is stored as a child on a particular \ref
+ * axlNode.
+ *
+ * This is mainly used inside the MIXED API, which is the way that Axl
+ * exposes the content of a xml node that is expected to contain more
+ * nodes mixed with more content.
+ *
+ * Each type represents a particular basic unit that could be found as
+ * a child item inside an xml node.
  */
 typedef enum {
+	/** 
+	 * @brief The \ref axlItem is encapsulating another item
+	 * node. Calling to \ref axl_item_get_data will return a
+	 * reference to an \ref axlNode.
+	 *
+	 */
 	ITEM_NODE      = 1,
+	/** 
+	 * @brief The \ref axlItem is encapsulating an node
+	 * content. Calling to \ref axl_item_get_data will return a
+	 * reference to an \ref axlNodeContent.
+	 *
+	 * You can also use the convenience function \ref
+	 * axl_item_get_content to get the content and the size that
+	 * is stored on the \ref axlItem.
+	 *
+	 */
 	ITEM_CONTENT   = 2,
+	/** 
+	 * @brief The \ref axlItem is encapsulating an application
+	 * process instruction. Calling to \ref axl_item_get_data will
+	 * return a reference to a \ref axlPI.
+	 *
+	 */
 	ITEM_PI        = 3,
+	
+	/** 
+	 * @brief The \ref axlItem is encapsulating an xml
+	 * comment. Calling to \ref axl_item_get_data will return a
+	 * reference to a \ref axlNodeContent. XML comments inside Axl
+	 * are also handled using this type. The comment that is
+	 * returned from the function has the initial '<!--' and the
+	 * ending '-->' elements stripped.
+	 *
+	 * You can also use the convenience function \ref
+	 * axl_item_get_content to get the comment content and the size that
+	 * is stored on the \ref axlItem.
+	 */
 	ITEM_COMMENT   = 4,
+	/** 
+	 * @brief The \ref axlItem is encapsulating an xml entity
+	 * reference that wasn't resolved yet.
+	 *
+	 * You can also use the convenience function \ref
+	 * axl_item_get_content to get the entity reference name and the size that
+	 * is stored on the \ref axlItem.
+	 */
 	ITEM_REF       = 5,
+	/** 
+	 * @brief The \ref axlItem is encapsulating an xml content
+	 * that was enclosed using the <![CDATA[]]> construction. This
+	 * child item works the same as \ref ITEM_CONTENT but, adding
+	 * the CDATA semantic and the fact that the content wasn't
+	 * parsed by the Axl XML engine. Calling to the \ref
+	 * axl_item_get_data will return an \ref axlNodeContent
+	 * reference.
+	 *
+	 * You can also use the convenience function \ref
+	 * axl_item_get_content to get the CDATA content and the size that
+	 * is stored on the \ref axlItem.
+	 *
+	 */
 	ITEM_CDATA     = 6
 }AxlItemType;
 

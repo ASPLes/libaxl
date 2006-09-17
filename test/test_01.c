@@ -11,11 +11,150 @@
 bool test_21 (axlError ** error)
 {
 	axlDoc  * doc;
+	axlNode * node;
+	axlItem * item;
+	char    * content;
+	int       content_size;
 
 	/* load the document */
 	doc = axl_doc_parse_from_file ("test_21.xml", error);
 	if (doc == NULL)
 		return false;
+
+	/* get the root node */
+	node = axl_doc_get_root (doc);
+
+	/* check document content */
+	if (! NODE_CMP_NAME (node, "document")) {
+		axl_error_new (-1, "Expected to find root node=<document> but it wasn't found", NULL, error);
+		return false;
+	}
+
+	/* iterate root childs */
+	item = axl_item_get_first_child (node);
+
+	if (axl_item_get_type (item) != ITEM_CONTENT) {
+		axl_error_new (-1, "Expected to find content but it wasn't found", NULL, error);
+		return false;
+	}	
+
+	/* get the content */
+	content = axl_item_get_content (item, &content_size);
+	if (! axl_cmp (content, "\n  Some content inside the document ")) {
+		axl_error_new (-1, "Expected to find content but it wasn't found", NULL, error);
+		return false;
+	}
+
+	/* get tne the item */
+	item = axl_item_get_next (item);
+	if (axl_item_get_type (item) != ITEM_NODE) {
+		axl_error_new (-1, "Expected to find a node but it wasn't found", NULL, error);
+		return false;
+	}
+
+	/* get the node */
+	node = axl_item_get_data (item);
+
+	/* check document content */
+	if (! NODE_CMP_NAME (node, "strong")) {
+		axl_error_new (-1, "Expected to find root node=<strong> but it wasn't found", NULL, error);
+		return false;
+	}
+
+	/* get the first child of <strong> */
+	item = axl_item_get_first_child (node);
+
+	if (axl_item_get_type (item) != ITEM_CONTENT) {
+		axl_error_new (-1, "Expected to find content inside strong but it wasn't found", NULL, error);
+		return false;
+	}	
+
+	/* get the content */
+	content = axl_item_get_content (item, &content_size);
+	if (! axl_cmp (content, "this content goes\n  bold")) {
+		axl_error_new (-1, "Expected to find content but it wasn't found", NULL, error);
+		return false;
+	}
+
+	/* now get the next item following the <strong> node */
+	item = axl_item_node_next (node);
+
+	if (item == NULL) {
+		axl_error_new (-1, "Expected to find content following <strong> but a null item reference was found", NULL, error);
+		return false;
+	}
+
+	/* check to be it a content */
+	if (axl_item_get_type (item) != ITEM_CONTENT) {
+		axl_error_new (-1, "Expected to find content following <strong> node but it wasn't found", NULL, error);
+		return false;
+	}	
+
+	/* get the content */
+	content = axl_item_get_content (item, &content_size);
+	if (! axl_cmp (content, " more data stored directly inside the document node.\n\n ")) {
+		axl_error_new (-1, "Expected to find content but it wasn't found", NULL, error);
+		return false;
+	}
+
+	/* get the next item */
+	item = axl_item_get_next (item);
+	if (axl_item_get_type (item) != ITEM_NODE) {
+		axl_error_new (-1, "Expected to find a node but it wasn't found", NULL, error);
+		return false;
+	}
+
+	/* get the node */
+	node = axl_item_get_data (item);
+
+	/* check document content */
+	if (! NODE_CMP_NAME (node, "childs")) {
+		axl_error_new (-1, "Expected to find root node=<strong> but it wasn't found", NULL, error);
+		return false;
+	}
+
+	/* get the first item */
+	item = axl_item_get_first_child (node);
+	if (axl_item_get_type (item) != ITEM_COMMENT) {
+		axl_error_new (-1, "Expected to find content inside strong but it wasn't found", NULL, error);
+		return false;
+	}	
+
+	/* get the content */
+	content = axl_item_get_content (item, &content_size);
+	if (! axl_cmp (content, " here goes a comment before text block ")) {
+		axl_error_new (-1, "Expected to find a comment, child of <childs>, but it wasn't found", NULL, error);
+		return false;
+	}	
+
+	/* get next item */
+	item = axl_item_get_next (item);
+
+	/* check to be it a content */
+	if (axl_item_get_type (item) != ITEM_CONTENT) {
+		axl_error_new (-1, "Expected to find content following <childs> node comment but it wasn't found", NULL, error);
+		return false;
+	}	
+
+	/* get the content */
+	content = axl_item_get_content (item, &content_size);
+	if (! axl_cmp (content, "More text after child declaration.\n   ")) {
+		axl_error_new (-1, "Expected to find a content inside <childs> node, but it wasn't found", NULL, error);
+		return false;
+	}	
+
+	/* get next item */
+	item = axl_item_get_next (item);
+
+	/* get the node */
+	node = axl_item_get_data (item);
+
+	/* check document content */
+	if (! NODE_CMP_NAME (node, "child1")) {
+		axl_error_new (-1, "Expected to find root node=<strong> but it wasn't found", NULL, error);
+		return false;
+	}
+
 
 	/* free axl document */
 	axl_doc_free (doc);
