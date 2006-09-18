@@ -2768,7 +2768,7 @@ int __axl_node_get_flat_size_attributes (axlNode * node)
  */
 int       axl_node_get_flat_size            (axlNode * node, bool pretty_print, int level, int tabular)
 {
-	int              result   = 0;
+	int              result    = 0;
 	axlItem        * item;
 	axlNodeContent * content;
 	bool             is_empty;
@@ -2848,6 +2848,15 @@ int       axl_node_get_flat_size            (axlNode * node, bool pretty_print, 
 			/* content + '<!-- ' + ' -->' */
 			content = (axlNodeContent *) item->data;
 			result += content->content_size + 9;
+			if (pretty_print) {
+				/* tabular indent + \n */
+				result += (level * tabular) + 1;
+#ifdef __AXL_WIN32__
+				/* \r\n */
+				result += 1 
+#endif
+			}
+
 			break;
 		case ITEM_REF:
 			/* item ref + '&' + ';' */
@@ -2934,6 +2943,34 @@ int axl_node_dump_attributes_at (axlNode * node, char * content, int desp)
 	return desp;
 }
 
+/** 
+ * @internal Writes the indentation according to the tabular size and
+ * the indent level.
+ * 
+ * @param content The reference to the content where the dump
+ * operation will be performed.
+ *
+ * @param tabular The tabular size to be applied for each level.
+ *
+ * @param level The indent level to be applied.
+ * 
+ * @return The number of bytes written.
+ */
+int __axl_node_dump_at_write_indent (char * content, int tabular, int level)
+{
+	int iterator = 0;
+
+	while (iterator < (tabular * level)) {
+		/* write tabular info */
+		memcpy (content + iterator, " ", 1);
+		
+		/* update iterator */
+		iterator++;
+	} /* end while */
+
+	return iterator;
+}
+	
 /* dump content */
 int __axl_node_dump_items (axlItem * item, char * content, int level, bool pretty_print, int desp, int tabular)
 {
@@ -2995,6 +3032,12 @@ int __axl_node_dump_items (axlItem * item, char * content, int level, bool prett
 			desp += 2;
 			break;
 		case ITEM_COMMENT:
+
+			/* check for pretty print to write indent */
+			if (pretty_print) {
+				desp += __axl_node_dump_at_write_indent (content + desp, tabular, level);
+			}
+
 			/* content + '<!-- ' + ' -->' */
 			memcpy (content + desp, "<!-- ", 5);
 			desp += 5;
@@ -3008,6 +3051,17 @@ int __axl_node_dump_items (axlItem * item, char * content, int level, bool prett
 			
 			memcpy (content + desp, " -->", 4);
 			desp += 4;
+
+			if (pretty_print) {
+#ifdef __AXL_WIN32__
+				memcpy (content + desp, "\r\n", 2);
+				desp += 2;
+#else
+				memcpy (content + desp, "\n", 1);
+				desp += 1;
+#endif
+			}
+
 			break;
 		case ITEM_REF:
 			/* content + '&' + ';' */
@@ -3067,18 +3121,7 @@ int       axl_node_dump_at                  (axlNode * node,
 
 	/* check for pretty print and tabular */
 	if (pretty_print) {
-		int iterator = 0;
-		while (iterator < (tabular * level)) {
-			/* write tabular info */
-			memcpy (content + desp, " ", 1);
-			
-			/* update desp */
-			desp++;
-			
-			/* update iterator */
-			iterator++;
-		} /* end while */
-
+		desp += __axl_node_dump_at_write_indent (content + desp, tabular, level);
 	} /* end if */
 
 	/* check if the node is empty */
@@ -3157,17 +3200,7 @@ int       axl_node_dump_at                  (axlNode * node,
 		
 		/* check for pretty print and tabular */
 		if (pretty_print) {
-			int iterator = 0;
-			while (iterator < (tabular * level)) {
-				/* write tabular info */
-				memcpy (content + desp, " ", 1);
-				
-				/* update desp */
-				desp++;
-				
-				/* update iterator */
-				iterator++;
-			} /* end while */
+			desp += __axl_node_dump_at_write_indent (content + desp, tabular, level);
 		} /* end if */
 
 	}else {
