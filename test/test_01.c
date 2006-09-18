@@ -2821,7 +2821,7 @@ int main (int argc, char ** argv)
 		printf ("Unable to initialize Axl library\n");
 		return -1;
 	}
-
+	
 	if (test_01 (&error))
 		printf ("Test 01: basic xml parsing [   OK   ]\n");
 	else {
