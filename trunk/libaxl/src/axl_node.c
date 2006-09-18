@@ -2856,7 +2856,7 @@ int       axl_node_get_flat_size            (axlNode * node, bool pretty_print, 
 			result += content->content_size + 9;
 			if (pretty_print) {
 				/* tabular indent + \n */
-				result += (level * tabular) + 1;
+				result += ((level + 1) * tabular) + 1;
 #ifdef __AXL_WIN32__
 				/* \r\n */
 				result += 1 
@@ -3041,7 +3041,7 @@ int __axl_node_dump_items (axlItem * item, char * content, int level, bool prett
 
 			/* check for pretty print to write indent */
 			if (pretty_print) {
-				desp += __axl_node_dump_at_write_indent (content + desp, tabular, level);
+				desp += __axl_node_dump_at_write_indent (content + desp, tabular, level + 1);
 			}
 
 			/* content + '<!-- ' + ' -->' */
