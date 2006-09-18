@@ -1584,6 +1584,9 @@ char    * axl_node_get_content     (axlNode * node, int * content_size)
 			return content->content;
 		} /* end if */
 
+		/* get the next item */
+		child = child->next;
+
 	} /* end while */
 
 	/* set content size to zero */
@@ -1921,6 +1924,9 @@ char    * axl_node_get_content_trim   (axlNode * node,
 			/* return a local reference */
 			return content->content;
 		} /* end if */
+		
+		/* get the next item */
+		child = child->next;
 
 	} /* end while */
 
