@@ -2859,7 +2859,7 @@ int       axl_node_get_flat_size            (axlNode * node, bool pretty_print, 
 				result += ((level + 1) * tabular) + 1;
 #ifdef __AXL_WIN32__
 				/* \r\n */
-				result += 1 
+				result += 1;
 #endif
 			}
 
