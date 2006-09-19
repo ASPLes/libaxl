@@ -2802,7 +2802,10 @@ int       axl_node_get_flat_size            (axlNode * node, bool pretty_print, 
 			else
 				result += (level * tabular) + 1; 
 #ifdef __AXL_WIN32__
-			result += 2;
+			if (have_childs)
+				result += 2;
+			else
+				result ++;
 #endif
 		}
 	} else {
