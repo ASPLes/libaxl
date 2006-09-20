@@ -207,7 +207,7 @@ bool axl_stream_prebuffer (axlStream * stream)
 
 		/* update the index to the positioned at the next byte
 		 * available on the buffer */
-		stream->stream_size  = STREAM_BUFFER_SIZE - stream->stream_index;
+		stream->stream_size  = stream->stream_size - stream->stream_index;
 	}else {
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "   nothing to prebuffer on the tail");
 		stream->stream_size  = 0;
