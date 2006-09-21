@@ -1201,10 +1201,19 @@ axlNode * axl_node_get_next           (axlNode * node)
 
 	axl_return_val_if_fail (node, NULL);
 
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "getting next node for=<%s>", axl_node_get_name (node));
+
+	if (node->holder == NULL) {
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "received a node without item holder (maybe it wasn't inserted into a xml document)");
+		return NULL;
+	}
+	
 	/* get the next axlNode situated at the same level of the
 	 * provided axlNode reference */
 	item = axl_item_get_next (node->holder);
 
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "%s", (item != NULL) ? "next item is defined, check if it is a node" : "next item isn't defined");
+	
 	/* while the item is not null and different from item node,
 	 * get the next */
 	while (item != NULL) {
@@ -2634,6 +2643,49 @@ char    * axl_node_get_pi_target_content    (axlNode * node,
 }
 
 /** 
+ * @brief Allows to transfer (move from) all childs (including
+ * comments, content, PI, nodes, etc) from the old parent to the new
+ * parent.
+ *
+ * This function is particular useful while moving content from nodes.
+ * 
+ * @param old_parent The old parent node where all childs will be
+ * removed and and placed in the new parent.
+ *
+ * @param new_parent The parent node where the content will be
+ * placed. If the parent node already have childs, the content will be
+ * appended.
+ */
+void      axl_node_transfer_childs          (axlNode * old_parent, 
+					     axlNode * new_parent)
+{
+	axlItem * item;
+	axlItem * item_aux;
+	
+	/* get the first child for the old parent */
+	item = old_parent->first;
+	while (item != NULL) {
+
+		/* get a reference to the next before adding */
+		item_aux = item->next;
+
+		/* set the item to parent for the new node */
+		axl_item_set_child_ref (new_parent, item);
+
+		/* get the next */
+		item = item_aux;
+
+	} /* end while */
+
+	/* clear reference from previous parent */
+	old_parent->first     = NULL;
+	old_parent->last      = NULL;
+	old_parent->child_num = 0;
+	
+	return;
+}
+
+/** 
  * @brief Allows to get a list which contains \ref axlPI nodes,
  * representing all process instruction that the \ref axlNode (xml
  * document node) has.
@@ -3702,6 +3754,7 @@ void axl_item_set_child_ref (axlNode * parent, axlItem * item)
 
 		/* update the last child reference */
 		item->previous    = parent->last;
+		item->next        = NULL;
 		parent->last      = item;
 	}
 
