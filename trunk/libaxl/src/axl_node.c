@@ -2669,8 +2669,15 @@ void      axl_node_transfer_childs          (axlNode * old_parent,
 		/* get a reference to the next before adding */
 		item_aux = item->next;
 
+		/* if the item type if a node, update the child number
+		 * count */
+		if (item->type == ITEM_NODE)
+			new_parent->child_num++;
+
 		/* set the item to parent for the new node */
 		axl_item_set_child_ref (new_parent, item);
+
+		
 
 		/* get the next */
 		item = item_aux;
