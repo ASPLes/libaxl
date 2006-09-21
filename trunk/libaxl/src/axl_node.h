@@ -193,6 +193,9 @@ char    * axl_node_get_pi_target_content    (axlNode * node,
 
 axlList * axl_node_get_pi_target_list       (axlNode * node);
 
+void      axl_node_transfer_childs          (axlNode * old_parent, 
+					     axlNode * new_parent);
+
 int       axl_node_get_flat_size            (axlNode * node,
 					     bool      pretty_print,
 					     int       level,
