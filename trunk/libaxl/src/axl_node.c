@@ -622,40 +622,6 @@ void      axl_node_set_doc                  (axlNode * node, axlDoc * doc)
 	return;
 }
 
-/** 
- * @internal
- * 
- * Support function to initialize piTargets if required.
- * 
- * @param node 
- */
-void __axl_node_init_pitargets (axlNode * node)
-{
-	/* do not init pi targets once done */
-/*	if (node->piTargets != NULL)
-	return;*/
-
-	/* create PI list */
-/*	node->piTargets  = axl_list_new (axl_list_always_return_1, (axlDestroyFunc) axl_pi_free);	 */
-}
-
-/** 
- * @internal
- *
- * Support function which initializes the attribute list if required.
- * 
- * @param node 
- */
-void __axl_node_init_attributes (axlNode * node)
-{
-	/* do not init attribute list twice */
-	if (node->attributes != NULL)
-		return;
-	
-	/* create attribute list */
-	node->attributes = axl_hash_new_full (axl_hash_string, axl_hash_equal_string, 1);
-}
-
 
 /** 
  * @internal
@@ -667,7 +633,8 @@ void      __axl_node_set_attribute      (axlNode * node, char * attribute, char 
 {
 	/* init attribute list */
 	/* do not init attribute list twice */
-	__axl_node_init_attributes (node);
+	if (node->attributes == NULL)
+		node->attributes = axl_hash_new_full (axl_hash_string, axl_hash_equal_string, 1);
 
 	/* add the attribute */	
 	axl_hash_insert_full (node->attributes, attribute, axl_free, value, axl_free);
