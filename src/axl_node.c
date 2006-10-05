@@ -3503,7 +3503,22 @@ axlItem * axl_item_node_previous (axlNode * node)
 
 	/* no holder, no previous */
 	return NULL;
+}
 
+/** 
+ * @brief Allows to get the \ref axlItem reference that is holding the
+ * node provided.
+ * 
+ * @param node The node that is required to return its holding item.
+ * 
+ * @return The item reference or NULL if it fails or it isn't set.
+ */
+axlItem     * axl_item_node_holder     (axlNode * node)
+{
+	axl_return_val_if_fail (node, NULL);
+
+	/* return the holder */
+	return node->holder;
 }
 
 /** 
@@ -3893,6 +3908,88 @@ void          axl_item_replace        (axlItem * item,
 	return;
 
 } /* end axl_item_replace */
+
+/** 
+ * @brief Allows to transfer all childs contained inside the provided
+ * \ref axlNode (old_parent) placed after the provided axlItem
+ * (item_ref) on the same level.
+ *
+ * This function allows to manipulate a xml document loaded inside
+ * memory, by transfering all childs (including xml nodes, xml
+ * comments, content, process instructions and entity references) from
+ * the selected parent (the old parent) provided by the
+ * <i>old_parent</i> attribute, to be placed at the same level, where
+ * the <i>item_ref</i> is situated following it.
+ *
+ * 
+ * @param old_parent Previous parent, where the childs to be
+ * transfered will be found.
+ *
+ * @param item_ref The \ref axlItem that will act as a reference
+ * placing all childs following the item.
+ */
+void          axl_item_transfer_childs_after (axlNode * old_parent,
+					      axlItem * item_ref)
+{
+	axlItem * item;
+	axlItem * item_aux;
+
+	/* get the first child for the old parent */
+	item = old_parent->first;
+
+	/* check if the parent node contains childs to be
+	 * transferred. If no child is found, just return */
+	if (item == NULL)
+		return;
+
+	/* remember previous next */
+	item_aux       = item_ref->next;
+	
+	/* make the first child to follow the item ref */
+	item_ref->next = item;
+	item->previous = item_ref;
+
+	/* set the next at the end of all items transferred, and the
+	 * new parent node */
+	while (item != NULL) {
+		/* configure the new parent */
+		item->parent = item_ref->parent;
+
+		/* check the item to be the last */
+		if (item->next == NULL) {
+			/* the last item was found, configure it */
+			item->next = item_aux;
+
+			/* configure it to point to the last item
+			 * transferred */
+			if (item_aux != NULL)
+				item_aux->previous = item;
+
+			/* break the loop! */
+			break;
+		} /* end if */
+
+		/* get the next */
+		item = item->next;
+		
+	} /* end while */
+
+	/* check that the item selected to be reference isn't the last
+	 * child inside new parent node. If it is, update the new
+	 * last */
+	if (item_aux == NULL) {
+		/* because item is pointing to the last item in the
+		 * level, use it as the new last */
+		item->parent->last = item;
+	} /* end if */
+
+	/* clear reference from previous parent */
+	old_parent->first     = NULL;
+	old_parent->last      = NULL;
+	old_parent->child_num = 0;
+	
+	return;
+}
 
 /** 
  * @brief Allows to release the memory hold the item reference
