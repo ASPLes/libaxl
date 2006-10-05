@@ -90,11 +90,6 @@ struct _axlNode {
 	 */
 	axlItem      * last;
 
-	/** 
-	 * @internal The number of childs that contains the node.
-	 */
-	int            child_num;
-
 	/**
 	 * @internal A hash used to store arbitrary data associated to
 	 * the node.
@@ -543,11 +538,6 @@ axlNode * axl_node_copy                     (axlNode * node,
 
 			/* set the content */
 			axl_item_set_child_ref (result, copy);
-
-			/* increase child number if the item type if
-			 * node */
-			if (child->type == ITEM_NODE)
-				result->child_num++;
 
 			/* get the next element */
 			child = child->next;
@@ -1975,9 +1965,6 @@ void      axl_node_set_child (axlNode * parent, axlNode * child)
 	/* set a xml node child */
 	axl_item_set_child (parent, ITEM_NODE, child);
 
-	/* update the number of childs */
-	parent->child_num++;
-		
         return;
 }
 
@@ -2104,10 +2091,6 @@ void      axl_node_remove             (axlNode * node,
 			 * update the reference */
 			item->parent->last = item->previous;
 		}
-
-		/* decrease the number of childs the parent has */
-		
-		item->parent->child_num--;
 
 		if (item != NULL) {
 			/* disconnect the item */
@@ -2307,11 +2290,30 @@ axlNode * axl_node_get_child_nth      (axlNode * parent, int position)
  */
 int       axl_node_get_child_num      (axlNode * parent)
 {
+	int       count;
+	axlItem * item;
+
 	/* perform some environment checks */
 	axl_return_val_if_fail (parent, -1);
 
+	/* init values */
+	count = 0;
+	item  = parent->first;
+
+	/* for each child inside the parent node */
+	while (item != NULL) {
+		
+		/* check item type */
+		if (item->type == ITEM_NODE)
+			count++;
+		
+		/* get the next */
+		item = item->next;
+
+	} /* end while */
+
 	/* return the number of chils */
-	return parent->child_num;
+	return count;
 }
 
 
@@ -2636,11 +2638,6 @@ void      axl_node_transfer_childs          (axlNode * old_parent,
 		/* get a reference to the next before adding */
 		item_aux = item->next;
 
-		/* if the item type if a node, update the child number
-		 * count */
-		if (item->type == ITEM_NODE)
-			new_parent->child_num++;
-
 		/* set the item to parent for the new node */
 		axl_item_set_child_ref (new_parent, item);
 
@@ -2654,7 +2651,6 @@ void      axl_node_transfer_childs          (axlNode * old_parent,
 	/* clear reference from previous parent */
 	old_parent->first     = NULL;
 	old_parent->last      = NULL;
-	old_parent->child_num = 0;
 	
 	return;
 }
@@ -3986,8 +3982,7 @@ void          axl_item_transfer_childs_after (axlNode * old_parent,
 	/* clear reference from previous parent */
 	old_parent->first     = NULL;
 	old_parent->last      = NULL;
-	old_parent->child_num = 0;
-	
+
 	return;
 }
 
