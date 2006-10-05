@@ -229,6 +229,8 @@ axlItem     * axl_item_get_previous    (axlItem * item);
 
 axlItem     * axl_item_node_previous   (axlNode * node);
 
+axlItem     * axl_item_node_holder     (axlNode * node);
+
 axlItem     * axl_item_get_first_child (axlNode * node);
 
 axlItem     * axl_item_get_last_child  (axlNode * node);
@@ -253,9 +255,12 @@ axlItem     * axl_item_copy            (axlItem * item,
 void          axl_item_remove          (axlItem * item,
 					bool      dealloc);
 
-void          axl_item_replace        (axlItem * item, 
-				       axlItem * new_item,
-				       bool      dealloc);
+void          axl_item_replace         (axlItem * item, 
+					axlItem * new_item,
+					bool      dealloc);
+
+void          axl_item_transfer_childs_after (axlNode * old_parent,
+					      axlItem * item_ref);
 
 void          axl_item_free           (axlItem * item,
 				       bool      dealloc);
