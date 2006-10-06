@@ -109,6 +109,14 @@ typedef struct _axlDoc axlDoc;
  * @brief An abstraction that allows to hold an xml node or any other
  * content that can be found inside an xml node: comments, content,
  * CDATA-content, PI, entity references.
+ *
+ * This type is mainly used inside the MIXED API, which allows to get
+ * access to every particular item found inside a particular node
+ * (\ref axlNode). Every item has a type (\ref AxlItemType) and a
+ * content that is being encapsulated and usually accessed by \ref
+ * axl_item_get_data.
+ *
+ * Check the \ref axl_item_module "Axl Item interface" for more information.
  */
 typedef struct _axlItem axlItem;
 
