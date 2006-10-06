@@ -9,7 +9,7 @@
  *  as published by the Free Software Foundation; either version 2.1 of
  *  the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be usneful,
+ *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of 
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the  
  *  GNU Lesser General Public License for more details.
@@ -45,8 +45,8 @@
  * \section intro Introduction
  *
  * AXL is a library which aims to implement the XML 1.0 standard, as
- * defined at this moment, at the XML 1.0 third edition
- * recomendation found at: http://www.w3.org/TR/REC-xml/
+ * defined at the XML 1.0 third edition
+ * recommendation found at: http://www.w3.org/TR/REC-xml/. 
  * 
  * It was implemented to support XML requirements inside projects
  * developed by <a href="http://www.aspl.es">Advanced Software
@@ -60,8 +60,7 @@
  * <ul>
  * 
  * <li>A clean implementation, that only includes, those elements
- * defined, and only those, inside the XML 1.0 standard. As of this
- * writing, that standard is <a href="http://www.w3.org/TR/REC-xml/">the third edition</a>.</li>
+ * defined, and only those, inside the XML 1.0 standard, as defined in <a href="http://www.w3.org/TR/REC-xml/">the third edition</a>.</li>
  *
  * <li>Ensure that the library is implemented using abstract data types,
  * commonly known as opaque types, to avoid exposing details to the
@@ -80,30 +79,41 @@
  * applications needs to be working for a long time. </li>
 
  * <li>The other issue is that the Af-Arch client platform should be
- * easily embeded, so, a small footprint is a requirement.</li>
+ * easily embedded, so, a small footprint is a requirement.</li>
  *
  * </ul>
  *
  * \section features_and_status What is the status of the library
  *
  * Currently the library is stable and it is known to work under
- * GNUL/Linux and Windows with a really good performance. See <a href="http://www.aspl.es/axl/memory-usage-report-17-04-2006.html">this
+ * GNU/Linux and Windows with a really good performance. See <a href="http://www.aspl.es/axl/memory-usage-report-17-04-2006.html">this
  * report</a> to know more about this.
  *
  * The library already covers the 95% of common requires that XML
- * development. Among others, it support XML parsing, from memory and
- * files, and DTD validation. 
- * 
- * At this moment DTD validation is limited to the <b><!ELEMENT</b>
- * directive, allowing to only validate XML structure. 
+ * development. Among others, it support:
  *
+ *  - XML parsing, from memory and files, allowing a great level of
+ * detail while accessing to the data (comments, process instructions,
+ * xml nodes, and content).
+ * 
+ *  - DTD validation. At this moment DTD validation is limited to the
+ * <b><!ELEMENT</b> directive, allowing to only validate XML
+ * structure.
+ *
+ *  - Two modes to inspect the xml documents at the same time,
+ *  <b>MIXED API</b>: an API to traverse the document allowing access
+ *  to all items found (\ref axlItem) inside the document (\ref
+ *  axlDoc) root node (\ref axlNode), and <b>CHILDREN API</b>: an API
+ *  that allows to traverse the node using as reference only the nodes
+ *  (\ref axlNode) inside the document (\ref axlDoc).
+ * 
  * The library is being used by <a href="http://fact.aspl.es">Af-Arch</a> and <a
  * href="http://vortex.aspl.es">Vortex Library</a> which are projects
  * with common XML requirements.
  *
  * \section documentation Library Documentation
  *
- * The library documentation is splited into two pieces. The Axl
+ * The library documentation is composed into two pieces. The Axl
  * manual and the API documentation. 
  * 
  * - \ref axl_install
@@ -128,35 +138,39 @@
  * 
  * - \ref intro
  * - \ref concepts
+ * - \ref two_apis
  * - \ref parsing
  * - \ref iterating
+ * - \ref modifying
+ * - \ref dumping_functions
  * - \ref validation
  * - \ref futher
  *
  *
- * \section intro Introduction 
+ * \section intro Introduction: XML development
  * 
  * XML 1.0 definition allows to build documents that could be used to
  * represents textual information, remote procedure invocations or
- * dynamic user interfaces. Its definitions is based on very simple
+ * dynamic user interfaces. Its definition is based on very simple
  * principles, that allows to developers to compose them to create
- * bigger abstractions that are roughly on every place on moderm
+ * bigger abstractions that are roughly on every place in modern
  * computer software design.
  *
  * It is a "quite" human readable format, so you will find that is not
- * the best format if you are looking for espace efficiency. What XML
- * 1.0 provides you on the other hand is the hability to quickly
+ * the best format if you are looking for space efficiency. What XML
+ * 1.0 provides you on the other hand is the ability to quickly
  * prototype and produce working formats that encapsulate your data,
- * and, as your system evolves, XML 1.0 do it with you.
+ * and, as your system evolves, XML 1.0 will do it with you.
  *
  * Among other things, XML 1.0 provides you ways to validate your
- * documents to ensure your code will ready XML document in the format
- * expected reducing the time and developent cost.
+ * documents to ensure your code will read XML documents in the format
+ * expected, reducing the time and development cost due to additional
+ * checkings required.
  *
  * Before continuing, we will explain some concepts that are required
  * to understand XML 1.0 and why the Axl API was built this way.
  *
- * \section concepts Some concepts
+ * \section concepts Some concepts before starting to use Axl Library
  *
  * Here is a simple example of a XML 1.0 document:
  * <pre class="xml-doc">
@@ -179,44 +193,208 @@
  * The XML representation for previous document is the following:
  * \image html image01.png "Document representation"
  *
- * Several issues must be considered while interpreseting previous
+ * Several issues must be considered while interpreting previous
  * diagram and how Axl library parse and expose those elements through
  * the API to the client application:
+ * <ul>
  * 
- * - Every XML document have a root node. Without exception. In this
- * case, the root node for our example is <b>complex</b>.
+ * <li>Every XML document have a root node (\ref axl_doc_get_root). Without exception. In this
+ * case, the root node for our example is <b>complex</b>. </li>
  * 
- * - If a node have content, that content is not represented with
+ * <li>If a node have content, that content is not represented with
  * another node. That content is associated to the node and could be
  * retrieved using several function (\ref axl_node_get_content, \ref
- * axl_node_get_content_copy and \ref axl_node_get_content_trans). 
+ * axl_node_get_content_copy and \ref
+ * axl_node_get_content_trans). 
+ * 
+ * Alternatively, while using the MIXED API, you can traverse child
+ * items stored for a particular node, detecting those items that are
+ * \ref ITEM_CONTENT or \ref ITEM_CDATA (using \ref
+ * axl_item_get_type). </li>
  *
- * - Having a node with content doesn't mean to have a node with
- * childs. The child notion is only about having more xml nodes as
+ * <li>Having a node (\ref axlNode) with content doesn't mean to have a node with
+ * childs. The child notion is only about having more xml nodes (\ref axlNode) as
  * childs. 
+ * 
+ * This is particularly important if you take into consideration that a
+ * node could have content (\ref ITEM_CONTENT), comments (\ref
+ * ITEM_COMMENT), application process instructions (\ref ITEM_PI),
+ * CDATA content (uninterpreted content \ref ITEM_CDATA), all of them
+ * mixed with more xml nodes (\ref ITEM_NODE). </li>
  *
- * - A final node which is empty because it doesn't have content or
+ * <li>A final node which is empty because it doesn't have content or
  * childs, is usually referred to as <b>EMPTY</b> type node. A final
  * node with content but no childs is usually referred to as
  * <b>PCDATA</b>. A node that have content mixed with references to
- * more child xml nodes is referred to as <b>MIXED</b>.
+ * more child xml nodes is referred to as <b>MIXED</b>.</li>
  *
- * - At the <b>empty</b> node, you'll find that it has an attribute
+ * <li>At the <b>empty</b> node, you'll find that it has an attribute
  * called <b>attr1</b> with a value <b>value1</b>. A node could have
  * any number of attributes but, it should be named
  * differently. Again, if a node is empty, it keeps empty even if it
  * has attributes.
+ * </li>
  *
- * So, to sumarize, we have a root node, that could contain more
+ * So, to summarize, we have a root node, that could contain more
  * nodes, that could contain PCDATA, or content, and those nodes could
  * contain named attributes with values.
+ *
+ * \section two_apis MIXED and CHILDREN API: How to use them
+ *
+ * XML 1.0 is used for a variety of purposes, some of them requires
+ * the CHILDREN API and the rest the MIXED API. To <i>require</i>, we
+ * mean that it fits better, so you will get better results, your
+ * application will react in a proper manner and you'll have to do
+ * less work.
+ *
+ * The reason for this API is simple. XML 1.0 definition allows to mix
+ * content with more nodes, comments and many more elements to be
+ * placed as childs for a particular node. 
+ * 
+ * This definition, found at the standard, have moved many XML
+ * implementations to support only an API that support all these
+ * features, that is, an interface that is complicated and overloaded,
+ * that gives you a power that you don't require, making your
+ * development more inefficient.
+ *
+ * As a result, when a developer only requires a usual form of xml,
+ * called CHILDREN, that means nodes have only another childs
+ * nodes or content but not both at the same time. This kind of xml is
+ * really useful, easy to parse, easy to make a DTD definition, more
+ * compact and extensible.
+ *
+ * Lets see an example for both formats to clarify:
+ * 
+ * <pre class="xml-doc">
+ * &lt;?xml version='1.0' ?>
+ * &lt;document>
+ *    &lt;!-- Children XML format example: as you can see      -->
+ *    &lt;!-- nodes only contains either nodes or node content -->
+ *    &lt;!-- but nothing mixed at the same level              -->
+ *    &lt;node1> 
+ *       This is node1 content 
+ *    &lt;/node1>
+ *    &lt;node2>
+ *      &lt;node3>
+ *         This is node3 content
+ *      &lt;/node3>
+ *      &lt;node4 />
+ *    &lt;/node2>
+ * &lt;/document></pre>
+ *
+ * While an MIXED xml document could be:
+ * 
+ * <pre class="xml-doc">
+ * &lt;?xml version='1.0' ?>
+ * &lt;document>
+ *    &lt;!-- Children XML format example: as you can see      -->
+ *    &lt;!-- nodes only contains either nodes or node content -->
+ *    &lt;!-- but nothing mixed at the same level              -->
+ *    &lt;node1> 
+ *       This is node1 content 
+ *    &lt;/node1>
+ *    Content mixed with xml nodes at the same level. 
+ *    &lt;node2>
+ *      More content....
+ *      &lt;node3>
+ *         This is node3 content
+ *      &lt;/node3>
+ *      &lt;node4 />
+ *    &lt;/node2>
+ * &lt;/document></pre>
+ *
+ * Both approaches, which are valid using the XML 1.0 standard, are
+ * appropriate for particular situations:
+ * 
+ * - CHILDREN API: compact representations, configuration files, rpc
+ * invocation description, graphical user interface definition.
+ * - MIXED API: textual description, for example: XSL-FO.
+ *
+ * Having introduced the context of the problem, Axl Library takes no
+ * position, providing an API that fits while developing xml content
+ * that follows a CHILDREN description and an API for the MIXED
+ * description.
+ * 
+ * In this context, which API you use, will only affect to the way you
+ * traverse the document. The CHILDREN API is mainly provided by the
+ * \ref axl_node_module "Axl Node interface" and the MIXED API is
+ * mainly provided by the \ref axl_item_module "Axl Item interface".
+ *
+ * You don't need to do any especial operation to activate both APIs,
+ * both are provided at the same time. Lets see an example:
+ *
+ * Supposing the previous mixed example, the following code will get
+ * access to the &lt;node2> reference:
+ * \code
+ * // supposing "doc" reference contains the document loaded
+ * axlNode * node;
+ * 
+ * // get the document root, that is <document>
+ * node = axl_doc_get_root (doc);
+ *
+ * // get the first child for the document root (<node1>)
+ * node = axl_node_get_first_child (node);
+ *
+ * // get the next child (brother of <node1>, that is <node2>)
+ * node = axl_node_get_next (node);
+ * \endcode
+ *
+ * However, with the MIXED API you can get every detail, every item
+ * found for a particular node. This is how:
+ * 
+ * \code
+ * // supposing "doc" reference contains the document loaded
+ * axlNode * node;
+ * axlItem * item;
+ * 
+ * // get the document root, that is <document>
+ * node = axl_doc_get_root (doc);
+ *
+ * // get the first item child for the document root that is the comment:
+ * //    "Children XML format example: as you can see".
+ * item = axl_item_get_first_child (node);
+ *
+ * // now skip the following two comments
+ * item = axl_item_get_next (item);
+ * item = axl_item_get_next (item);
+ *
+ * // now the next item is holding the <node1>
+ * item = axl_item_get_next (item);
+ * node = axl_item_get_data (item);
+ *
+ * // now get the content between the <node1> and <node2>
+ * item = axl_item_get_next (item);
+ *
+ * // and finally, get the next child (brother of <node1>, that is
+ * // <node2>)
+ * item = axl_item_get_next (item);
+ * node = axl_item_get_data (item);
+ * \endcode
+ *
+ * Obviously, the mixed example contains more code and it is more
+ * fragile to xml document changes. The problem is that the MIXED API
+ * is more general than the CHILDREN, making XML libraries to only
+ * provide that API.
+ *
+ * As a consequence:
+ *
+ * - You only need to use the MIXED API (\ref axlItem) if you are
+ * going to do an xml application that allows having content mixed
+ * with nodes, comments, etc, and you want to get access to such
+ * content.
+ *
+ * - If you are planing to develop an XML solution that represents
+ * information (user interfaces), module descriptions, configuration
+ * files, etc, try to use the CHILDREN API: it will save you lot of
+ * work! Remember, CHILDREN xml format: childs are either content or
+ * more xml nodes but not both. Never mixed.
  *
  * \section parsing Parsing XML documents
  * 
  * We have seen how an XML document is. Now we are going to see how to
  * parse those document into data structures that are usable to
  * inspect the content. All parsing functions are available at the
- * \ref axl_doc_module "Axl Doc internface".
+ * \ref axl_doc_module "Axl Doc interface".
  *
  * Let's start with a very simple example:
  *
@@ -256,55 +434,70 @@
  * }
  * \endcode
  *
- * \section iterating Travel an XML document
+ * \section iterating Traveling an XML document
  * 
  * Once the document is loaded you can use several function to
- * traverse the document. First, you have to get a reference to the
- * xml document root. You can use \ref axl_doc_get_root. Then, to get
- * some childs you can use \ref axl_node_get_child_nth.
- *
- * Here is an example to print all nodes inside a xml document: 
+ * traverse the document. 
  * 
- * \code
- * void print_all_nodes (axlDoc * doc) 
- * {
- *    axlNode * root;
- *    
- *    // get a reference to the root node
- *    root = axl_doc_get_root (doc);
+ * First you must use \ref axl_doc_get_root to get the document root
+ * (\ref axlNode) which contains all the information. Then, according
+ * to the interface you are using, you must call to either \ref
+ * axl_node_get_first_child or \ref axl_item_get_first_child.
  * 
- *    // print all nodes 
- *    print_all_nodes_aux (root);
+ * Once you have access to the first element, you can use the
+ * following set of function to get more references to other nodes or
+ * items:
  *
- *    return;
- * }
+ * <ul>
+ *  <li><b>MIXED API</b>: 
+ *
+ *    - \ref axl_item_get_first_child
+ *    - \ref axl_item_get_last_child
+ *    - \ref axl_item_get_next
+ *    - \ref axl_item_get_previous
+ *
+ *  </li>
+ *  <li><b>CHILDREN API</b>:
+ *
+ *    - \ref axl_node_get_first_child
+ *    - \ref axl_node_get_last_child
+ *    - \ref axl_node_get_next
+ *    - \ref axl_node_get_previous
+ *
+ *  </li>
+ * </ul>
+ *
+ * There are alternative APIs that will allow you to iterate the
+ * document, providing a callback: \ref axl_doc_iterate. 
+ *
+ * Another approach is to use \ref axl_doc_get and \ref
+ * axl_doc_get_content_at to get fast access to a particular node
+ * using a really limited XPath syntax.
+ *
+ * \section modifying Modifying a loaded XML document
+ *
+ * One feature that comes with Axl Library is ability to modify the
+ * content, replacing it with other content and transferring node node
+ * to another place.
  * 
- * void print_all_nodes (axlNode * node) {
- *
- *    axlNode * child;
- *    int       iterator;
- *
- *    // check and return if the node is NULL  
- *    axl_return_if_fail (node);
+ * Check the following function while operating with \ref axlNode elements:
  * 
- *    print "Node found <%s>\n", axl_node_get_name (node));
+ *   - \ref axl_node_replace
+ *   - \ref axl_node_remove
+ *   - \ref axl_node_transfer_childs
  *
- *    // iterate over all childs inside the root node 
- *    iterator = 0;
- *    while (iterator < axl_node_get_child_num (node)) {
- *          // get the child at the given position 
- *          child = axl_node_get_child_nth (node, iterator);
+ * Check the following functions while operating with \ref axlItem elements:
  * 
- *          printf ("Node found <%s>\n", axl_node_get_name (child));
- * 
- *          // show all nodes inside this child node
- *          print_all_nodes (child);
+ *   - \ref axl_item_replace
+ *   - \ref axl_item_remove
+ *   - \ref axl_item_transfer_childs_after
  *
- *          // update the iterator 
- *          iterator++;
- *    }
- * }
- * \endcode
+ * \section dumping_functions Producing xml documents from memory
+ *
+ * Axl Library comes with two functions to perform dump operations: 
+ *
+ *  - \ref axl_doc_dump
+ *  - \ref axl_doc_dump_pretty
  *
  * \section validation Validating XML documents
  *
@@ -318,7 +511,7 @@
  * a defined XML structure, but it is too complex to be done.
  *
  * For this purpose, XML 1.0 defines DTD or (Document Type Definition)
- * which allows to especify the document grammar, how are nested
+ * which allows to specify the document grammar, how are nested
  * nodes, which attributes could contain, or if the are allocated to
  * be empty nodes or nodes that must have another child nodes.
  *
@@ -342,27 +535,27 @@
  * later expanded with repetition patterns. We will explain then
  * later. For now, this two top level concepts are: sequence and choice.
  *
- * Sequence especification (elements separated by <b>, (comma)</b>, the
+ * Sequence specification (elements separated by <b>, (comma)</b>, the
  * one used to apply restriction to the node <b>testA</b>, are used to
  * denote that <b>testA</b> have as childs test1, followed by test2
- * and ended by test3. The order especified must be followed and all
+ * and ended by test3. The order specified must be followed and all
  * instances must appear. This could be tweaked using repetition
  * pattern.
  *
- * In the other hand, choice especification (elements separated by
- * <b>| (pipe)</b>, are used to especify that the content of a node is
+ * In the other hand, choice specification (elements separated by
+ * <b>| (pipe)</b>, are used to specify that the content of a node is
  * built using nodes of the choice list. So, in this case,
  * <b>testB</b> node could have either one instance of test1 or test2
  * or test3.
  *
  * Now you know these to basic elements to model how childs are
  * organized for a node, what it is need is to keep on adding more
- * <!ELEMENT directives until all nodes are especified. You will end
+ * <!ELEMENT directives until all nodes are specified. You will end
  * your DTD document with final nodes that are either empty ones or
  * have PCDATA. At this moment MIXED nodes are not supported.
  *
  * Suppose that all nodes that are inside testA and testB are final
- * ones. Then this could be its DTD especification:
+ * ones. Then this could be its DTD specification:
  *
  * <pre class="xml-doc">
  * <span class="red">&lt;!-- test1 is a node that only have content --></span>
@@ -374,12 +567,12 @@
  * </pre>
  *
  * Sequences and choices could be composed to create richer DTD
- * expresions that combines sequences of choices and so on.
+ * expressions that combines sequences of choices and so on.
  * 
  * At this point all required elements to model choices, sequences and
  * final nodes are explained, but, we have to talk about repetition
- * pattern. They are simbols that are appended to elements inside
- * choices (or sequences) including those list especifications.
+ * pattern. They are symbols that are appended to elements inside
+ * choices (or sequences) including those list specifications.
  *
  * Patterns available are: <b>+</b>, <b>?</b> and <b>*</b>. By
  * default, if no pattern is applied to the element, it means that the
@@ -389,7 +582,7 @@
  * matched one, and at least one, or more.
  *
  * The <b>*</b> pattern is used to model elements that should be
- * matched zore or any times.
+ * matched zero or any times.
  *
  * The <b>?</b> pattern is used to model elements that should be
  * matched zero or one times.
@@ -465,11 +658,11 @@
  *    - \ref axl_decl_module
  *    - \ref axl_handlers
  *  </li>
- *  <li><b>Error reporting and debuging functions: </b></li>
+ *  <li><b>Error reporting and debugging functions: </b></li>
  * 
  *    - \ref axl_error_module
  *    - \ref axl_log_module
- *  <li><b>Auxiliar modules, supporting data types, string handling, etc:</b></li>
+ *  <li><b>Auxiliary modules, supporting data types, string handling, etc:</b></li>
  *
  * - \ref axl_stream_module
  * - \ref axl_list_module
@@ -493,7 +686,7 @@
  *
  * \section unix GNU/Linux (or any posix OS) installation instructions
  *
- * First, download the package from the donwload section. Check <a
+ * First, download the package from the download section. Check <a
  * href="http://www.aspl.es/axl/doc.html">this section to know more
  * about this.</a>
  *
