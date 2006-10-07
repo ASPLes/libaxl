@@ -1,0 +1,642 @@
+          ###################################
+          # Axl Library release note: 0.2.5 #
+          ###################################
+
+Advanced Software Production Line is proud to announce a new Axl
+Library release.
+
+Axl Library is an small and efficient XML toolkit, that will allow you
+to produce efficient and clear code that interfaces with XML data.
+
+The library was produced to support XML requirements needed by
+software developed by Advanced Software Production Line, S.L. 
+
+At this moment the library is being used by Vortex Library and
+Af-Arch.
+
+Resources
+~~~~~~~~~
+   Axl Homepage
+   [ http://xml.aspl.es ]
+
+   Vortex Library Homepage
+   [ http://vortex.aspl.es ]
+
+   Af-Arch Homepage
+   [ http://fact.aspl.es ]
+
+   Advanced Software Production Line, S.L.
+   [ http://www.aspl.es ]
+
+   Memory report
+   [ http://xml.aspl.es/memory-report-0.2.5.html ]
+
+
+This release in short
+~~~~~~~~~~~~~~~~~~~~~
+
+  API improve: many new functions have been added and bug fixes. This
+  new release comes with a complete support to inspect xml document
+  that mix nodes, comments, content, process instructions, etc.
+ 
+  Library performance has been updated. See report.
+
+Changes from previous release 0.2.4
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* [fix] fixing a bug inside axl_doc_dump function. Updated test13.xml
+  file to include a valid document ¿?.
+
+* [fix] Fixed _GNU_SOURCE declaration, that could be already
+  defined. (Milton Yates patch).
+
+* [fix] updated axl_return_val_if_fail and axl_return_if_fail to also
+  include information from the function that has failed.
+
+* [fix] fixing references to .xdl files used by axl test.
+
+* [new] adding a new function to the axl stream API:
+  
+   - axl_stream_strdup_printfv
+
+* [new] Adding new definitions __AXL_LINE__ and __AXL_FILE__ which are
+  used by axl_return_val_if_fail and axl_return_if_fail to point where
+  is being reported the log (file and line).
+
+* [fix] making axl_strdup to flag its parameter as const.
+
+* [new] Adding two new definitions: false and true, which both bounds
+  to (0) and (1) if not defined.
+
+* [fix] updating the library API to remove all references to aboolean
+  replaced with bool.
+
+* [fix] updated library documentation, exposing hide API to the
+  documentation, updated manual.
+
+* [new] adding a new function which allows to perform xml document
+  iterations, that can be configurable. API added:
+
+    - axl_doc_iterate (func)
+    - AxlIterationMode (enum)
+    - AxlIterationFunc (handler)
+
+* [new] adding a new function which allows to copy an axlList
+  reference, keeping current configuration. Also added a function that
+  allows adding items to the list by passing the configuration. API
+  added:
+
+    - axl_list_copy (func)
+    - AxlDuplicateFunc (handler)
+    - axl_list_prepend (func)
+
+* [fix] Adding support to produce the windows export file
+  (libaxl.def). Updating Makefile.am and included initial version.
+
+* [new] Updated Makefile.win to also produce a libaxl.lib, libaxl.exp
+  and libaxl.def files.
+
+* [fix] Replacing all instances for AXL_FALSE and AXL_TRUE with false
+  and true and flagging previous values to be deprecated.
+
+* [new] starting work in progress DTD support for <!ATTLIST element.
+
+* [new] updated test files to include test reference used for
+  improvements (test_01a). Added a new test to check entity
+  declaration support (test_18).
+
+* [new] added initial support for a node factory which will
+  allow to reduce the memory footprint. 
+
+* [new] added initial DTD <!ENTITY support to axl dtd module.
+  Now it is supported general entities and parameter entities.
+  API added:
+  
+    - axl_dtd_entity_exists
+    - axl_dtd_entity_value
+
+* [fix] removing boolean type definition from axl declaration
+  module. This fixes a collition value found while compiling vortex
+  library using axl and OpenSSL.  (Bug reported and solved by Pascal
+  elconio@commonworld.info).
+
+* [fix] removing all node factory stuff. Experimental results shows
+  that its far more inefficient than relying on the system memory
+  allocator. Improvement won't come from here.
+
+* [fix] performed several updates that have decreased snapshot avg time
+  for the reference test test_01a from 0.179ms to 0.149ms.
+
+* [fix] more internal updates to improve axl library
+  performance. Committing changes that reduce avg execution time for the
+  reference test: test_01a from 0.150ms to 0.1.28ms. Added a new test
+  test_02a and started improvement for DTD validation code.
+
+* [fix] reimplemented axl_cmp to be more efficient than previous
+  version .
+
+* [new] adding new function the the axl list API:
+
+  - axl_list_append (adds nodes to the end of the list without taking
+                     into consideration the list configuration).
+
+  - axl_list_lookup (allows to perform look ups over the list
+                     providing a pointer).
+
+  - axlLookupFunc (function used by axl_list_lookup function to notify
+                     nodes found).
+
+* [fix] started a work in progress indexer (for content parsed inside
+  the axlStream).
+
+* [fix] more updates for the axl stream indexer.
+
+* [fix] Removed all axl stream indexer code. After implementing it, it
+  turns out that is not enough efficient to over exceed performance of
+  the current streaming implemented plus it was consuming a lot of
+  memory degrading the first Axl Library's feature.
+
+* [fix] However, due to this work it was exposed that memcmp is not
+  enough efficient in the sense required by Axl Library so, before
+  implementing an more suited version for Axl the time for the test
+  reference (test_01a) has been reduced from 0.121ms to 0.086ms!!!!
+  Some other minor modifications has been applied to avoid calling to
+  many times to several functions. API added.
+  
+    - axl_memcmp
+
+* [fix] rewritten axl_stream_inspect_common as a macro. Now, reference
+  test (test_01a) executes in 0.82ms (from 0.86ms).
+
+* [new] Added a hash implementation to the axl library API. The
+  following elements has been defined:
+ 
+    - axl_hash_new
+    - axl_hash_new
+    - axl_hash_equal_string
+    - axl_hash_insert
+    - axl_hash_insert_full
+    - axl_hash_remove
+    - axl_hash_get
+    - axl_hash_items
+    - axl_hash_free
+
+* [new] Added new test file to check hash function and compare its
+  performance against the axlList implementation: test_03 and
+  test_03a. Initial results:
+
+    - list: 444 different items 456000 lookups in [0m2.907s]
+    - hash: 444 different items 456000 lookups in [0m0.105s]
+
+* [new] Added user defined data associated (anotated data) to the axl
+  node module allowing developers to store data associated to XML
+  nodes that is not visible from XML perspective. API added:
+
+    - axl_node_anotate_data
+    - axl_node_anotate_data_full 
+    - axl_node_anotate_get
+
+* [fix] Making axl node content to be optional in an independent
+  internal reference reducing the memory used by axlNode items that
+  don't have content. Removed internal attribute have_childs and
+  is_empty. Reimplemented axl_node internals to conform to this
+  change.
+
+* [fix] Making axl_node_set_is_empty function to clear the node
+  content when it is called.
+
+* [fix] Updated test_01 (main regression test) to check
+  axl_node_get_content, get_content_copy, get_content_trans and
+  get_content_trim to conform the documentation checking its behavior
+  (fixed some bugs on the way).
+
+* [new] added a new function to the hash API that allows to check for
+  a key to be already added. API added:
+
+    - axl_hash_exists
+
+* [fix] Fixed a bug at the axl_hash_remove function (wrong parameter
+  spec), making axl_hash_free to not perform any operation if a null
+  value is received (without logging a critical) and updated
+  documentation for axl_node_get_content function.
+
+* [new] added reference test to check functionality with previous hash
+  used (GHashTable).
+
+* [new] Added support to the hash table for a foreach operation that
+  allows to iterate all elements inside a selected hash table. API
+  added:
+
+   - axl_hash_foreach (function)
+   - axlHashForeachFunc (callback function).
+
+* [fix] Fixing a bug which was causing to not check memory boundary
+  while calling to axl_stream_get_until function make the function to
+  traverse memory to owned/allocated.  Added regression test to check
+  this.
+
+* [fix] Making axl_stream_get_untilv_wide to use variable from the object instead of
+  parameter activated values, reducing reference test_01a to executed in 0.081ms stable.
+
+* [new] Added two new functions to the axl node API to allow get the
+  first child and the last child. API added:
+
+   - axl_node_get_first_child
+   - axl_node_get_last_child
+
+* [fix] reimplemented internal axl_doc_iterate to conform the new
+  interface.
+
+* [new] extending axl hash module API to include a foreach support for
+  two user defined pointers. Added callback definition for the new
+  foreach function.  Added a new constructor to allow configure the
+  hash table step (how many slots) are allocated by the hash table
+  each time it has to be resized. API added:
+
+   - axl_hash_foreach2 
+   - axlHashForeachFunc2 (handler)
+   - axl_hash_new_full
+
+* [fix] Reimplemented axl node internals to use a hash table to store
+  attribute/value for nodes instead of a list. This has helped to
+  reduce memory allocated from 2,197,204 bytes to 1,605,211.
+
+* [fix] Reimplemented axl node internals to store childs as directly
+  connected nodes replacing previously used list. Moved test_01a
+  reference test to execute in an stable 0.077ms.
+
+* [new] Added two new functions to the axl stream API to allow parsing
+  strings that are ended by a null character but not by one of the
+  provided terminators.  Added regression test to check the
+  functionality. API added:
+     
+     - axl_stream_get_until_zero
+     - axl_stream_get_until_ref_zero
+
+* [new] Updating API and internal implementation to support getting
+  previous node to a node selected inside the context of a xml
+  document. API added:
+  
+    - axl_node_get_previous
+
+* [new] Updated axl node API to include support for removing a node
+  already included inside an xml document and replacing that node with
+  another xml node reference. API added:
+ 
+    - axl_node_remove
+    - axl_node_replace
+
+* [new] updated internal axl doc implementation to support pretty
+  print dumping. API added:
+   
+    - axl_doc_dump_pretty
+
+* [fix] Updated axl stack implementation to not use axlList as base
+  support.  Replaced previous implementation with a taylor made data
+  structure that is more memory efficient.
+
+* [new] Added a foreach function to the axl stack API, allowing to
+  traverse the stack in the order items were added. API added:
+
+   - axl_stack_foreach
+   - axlStackForeach2 (handler)
+
+* [new] Updated axl_doc_iterate API to return the iteration status
+  value received from the axlIterationFunc. Added new api to perform
+  the iteration providing two user defined pointers that are passed in
+  to the foreach func. Added also a new api to allow perform a
+  iteration operation starting from a selected node.  API added:
+
+   - axl_doc_iterate_full
+   - axlIterationFunc2 (handler)
+   - axl_doc_iterate_full_from
+
+* [new] Updated axl list api to include a function to insert items at
+  a provided position moving items already stored. API added:
+  
+   - axl_list_add_at
+
+* [fix] Performed study to measure current collision stats, empty
+  slots produced and hashing timing for the current hash
+  implementation based on the red dragon book and the string hashing
+  proposed by Ramakrisna-Zobel which they claim to be the fastest
+  hashing function. Experimental results shows that red dragon hashing
+  function works better in all aspects. Added api to show current hash
+  status:
+
+   - axl_hash_show_status
+
+* [fix] updating main regression test file (test_01) to include test
+  for all API added: node removing/replacing, xml document pretty
+  printing functions, xml document iteration. Updated test_02 for API
+  updated at axl list, stack foreach functions. (added xml files used
+  by those tests).
+
+* [fix] making axl_doc_iteration_common function (axl_doc_iterate and
+  others) to to notify the user space the node found at the end of the
+  iteration (after updating references, and getting next nodes to
+  process) allow to deallocate nodes at the function notification
+  (makes valgrind to be happy).
+
+* [fix] making __axl_list_get_next_node_available to clear node
+  information once returned from the function.
+
+* [new] Extended axl hash API to include two new foreach function to
+  support three and four user defined parameters to be passed in to
+  the foreach function. Added a function to allow performing a copy of
+  a hash provided.
+
+    - axl_hash_foreach3
+    - axlHashForeachFunc3 (handler)
+
+    - axl_hash_foreach4 
+    - axlHashForeachFunc4 (handler)
+
+    - axl_hash_copy
+    - axlHashItemCopy (handler)
+
+* [fix] updated axl hash test module to include test for latest
+  functions added at the axl hash module.
+
+* [new] Added a function to perform node copy provided a source node,
+  allowing to control if attribute or childs could be copied.
+
+   - axl_node_copy
+
+* [new] Added new definitions to allow converting a pointer into a
+  integer and a integer into a pointer:
+
+   - PTR_TO_INT
+   - INT_TO_PTR
+
+* [fix] added a new test to check axl_node_copy function (test_20) and
+  added some checks for new APIs inside axl node.
+
+* [new] Added new functions to get the next called and previous called
+  inside the axl node module. API added:
+  
+   - axl_node_get_next_called
+   - axl_node_get_previous_called
+
+* [fix] fixed axl annotation api (init hash was failing). Added
+  regression test for this. Updated API to not include searching
+  inside the axl doc.
+
+
+* [fix] freeing annotated data associated to the node and extending a
+  bit more test_20 (test reference test_01).
+
+* [fix] updated NODE_CMP_NAME documentation to use true and false as
+  default values for comparisons.
+
+* [new] Added an internal macro def to detect the os being
+  compiled. Macros added:
+
+   - __AXL_WIN32__
+   - __AXL_POSIX__
+
+* [fix] moved axl_cmp, axl_strdup and axl_memcmp to the stream
+  module. Renamed module documentation title to include a reference to
+  the string functions.
+
+* [fix] Updated axl doc dumping function to use \n on unix platform
+  and \r\n on win32 platforms.
+
+* [fix] fixing bug inside axl_hash_copy (it wasn't checking if the
+  table was storing more nodes at the given position before inserting
+  them into the hash table.
+
+* [new] Making a documentation separation from those function used by
+  the axl stream to perform streaming and those ones used to string
+  manipulation.
+
+* [fix] Updated axl doc iteration API to allow removing nodes from
+  inside the foreach notification process. Now handlers used for such
+  process are update with one boolean variable that allows to notify
+  that the node was removed.  API changed:
+   
+      - axlDocIterateFunc
+      - axlDocIterateFunc2
+
+  Updated documentation and examples to explain how to use this new
+  variable.  Updated reference test.
+
+* [fix] moving axl_strdup_printf and axl_strdup_printfv macro
+  declarations to axl_stream header, inside axl string module section.
+
+* [fix] fixed a bug inside axl_stream_get_untilv_wide which was
+  causing to read one byte outside stream memory (before the stream
+  begins in memory) on pre-buffer operations.
+
+* [fix] fixed a bug inside axl_stream_remains which was causing to not
+  properly check for the last byte to be consumed.
+
+* [new] Added a new function to check for axlError reference to be
+  filled and added documentation to explain the API. API added:
+  
+    - axl_error_was_ok
+  
+  Added regression test to check this new API.
+
+* [fix] fixed a bug inside axl_stream_get_following which was causing
+  to continue normal operations when the stream is exhausted, causing
+  a seg fault.
+
+* [fix] fixed axl_error_new to check axl_stream_get_following value
+  before producing the error message.
+
+* [new] Adding new API to allow performing a foreach function for a
+  provided stack configuring three user defined pointers. API added:
+
+   - axl_stack_foreach3
+   - axlStackForeach3 (handler)
+
+* [fix] fixing a bug inside the axl hash module that was causing to
+  not replace previously stored values in the hash, inserting new ones
+  at the begin. This was making to get unpredictable results on hash
+  resizing.
+
+* [fix] updated regression test to check this bugs.
+
+* [fix] making axl stream to not process more items than the one
+  supported at the axl_stream_get_untilv_wide
+  (MAX_INSPECTED_CHUNKS). Updated minimum from 10 to 30.
+
+* [fix] Added comment inside axl_hash_insert_full and axl_hash_insert
+  to note that previous key stored are replaced if inserted twice.
+
+* [fix] Fixed a bug inside axl_node_set_content_ref which was making
+  the node content to be lost if set twice (memory leak). Added
+  initial test to get support for mixed content (test_21).
+
+* [fix] fixed a bug inside axl_node_anotate_get, which wasn't checking
+  for node and key reference received.
+
+* [fix] fixed a bug inside axl_hash_internal_lookup which wasn't
+  checking for hash and key references received before operating.
+
+* [fix] fixed the bug caused by placing a comment just before a text
+  content inside a node. Added test case test_21.
+
+* [fix] removed calls to memset inside axl_stream_prebuffer.
+
+* [fix] making axl hash module to only include those headers used by
+  the axl module, allowing to make this module to be used by other
+  projects.
+
+* [new] Added support two new function to the axl hash API that allows
+  to create a hash that store values using integers as keys.
+
+* [fix] removing unnecessary includes from axl decl module.
+
+* [fix] updated API to include some "const" declarations for those
+  APIs that do not modify the incoming string.
+
+* [fix] making axl_node_set_content to remove previous content if
+  called twice.
+
+* [fix] making dumping attributes to check if the attribute content
+  has ' items so it must be enclosed with \" and viceversa.
+
+* [new] General internal update of the axl node module to support the
+  new interface that will allow get access to mixed content: nodes,
+  content, CDATA, PI, entity references and comments. Added a new
+  object abstraction that allows represents mentioned items in an
+  abstract manner: axlItem.  API added:
+
+   - axlItem (type)
+   - AxlItemType (enum) 
+   - axl_item_get_doc
+   - axl_item_set_doc
+   - axl_item_get_parent
+   - axl_item_get_next
+   - axl_item_get_previous
+   - axl_item_get_type
+   - axl_item_set_child
+
+* [fix] Ensured that all test pass and no memory is lost. Change
+  introduced increases a little memory consumption and it also has a
+  performance impact.  Hopefully it will be reduced as more elements
+  are moved to the axlItem representation.
+
+* [new] First fully working version that support MIXED and CHILDREN
+  element types, including nodes and content, keeping API
+  compatibility, and providing a new API for MIXED access. More
+  function added:
+
+   - axl_item_set_child_ref
+   - axl_item_copy
+   - axl_item_remove
+   - axl_item_replace
+   - axl_item_free
+
+   - axl_pi_copy   
+   - axl_pi_get_size
+
+* [new] More bug fixes and added additional tests to check document
+  references.
+
+* [fix] committing two new test to ensure that the parent is configured
+  properly and that the copy function is running properly.
+
+* [fix] fixing several bugs at the axl_node_copy function due to the
+  new internal structure organization.
+
+* [fix] Fixed bugs remaining on test_20b (copy and attach/deattaching
+  function).
+
+* [new] Finished initial support to get access to comments found
+  inside xml documents. Updated test_21 to check this an basic parsing
+  for node and content mixed.
+
+* [new] Extended MIXED api with the following functions:
+ 
+   - axl_item_node_next
+   - axl_item_node_previous
+   - axl_item_get_first_child
+   - axl_item_get_last_child
+   - axl_item_get_data 
+   - axl_item_get_content
+
+* [fix] Fixed a bug inside __axl_doc_parse_common which was causing to
+  not properly update the parent node once the current xml node is
+  closed.
+
+* [fix] Updated axl node documentation to make references to the new
+  MIXED API. Added new function that allows to configure comments:
+
+  - axl_node_set_comment
+
+* [fix] Making xml comments to be dumped indented according to its
+  level while using axl_doc_dump_pretty.
+
+* [fix] fixed infinite loop in axl_node_get_content and
+  axl_node_get_content_trim.
+
+* [fix] making xml comments to be indented with the child nodes.
+
+* [fix] Bug fixed at the __axl_node_get_flat_size exposed at the windows
+  platform.
+
+* [fix] fixed a bug at the node dumping function caused to calculate
+  more bytes to be dumped on windows than actually those required.
+
+* [fix] More bug fixings at the axl stream prebuffer mechanism,
+  exposed while working on windows.
+
+* [new] Added a new function to the axl node which allows to transfer
+  childs item (including xml nodes, comments, content, Pi targets,
+  etc) from one node to another node. API added:
+
+   - axl_node_transfer_childs
+
+* [fix] fixed a bug inside axl_node_transfer_childs which was causing
+  to not update the child node number on the transfer process.
+
+* [fix] making axl node attribute hash initialization to be done
+  directly from the attribute registering function rather than calling
+  to a function.
+
+* [new] Added new function to the axl node/item API to allow getting
+  the axlItem holding a particular axlNode reference and to transfer
+  all content found inside a particular node, to be placed after a
+  particular item reference. API added:
+
+    - axl_item_node_holder
+    - axl_item_transfer_childs_after
+
+* [fix] making axl node internal representation to not contain a
+  direct count for the childs that are nodes for every particular
+  node. This makes to be more slow the axl_node_child_num but improves
+  the overall memory usage.
+
+* [fix] Updated documentation and fixed some typo errors.
+
+About Advanced Software Production Line, S.L.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Advanced Software Production Line is leading the Af-Arch project: a
+  complete framework to develop distributed application to manage
+  enterprise process.
+
+  Af-Arch project uses Axl library to support its XML requirements
+  while exchanging data between nodes.
+
+  Advanced Software Production Line also provides GNU/Linux support
+  and consulting services to enable organization to introduce
+  GNU/Linux inside its process, making other platforms to interact
+  with GNU/Linux.
+
+  Contact us, using English or Spanish, to get commercial support
+  and/or XML based development services.
+
+  You can reach us:
+
+       http://www.aspl.es - info@aspl.es
+
+  We hope Axl Library help you. Enjoy Axl Library!
+
+--
+Francis Brosnan Blázquez           - francis@aspl.es
+Advanced Software Production Line  - http://www.aspl.es
+9th Oct 2006, Madrid (Spain)
