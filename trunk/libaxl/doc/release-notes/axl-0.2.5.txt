@@ -38,8 +38,18 @@ This release in short
   API improve: many new functions have been added and bug fixes. This
   new release comes with a complete support to inspect xml document
   that mix nodes, comments, content, process instructions, etc.
- 
-  Library performance has been updated. See report.
+
+  Library performance has been updated. See memory report.
+
+Thanks to
+~~~~~~~~~
+
+  Pascal (elconio@commonworld.info) for reporting and solving
+  collition value found while compiling vortex library using axl and
+  OpenSSL.
+
+  Milton Yates for reporting and fixing _GNU_SOURCE declaration
+  problem at axl_decl.h.
 
 Changes from previous release 0.2.4
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -235,8 +245,9 @@ Changes from previous release 0.2.4
   traverse memory to owned/allocated.  Added regression test to check
   this.
 
-* [fix] Making axl_stream_get_untilv_wide to use variable from the object instead of
-  parameter activated values, reducing reference test_01a to executed in 0.081ms stable.
+* [fix] Making axl_stream_get_untilv_wide to use variable from the
+  object instead of parameter activated values, reducing reference
+  test_01a to executed in 0.081ms stable.
 
 * [new] Added two new functions to the axl node API to allow get the
   first child and the last child. API added:
