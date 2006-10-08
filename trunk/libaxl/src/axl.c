@@ -726,7 +726,7 @@
  * 
  *
  * \section Including Axl Library headers
- *cd 
+ *
  * For all platforms, Axl Library headers has to be included as follows:
  * \code
  * #include <axl.h>
