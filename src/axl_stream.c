@@ -136,7 +136,6 @@ struct _axlStream {
 	bool        accept_terminator;
 	int         result_size;
 	int         chunk_num;
-	va_list     args;
 
 	/** 
 	 * @internal Internal variable used to notify get_until
@@ -868,7 +867,7 @@ void        axl_stream_nullify         (axlStream * stream,
  * every index chunks provided instead of checking the first one until
  * a prebuffer operation is required).
  */
-char * __axl_stream_get_untilv_wide (axlStream * stream)
+char * __axl_stream_get_untilv_wide (axlStream * stream, va_list args)
 {
 
 	int          iterator    = 0;
@@ -902,7 +901,7 @@ char * __axl_stream_get_untilv_wide (axlStream * stream)
 	while (iterator < stream->chunk_num) {
 
 		/* get the chunk */
-		stream->chunks [iterator]  = va_arg (stream->args, char *);
+		stream->chunks [iterator]  = va_arg (args, char *);
 
 		/* check if we have to match the emtpy string, and
 		 * don't install the value to be matched */
@@ -1152,10 +1151,9 @@ char      * axl_stream_get_untilv      (axlStream * stream,
 	stream->accept_terminator = accept_terminator;
 	stream->result_size       = (result_size != NULL);
 	stream->chunk_num         = chunk_num;
-	stream->args              = args;
 
 	/* call to current implementation */
-	result = __axl_stream_get_untilv_wide (stream);
+	result = __axl_stream_get_untilv_wide (stream, args);
 
 	/* check for returning references */
 	if (result_size != NULL)
