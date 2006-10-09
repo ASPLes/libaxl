@@ -157,22 +157,22 @@ void        axl_stream_trim              (char * chunk);
 
 void        axl_stream_trim_with_size    (char * chunk, int * trimmed);
 
-bool        axl_stream_cmp               (char * chunk1, char * chunk2, int size);
+bool        axl_stream_cmp               (const char * chunk1, const char * chunk2, int size);
 
-char      * axl_stream_strdup            (char * chunk);
+char      * axl_stream_strdup            (const char * chunk);
 
-char      * axl_stream_strdup_n          (char * chunk, int n);
+char      * axl_stream_strdup_n          (const char * chunk, int n);
 
-char      * axl_stream_strdup_printf     (char * chunk, ...);
+char      * axl_stream_strdup_printf     (const char * chunk, ...);
 
-char      * axl_stream_strdup_printfv    (char * chunk, va_list args);
+char      * axl_stream_strdup_printfv    (const char * chunk, va_list args);
 
-char      * axl_stream_strdup_printf_len (char * chunk, 
+char      * axl_stream_strdup_printf_len (const char * chunk, 
 					  int  * chunk_size, ...);
 
-char     ** axl_stream_split           (char * chunk, int separator_num, ...);
+char     ** axl_stream_split           (const char * chunk, int separator_num, ...);
 
-char      * axl_stream_concat          (char * chunk1, char * chunk2);
+char      * axl_stream_concat          (const char * chunk1, const char * chunk2);
 
 int         axl_stream_strv_num        (char ** chunks);
 
@@ -186,9 +186,9 @@ char      * axl_stream_to_upper_copy   (char  * chunk);
 
 char      * axl_stream_to_lower_copy   (char  * chunk);
 
-bool        axl_cmp (char * string, char * string2);
+bool        axl_cmp (const char * string, const char * string2);
 
-bool        axl_memcmp (char * string, char * string2, int size);
+bool        axl_memcmp (const char * string, const char * string2, int size);
 
 char      * axl_strdup (const char * string);
 

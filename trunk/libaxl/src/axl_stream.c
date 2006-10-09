@@ -1640,7 +1640,7 @@ void        axl_stream_trim_with_size  (char * chunk, int * trimmed)
  * some value provided is NULL or the size to compare is not greater
  * than 0 the function will return false directly.
  */
-bool        axl_stream_cmp             (char * chunk1, char * chunk2, int size)
+bool        axl_stream_cmp             (const char * chunk1, const char * chunk2, int size)
 {
 	/* perform some environmental condition checking */
 	if (chunk1 == NULL)
@@ -1761,7 +1761,7 @@ bool        axl_stream_remains         (axlStream * stream)
  * 
  * @return A newly allocated string or NULL if fails.
  */
-char      * axl_stream_strdup          (char * chunk)
+char      * axl_stream_strdup          (const char * chunk)
 {
 	char * result;
 	int    length;
@@ -1788,7 +1788,7 @@ char      * axl_stream_strdup          (char * chunk)
  * size of <b>n</b> bytes. The function will check that the
  * <b>chunk</b> and the <b>n</b> values are not null and non-zero.
  */
-char      * axl_stream_strdup_n (char * chunk, int n)
+char      * axl_stream_strdup_n (const char * chunk, int n)
 {
 	char * result;
 
@@ -1823,7 +1823,7 @@ int vsnprintf(char *str, size_t size, const char *format, va_list ap);
  * 
  * @return A newly allocated chunk.
  */
-char      * axl_stream_strdup_printf   (char * chunk, ...)
+char      * axl_stream_strdup_printf   (const char * chunk, ...)
 {
 	char    * result   = NULL;
 	va_list   args;
@@ -1851,7 +1851,7 @@ char      * axl_stream_strdup_printf   (char * chunk, ...)
  * 
  * @return A newly allocated string.
  */
-char  * axl_stream_strdup_printfv    (char * chunk, va_list args)
+char  * axl_stream_strdup_printfv    (const char * chunk, va_list args)
 {
 
 #ifdef __AXL_WIN32__
@@ -1894,7 +1894,7 @@ char  * axl_stream_strdup_printfv    (char * chunk, va_list args)
  * 
  * @return A newly allocated chunk.
  */
-char    * axl_stream_strdup_printf_len (char * chunk, int * chunk_size, ...)
+char    * axl_stream_strdup_printf_len (const char * chunk, int * chunk_size, ...)
 {
 #ifdef __AXL_WIN32__
 	int       size;
@@ -1958,7 +1958,7 @@ char    * axl_stream_strdup_printf_len (char * chunk, int * chunk_size, ...)
  * \ref axl_stream_freev. The function will return a NULL if the chunk
  * or the separators provided are NULL.
  */
-char     ** axl_stream_split           (char * chunk, int separator_num, ...)
+char     ** axl_stream_split           (const char * chunk, int separator_num, ...)
 {
 	va_list      args;
 	char      ** separators;
@@ -2111,7 +2111,7 @@ char     ** axl_stream_split           (char * chunk, int separator_num, ...)
  * if fails. The only way for this function to fail is to provide two
  * NULL references as incoming strings.
  */
-char      * axl_stream_concat          (char * chunk1, char * chunk2)
+char      * axl_stream_concat          (const char * chunk1, const char * chunk2)
 {
 	axl_return_val_if_fail ((chunk2 != NULL) || (chunk1 != NULL), NULL);
 
@@ -2327,7 +2327,7 @@ char      * axl_stream_to_lower_copy   (char  * chunk)
  * @return \ref true if both string are equal, otherwise \ref false is
  * returned.
  */
-bool axl_cmp (char * string, char * string2)
+bool axl_cmp (const char * string, const char * string2)
 {
 	int iterator = 0;
 
@@ -2374,7 +2374,7 @@ bool axl_cmp (char * string, char * string2)
  * @return \ref true if the both strings are equal for its initial
  * size bytes or \ref false if not.
  */
-bool axl_memcmp (char * string, char * string2, int size)
+bool axl_memcmp (const char * string, const char * string2, int size)
 {
 	int iterator = 0;
 
