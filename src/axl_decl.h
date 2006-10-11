@@ -38,13 +38,8 @@
 #ifndef __AXL_DECL_H__
 #define __AXL_DECL_H__
 
-#if ! defined (__GNUC__) || defined (__G_OS_WIN32__)
-#define __AXL_WIN32__
-#undef  __AXL_POSIX__
-#else
-#define __AXL_POSIX__
-#undef  __AXL_WIN32__
-#endif
+/* include platform specific configuration */
+#include <axl_config.h>
 
 /* include this at this place to load GNU extensions */
 #ifdef __GNUC__
@@ -733,33 +728,6 @@ typedef enum {
 	 */
 	AXL_LEVEL_CRITICAL}  
 AxlDebugLevel;
-
-/** 
- * @brief Allows to convert integer value (including constant values)
- * into a pointer representation. 
- *
- * Use the oposite function to restore the value from a pointer to a
- * integer: \ref PTR_TO_INT.
- *
- * @param integer The integer value to cast to pointer.
- *
- * @return A \ref axlPointer reference.
- */
-#define INT_TO_PTR(integer)   ((axlPointer) integer)
-
-/** 
- * @brief Allows to convert a pointer reference (\ref axlPointer),
- * which stores an integer that was stored using \ref INT_TO_PTR.
- *
- * Use the oposite function to restore the pointer value stored in the
- * integer value.
- * 
- * @param ptr The pointer to cast to a integer value.
- * 
- * @return A int value.
- */
-#define PTR_TO_INT(ptr) ((int) ptr)
-
 
 /** 
  * @brief Support macro to allocate memory using the calloc function,
