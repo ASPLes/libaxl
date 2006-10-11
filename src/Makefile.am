@@ -1,4 +1,4 @@
-EXTRA_DIST = Makefile.win
+EXTRA_DIST = Makefile.win axl_config_win32.h
 
 if ENABLE_AXL_LOG
 LOG = -DSHOW_DEBUG_LOG
