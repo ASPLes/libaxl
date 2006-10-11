@@ -36,6 +36,11 @@ AC_ISC_POSIX
 AC_HEADER_STDC
 AM_PROG_LIBTOOL
 
+# check type sizes
+AC_CHECK_SIZEOF(long)
+AC_CHECK_SIZEOF(int)
+AC_CHECK_SIZEOF(void *)
+
 ##########################
 # Check for doxygen tool #
 ##########################
@@ -56,6 +61,103 @@ AM_CONDITIONAL(ENABLE_AXL_TESTS, test "x$enable_axl_test" = "xyes")
 AC_ARG_ENABLE(axl-log, [  --enable-axl-log     Enable building Axl with debug log support [default=yes]], enable_axl_log="$enableval", enable_axl_log=yes)
 AM_CONDITIONAL(ENABLE_AXL_LOG, test "x$enable_axl_log" = "xyes")
 
+# produce axl_config.h file this section will only be run if
+# config.status is invoked with no arguments, or with "axl_config.h"
+# as an argument.
+AC_CONFIG_COMMANDS([axl_config.h],
+[
+	outfile=axl_config.h-tmp
+	cat > $outfile <<_______EOF
+/* 
+ * Axl Library axl_config.h
+ * Platform dependant definitions.
+ *
+ * This is a generated file.  Please modify 'configure.in'
+ */
+
+#ifndef __AXL_CONFIG_H__
+#define __AXL_CONFIG_H__
+
+/** 
+ * \addtogroup axl_decl_module
+ * @{
+ */
+
+/** 
+ * @brief Allows to convert integer value (including constant values)
+ * into a pointer representation. 
+ *
+ * Use the oposite function to restore the value from a pointer to a
+ * integer: \ref PTR_TO_INT. 
+ *
+ * @param integer The integer value to cast to pointer.
+ *
+ * @return A \ref axlPointer reference.
+ */
+#define INT_TO_PTR(integer)   ((axlPointer) ${pti_cast} integer)
+
+/** 
+ * @brief Allows to convert a pointer reference (\ref axlPointer),
+ * which stores an integer that was stored using \ref INT_TO_PTR.
+ *
+ * Use the oposite function to restore the pointer value stored in the
+ * integer value.
+ * 
+ * @param ptr The pointer to cast to a integer value.
+ * 
+ * @return A int value.
+ */
+#define PTR_TO_INT(ptr) ((int) ${pti_cast} ptr)
+
+/**
+ * @brief Allows to get current platform configuration. This is used by Axl library
+ * but could be used by applications built on top of Axl to change its configuration
+ * based on the platform information.
+ */
+$axl_platform
+
+/* @} */
+
+#endif
+_______EOF
+
+	if cmp -s $outfile src/axl_config.h; then
+	  AC_MSG_NOTICE([axl_config.h is unchanged])
+	  rm -f $outfile
+	else
+	  mv $outfile src/axl_config.h
+	fi
+],[
+
+# Check size of void pointer against the size of a single
+# integer. This will allow us to know if we can cast directly a
+# integer to pointer and viceversa.
+case $ac_cv_sizeof_void_p in
+$ac_cv_sizeof_int)  	pti_cast=''        pti_cast=''                ;;
+$ac_cv_sizeof_long) 	pti_cast='(long)'  pti_cast='(unsigned long)' ;;
+*) 			pti_unknown_void_p=yes                        ;;
+esac
+
+# Get current configure for the platform and the os we are running.
+case $host in
+  *-*-beos*)
+    axl_platform="#define AXL_OS_BEOS"
+    ;;
+  *-*-cygwin*)
+    axl_platform="#define AXL_OS_UNIX
+#define AXL_PLATFORM_WIN32
+#define AXL_WITH_CYGWIN"
+    ;;
+  *-*-mingw*)
+    axl_platform="#define AXL_OS_WIN32
+#define AXL_PLATFORM_WIN32"
+    ;;
+  *)
+    axl_platform="#define AXL_OS_UNIX"
+    ;;
+esac
+
+])
 
 
 AC_OUTPUT([
