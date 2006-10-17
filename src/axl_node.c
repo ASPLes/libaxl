@@ -885,6 +885,12 @@ void __init_node_anotation (axlNode * node)
  * Once data is stored, it could be inherited by child nodes because
  * the access to it is done using \ref axl_node_anotate_get. 
  *
+ * Additionally, you can also perform anotation using native types:
+ * int, string and double. Check the following functions to do so.
+ *
+ * - \ref axl_node_anotate_int
+ * - \ref axl_node_anotate_double
+ * - \ref axl_node_anotate_string
  *
  * @param node The node where the anotated data will be stored.
  *
@@ -901,7 +907,7 @@ void      axl_node_anotate_data                 (axlNode     * node,
 
 	/* check and init node anotation */
 	__init_node_anotation (node);
-
+	
 	/* insert data */
 	axl_hash_insert (node->anotate_data, key, data);
 
@@ -1009,6 +1015,351 @@ axlPointer axl_node_anotate_get                 (axlNode * node,
 
 	/* no node was found */
 	return result;
+}
+
+/** 
+ * @internal definition to clasify node anotation.
+ */
+typedef enum {
+	/** 
+	 * @internal definition to clasify int elements.
+	 */
+	ANOTATE_INT     = 0, 
+	/** 
+	 * @internal definition to clasify string elements.
+	 */
+	ANOTATE_STRING  = 1, 
+	/** 
+	 * @internal definition to clasify int elements.
+	 */
+	ANOTATE_DOUBLE  = 2
+} AnotateType;
+
+typedef struct _AnotateNodeData {
+	/** 
+	 * @internal type anotated.
+	 */
+	AnotateType type;
+
+	/** 
+	 * @internal Value anotated: int, string or double.
+	 */
+	union {
+		int    int_value;
+		char * string_value;
+		double double_value;
+	} value;
+} AnotateNodeData;
+
+void __axl_anotate_data_free (AnotateNodeData * data)
+{
+	if (data == NULL)
+		return;
+
+	/* free the string */
+	if (data->type == ANOTATE_STRING)
+		axl_free (data->value.string_value);
+
+	/* free the data */
+	axl_free (data);
+
+	return;
+}
+
+/** 
+ * @brief Allows to perform an anotation to the node at runtime,
+ * storing a integer value.
+ *
+ * While using xml documents loaded into memory, each node could be
+ * processed and anotated with particular information, indexed with a
+ * key, that could be retrieved later for faster process. 
+ * 
+ * This data anotation doesn't perform any modification to the xml
+ * document in any form. It is just a programming support that allows
+ * developers to avoid created complex and independent structures to
+ * the xml document while developing.
+ * 
+ * While using anotation support, you can use low level functions that
+ * provide a simple way to store pointers associated to particular
+ * nodes and retrieve them using:
+ * 
+ * - \ref axl_node_anotate_data_full
+ * - \ref axl_node_anotate_data
+ * - \ref axl_node_anotate_get
+ *
+ * However, additional functions are provided to store and retreive
+ * easily integers, strings and double data anotated. See the
+ * following:
+ * 
+ *  - \ref axl_node_anotate_int
+ *  - \ref axl_node_anotate_string
+ *  - \ref axl_node_anotate_double
+ *
+ * If you use this function to store an integer data you must use \ref
+ * axl_node_anotate_get_int to retreive data stored. You can't use \ref axl_node_anotate_get.
+ * 
+ * @param node The node where the anotation will be aplied.
+ *
+ * @param key The key to index the data anotated to the node.
+ *
+ * @param int_value An integer value that will be anotated to the node
+ * received under the key provided.
+ */
+void       axl_node_anotate_int                 (axlNode * node,
+						 char    * key,
+						 int       int_value)
+{
+	AnotateNodeData * data;
+	
+	/* check received values */
+	axl_return_if_fail (node);
+	axl_return_if_fail (key);
+
+	/* allocate the node */
+	data                  = axl_new (AnotateNodeData, 1);
+	data->type            = ANOTATE_INT;
+	data->value.int_value = int_value;
+
+	/* anotate the value */
+	axl_node_anotate_data_full (node, key, NULL, data, (axlDestroyFunc) __axl_anotate_data_free);
+	
+	return;
+}
+
+/** 
+ * @brief Allows to perform an anotation to the node at runtime,
+ * storing a string value.
+ *
+ * While using xml documents loaded into memory, each node could be
+ * processed and anotated with particular information, indexed with a
+ * key, that could be retrieved later for faster process. 
+ * 
+ * This data anotation doesn't perform any modification to the xml
+ * document in any form. It is just a programming support that allows
+ * developers to avoid created complex and independent structures to
+ * the xml document while developing.
+ * 
+ * While using anotation support, you can use low level functions that
+ * provide a simple way to store pointers associated to particular
+ * nodes and retrieve them using:
+ * 
+ * - \ref axl_node_anotate_data_full
+ * - \ref axl_node_anotate_data
+ * - \ref axl_node_anotate_get
+ *
+ * However, additional functions are provided to store and retreive
+ * easily integers, strings and double data anotated. See the
+ * following:
+ * 
+ *  - \ref axl_node_anotate_int
+ *  - \ref axl_node_anotate_string
+ *  - \ref axl_node_anotate_double
+ *
+ * If you use this function to store a string data you must use \ref
+ * axl_node_anotate_get_string to retreive data stored. You can't use \ref axl_node_anotate_get.
+ *
+ * @param node The node where the anotation will be aplied.
+ *
+ * @param key The key to index the data anotated to the node.
+ *
+ * @param string_value A string value that will be anotated to the
+ * node received under the key provided. This value will be copied and
+ * released once the node is deallocated.
+ */
+void       axl_node_anotate_string              (axlNode * node,
+						 char    * key,
+						 char    * string_value)
+{
+	AnotateNodeData * data;
+	
+	/* check received values */
+	axl_return_if_fail (node);
+	axl_return_if_fail (key);
+	axl_return_if_fail (string_value);
+
+	/* allocate the node */
+	data                     = axl_new (AnotateNodeData, 1);
+	data->type               = ANOTATE_STRING;
+	data->value.string_value = axl_strdup (string_value);
+
+	/* anotate the value */
+	axl_node_anotate_data_full (node, key, NULL, data, (axlDestroyFunc) __axl_anotate_data_free);
+	
+	return;
+}
+
+/** 
+ * @brief Allows to perform an anotation to the node at runtime,
+ * storing a double value.
+ *
+ * While using xml documents loaded into memory, each node could be
+ * processed and anotated with particular information, indexed with a
+ * key, that could be retrieved later for faster process. 
+ * 
+ * This data anotation doesn't perform any modification to the xml
+ * document in any form. It is just a programming support that allows
+ * developers to avoid created complex and independent structures to
+ * the xml document while developing.
+ * 
+ * While using anotation support, you can use low level functions that
+ * provide a simple way to store pointers associated to particular
+ * nodes and retrieve them using:
+ * 
+ * - \ref axl_node_anotate_data_full
+ * - \ref axl_node_anotate_data
+ * - \ref axl_node_anotate_get
+ *
+ * However, additional functions are provided to store and retreive
+ * easily integers, strings and double data anotated. See the
+ * following:
+ * 
+ *  - \ref axl_node_anotate_int
+ *  - \ref axl_node_anotate_string
+ *  - \ref axl_node_anotate_double
+ *
+ * If you use this function to store a double data you must use \ref
+ * axl_node_anotate_get_double to retreive data stored. You can't use \ref axl_node_anotate_get.
+ * 
+ * @param node The node where the anotation will be aplied.
+ *
+ * @param key The key to index the data anotated to the node.
+ *
+ * @param double_value A string value that will be anotated to the node
+ * received under the key provided.
+ */
+void       axl_node_anotate_double              (axlNode * node,
+						 char    * key,
+						 double    double_value)
+{
+	AnotateNodeData * data;
+	
+	/* check received values */
+	axl_return_if_fail (node);
+	axl_return_if_fail (key);
+
+	/* allocate the node */
+	data                     = axl_new (AnotateNodeData, 1);
+	data->type               = ANOTATE_DOUBLE;
+	data->value.double_value = double_value;
+
+	/* anotate the value */
+	axl_node_anotate_data_full (node, key, NULL, data, (axlDestroyFunc) __axl_anotate_data_free);
+	
+	return;
+}
+
+/** 
+ * @brief Allows to retreive the anotated int value stored on the
+ * particular node, under the provided key.
+ * 
+ * @param node The node that is required to return the anotated data.
+ *
+ * @param key The key to be used to lookup for the data anotated.
+ *
+ * @param lookup_in_parent Once the lookup fails, this variable allows
+ * to signal the function to also lookup the value in the parent
+ * nodes. This mechanism allows to store data on parent nodes that are
+ * shared by child nodes.
+ * 
+ * @return The integer value stored using \ref axl_node_anotate_int. 
+ */
+int        axl_node_anotate_get_int             (axlNode * node,
+						 char    * key,
+						 bool      lookup_in_parent)
+{
+	AnotateNodeData * data;
+	
+	/* check received values */
+	axl_return_val_if_fail (node, 0);
+	axl_return_val_if_fail (key, 0);
+
+	/* get the anotated data */
+	data = axl_node_anotate_get (node, key, lookup_in_parent);
+
+	if (data->type != ANOTATE_INT) {
+		/* drop a log */
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "accesing to a anotation data that isn't flaged as integer");
+		return 0;
+	}
+	
+	/* return the integer value inside */
+	return data->value.int_value;
+}
+
+/** 
+ * @brief Allows to retreive the anotated string value stored on the
+ * particular node, under the provided key.
+ * 
+ * @param node The node that is required to return the anotated data.
+ *
+ * @param key The key to be used to lookup for the data anotated.
+ *
+ * @param lookup_in_parent Once the lookup fails, this variable allows
+ * to signal the function to also lookup the value in the parent
+ * nodes. This mechanism allows to store data on parent nodes that are
+ * shared by child nodes.
+ * 
+ * @return The string value stored using \ref axl_node_anotate_string. 
+ */
+char *     axl_node_anotate_get_string          (axlNode * node,
+						 char    * key,
+						 bool      lookup_in_parent)
+{
+	AnotateNodeData * data;
+	
+	/* check received values */
+	axl_return_val_if_fail (node, NULL);
+	axl_return_val_if_fail (key, NULL);
+
+	/* get the anotated data */
+	data = axl_node_anotate_get (node, key, lookup_in_parent);
+
+	if (data->type != ANOTATE_STRING) {
+		/* drop a log */
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "accesing to a anotation data that isn't flaged as string");
+		return NULL;
+	}
+	
+	/* return the string value inside */
+	return data->value.string_value;
+}
+
+/** 
+ * @brief Allows to retreive the anotated double value stored on the
+ * particular node, under the provided key.
+ * 
+ * @param node The node that is required to return the anotated data.
+ *
+ * @param key The key to be used to lookup for the data anotated.
+ *
+ * @param lookup_in_parent Once the lookup fails, this variable allows
+ * to signal the function to also lookup the value in the parent
+ * nodes. This mechanism allows to store data on parent nodes that are
+ * shared by child nodes.
+ * 
+ * @return The double value stored using \ref axl_node_anotate_double. 
+ */
+double     axl_node_anotate_get_double          (axlNode * node,
+						 char    * key,
+						 bool      lookup_in_parent)
+{
+	AnotateNodeData * data;
+	
+	/* check received values */
+	axl_return_val_if_fail (node, 0.0);
+	axl_return_val_if_fail (key, 0.0);
+
+	/* get the anotated data */
+	data = axl_node_anotate_get (node, key, lookup_in_parent);
+
+	if (data->type != ANOTATE_DOUBLE) {
+		/* drop a log */
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "accesing to a anotation data that isn't flaged as double");
+		return 0.0;
+	}
+	
+	/* return the double value inside */
+	return data->value.double_value;
 }
 
 /** 

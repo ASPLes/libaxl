@@ -86,6 +86,31 @@ void      axl_node_anotate_data_full            (axlNode       * node,
 axlPointer axl_node_anotate_get                 (axlNode * node,
 						 char    * key,
 						 bool      lookup_in_parent);
+
+void       axl_node_anotate_int                 (axlNode * node,
+						 char    * key,
+						 int       int_value);
+
+void       axl_node_anotate_string              (axlNode * node,
+						 char    * key,
+						 char    * string_value);
+
+void       axl_node_anotate_double              (axlNode * node,
+						 char    * key,
+						 double    double_value);
+
+int        axl_node_anotate_get_int             (axlNode * node,
+						 char    * key,
+						 bool      lookup_in_parent);
+
+char *     axl_node_anotate_get_string          (axlNode * node,
+						 char    * key,
+						 bool      lookup_in_parent);
+
+double     axl_node_anotate_get_double          (axlNode * node,
+						 char    * key,
+						 bool      lookup_in_parent);
+
 /** 
  * @brief Allows to easily check that the given xml node (\ref
  * axlNode) have the provided name.

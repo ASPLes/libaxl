@@ -352,6 +352,28 @@ bool test_20 (axlError ** error)
 		return false;
 	}
 
+	/* perform more anotation but with native data */
+	axl_node_anotate_int (root, "int-value", 14);
+	
+	if (axl_node_anotate_get_int (root, "int-value", false) != 14) {
+		axl_error_new (-1, "Expected to find an integer value (14), but it wasn't found", NULL, error);
+		return false;
+	}
+
+	axl_node_anotate_double (root, "double-value", 58.20);
+
+	if (axl_node_anotate_get_double (root, "double-value", false) != 58.20) {
+		axl_error_new (-1, "Expected to find an double value (58.20), but it wasn't found", NULL, error);
+		return false;
+	}
+
+	axl_node_anotate_string (root, "string-value", "this is a test string");
+
+	if (! axl_cmp (axl_node_anotate_get_string (root, "string-value", false), "this is a test string")) {
+		axl_error_new (-1, "Expected to find a string value (\"this is a test string\"), but it wasn't found", NULL, error);
+		return false;
+	}
+
 	/* free document created */
 	axl_doc_free (doc);
 
