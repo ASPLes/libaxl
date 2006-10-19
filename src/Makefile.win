@@ -19,7 +19,7 @@ LIBS = -Wall -g --add-stdcall-alias $(search_lib_path)
 
 INCS = -I"."
 
-CFLAGS = $(INCS) -DVERSION=\""$(AXL_VERSION)"\" -Wall -g -DAXL_OS_WIN32 # -DSHOW_DEBUG_LOG
+CFLAGS = $(INCS) -DVERSION=\""$(AXL_VERSION)"\" -Wall -g # -DSHOW_DEBUG_LOG
 
 RM = rm -f
 
