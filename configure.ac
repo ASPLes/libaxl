@@ -63,7 +63,8 @@ AM_CONDITIONAL(ENABLE_AXL_LOG, test "x$enable_axl_log" = "xyes")
 
 # produce axl_config.h file this section will only be run if
 # config.status is invoked with no arguments, or with "axl_config.h"
-# as an argument.
+# as an argument. Remember to update af-arch configure.ac file to
+# include the same script building as the following.
 AC_CONFIG_COMMANDS([axl_config.h],
 [
 	outfile=axl_config.h-tmp
