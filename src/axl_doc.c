@@ -1283,6 +1283,139 @@ bool      axl_doc_dump_pretty              (axlDoc  * doc,
 }
 
 /** 
+ * @brief Allows to dump a xml document directly to the file located
+ * at the file path.
+ *
+ * This function saves you the round trip to declare variables to hold
+ * the memory, open a file, dump the content and properly close the
+ * output file. The function works the same as \ref axl_doc_dump but
+ * doing the extra job to transfer the xml document into a file.
+ *
+ * See also \ref axl_doc_dump_pretty_to_file to get a version dumps
+ * the content doing some pretty printing operations.
+ * 
+ * @param doc The document to be dumped into a file.
+ *
+ * @param file_path The file path where the output will be placed. The
+ * function will require to have access rights to the file (or to
+ * create a new file if it doesnt exists). The default behaviour is to
+ * overwrite the file found if exists. So, if you don't want to get
+ * content overwrited, you must provide the enough code to avoid such
+ * situations prior calling to this function.
+ * 
+ * @return \ref true if the dump operation was ok, otherwisde \ref
+ * false is returned.
+ */
+bool      axl_doc_dump_to_file             (axlDoc  * doc,
+					    char    * file_path)
+{
+	char * content = NULL;
+	int    size    = -1;
+	int    written = -1;
+	FILE * fd      = NULL;
+
+	/* dump content and check result */
+	if (! __axl_doc_dump_common (doc, &content, &size, false, 0)) {
+		/* no dump operation done */
+		return false;
+	}
+
+	/* open the file and check */
+	if ((fd = fopen (file_path, "w")) == NULL) {
+		/* failed to open the file to dump the content */
+		axl_free (content);
+
+		return false;
+	}
+
+	/* dump the content */
+	written = fwrite (content, 1, size, fd);
+
+	/* free the content */
+	axl_free (content);
+
+	/* close file */
+	fclose (fd);
+
+	/* return if we have failed to dump all the content to the
+	 * file or not. */
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "returning that the dump was: %s (written:%d == size:%d)", 
+		   (written == size) ? "OK" : "FAILED", 
+		   written, size);
+		   
+	return (written == size);
+}
+
+/** 
+ * @brief Allows to dump a xml document directly to the file located
+ * at the file path, doing pretty printing operations.
+ *
+ * This function saves you the round trip to declare variables to hold
+ * the memory, open a file, dump the content and properly close the
+ * output file. The function works the same as \ref axl_doc_dump but
+ * doing the extra job to transfer the xml document into a file.
+ *
+ * See also \ref axl_doc_dump_to_file to get a version dumps the
+ * content without doing pretty printing operations.
+ * 
+ * @param doc The document to be dumped into a file.
+ *
+ * @param file_path The file path where the output will be placed. The
+ * function will require to have access rights to the file (or to
+ * create a new file if it doesnt exists). The default behaviour is to
+ * overwrite the file found if exists. So, if you don't want to get
+ * content overwrited, you must provide the enough code to avoid such
+ * situations prior calling to this function.
+ * 
+ * @param tabular The amount of white spaces to introduce as tabular
+ * for each level found inside the xml.
+ * 
+ * @return \ref true if the dump operation was ok, otherwisde \ref
+ * false is returned.
+ */
+bool      axl_doc_dump_pretty_to_file      (axlDoc  * doc,
+					    char    * file_path,
+					    int       tabular)
+{
+	char * content = NULL;
+	int    size    = -1;
+	int    written = -1;
+	FILE * fd      = NULL;
+
+	/* dump content and check result */
+	if (! __axl_doc_dump_common (doc, &content, &size, true, tabular)) {
+		/* no dump operation done */
+		return false;
+	}
+
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "document dumped, now transfer that content to a file");
+
+	/* open the file and check */
+	if ((fd = fopen (file_path, "w")) == NULL) {
+		/* failed to open the file to dump the content */
+		axl_free (content);
+
+		return false;
+	}
+
+	/* dump the content */
+	written = fwrite (content, 1, size, fd);
+
+	/* free the content */
+	axl_free (content);
+
+	/* close file */
+	fclose (fd);
+
+	/* return if we have failed to dump all the content to the
+	 * file or not. */
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "returning that the dump was: %s (written:%d == size:%d)", 
+		   (written == size) ? "OK" : "FAILED", 
+		   written, size);
+	return (written == size);
+}
+
+/** 
  * @brief Allows to get how much will take the \ref axlDoc instance
  * represented as an XML document in an storage device (like memory).
  *
