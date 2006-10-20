@@ -358,16 +358,16 @@ typedef enum {
 	 * @internal
 	 * Represents the not defined value.
 	 */
-	NOT_DEFINED = 1,
+	AXL_ELEMENT_NOT_DEFINED = 1,
 	/** 
 	 * @brief The reference contains an \ref axlDtdElementList.
 	 */
-	ELEMENT_LIST = 2,
+	AXL_ELEMENT_LIST = 2,
 	/** 
 	 * @brief The reference contains a reference to a leaf node, a
 	 * content particule.
 	 */
-	NODE = 3
+	AXL_ELEMENT_NODE = 3
 } NodeType;
 
 /** 
