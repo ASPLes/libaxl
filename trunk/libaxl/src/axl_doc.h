@@ -70,6 +70,13 @@ bool      axl_doc_dump_pretty              (axlDoc  * doc,
 					    int     * size,
 					    int       tabular);
 
+bool      axl_doc_dump_to_file             (axlDoc  * doc,
+					    char    * file_path);
+
+bool      axl_doc_dump_pretty_to_file      (axlDoc  * doc,
+					    char    * file_path,
+					    int       tabular);
+
 int       axl_doc_get_flat_size            (axlDoc * doc);
 
 bool      axl_doc_are_equal                (axlDoc * doc, 

@@ -2101,8 +2101,12 @@ void      axl_node_set_cdata_content  (axlNode * node,
 }
 
 /** 
- * @brief Allows to configure a new comment (<!-- -->) that will be
+ * @brief Allows to configure a new comment (&lt;!-- xml comment -->) that will be
  * stored as a child for the node provided.
+ * 
+ * The comment will be placed at the end of the current child
+ * list. So, if you want to place a xml comment before a xml node,
+ * call first to this function and the to \ref axl_node_set_child.
  *
  * @param node The node that will contain the comment.
  *
@@ -2298,7 +2302,52 @@ char    * axl_node_get_content_trans (axlNode * node, int * content_size)
 
 /** 
  * @brief Allows to configure a child node to the given parent.
+ *
+ * This is a fundamental function while building xml document inside
+ * memory. The way the xml nodes are linked to conform the xml
+ * document structure relay on this function. 
  * 
+ * The idea is that every call to this function makes the <b>child
+ * </b> xml node to be placed at the end of the current item child
+ * set, that represents current child list for the provided
+ * <b>parent</b>.
+ *
+ * One important question while using this function is that you must
+ * not reuse the same xml node reference, adding it several time to
+ * the same parent (or different parents). You must create a new xml
+ * node reference (axl_node_create) for every call you do to this
+ * function.
+ * 
+ * So, to build the following structure:
+ * \code
+ * <document>
+ *   <child1 />
+ *   <child2 />
+ * </document>
+ * \endcode
+ * 
+ * You must perform the following operations:
+ * \code
+ * axlNode * parent;
+ * axlNode * child;
+ * 
+ * // create the parent node 
+ * parent = axl_node_create ("document");
+ *
+ * // create the first child 
+ * child = axl_node_create ("child1");
+ *
+ * // set it to the parent 
+ * axl_node_set_child (parent, child);
+ *
+ * // create the second child 
+ * child = axl_node_create ("child2");
+ *
+ * // set it to the parent 
+ * axl_node_set_child (parent, child);
+ *
+ * \endcode
+ *
  * @param parent The parent node.
  *
  * @param child The child node. The child node must be a deep
