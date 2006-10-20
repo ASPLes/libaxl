@@ -259,14 +259,14 @@ axlDtdElementListNode * __create_axl_dtd_element_list (char * node_name,
 	/* create a node element reference */
 	if (node_name != NULL) {
 		node->data = node_name;
-		node->type = NODE;
+		node->type = AXL_ELEMENT_NODE;
 		return node;
 	}
 
 	/* create an element list reference */
 	if (list != NULL) {
 		node->data = list;
-		node->type = ELEMENT_LIST;
+		node->type = AXL_ELEMENT_LIST;
 		return node;
 	}
 
@@ -286,11 +286,11 @@ void __destroy_axl_dtd_element_list (axlDtdElementListNode * node)
 	if (node == NULL)
 		return;
 	/* free the reference to the leaf node if defined */
-	if (node->type == NODE)
+	if (node->type == AXL_ELEMENT_NODE)
 		axl_free (node->data);
 	
 	/* do not do nothing if the reference is not element list */
-	if (node->type == ELEMENT_LIST)
+	if (node->type == AXL_ELEMENT_LIST)
 		axl_dtd_item_list_free (node->data);
 
 	/* free de node itself */
@@ -414,7 +414,7 @@ bool     __axl_dtd_get_is_parent (axlDtdElement * dtd_element_parent,
 	do {
 		node = axl_stack_pop (stack);
 		switch (node->type) {
-		case NODE:
+		case AXL_ELEMENT_NODE:
 			/* leaf node case */
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found a leaf node, checking it");
 
@@ -427,7 +427,7 @@ bool     __axl_dtd_get_is_parent (axlDtdElement * dtd_element_parent,
 				return true;
 			}
 			break;
-		case ELEMENT_LIST:
+		case AXL_ELEMENT_LIST:
 			/* a nested list case */
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found a complex node queuing its internal elements, while checking parent=%s for child=%s",
 				   dtd_element_parent->name, dtd_element_child->name);
@@ -436,7 +436,7 @@ bool     __axl_dtd_get_is_parent (axlDtdElement * dtd_element_parent,
 			list = node->data;
 			__axl_dtd_queue_items (stack, list->itemList);
 			break;
-		case NOT_DEFINED:
+		case AXL_ELEMENT_NOT_DEFINED:
 			/* do nothing */
 			break;
 		}
@@ -1102,7 +1102,7 @@ int __axl_dtd_parse_element_get_compulsory_num (axlDtdElementList * list)
 			    itemNode->times == ONE_AND_ONLY_ONE) {
 				/* check if we have an itemNode that has an
 				 * Node or a list */
-				if (itemNode->type == NODE) {
+				if (itemNode->type == AXL_ELEMENT_NODE) {
 					/* we have an item node */
 					count++;
 					if (list->type == CHOICE) {
@@ -1794,7 +1794,7 @@ bool     __axl_dtd_validate_sequence (axlNode            * parent,
 			}
 
 			/* check node type */
-			if (axl_dtd_item_node_get_type (itemNode) == ELEMENT_LIST) {
+			if (axl_dtd_item_node_get_type (itemNode) == AXL_ELEMENT_LIST) {
 
 				__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "the item node is an item list, dtd item list position: %d, child position: %d=<%s>",
 					 iterator, child_pos, axl_node_get_name (node));
@@ -1825,7 +1825,7 @@ bool     __axl_dtd_validate_sequence (axlNode            * parent,
 				 * iteration */
 				break;
 
-			} else if (axl_dtd_item_node_get_type (itemNode) == NODE) {
+			} else if (axl_dtd_item_node_get_type (itemNode) == AXL_ELEMENT_NODE) {
 				/* check the name against the spec */
 
 				__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, 
@@ -1987,7 +1987,7 @@ bool     __axl_dtd_validate_choice (axlNode * parent, int * child_position,
 		itemNode = axl_dtd_item_list_get_node   (itemList, iterator);
 		times    = axl_dtd_item_node_get_repeat (itemNode);
 
-		if (axl_dtd_item_node_get_type (itemNode) == NODE) {
+		if (axl_dtd_item_node_get_type (itemNode) == AXL_ELEMENT_NODE) {
 			/* reset match configuration */
 			one_match = false;
 		repeat_for_node:
@@ -2036,7 +2036,7 @@ bool     __axl_dtd_validate_choice (axlNode * parent, int * child_position,
 				return true;
 			}
 
-		} else if (axl_dtd_item_node_get_type (itemNode) == ELEMENT_LIST) {
+		} else if (axl_dtd_item_node_get_type (itemNode) == AXL_ELEMENT_LIST) {
 			/* an element list was found, call to validate it */
 			/* element list found, validate its content */
 			if (__axl_dtd_validate_item_list (axl_dtd_item_node_get_list (itemNode),
@@ -2827,7 +2827,7 @@ axlDtdElementListNode * axl_dtd_item_list_get_node (axlDtdElementList * itemList
  */
 NodeType             axl_dtd_item_node_get_type (axlDtdElementListNode * node)
 {
-	axl_return_val_if_fail (node, NOT_DEFINED);
+	axl_return_val_if_fail (node, AXL_ELEMENT_NOT_DEFINED);
 	return node->type;
 }
 
@@ -2844,7 +2844,7 @@ NodeType             axl_dtd_item_node_get_type (axlDtdElementListNode * node)
 axlDtdElementList   * axl_dtd_item_node_get_list (axlDtdElementListNode * node)
 {
 	axl_return_val_if_fail (node, NULL);
-	axl_return_val_if_fail (node->type == ELEMENT_LIST, NULL);
+	axl_return_val_if_fail (node->type == AXL_ELEMENT_LIST, NULL);
 
 	return node->data;
 }
@@ -2862,7 +2862,7 @@ axlDtdElementList   * axl_dtd_item_node_get_list (axlDtdElementListNode * node)
 char               * axl_dtd_item_node_get_value (axlDtdElementListNode * node)
 {
 	axl_return_val_if_fail (node, NULL);
-	if (node->type != NODE) 
+	if (node->type != AXL_ELEMENT_NODE) 
 		return "requested-value-on-a-list";
 
 	return node->data;
@@ -2884,12 +2884,12 @@ AxlDtdTimes          axl_dtd_item_node_get_repeat (axlDtdElementListNode * node)
 	axl_return_val_if_fail (node, DTD_TIMES_UNKNOWN);
 
 
-	if (node->type == NODE) {
+	if (node->type == AXL_ELEMENT_NODE) {
 		/* return value requested */
 		return node->times;
 	}
 
-	if (node->type == ELEMENT_LIST) {
+	if (node->type == AXL_ELEMENT_LIST) {
 		/* return the requested value for an item list */
 		list = node->data;
 		return list->times;

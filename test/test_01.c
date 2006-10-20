@@ -1262,7 +1262,7 @@ bool test_09 (axlError ** error)
 
 	/* check <first> node spec */
 	itemNode = axl_dtd_item_list_get_node (itemList, 0);
-	if (axl_dtd_item_node_get_type (itemNode) != NODE) {
+	if (axl_dtd_item_node_get_type (itemNode) != AXL_ELEMENT_NODE) {
 		axl_error_new (-1, "expected to find an item node definition, not found", NULL, error);
 		return false;
 	}
@@ -1279,7 +1279,7 @@ bool test_09 (axlError ** error)
 
 	/* check <second> node spec */
 	itemNode = axl_dtd_item_list_get_node (itemList, 1);
-	if (axl_dtd_item_node_get_type (itemNode) != NODE) {
+	if (axl_dtd_item_node_get_type (itemNode) != AXL_ELEMENT_NODE) {
 		axl_error_new (-1, "expected to find an item node definition, not found", NULL, error);
 		return false;
 	}
@@ -1296,7 +1296,7 @@ bool test_09 (axlError ** error)
 
 	/* check <third> node spec */
 	itemNode = axl_dtd_item_list_get_node (itemList, 2);
-	if (axl_dtd_item_node_get_type (itemNode) != NODE) {
+	if (axl_dtd_item_node_get_type (itemNode) != AXL_ELEMENT_NODE) {
 		axl_error_new (-1, "expected to find an item node definition, not found", NULL, error);
 		return false;
 	}
@@ -1313,7 +1313,7 @@ bool test_09 (axlError ** error)
 
 	/* check <fourth> node spec */
 	itemNode = axl_dtd_item_list_get_node (itemList, 3);
-	if (axl_dtd_item_node_get_type (itemNode) != NODE) {
+	if (axl_dtd_item_node_get_type (itemNode) != AXL_ELEMENT_NODE) {
 		axl_error_new (-1, "expected to find an item node definition, not found", NULL, error);
 		return false;
 	}
@@ -1330,7 +1330,7 @@ bool test_09 (axlError ** error)
 
 	/* check <fifth> node spec */
 	itemNode = axl_dtd_item_list_get_node (itemList, 4);
-	if (axl_dtd_item_node_get_type (itemNode) != NODE) {
+	if (axl_dtd_item_node_get_type (itemNode) != AXL_ELEMENT_NODE) {
 		axl_error_new (-1, "expected to find an item node definition, not found", NULL, error);
 		return false;
 	}
@@ -1347,7 +1347,7 @@ bool test_09 (axlError ** error)
 
 	/* check <fourth> node spec */
 	itemNode = axl_dtd_item_list_get_node (itemList, 5);
-	if (axl_dtd_item_node_get_type (itemNode) != NODE) {
+	if (axl_dtd_item_node_get_type (itemNode) != AXL_ELEMENT_NODE) {
 		axl_error_new (-1, "expected to find an item node definition, not found", NULL, error);
 		return false;
 	}
@@ -1364,7 +1364,7 @@ bool test_09 (axlError ** error)
 
 	/* check repetition pattern for node spec 6 */
 	itemNode = axl_dtd_item_list_get_node (itemList, 6);
-	if (axl_dtd_item_node_get_type (itemNode) != ELEMENT_LIST) {
+	if (axl_dtd_item_node_get_type (itemNode) != AXL_ELEMENT_LIST) {
 		axl_error_new (-1, "expected to find an item node definition, not found", NULL, error);
 		return false;
 	}
@@ -1378,7 +1378,7 @@ bool test_09 (axlError ** error)
 
 	/* check repetition pattern for node spec 7 */
 	itemNode = axl_dtd_item_list_get_node (itemList, 7);
-	if (axl_dtd_item_node_get_type (itemNode) != ELEMENT_LIST) {
+	if (axl_dtd_item_node_get_type (itemNode) != AXL_ELEMENT_LIST) {
 		axl_error_new (-1, "expected to find an item node definition, not found", NULL, error);
 		return false;
 	}
