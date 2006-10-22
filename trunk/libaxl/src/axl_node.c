@@ -3622,6 +3622,23 @@ bool __axl_node_dump_attributes_at_foreach (axlPointer key,
 	return false;
 }
 
+void __axl_node_dump_at_the_end (axlNodeAttr * attr, char * content, int * desp)
+{
+	/* return if no attribute must be dumped */
+	if (attr == NULL)
+		return;
+
+	/* call to dump next attributes first */
+	__axl_node_dump_at_the_end (attr->next, content, desp);
+
+	/* now dump our attribute */
+	__axl_node_dump_attributes_at_foreach (attr->attribute, attr->value, content, desp);
+
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "dumping attribute: %s=%s", attr->attribute, attr->value);
+
+	return;
+}
+
 /** 
  * @internal
  * 
@@ -3640,14 +3657,7 @@ int axl_node_dump_attributes_at (axlNode * node, char * content, int desp)
 	if (node->attr_num <= 10) {
 		/* get the first reference */
 		attr = (axlNodeAttr *) node->attributes;
-		while (attr != NULL) {
-
-			/* call to get length */
-			__axl_node_dump_attributes_at_foreach (attr->attribute, attr->value, content, &desp);
-			
-			/* get the next */
-			attr = attr->next;
-		} /* end while */
+		__axl_node_dump_at_the_end (attr, content, &desp);
 
 	} else {
 		/* foreach attribute dump */
