@@ -919,7 +919,7 @@ axlDoc * __axl_doc_parse_common (const char * entity, int entity_size,
 				
 				/* continue on the next index */
 				continue;
-			}
+			} /* end if */
 			
 			if ((axl_stream_peek (stream, "</", 2) > 0)) {
 				/* accept previous peek */
@@ -945,7 +945,7 @@ axlDoc * __axl_doc_parse_common (const char * entity, int entity_size,
 				if (axl_stack_size (doc->parentNode) > 0)
 					continue;
 				break;
-			}
+			} /* end if */
 
 			/* check here for CDATA section. This is done
 			 * here because the following checking could
@@ -972,7 +972,7 @@ axlDoc * __axl_doc_parse_common (const char * entity, int entity_size,
 				/* set current data */
 				axl_node_set_content_ref (node, string, -1);
 				continue;
-			}
+			} /* end if */
 
 
 			if ((axl_stream_peek (stream, "<", 1) > 0)) {
@@ -1530,7 +1530,7 @@ int __axl_doc_get_file_size (char * file_path)
  * axlError * error = NULL;
  *
  * // parse the provide file
- * doc = axl_doc_parse_from_file ("test.xml");
+ * doc = axl_doc_parse_from_file ("test.xml", &error);
  * if (doc == NULL) {
  *    // check error found
  *    printf ("ERROR: (code: %d) %s\n",
