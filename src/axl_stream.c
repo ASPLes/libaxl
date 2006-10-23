@@ -1854,7 +1854,7 @@ char      * axl_stream_strdup_printf   (const char * chunk, ...)
 char  * axl_stream_strdup_printfv    (const char * chunk, va_list args)
 {
 
-#ifdef AXL_OS_WIN32
+#ifndef AXL_HAVE_VASPRINTF
 	int       size;
 #endif
 	char    * result   = NULL;
@@ -1862,7 +1862,7 @@ char  * axl_stream_strdup_printfv    (const char * chunk, va_list args)
 
 	axl_return_val_if_fail (chunk, NULL);
 
-#ifdef AXL_OS_UNIX
+#ifdef AXL_HAVE_VASPRINTF
 	/* do the operation using the GNU extension */
 	new_size = vasprintf (&result, chunk, args);
 #else
@@ -1896,7 +1896,7 @@ char  * axl_stream_strdup_printfv    (const char * chunk, va_list args)
  */
 char    * axl_stream_strdup_printf_len (const char * chunk, int * chunk_size, ...)
 {
-#ifdef AXL_OS_WIN32
+#ifndef AXL_HAVE_VASPRINTF
 	int       size;
 #endif
 	int       new_size;
@@ -1908,7 +1908,7 @@ char    * axl_stream_strdup_printf_len (const char * chunk, int * chunk_size, ..
 	/* open std args */
 	va_start (args, chunk_size);
 
-#ifdef AXL_OS_UNIX
+#ifdef AXL_HAVE_VASPRINTF
 	/* do the operation using the GNU extension */
 	new_size = vasprintf (&result, chunk, args);
 #else

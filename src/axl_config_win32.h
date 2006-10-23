@@ -44,9 +44,9 @@
 #define PTR_TO_INT(ptr) ((int)  ptr)
 
 /**
- * @brief Allows to get current platform configuration. This is used by Axl library
- * but could be used by applications built on top of Axl to change its configuration
- * based on the platform information.
+ * @brief Allows to get current platform configuration. This is used
+ * by Axl library but could be used by applications built on top of
+ * Axl to change its configuration based on the platform information.
  */
 #define AXL_OS_WIN32
 
