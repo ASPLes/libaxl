@@ -1,0 +1,162 @@
+          ###################################
+          # Axl Library release note: 0.2.6 #
+          ###################################
+
+Advanced Software Production Line is proud to announce a new Axl
+Library release.
+
+Axl Library is an small and efficient XML toolkit, that will allow you
+to produce efficient and clear code that interfaces with XML data.
+
+The library was produced to support XML requirements needed by
+software developed by Advanced Software Production Line, S.L. 
+
+At this moment the library is being used by Vortex Library and
+Af-Arch.
+
+Resources
+~~~~~~~~~
+   Axl Homepage
+   [ http://xml.aspl.es ]
+
+   Vortex Library Homepage
+   [ http://vortex.aspl.es ]
+
+   Af-Arch Homepage
+   [ http://fact.aspl.es ]
+
+   Advanced Software Production Line, S.L.
+   [ http://www.aspl.es ]
+
+   Memory report
+   [ http://xml.aspl.es/memory-report-0.2.6.html ]
+
+
+This release in short
+~~~~~~~~~~~~~~~~~~~~~
+
+  Fixed Axl library to compile and properly work on Amd64 running
+  Linux. Due to this, checked that Axl Library builds and runs
+  properly at: Alpha (running Linux), Openpower (running Linux),
+  PowerPC (running Linux), NetBSD, OpenBSD, FreeBSD, Windows and Linux
+  (all of them running on x86). 
+
+  More API to the library has been added and more library performance
+  improvement has been done. See memory report.
+
+Thanks to
+~~~~~~~~~
+  Milton Yates for reporting Amd64 problem.
+
+  Thanks to the SourceForge team for its great job and to provide
+  access to such compile farm.
+
+Changes from previous release 0.2.5
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* [fix] Committing a modification (pending to be authenticated) solving
+  a compile problem found at amd64. va_list pointers can't be copied
+  using a normal assignation. Updated stream_get_untilv calling to
+  pass directly the pointer to args.
+
+* [fix] flag with "const" several functions from inside the axl stream
+  module: axl_stream_cmp, axl_stream_strdup, axl_stream_strdup_n,
+  axl_stream_strdup_printf, axl_stream_strdup_printfv,
+  axl_stream_strdup_printf_len, axl_stream_split and
+  axl_stream_concat.
+
+* [fix] Committing a general update to produce a new file
+  (axl_config.h) from inside the autoconf process, include includes a
+  OS detection macro, and some macro definitions that are platform
+  specific. This will solve problems found at the amd64 platform while
+  compiling Axl Library.
+
+* [fix] Committing axl_config_win32.h file (specific to the win32
+  platform) and Makefile.am updated to include this file into the
+  extra dist.
+
+* [fix] updating Makefile.win to use the axl_config_win32.h (because
+  axl_config.h) isn't produced if autoconf isn't used.
+
+* [new] Improving axl annotate API to include functions to annotate int,
+  string and double values directly without performing castings. API
+  added:
+
+    - axl_node_anotate_int
+    - axl_node_anotate_string
+    - axl_node_anotate_double
+    - axl_node_anotate_get_int
+    - axl_node_anotate_get_string
+    - axl_node_anotate_get_double 
+
+* [fix] Updated test file to include checks for the API elements
+  added.
+
+* [fix] Committing more updates to the configure.ac file.
+
+* [fix] updating axl.nsi file (0.2.5 release), Makefile.win to remove
+  -DAXL_OS_WIN32 already provided by the configure process.
+
+* [fix] Changing enum names for NodeType declaration to void clashing
+  with other common declarations found. Updated source code and tests.
+
+   NODE         -> AXL_ELEMENT_NODE
+   ELEMENT_LIST -> AXL_ELEMENT_LIST
+   NOT_DEFINED  -> AXL_ELEMENT_NOT_DEFINED
+
+* [new] Added to new support functions to dump xml document
+  represented inside memory to a file. API added:
+
+    - axl_doc_dump_to_file
+    - axl_doc_dump_pretty_to_file
+
+* [fix] Updated documentation for axl_node_set_comment and
+  axl_node_set_child.
+
+* [fix] Reimplemented xml node attribute handling to use an hybrid
+  model where attributes are stored in a linked list when they are
+  fewer than 10 attributes and automatically use a hash structure if
+  it gets bigger than that. This now makes the reference test to move
+  its memory usage from 1.890.423 to 1.513.887 and runtime speed from
+  0.83 to 0.73. GREAT!!
+
+* [fix] Making axl dumping operations to place attributes in the order
+  they were added.
+
+* [fix] fixed __axl_log declaration which was making axl to not
+  compile under alpha running Linus platform.
+
+* [fix] making axl library configuration process to detect vasprintf
+  function disabling it from the source code if it wasn't found.
+
+* [fix] fixing wrong references at the axl documentation to memory reports.
+
+
+About Advanced Software Production Line, S.L.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Advanced Software Production Line is leading the Af-Arch project: a
+  complete framework to develop distributed application to manage
+  enterprise process.
+
+  Af-Arch project uses Axl library to support its XML requirements
+  while exchanging data between nodes.
+
+  Advanced Software Production Line also provides GNU/Linux support
+  and consulting services to enable organisation to introduce
+  GNU/Linux inside its process, making other platforms to interact
+  with GNU/Linux.
+
+  Contact us, using English or Spanish, to get commercial support
+  and/or XML based development services.
+
+  You can reach us:
+
+       http://www.aspl.es - info@aspl.es
+
+  We hope Axl Library help you. Enjoy Axl Library!
+
+--
+Francis Brosnan Blázquez           - francis@aspl.es
+Advanced Software Production Line  - http://www.aspl.es
+23th Oct 2006, Madrid (Spain)
