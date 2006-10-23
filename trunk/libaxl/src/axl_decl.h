@@ -56,9 +56,7 @@
 #define __AXL_FILE__            ""
 #endif
 
-
 #include <stdio.h>
-
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
