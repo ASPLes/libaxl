@@ -61,6 +61,15 @@ AM_CONDITIONAL(ENABLE_AXL_TESTS, test "x$enable_axl_test" = "xyes")
 AC_ARG_ENABLE(axl-log, [  --enable-axl-log     Enable building Axl with debug log support [default=yes]], enable_axl_log="$enableval", enable_axl_log=yes)
 AM_CONDITIONAL(ENABLE_AXL_LOG, test "x$enable_axl_log" = "xyes")
 
+# The following command also comes to produce the axl_config.h file
+# required by the tool. If you update this, remember to update the
+# af-arch main configure.ac
+AC_TRY_LINK([#include <stdio.h>], 
+[
+  char * result = NULL;
+  vasprintf (&result, "This is a test: %d", 10);
+], [have_vasprintf=yes],[have_vasprintf=no])
+
 # produce axl_config.h file this section will only be run if
 # config.status is invoked with no arguments, or with "axl_config.h"
 # as an argument. Remember to update af-arch configure.ac file to
@@ -111,11 +120,13 @@ AC_CONFIG_COMMANDS([axl_config.h],
 #define PTR_TO_INT(ptr) ((int) ${pti_cast} ptr)
 
 /**
- * @brief Allows to get current platform configuration. This is used by Axl library
- * but could be used by applications built on top of Axl to change its configuration
- * based on the platform information.
+ * @brief Allows to get current platform configuration. This is used
+ * by Axl library but could be used by applications built on top of
+ * Axl to change its configuration based on the platform information.
  */
 $axl_platform
+
+$vasprintf_status
 
 /* @} */
 
@@ -156,6 +167,20 @@ case $host in
   *)
     axl_platform="#define AXL_OS_UNIX"
     ;;
+esac
+
+case $have_vasprintf in
+yes)
+     vasprintf_status="/**
+ * @internal Allows to now if the platform support vasprintf
+ * function. Do not use this macro as it is supposed to be for
+ * internal use.
+ */
+#define AXL_HAVE_VASPRINTF 1"
+     ;;
+no)
+     vasprintf_status=""
+     ;;
 esac
 
 ])
