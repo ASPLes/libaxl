@@ -53,7 +53,7 @@ bool     axl_log_color_is_enabled ();
 
 
 #ifdef SHOW_DEBUG_LOG
-#define __axl_log(domain, level, message, ...)  axl_log(domain, level, message, ##__VA_ARGS__)
+#define __axl_log axl_log
 #else
 #define __axl_log(domain, level, message, ...) /* nothing */
 #endif
