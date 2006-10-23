@@ -69,8 +69,7 @@
  * code and, the most important, to not be limited by details already
  * exposed.
  * In fact, this design have being already used to improve the library
- * performance greatly as is showed on <a href="http://www.aspl.es/axl/memory-usage-report-17-04-2006.html">this
- * report</a>.</li>
+ * performance greatly. See reports founds at: http://xml.aspl.es/doc.html</a>.</li>
  *
  * <li>To be small and efficient, ensuring on every stable release that
  * the library do not leak, not only while using the library in a
@@ -86,8 +85,7 @@
  * \section features_and_status What is the status of the library
  *
  * Currently the library is stable and it is known to work under
- * GNU/Linux and Windows with a really good performance. See <a href="http://www.aspl.es/axl/memory-usage-report-17-04-2006.html">this
- * report</a> to know more about this.
+ * GNU/Linux and Windows with a really good performance. See reports found at http://xml.aspl.es/doc.html to know more about this.
  *
  * The library already covers the 95% of common requires that XML
  * development. Among others, it support:
