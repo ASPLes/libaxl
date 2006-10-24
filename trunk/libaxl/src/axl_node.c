@@ -988,6 +988,9 @@ bool          axl_node_has_attribute      (axlNode * node, char * attribute)
 			/* get the next attribute */
 			attr = attr->next;
 		} /* end while */
+
+		/* attribute not found */
+		return false;
 	} /* end if */
 
 	/* hashed configuration */
@@ -1034,6 +1037,9 @@ char    * axl_node_get_attribute_value (axlNode * node, char * attribute)
 			/* get the next attribute */
 			attr = attr->next;
 		} /* end while */
+		
+		/* attribute not found */
+		return NULL;
 	} /* end if */
 
 	/* return value stored for the provided key */
