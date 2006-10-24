@@ -2,6 +2,218 @@
 #include <stdio.h>
 
 /** 
+ * @brief Test xml attribute support.
+ * 
+ * @param error The optional axlError to be used to report errors.
+ * 
+ * @return true if the validity test is passed, false if not.
+ */
+bool test_22 (axlError ** error)
+{
+	axlDoc  * doc;
+	axlNode * node;
+	char    * value;
+
+	
+	/* create a document */
+	doc  = axl_doc_create (NULL, NULL, false);
+
+	node = axl_node_create ("root-node");
+	axl_doc_set_root (doc, node);
+
+	/* check for attributes */
+	if (axl_node_has_attribute (node, "attribute-not-found")) {
+		axl_error_new (-1, "Found an attribute requested, which doesn't exists", NULL, error);
+		return false;
+	}
+
+	/* get attribute */
+	value = axl_node_get_attribute_value (node, "attribute-not-found");
+	if (value != NULL) {
+		axl_error_new (-1, "Found an attribute requested, which doesn't exists", NULL, error);
+		return false;
+	}
+
+	/* store an attriburte */
+	axl_node_set_attribute (node, "attribute1", "value1");
+
+	/* check for attributes */
+	if (! axl_node_has_attribute (node, "attribute1")) {
+		axl_error_new (-1, "Not found an attribute requested, which should exists", NULL, error);
+		return false;
+	}
+
+	/* get attribute */
+	value = axl_node_get_attribute_value (node, "attribute1");
+	if (! axl_cmp (value, "value1")) {
+		axl_error_new (-1, "Not found an attribute requested, which should exists", NULL, error);
+		return false;
+	}
+
+	/* store more attributes to check function with hashes */
+	axl_node_set_attribute (node, "attribute2", "value2");
+	axl_node_set_attribute (node, "attribute3", "value3");
+	axl_node_set_attribute (node, "attribute4", "value4");
+	axl_node_set_attribute (node, "attribute5", "value5");
+	axl_node_set_attribute (node, "attribute6", "value6");
+	axl_node_set_attribute (node, "attribute7", "value7");
+	axl_node_set_attribute (node, "attribute8", "value8");
+	axl_node_set_attribute (node, "attribute9", "value9");
+	axl_node_set_attribute (node, "attribute10", "value10");
+	axl_node_set_attribute (node, "attribute11", "value11");
+	
+	/* check that an attribute doesn't exists */
+	if (axl_node_has_attribute (node, "attribute-not-found")) {
+		axl_error_new (-1, "Found an attribute requested, which doesn't exists", NULL, error);
+		return false;
+	}
+
+	/* get attribute */
+	value = axl_node_get_attribute_value (node, "attribute-not-found");
+	if (value != NULL) {
+		axl_error_new (-1, "Found an attribute requested, which doesn't exists", NULL, error);
+		return false;
+	}
+
+	/* check for attributes */
+	if (! axl_node_has_attribute (node, "attribute2")) {
+		axl_error_new (-1, "Not found an attribute requested, which should exists", NULL, error);
+		return false;
+	}
+
+	/* get attribute */
+	value = axl_node_get_attribute_value (node, "attribute2");
+	if (! axl_cmp (value, "value2")) {
+		axl_error_new (-1, "Not found an attribute requested, which should exists", NULL, error);
+		return false;
+	}
+
+	/* check for attributes */
+	if (! axl_node_has_attribute (node, "attribute3")) {
+		axl_error_new (-1, "Not found an attribute requested, which should exists", NULL, error);
+		return false;
+	}
+
+	/* get attribute */
+	value = axl_node_get_attribute_value (node, "attribute3");
+	if (! axl_cmp (value, "value3")) {
+		axl_error_new (-1, "Not found an attribute requested, which should exists (value3)", NULL, error);
+		return false;
+	}
+
+	/* check for attributes */
+	if (! axl_node_has_attribute (node, "attribute4")) {
+		axl_error_new (-1, "Not found an attribute requested, which should exists (value4)", NULL, error);
+		return false;
+	}
+
+	/* get attribute */
+	value = axl_node_get_attribute_value (node, "attribute4");
+	if (! axl_cmp (value, "value4")) {
+		axl_error_new (-1, "Not found an attribute requested, which should exists (value4)", NULL, error);
+		return false;
+	}
+
+	/* check for attributes */
+	if (! axl_node_has_attribute (node, "attribute5")) {
+		axl_error_new (-1, "Not found an attribute requested, which should exists (value5)", NULL, error);
+		return false;
+	}
+
+	/* get attribute */
+	value = axl_node_get_attribute_value (node, "attribute5");
+	if (! axl_cmp (value, "value5")) {
+		axl_error_new (-1, "Not found an attribute requested, which should exists (value5)", NULL, error);
+		return false;
+	}
+
+	/* check for attributes */
+	if (! axl_node_has_attribute (node, "attribute6")) {
+		axl_error_new (-1, "Not found an attribute requested, which should exists (value6)", NULL, error);
+		return false;
+	}
+
+	/* get attribute */
+	value = axl_node_get_attribute_value (node, "attribute6");
+	if (! axl_cmp (value, "value6")) {
+		axl_error_new (-1, "Not found an attribute requested, which should exists (value6)", NULL, error);
+		return false;
+	}
+
+	/* check for attributes */
+	if (! axl_node_has_attribute (node, "attribute7")) {
+		axl_error_new (-1, "Not found an attribute requested, which should exists (value7)", NULL, error);
+		return false;
+	}
+
+	/* get attribute */
+	value = axl_node_get_attribute_value (node, "attribute7");
+	if (! axl_cmp (value, "value7")) {
+		axl_error_new (-1, "Not found an attribute requested, which should exists (value7)", NULL, error);
+		return false;
+	}
+
+	/* check for attributes */
+	if (! axl_node_has_attribute (node, "attribute8")) {
+		axl_error_new (-1, "Not found an attribute requested, which should exists (value8)", NULL, error);
+		return false;
+	}
+
+	/* get attribute */
+	value = axl_node_get_attribute_value (node, "attribute8");
+	if (! axl_cmp (value, "value8")) {
+		axl_error_new (-1, "Not found an attribute requested, which should exists (value8)", NULL, error);
+		return false;
+	}
+
+	/* check for attributes */
+	if (! axl_node_has_attribute (node, "attribute9")) {
+		axl_error_new (-1, "Not found an attribute requested, which should exists (value9)", NULL, error);
+		return false;
+	}
+
+	/* get attribute */
+	value = axl_node_get_attribute_value (node, "attribute9");
+	if (! axl_cmp (value, "value9")) {
+		axl_error_new (-1, "Not found an attribute requested, which should exists (value9)", NULL, error);
+		return false;
+	}
+
+	/* check for attributes */
+	if (! axl_node_has_attribute (node, "attribute10")) {
+		axl_error_new (-1, "Not found an attribute requested, which should exists (value10)", NULL, error);
+		return false;
+	}
+
+	/* get attribute */
+	value = axl_node_get_attribute_value (node, "attribute10");
+	if (! axl_cmp (value, "value10")) {
+		axl_error_new (-1, "Not found an attribute value requested, which should exists (value10)", NULL, error);
+		return false;
+	}
+
+	/* check for attributes */
+	if (! axl_node_has_attribute (node, "attribute11")) {
+		axl_error_new (-1, "Not found an attribute requested, which should exists (value11)", NULL, error);
+		return false;
+	}
+
+	/* get attribute */
+	value = axl_node_get_attribute_value (node, "attribute11");
+	if (! axl_cmp (value, "value11")) {
+		axl_error_new (-1, "Not found an attribute requested, which should exists (value11)", NULL, error);
+		return false;
+	}
+
+
+	
+	/* free document */
+	axl_doc_free (doc);
+
+	return true;
+}
+
+/** 
  * @brief Test mixed content documents support (TEST NOT FINISHED).
  * 
  * @param error The optional axlError to be used to report errors.
@@ -3084,6 +3296,15 @@ int main (int argc, char ** argv)
 		axl_error_free (error);
 		return -1;
 	}	
+
+	if (test_22 (&error)) {
+		printf ("Test 22: Axl node attributes [   OK   ]\n");
+	} else {
+		printf ("Test 22: Axl node attributes [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}
 
 	/* cleanup axl library */
 	axl_end ();

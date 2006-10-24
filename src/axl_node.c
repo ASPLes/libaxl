@@ -811,7 +811,6 @@ void      __axl_node_set_attribute      (axlNode * node, char * attribute, char 
 
 		/* set the new first */
 		node->attributes = (axlPointer) attr;
-		node->attr_num++;
 		
 	} else if (node->attr_num >= 10) {
 		
@@ -845,7 +844,8 @@ void      __axl_node_set_attribute      (axlNode * node, char * attribute, char 
 		
 	} /* end if */
 
-
+	/* update attribute count */
+	node->attr_num++;
 
 	return;
 }
