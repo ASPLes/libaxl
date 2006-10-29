@@ -394,8 +394,10 @@ bool test_03 ()
  * @brief Intensive axl list implementation.
  */
 bool test_04 () {
-	int       iterator = 0;
-	axlList * list;
+	int             iterator = 0;
+	int             value;
+	axlList       * list;
+	axlListCursor * cursor;
 
 	/* create the list */
 	list = axl_list_new (axl_list_always_return_1, NULL);
@@ -404,11 +406,74 @@ bool test_04 () {
 	while (iterator < 10000) {
 
 		/* add integers */
-		axl_list_add (list, &iterator);
+		axl_list_add (list, INT_TO_PTR(iterator));
 
 		/* update the iterator */
 		iterator++;
 	}
+
+	/* get items using iterator */
+	cursor   = axl_list_cursor_new (list);
+	iterator = 0;
+	while (axl_list_cursor_has_item (cursor)) {
+		/* get the value */
+		value = PTR_TO_INT (axl_list_cursor_get (cursor));
+
+		/* check value */
+		if (value != iterator) {
+			printf ("Values miss match: %d != %d\n", value, iterator);
+			return false;
+		}
+
+		/* get the next */
+		axl_list_cursor_next (cursor);
+
+		/* update the iterator */
+		iterator++;
+		
+	} /* end while */
+
+	/* remove all items */
+	axl_list_cursor_first (cursor);
+	iterator = 0;
+	while (axl_list_cursor_has_item (cursor)) {
+
+		/* get the value */
+		value = PTR_TO_INT (axl_list_cursor_get (cursor));
+
+		/* check value */
+		if (value != iterator) {
+			printf ("Values miss match (2): %d != %d\n", value, iterator);
+			return false;
+		}
+
+		/* remove */
+		axl_list_cursor_remove (cursor);
+
+		if (axl_list_length (list) > 1) {
+
+			/* get the value */
+			value = PTR_TO_INT (axl_list_cursor_get (cursor));
+			
+			/* check value */
+			if (value != (iterator + 1)) {
+				printf ("Values miss match (3): %d != %d\n", value, iterator + 1);
+				return false;
+			}
+		}
+
+		/* update the iterator */
+		iterator++;
+		
+	} /* end while */
+
+	if (axl_list_length (list) != 0) {
+		printf ("List lengths mismatch: %d != 0\n", axl_list_length (list));
+		return false;
+	}
+
+	/* free cursor */
+	axl_list_cursor_free (cursor);
 
 	/* release the list */
 	axl_list_free (list);
