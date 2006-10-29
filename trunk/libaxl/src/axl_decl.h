@@ -663,6 +663,12 @@ typedef void * axlPointer;
 typedef struct _axlList axlList;
 
 /** 
+ * @brief \ref axlListCursor definition, a iterator type used to
+ * traverse an axlList in a efficient way. See \ref axl_list_cursor_get.
+ */
+typedef struct _axlListCursor axlListCursor;
+
+/** 
  * @brief \ref axlStack definitinon, a stack implementation on top of \ref
  * axlList.
  * See \ref axl_stack_new for more information about using this type.

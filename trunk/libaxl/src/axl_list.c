@@ -70,6 +70,11 @@ struct _axlListNode {
 	axlPointer    data;
 };
 
+struct _axlListCursor {
+	axlList     * list;
+	axlListNode * current;
+};
+
 /**
  * \defgroup axl_list_module Axl List: A configurable double-linked list used across the library.
  */
@@ -336,7 +341,6 @@ void      axl_list_add    (axlList * list, axlPointer pointer)
 
 	/* perform some environment checkings */
 	axl_return_if_fail (list);
-	axl_return_if_fail (pointer);
 	
 	new_node         = __axl_list_get_next_node_available (list); 
 	new_node->data   = pointer;
@@ -450,7 +454,6 @@ void       axl_list_add_at (axlList * list, axlPointer pointer, int position)
 
 	/* check incoming values */
 	axl_return_if_fail (list);
-	axl_return_if_fail (pointer);
 
 	/* check if we have a prepend operation */
 	if (position <= 0) {
@@ -520,7 +523,6 @@ void       axl_list_prepend (axlList * list, axlPointer pointer)
 	axlListNode * new_node;
 
 	axl_return_if_fail (list);
-	axl_return_if_fail (pointer);
 	
 	/* simulate adding the node at the first position */
 	new_node         = __axl_list_get_next_node_available (list); 
@@ -558,7 +560,6 @@ void       axl_list_append  (axlList * list, axlPointer pointer)
 	axlListNode * new_node;
 
 	axl_return_if_fail (list);
-	axl_return_if_fail (pointer);
 	
 	/* simulate adding the node at the first position */
 	new_node         = __axl_list_get_next_node_available (list); 
@@ -1046,6 +1047,336 @@ void      axl_list_free (axlList * list)
 	
 	/* free the list itself */
 	axl_free (list);
+
+	return;
+}
+
+/* @} */
+
+/**
+ * \defgroup axl_list_cursor_module Axl List Cursor: Iterator support for the Axl List
+ */
+
+/** 
+ * \addtogroup axl_list_cursor_module
+ * @{
+ */
+
+/** 
+ * @brief Allows to get a cursor to iterate the list in a linear and
+ * efficient way.
+ *
+ * The \ref axlListCursor could be used to iterate an \ref axlList in
+ * an efficient way because it stores current state (position). Then
+ * using the following functions you can modify the state (current
+ * position to get):
+ * 
+ *   - \ref axl_list_cursor_first
+ *   - \ref axl_list_cursor_last
+ *   - \ref axl_list_cursor_next
+ *   - \ref axl_list_cursor_previous
+ *
+ * Finally, a function is provided to get the data stored at a
+ * particular position, pointed by the current status of the cursor:
+ * 
+ *   - \ref axl_list_cursor_get
+ *
+ * You are allowed to remove elements from the list (\ref axlList)
+ * having a cursor created (\ref axlListCursor), using \ref
+ * axl_list_cursor_unlink. 
+ *
+ * Here is an example:
+ * \code
+ * axlPointer      value;
+ * axlListCursor * cursor;
+ * 
+ * // create the cursor 
+ * cursor   = axl_list_cursor_new (list);
+ *
+ * // while there are more elements 
+ * while (axl_list_cursor_has_item (cursor)) {
+ *
+ *   // get the value 
+ *   value = axl_list_cursor_get (cursor);
+ *
+ *
+ *   // get the next 
+ *   axl_list_cursor_next (cursor);
+ *
+ *   // update the iterator 
+ *   iterator++;
+ *		
+ * } 
+ *
+ * // free the cursor 
+ * axl_list_cursor_free (cursor);
+ * \endcode
+ * 
+ * @param list The list that the new cursor (\ref axlListCursor) will
+ * provide access.
+ * 
+ * @return A newly created \ref axlListCursor used to iterate the
+ * list. Once finished you must call to \ref axl_list_cursor_free.
+ */
+axlListCursor * axl_list_cursor_new      (axlList * list)
+{
+	axlListCursor * cursor;
+
+	axl_return_val_if_fail (list, NULL);
+
+	/* create the cursor */
+	cursor = axl_new (axlListCursor, 1);
+
+	/* initial configuration */
+	cursor->list    = list;
+	cursor->current = list->first_node;
+
+	return cursor;
+}
+
+/** 
+ * @brief Allows to configure the cursor to point to the first item of
+ * the list (if there are any).
+ * 
+ * @param cursor The cursor that is required to be configured to point the first item.
+ */
+void            axl_list_cursor_first    (axlListCursor * cursor)
+{
+	axl_return_if_fail (cursor);
+
+	/* set the first node */
+	cursor->current = cursor->list->first_node;
+
+	return;
+}
+
+/** 
+ * @brief Allows to configure the cursor to point to the last item of
+ * the list (if there are any).
+ * 
+ * @param cursor The cursor that is required to be configured to point
+ * to the last item.
+ */
+void            axl_list_cursor_last     (axlListCursor * cursor)
+{
+	axl_return_if_fail (cursor);
+
+	/* set the first node */
+	cursor->current = cursor->list->last_node;
+
+	return;
+}
+
+/** 
+ * @brief Allows to configure the cursor to point to the next item of
+ * the list (if there are any).
+ * 
+ * @param cursor The cursor that is required to be configured to point
+ * to the next item.
+ */
+void            axl_list_cursor_next     (axlListCursor * cursor)
+{
+	axl_return_if_fail (cursor);
+
+	/* set the next node */
+	if (cursor->current != NULL)
+		cursor->current = cursor->current->next;
+
+	return;
+}
+
+/** 
+ * @brief Allows to configure the cursor to point to the previous item
+ * of the list (if there are any).
+ * 
+ * @param cursor The cursor that is required to be configured to point
+ * to the previous item.
+ */
+void            axl_list_cursor_previous (axlListCursor * cursor)
+{
+	axl_return_if_fail (cursor);
+
+	/* set the next node */
+	if (cursor->current != NULL)
+		cursor->current = cursor->current->previous;
+
+	return;
+}
+
+/** 
+ * @brief Allows to check if there are more elements next to the
+ * current element pointed by the cursor.
+ * 
+ * @param cursor The cursor that is required to return if there are
+ * next items.
+ * 
+ * @return \ref true if more items are found, otherwise \ref false is
+ * returned.
+ */
+bool            axl_list_cursor_has_next (axlListCursor * cursor)
+{
+	axl_return_val_if_fail (cursor, false);
+
+	/* check for empty list */
+	if (cursor->current == NULL)
+		return false;
+
+	/* return if the next element isn't null */
+	return (cursor->current->next != NULL);
+}
+
+/** 
+ * @brief Allows to check if there are more elements next to the
+ * current element pointed by the cursor.
+ * 
+ * @param cursor The cursor that is required to return if there are
+ * next items.
+ * 
+ * @return \ref true if more items are found, otherwise \ref false is
+ * returned.
+ */
+bool            axl_list_cursor_has_previous (axlListCursor * cursor)
+{
+	axl_return_val_if_fail (cursor, false);
+
+	/* check for empty list */
+	if (cursor->current == NULL)
+		return false;
+
+	/* return if the next element isn't null */
+	return (cursor->current->previous != NULL);
+}
+
+/** 
+ * @brief Allows to know if the current position has items.
+ * 
+ * @param cursor The cursor that is requested to return if a call to
+ * \ref axl_list_cursor_get will return data.
+ * 
+ * @return \ref true if the list that is iterated can return data at
+ * the current position, otherwise \ref false is returned.
+ */
+bool            axl_list_cursor_has_item    (axlListCursor * cursor)
+{
+	axl_return_val_if_fail (cursor, false);
+
+	/* return if there are current */
+	return (cursor->current != NULL);
+}
+
+/** 
+ * @brief Allows to remove current element pointed by the cursor,
+ * maintainig internal state of the cursor.
+ *
+ * The function won't call to the destroy function asociated to the
+ * list. If you want the item stored to be also destroyed call \ref
+ * axl_list_cursor_remove.
+ * 
+ * @param cursor The cursor pointing to the item inside the list that
+ * must be removed.
+ */
+void            axl_list_cursor_unlink       (axlListCursor * cursor)
+{
+	axlListNode * node;
+
+	axl_return_if_fail (cursor);
+
+	/* if current cursor is pointing nowhere, just do nothing */
+	if (cursor->current == NULL)
+		return;
+
+	/* remember node */
+	node = cursor->current;	
+
+	/* configure the cursor to point to the next element (or the previous if the next element is null) */
+	cursor->current = (node->next != NULL) ? node->next : node->previous;
+
+	/* call to unlik */
+	__axl_list_common_remove_selected_node (cursor->list, node, false);
+
+	return;
+}
+
+/** 
+ * @brief Allows to remove current element pointed by the cursor,
+ * maintainig internal state of the cursor, calling to the destroy
+ * function associated in the list.
+ *
+ * The function will call to the destroy function asociated to the
+ * list. If you don't want the item stored to be also destroyed call \ref
+ * axl_list_cursor_unlink.
+ * 
+ * @param cursor The cursor pointing to the item inside the list that
+ * must be removed.
+ */
+void            axl_list_cursor_remove       (axlListCursor * cursor)
+{
+	axlListNode * node;
+
+	axl_return_if_fail (cursor);
+
+	/* if current cursor is pointing nowhere, just do nothing */
+	if (cursor->current == NULL)
+		return;
+
+	/* remember node */
+	node = cursor->current;
+
+	/* configure the cursor to point to the next element (or the previous if the next element is null) */
+	cursor->current = (node->next != NULL) ? node->next : node->previous;
+
+	/* call to remove */
+	__axl_list_common_remove_selected_node (cursor->list, node, false);
+
+	return;
+}
+
+/** 
+ * @brief Allows to get current data at the current cursor state.
+ * 
+ * @param cursor The cursor that will be used to return the data
+ * located at the list, using cursor current state.
+ */
+axlPointer      axl_list_cursor_get      (axlListCursor * cursor)
+{
+	axl_return_val_if_fail (cursor, NULL);
+
+	/* nothing to return if current is NULL */
+	if (cursor->current == NULL)
+		return NULL;
+
+	/* return data */
+	return cursor->current->data;
+}
+
+/** 
+ * @brief Allows to get the reference to the list that is associated
+ * to the cursor received.
+ * 
+ * @param cursor The cursor that is required to return the list associated.
+ * 
+ * @return A reference to the list being iterated or NULL if fails.
+ */
+axlList       * axl_list_cursor_list         (axlListCursor * cursor)
+{
+	/* check incoming cursor */
+	axl_return_val_if_fail (cursor, NULL);
+
+	/* return the list */
+	return cursor->list;
+}
+
+/** 
+ * @brief Deallocates memory used by the cursor. 
+ *
+ * @param cursor The cursor to be deallocated.
+ */
+void            axl_list_cursor_free     (axlListCursor * cursor)
+{
+	axl_return_if_fail (cursor);
+
+	/* free the cursor */
+	axl_free (cursor);
 
 	return;
 }

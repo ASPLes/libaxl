@@ -86,6 +86,33 @@ int        axl_list_length (axlList * list);
 
 void       axl_list_free (axlList * list);
 
+/* cursor interface */
+axlListCursor * axl_list_cursor_new          (axlList * list);
+
+void            axl_list_cursor_first        (axlListCursor * cursor);
+
+void            axl_list_cursor_last         (axlListCursor * cursor);
+
+void            axl_list_cursor_next         (axlListCursor * cursor);
+
+void            axl_list_cursor_previous     (axlListCursor * cursor);
+
+bool            axl_list_cursor_has_next     (axlListCursor * cursor);
+
+bool            axl_list_cursor_has_previous (axlListCursor * cursor);
+
+bool            axl_list_cursor_has_item     (axlListCursor * cursor);
+
+void            axl_list_cursor_unlink       (axlListCursor * cursor);
+
+void            axl_list_cursor_remove       (axlListCursor * cursor);
+
+axlPointer      axl_list_cursor_get          (axlListCursor * cursor);
+
+axlList       * axl_list_cursor_list         (axlListCursor * cursor);
+
+void            axl_list_cursor_free         (axlListCursor * cursor);
+
 END_C_DECLS
 
 #endif
