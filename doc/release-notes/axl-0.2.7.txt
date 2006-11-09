@@ -1,0 +1,105 @@
+          ###################################
+          # Axl Library release note: 0.2.7 #
+          ###################################
+
+Advanced Software Production Line is proud to announce a new Axl
+Library release.
+
+Axl Library is an small and efficient XML toolkit, that will allow you
+to produce efficient and clear code that interfaces with XML data.
+
+The library was produced to support XML requirements needed by
+software developed by Advanced Software Production Line, S.L. 
+
+At this moment the library is being used by Vortex Library,
+Af-Arch, Shaper and Fovap.
+
+Resources
+~~~~~~~~~
+   Axl Homepage
+   [ http://xml.aspl.es ]
+
+   Vortex Library Homepage
+   [ http://vortex.aspl.es ]
+
+   Af-Arch Homepage
+   [ http://fact.aspl.es ]
+
+   Advanced Software Production Line, S.L.
+   [ http://www.aspl.es ]
+
+
+This release in short
+~~~~~~~~~~~~~~~~~~~~~
+
+  This release comes to fix bugs while handling attributes inside
+  nodes and to include a complete new API to perform linear and
+  efficient iteration with state over axlList: axlListCursor.
+
+Changes from previous release 0.2.6
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* [fix] fixed a bug inside axl_node_has_attribute and
+  axl_node_get_attribute_value which was causing to segfault because
+  the basic case were accessing to the hash table where a linked list
+  is found.
+
+* [fix] Fixed a bug inside axl_node_set_attribute which was causing to
+  not increase the number of attributes added to the node in the case
+  a hash table is being used. Added a new regression test to check
+  this in the future.
+
+* [new] Added a new complete support to perform iterations over an
+  axlList using a cursor that maintains the state. API added:
+
+    - axl_list_cursor_new
+    - axlListCursor (type)
+    - axl_list_cursor_first
+    - axl_list_cursor_last
+    - axl_list_cursor_next
+    - axl_list_cursor_previous
+    - axl_list_cursor_has_next
+    - axl_list_cursor_has_previous
+    - axl_list_cursor_has_item
+    - axl_list_cursor_unlink
+    - axl_list_cursor_remove
+    - axl_list_cursor_get
+    - axl_list_cursor_list
+    - axl_list_cursor_free
+
+* [fix] added regression test to check this new API added. 
+
+* [fix] fixed axl_list_prepend and axl_list_append to allow adding null
+  values.
+
+* [fix] Committing missing updates to the test_02.c
+
+
+About Advanced Software Production Line, S.L.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Advanced Software Production Line is leading the Af-Arch project: a
+  complete framework to develop distributed application to manage
+  enterprise process.
+
+  Af-Arch project uses Axl library to support its XML requirements
+  while exchanging data between nodes.
+
+  Advanced Software Production Line also provides GNU/Linux support
+  and consulting services to enable organization to introduce
+  GNU/Linux inside its process, making other platforms to interact
+  with GNU/Linux.
+
+  Contact us, using English or Spanish, to get commercial support
+  and/or XML based development services.
+
+  You can reach us:
+
+       http://www.aspl.es - info@aspl.es
+
+  We hope Axl Library help you. Enjoy Axl Library!
+
+--
+Francis Brosnan Blázquez           - francis@aspl.es
+Advanced Software Production Line  - http://www.aspl.es
+9th Nov 2006, Madrid (Spain)
