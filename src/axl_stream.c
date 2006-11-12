@@ -730,7 +730,7 @@ char      * axl_stream_get_until_ref   (axlStream * stream,
 
 /** 
  * @brief Allows to get the next string until the separators provided
- * are found or the stream memory is reached.
+ * are found or the end of the stream memory is reached.
  *
  * \ref axlStream type was designed to support parsing xml
  * documents. This documents have elements that allows to now where
@@ -741,7 +741,7 @@ char      * axl_stream_get_until_ref   (axlStream * stream,
  *
  * In those cases, this function allows to perform the same function
  * as \ref axl_stream_get_until but also checking, and using, as
- * terminator the stream upper bound.
+ * terminator the end of the stream.
  * 
  * This allows to parse expressions like:
  * \code
@@ -762,17 +762,36 @@ char      * axl_stream_get_until_ref   (axlStream * stream,
  * string = axl_stream_get_until_zero (stream, NULL, &chunk_matched, 
  *                                     false, 2, "[", ".", NULL);
  *
- * // received "value" and chunk_matched == -2
+ * // received "value" and chunk_matched == (-2)
  * \endcode
  *  
  * 
- * @param stream 
- * @param valid_chars 
- * @param chunk_matched 
- * @param accept_terminator 
- * @param chunk_num 
+ * @param stream The stream were the chunk will be extracted.
+ *
+ * @param valid_chars The valid set of characters, to validate content
+ * to be returned. Currently this is not implemented, so, you can
+ * provide a NULL value.
+ *
+ * @param chunk_matched An optional pointer to an integer to notify
+ * the chunk matched by the function. Chunk matching notification
+ * starts from 0 up to number of chunks to match - 1. If the end of
+ * the stream is reached while searching for the content to match,
+ * chunk_matched is configured to -2.
  * 
- * @return 
+ * @param accept_terminator While calling to this function, the
+ * terminator detected to stop the operation could also be accepted by
+ * the stream, making it not necessary to accept the terminator once
+ * the function have ended. However, this could be a problem while
+ * performing peeking code. You can provide a FALSE value to make the
+ * function to not accept the terminator found as to be consumed.
+ *
+ * @param chunk_num The number of chunks to be checked as a valid terminators.
+ * 
+ * @return The chunk recognizied, not including the terminator that
+ * have made this operation to stop. Rembember to check the
+ * chunk_matched variable to be equal to -2. This will mean that the
+ * string returned doesn't match any terminator provided because end
+ * of the stream was reached while looking for them.
  */
 char      * axl_stream_get_until_zero  (axlStream * stream, 
 					char      * valid_chars, 
