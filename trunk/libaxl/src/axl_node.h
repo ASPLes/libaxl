@@ -240,6 +240,13 @@ void      axl_node_free_full       (axlNode * node, bool also_childs);
 /* @} */
 
 /* item interface */
+
+axlItem     * axl_item_new             (AxlItemType type,
+					axlPointer  data);
+
+axlItem     * axl_item_new_ref         (AxlItemType type,
+					axlPointer  data);
+
 axlDoc      * axl_item_get_doc         (axlItem * item);
 
 void          axl_item_set_doc         (axlItem * item, axlDoc * doc);
@@ -286,6 +293,10 @@ void          axl_item_replace         (axlItem * item,
 
 void          axl_item_transfer_childs_after (axlNode * old_parent,
 					      axlItem * item_ref);
+
+bool          axl_item_are_equal      (axlItem * item,
+				       axlItem * item2,
+				       bool      trimmed);
 
 void          axl_item_free           (axlItem * item,
 				       bool      dealloc);

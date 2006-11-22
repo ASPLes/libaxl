@@ -1560,91 +1560,6 @@ void axl_stream_consume_white_spaces (axlStream * stream)
 
 
 /** 
- *
- * @brief Allows to trim the provided chunk, removing all white spaces
- * (returns, white spaces, carry return and tabulars) that comes as
- * preffix and suffix for the string provided, referenced by chunk.
- *
- * The function retuns the reference to the new chunk already
- * translated. The function doesn't perform any memory allocation. It
- * uses the memory already used to hold the chunk provided, returning
- * a pointer for the first item that is not a white space and
- * nullifing the first item that is a white space behind the chunk.
- *
- * This function is particular useful while getting the content 
- * 
- * @param chunk The chunk to trim.
- *
- */
-void      axl_stream_trim            (char * chunk)
-{
-	/* call to trim */
-	axl_stream_trim_with_size (chunk, NULL);
-
-	return;
-}
-
-/** 
- * @brief The function works like \ref axl_stream_trim, but providing
- * the count of bytes trimmed from the string.
- *
- * @param chunk The chunk to trim.
- *
- * @param trimmed An optional reference that returns the count of bytes
- * trimmed by the operation.
- */
-void        axl_stream_trim_with_size  (char * chunk, int * trimmed)
-{
-	int    iterator;
-	int    end;
-	int    total;
-
-	/* perform some environment check */
-	axl_return_if_fail (chunk);
-	
-	iterator = 0;
-	while (chunk[iterator] != 0) {
-		
-		/* check that the iterator is not pointing to a white
-		 * space */
-		if (! axl_stream_is_white_space (chunk + iterator))
-			break;
-		
-		/* update the iterator */
-		iterator++;
-	}
-
-	/* now get the position for the last valid character in the
-	 * chunk */
-	total   = strlen (chunk) -1;
-	end     = total;
-	while (chunk[end] != 0) {
-		
-		/* stop if a white space is found */
-		if (! axl_stream_is_white_space (chunk + end)) {
-			break;
-		}
-
-		/* update the iterator to eat the next white space */
-		end--;
-	}
-
-	/* the number of items trimmed */
-	total -= end;
-	total += iterator;
-	
-	/* copy the exact amount of non white spaces items */
-	memcpy (chunk, chunk + iterator, end - iterator + 1);
-	chunk [ end - iterator + 1] = 0;
-
-	if (trimmed != NULL)
-		*trimmed = total;
-
-	/* return the result reference */
-	return;	
-}
-
-/** 
  * @internal
  * @brief Allows to compare two strings pointed by 
  * 
@@ -1768,6 +1683,91 @@ bool        axl_stream_remains         (axlStream * stream)
  * \addtogroup axl_string_module
  * @{
  */
+
+/** 
+ *
+ * @brief Allows to trim the provided chunk, removing all white spaces
+ * (returns, white spaces, carry return and tabulars) that comes as
+ * preffix and suffix for the string provided, referenced by chunk.
+ *
+ * The function retuns the reference to the new chunk already
+ * translated. The function doesn't perform any memory allocation. It
+ * uses the memory already used to hold the chunk provided, returning
+ * a pointer for the first item that is not a white space and
+ * nullifing the first item that is a white space behind the chunk.
+ *
+ * This function is particular useful while getting the content 
+ * 
+ * @param chunk The chunk to trim.
+ *
+ */
+void      axl_stream_trim            (char * chunk)
+{
+	/* call to trim */
+	axl_stream_trim_with_size (chunk, NULL);
+
+	return;
+}
+
+/** 
+ * @brief The function works like \ref axl_stream_trim, but providing
+ * the count of bytes trimmed from the string.
+ *
+ * @param chunk The chunk to trim.
+ *
+ * @param trimmed An optional reference that returns the count of bytes
+ * trimmed by the operation.
+ */
+void        axl_stream_trim_with_size  (char * chunk, int * trimmed)
+{
+	int    iterator;
+	int    end;
+	int    total;
+
+	/* perform some environment check */
+	axl_return_if_fail (chunk);
+	
+	iterator = 0;
+	while (chunk[iterator] != 0) {
+		
+		/* check that the iterator is not pointing to a white
+		 * space */
+		if (! axl_stream_is_white_space (chunk + iterator))
+			break;
+		
+		/* update the iterator */
+		iterator++;
+	}
+
+	/* now get the position for the last valid character in the
+	 * chunk */
+	total   = strlen (chunk) -1;
+	end     = total;
+	while (chunk[end] != 0) {
+		
+		/* stop if a white space is found */
+		if (! axl_stream_is_white_space (chunk + end)) {
+			break;
+		}
+
+		/* update the iterator to eat the next white space */
+		end--;
+	}
+
+	/* the number of items trimmed */
+	total -= end;
+	total += iterator;
+	
+	/* copy the exact amount of non white spaces items */
+	memcpy (chunk, chunk + iterator, end - iterator + 1);
+	chunk [ end - iterator + 1] = 0;
+
+	if (trimmed != NULL)
+		*trimmed = total;
+
+	/* return the result reference */
+	return;	
+}
 
 /** 
  * @brief Allows to copy the given chunk, supposing that is a properly

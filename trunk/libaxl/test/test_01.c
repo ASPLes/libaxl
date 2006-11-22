@@ -2,6 +2,92 @@
 #include <stdio.h>
 
 /** 
+ * @brief Test Axl Item API while replacing nodes and adding content
+ * on a particular position.
+ * 
+ * @param error The optional axlError to be used to report errors.
+ * 
+ * @return true if the validity test is passed, false if not.
+ */
+bool test_23 (axlError ** error)
+{
+	axlDoc  * doc;
+	axlDoc  * doc2;
+	axlNode * node;
+	axlItem * item;
+
+	/* load the document */
+	doc = axl_doc_parse_from_file ("test_23.xml", error);
+	if (doc == NULL)
+		return false;
+
+	/* get the child1 node */
+	node = axl_doc_get (doc, "/document/childs/child3a");
+	if (node == NULL) {
+		axl_error_new (-1, "Unable to get child3a node under /document/child3a", NULL, error);
+		return false;
+	}
+
+	if (! NODE_CMP_NAME (node, "child3a")) {
+		axl_error_new (-1, "Found node that wasn't expected", NULL, error);
+		return false;
+	}
+
+	if (! axl_node_is_empty (node)) {
+		axl_error_new (-1, "Expected to find child3a node to be empty, but it wasn't found", NULL, error);
+		return false;
+	}
+	
+	/* get the child1 node */
+	node = axl_doc_get (doc, "/document/childs/child1");
+	if (node == NULL) {
+		axl_error_new (-1, "Unable to get child1 node under /document/childs", NULL, error);
+		return false;
+	}
+
+	if (! NODE_CMP_NAME (node, "child1")) {
+		axl_error_new (-1, "Found node that wasn't expected", NULL, error);
+		return false;
+	}
+
+	/* create content */
+	item = axl_item_new (ITEM_CONTENT, "This is a test");
+
+	/* replace the node */
+	axl_item_replace (axl_item_node_holder (node), item, true);
+
+	/* now parse the reference xml document */
+	doc2 = axl_doc_parse_from_file ("test_23b.xml", error);
+	if (doc2 == NULL)
+		return false;
+	
+	/* check that both documents are equal */
+	if (! axl_doc_are_equal_trimmed (doc, doc2)) {
+		axl_error_new (-1, "Expected to find equal documents, but it wasn't found", NULL, error);
+		return false;
+	}
+	
+	/* free the document */
+	axl_doc_free (doc);
+
+	/* load the document */
+	doc = axl_doc_parse_from_file ("test_23.xml", error);
+	if (doc == NULL)
+		return false;
+
+	/* check that both documents aren't equal using strict comparation */
+	if (axl_doc_are_equal (doc, doc2)) {
+		axl_error_new (-1, "Expected to find documents not equal, but it wasn't found", NULL, error);
+		return false;
+	}
+
+	axl_doc_free (doc2);
+
+	/* test ok */
+	return true;
+}
+
+/** 
  * @brief Test xml attribute support.
  * 
  * @param error The optional axlError to be used to report errors.
@@ -3055,7 +3141,7 @@ int main (int argc, char ** argv)
 		printf ("Unable to initialize Axl library\n");
 		return -1;
 	}
-	
+
 	if (test_01 (&error))
 		printf ("Test 01: basic xml parsing [   OK   ]\n");
 	else {
@@ -3301,6 +3387,15 @@ int main (int argc, char ** argv)
 		printf ("Test 22: Axl node attributes [   OK   ]\n");
 	} else {
 		printf ("Test 22: Axl node attributes [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}
+
+	if (test_23 (&error)) {
+		printf ("Test 23: Axl item modification [   OK   ]\n");
+	} else {
+		printf ("Test 23: Axl item modification [ FAILED ]\n  (CODE: %d) %s\n",
 			axl_error_get_code (error), axl_error_get (error));
 		axl_error_free (error);
 		return -1;

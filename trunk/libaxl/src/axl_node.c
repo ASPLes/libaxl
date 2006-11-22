@@ -4075,6 +4075,124 @@ void      axl_node_free_full       (axlNode * node, bool also_childs)
  */
 
 /** 
+ * @brief Allows to create an \ref axlItem, with the provided type and
+ * holding the provided data.
+ *
+ * The function won't configure the parent node holding the
+ * item. There is an alternative API that allows to create an \ref
+ * axlItem without performing a copy: \ref axl_item_new_ref.
+ *
+ * @param type The type that will represent the \ref axlItem created.
+ * @param data Data associated to the axlItem. In the case the \ref
+ * axlItem being created will represent content (\ref ITEM_CONTENT),
+ * an entity ref (\ref ITEM_REF), a comment (\ref ITEM_COMMENT) or
+ * cdata (\ref ITEM_CDATA), the function will create a local copy. In
+ * the case of a \ref ITEM_NODE, the function will copy the entire
+ * node, and all its childs.
+ * 
+ * @return A newly allocated \ref axlItem with no parent and holding
+ * the data provided.
+ */
+axlItem     * axl_item_new             (AxlItemType type,
+					axlPointer  data)
+{
+	axlItem        * item = NULL;
+	axlNode        * node;
+	axlNodeContent * content;
+
+	/* allocate an item type */
+	item         = axl_new (axlItem, 1);
+	item->type   = type;
+
+	switch (item->type) {
+	case ITEM_NODE:
+		/* item the node */
+		node                 = axl_node_copy (item->data, true, true);
+		node->holder         = item;
+		item->data           = node;
+		break;
+	case ITEM_CONTENT:
+	case ITEM_CDATA:
+	case ITEM_COMMENT:
+		/* item content */
+		content               = axl_new (axlNodeContent, 1);
+		content->content      = axl_strdup ((const char *) data);
+		content->content_size = strlen ((const char *) data);
+
+		/* item content */
+		item->data = content;
+		break;
+	case ITEM_PI:
+		/* item pi */
+		item->data = axl_pi_copy (data);
+		break;
+	case ITEM_REF:
+		/* not implemented yet */
+		break;
+	} /* end switch */
+
+	/* return item created */
+	return item;
+}
+
+/** 
+ * @brief Allows to create an \ref axlItem, with the provided type and
+ * holding the provided data.
+ *
+ * The function won't configure the parent node holding the item.
+ *
+ * @param type The type that will represent the \ref axlItem created.
+ * @param data Data associated to the axlItem. This function won't
+ * perform any copy for the data received. The user calling to this
+ * API will ensure that the data is only owned by the \ref axlItem
+ * created.
+ * 
+ * @return A newly allocated \ref axlItem with no parent and holding
+ * the data provided.
+ */
+axlItem     * axl_item_new_ref         (AxlItemType type,
+					axlPointer  data)
+{
+	axlItem        * item = NULL;
+	axlNode        * node;
+	axlNodeContent * content;
+
+	/* allocate an item type */
+	item         = axl_new (axlItem, 1);
+	item->type   = type;
+	switch (item->type) {
+	case ITEM_NODE:
+		/* item the node */
+		node = data;
+		node->holder         = item;
+		item->data           = node;
+		break;
+	case ITEM_CONTENT:
+	case ITEM_CDATA:
+	case ITEM_COMMENT:
+		/* item content */
+		content               = axl_new (axlNodeContent, 1);
+		content->content      = data;
+		content->content_size = strlen ((const char *) data);
+
+		/* item content */
+		item->data = content;
+		break;
+	case ITEM_PI:
+		/* item pi */
+		item->data = data;
+		break;
+	case ITEM_REF:
+		/* not implemented yet */
+		break;
+	} /* end switch */
+
+	/* return item created */
+	return item;
+}
+
+
+/** 
  * @brief Allows to get the reference to the document that is holding
  * the provided item without taking into consideration the item type.
  * 
@@ -4577,11 +4695,15 @@ void          axl_item_replace        (axlItem * item,
 	axl_return_if_fail (new_item);
 
 	/* realloc references */
-	if (item->previous != NULL)
+	if (item->previous != NULL) {
 		item->previous->next = new_item;
+		new_item->previous   = item->previous;
+	}
 
-	if (item->next != NULL)
+	if (item->next != NULL) {
 		item->next->previous = new_item;
+		new_item->next       = item->next;
+	}
 
 	/* realloc parent references in the case of a node */
 	if (item->type == ITEM_NODE) {
@@ -4688,6 +4810,90 @@ void          axl_item_transfer_childs_after (axlNode * old_parent,
 	old_parent->last      = NULL;
 
 	return;
+}
+
+/** 
+ * @brief Allows to check if both items are equal, considering the
+ * item type and the content associated to the item type.
+ *
+ *
+ * @param item The first item to check.  @param item2 The second item
+ * to check with the first item.  @param trimmed This paramenter
+ * allows to configure how equal checking is performed for content
+ * element (\ref ITEM_CONTENT, \ref ITEM_CDATA, \ref ITEM_COMMENT and
+ * \ref ITEM_REF).
+ *
+ * @return \ref true if the both items represents the same
+ * information, otherwise \ref false is returned. If the function
+ * receives a null value it will return false.
+ */
+bool          axl_item_are_equal      (axlItem * item,
+				       axlItem * item2,
+				       bool      trimmed)
+{
+	axlNodeContent * content;
+	axlNodeContent * content2;
+
+	/* trim content */
+	char           * trim;
+	char           * trim2;
+	bool             result;
+	
+	axl_return_val_if_fail (item, false);
+	axl_return_val_if_fail (item2, false);
+
+	/* basic type check */
+	if (item->type != item2->type)
+		return false;
+
+	/* according the type */
+	switch (item->type) {
+	case ITEM_NODE:
+		/* check that both nodes are equal */
+		return axl_node_are_equal (item->data, item2->data);
+	case ITEM_CONTENT:
+	case ITEM_CDATA:
+	case ITEM_COMMENT:
+	case ITEM_REF:
+		/* get the contenet */
+		content  = item->data;
+		content2 = item2->data;
+
+		if (! trimmed) {
+			/* check first content length */
+			if (content->content_size != content2->content_size)
+				return false;
+			
+			/* now check content value */
+			return axl_cmp (content->content, content2->content);
+		}else {
+			/* duplicate the content */
+			trim = axl_strdup (content->content);
+			trim2 = axl_strdup (content2->content);
+
+			/* trim content */
+			axl_stream_trim (trim);
+			axl_stream_trim (trim2);
+
+			/* do the comparision */
+			result = axl_cmp (trim, trim2);
+
+			/* free data */
+			axl_free (trim);
+			axl_free (trim2);
+
+			return result;
+
+		}
+	case ITEM_PI:
+		/* pi case */
+		return axl_pi_are_equal (item->data, item2->data);
+	default:
+		/* no case identified, not equal */
+		break;
+	} /* end switch */
+
+	return false;
 }
 
 /** 

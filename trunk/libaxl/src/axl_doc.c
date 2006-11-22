@@ -697,7 +697,12 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 
 			/* make this node to be completed and no child
 			 * could be set. */
-			axl_doc_pop_current_parent (doc);
+			axl_stack_pop (doc->parentNode);
+
+			/* set the parent node to receive all content
+			 * found in the next parsing elements because
+			 * the element found is totally empty */
+			*calling_node = axl_stack_peek (doc->parentNode);
 			return true;
 		}
 		
@@ -984,6 +989,9 @@ axlDoc * __axl_doc_parse_common (const char * entity, int entity_size,
 				/* seems that another node is being opened */
 				if (!__axl_doc_parse_node (stream, doc, &node, &is_empty, error))
 					return NULL;
+
+				__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "finished parsing opened node, current parent=<%s>",
+					   axl_node_get_name (node));
 
 				continue;
 			}
@@ -1650,15 +1658,15 @@ axlDoc  * axl_doc_parse_strings            (axlError ** error,
  * Internal support function which checks the provided child and its
  * childs are equal.
  */
-bool __axl_doc_are_equal (axlNode * node, axlNode * node2)
+bool __axl_doc_are_equal (axlNode * node, axlNode * node2, bool trimmed)
 {
 	int       iterator;
 	int       length;
 	int       length2;
 
-	axlNode * child;
-	axlNode * child2;
-
+	axlItem * child;
+	axlItem * child2;
+	
 	/* check if parent nodes are equal */
 	if (! axl_node_are_equal (node, node2))
 		return false;
@@ -1678,12 +1686,13 @@ bool __axl_doc_are_equal (axlNode * node, axlNode * node2)
 		return false;
 	}
 
-	while (iterator < length) {
+	/* get the first item inside the node */
+	child  = axl_item_get_first_child (node);
+	child2 = axl_item_get_first_child (node2);
 
-		/* get a referece to the childs to check */
-		child  = axl_node_get_child_nth (node, iterator);
-		child2 = axl_node_get_child_nth (node2, iterator);
-
+	/* for each item child found in both nodes */
+	while (child != NULL && child2 != NULL) {
+		
 		if (child == NULL) 
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "child from the first document is null..");
 
@@ -1691,39 +1700,41 @@ bool __axl_doc_are_equal (axlNode * node, axlNode * node2)
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "child from the second document is null..");
 
 		/* check if these nodes are also equal */
-		if (! axl_node_are_equal (child, child2)) {
-			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "nodes <%s> and <%s> aren't equal, document is not equal", 
-				   axl_node_get_name (child), axl_node_get_name (child2));
+		if (! axl_item_are_equal (child, child2, trimmed)) {
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "items  aren't equal, document is not equal");
 			return false;
 		}
 
-		/* check its childs */
-		if (! __axl_doc_are_equal (child, child2)) {
-			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "nodes <%s> and <%s> aren't equal, document is not equal", 
-				   axl_node_get_name (child), axl_node_get_name (child2));
-			return false;
+		/* check its childs in the case the axl item is
+		 * representing an item node */
+		if (axl_item_get_type (child) == ITEM_NODE) {
+			/* get a reference */
+			node  = axl_item_get_data (child);
+			node2 = axl_item_get_data (child2);
+
+			if (! __axl_doc_are_equal (node, node2, trimmed)) {
+				__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "nodes <%s> and <%s> aren't equal, document is not equal", 
+					   axl_node_get_name (node), axl_node_get_name (node2));
+				return false;
+			} /* end if */
 		}
 
-		/* update iterator count */
-		iterator++;
-	}
+		/* get a referece to the next childs to check */
+		child  = axl_item_get_next (child);
+		child2 = axl_item_get_next (child2);
+		
+	} /* end while */
 
 	/* the nodes recieved are equal */
-	return true;
+	return (child == NULL && child2 == NULL);
 }
 
 /** 
- * @brief Allows to check if the provided two references represents
- * equivalent xml documents.
- * 
- * @param doc The first XML document to check.
- * @param doc2 The second XML document to check.
- * 
- * @return true if both documents represents the same document,
- * false if not.
+ * @internal Common implementation for equal documents.
  */
-bool      axl_doc_are_equal                (axlDoc * doc, 
-						axlDoc * doc2)
+bool      axl_doc_are_equal_common (axlDoc * doc,
+				    axlDoc * doc2,
+				    bool     trimmed)
 {
 	axlNode * node;
 	axlNode * node2;
@@ -1743,8 +1754,62 @@ bool      axl_doc_are_equal                (axlDoc * doc,
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "document(b) doesn't have document root ..");
 	}
 
-	/* check document root for both */
-	return __axl_doc_are_equal (node, node2);
+	/* call to common implemenation, activating triming */
+	return __axl_doc_are_equal (node, node2, trimmed);
+}
+
+/** 
+ * @brief Allows to perform a document equal check against order,
+ * relaxing the checking done to contet found inside nodes.
+ *
+ * This function works the same as \ref axl_doc_are_equal but
+ * considering that two content are equal no matter which is the
+ * number of white spaces (in the W3C, ' ', \\t, \\r and \\n) are
+ * found starting and ending the content.
+ *
+ * Under this approach the both document aren't exactly the same, but
+ * usually, white spaces found starting and ending content have no
+ * meaning for the application processing xml. In the case you want a
+ * fully equal document checking you must \ref axl_doc_are_equal
+ *
+ * @param doc The document to check.
+ * @param doc2 The second document to check
+ * 
+ * @return \ref true if both documents are equal in the sense
+ * described, otherwise \ref false is returned.
+ */
+bool      axl_doc_are_equal_trimmed        (axlDoc * doc,
+					    axlDoc * doc2)
+{
+	/* call to common implemenation, activating triming */
+	return axl_doc_are_equal_common (doc, doc2, true);
+}
+
+/** 
+ * @brief Allows to check if the provided two references represents
+ * equivalent xml documents.
+ *
+ * There is an alternative document checking function (\ref
+ * axl_doc_are_equal_trimmed) which considered that content found
+ * inside a xml node is equal if they share the same information
+ * without considering white spaces found starting and ending both
+ * elements being checked.
+ *
+ * This function considers that two documents are equal only and only
+ * if all nodes, attributes and content found is exactly, byte by
+ * byte, as found in the other document.
+ * 
+ * @param doc The first XML document to check.
+ * @param doc2 The second XML document to check.
+ * 
+ * @return true if both documents represents the same document,
+ * false if not.
+ */
+bool      axl_doc_are_equal                (axlDoc * doc, 
+					    axlDoc * doc2)
+{
+	/* call to common implemenation, activating triming */
+	return axl_doc_are_equal_common (doc, doc2, true);
 }
 
 
@@ -2113,21 +2178,16 @@ void     axl_doc_set_child_current_parent (axlDoc * doc, axlNode * node)
 }
 
 /** 
- * @brief Allows to make current \ref axlDoc to pop current parent
+ * @internal Allows to make current \ref axlDoc to pop current parent
  * node, making the new parent node the previously opened.
+ *
+ * This API is deprecated (internal function used in the past).
  * 
  * @param doc The \ref axlDoc where the pop operation will be
  * performed.
  */
 void     axl_doc_pop_current_parent       (axlDoc * doc)
 {
-	axl_return_if_fail (doc);
-
-	/* pop current parent */
-	axl_stack_pop (doc->parentNode);
-
-	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "pop current parent node, status after operation: %d",
-		   axl_stack_size (doc->parentNode));
 	return;
 }
 
@@ -2365,6 +2425,32 @@ axlPI   * axl_pi_copy                      (axlPI  * pi)
 		_pi->content = axl_strdup (pi->content);
 
 	return _pi;
+}
+
+/** 
+ * @brief Allows to check if both provided process instructions are
+ * equal.
+ * 
+ * @param pi First process instruction to check.
+ * @param pi2 Second process instructions to check.
+ * 
+ * @return \ref true if both process instructions are equal. If some
+ * of parameters received are NULL, the function will always return
+ * \ref false.
+ */
+bool      axl_pi_are_equal                 (axlPI  * pi, 
+					    axlPI * pi2)
+{
+	/* basic null reference check */
+	axl_return_val_if_fail (pi, false);
+	axl_return_val_if_fail (pi2, false);
+
+	/* check internal data */
+	if (! axl_cmp (pi->name, pi2->name))
+		return false;
+
+	/* final check, both content must be equal */
+	return axl_cmp (pi->content, pi2->content);
 }
 
 /** 
