@@ -9,6 +9,42 @@
  * 
  * @return true if the validity test is passed, false if not.
  */
+bool test_24 (axlError ** error) {
+	if (! axl_node_has_invalid_chars ("MEDIR PIEZAS S/MUESTREO EN MAQUINA DE VISION SIN CONTACTO\n\
+\n\
+LOTES<10 UDS.                  100%PIEZAS\n\
+10 UDS.<LOTES<20 UDS.  10+20% (SOBRE 10 PIEZAS)\n\
+LOTES>20  UDS                  12+10% (SOBRE 20 PIEZAS)                    \n\
+ \n\
+¡¡¡¡ATENCION!!!!\n\
+MANIPULAR PIEZAS CON GUANTES DE LATEX EVITANDO CONTAMINAR LAS PIEZAS", -1, NULL)) {
+		axl_error_new (-1, "Expected to find invalid characters, but it wasn't found", NULL, error);
+		return false;
+	}
+
+	if (axl_node_has_invalid_chars ("MEDIR PIEZAS S/MUESTREO EN MAQUINA DE VISION SIN CONTACTO\n\
+\n\
+LOTES 10 UDS.               100%PIEZAS\n\
+10 UDS. LOTES 20 UDS.  10+20% (SOBRE 10 PIEZAS)\n\
+LOTES20  UDS                  12+10% (SOBRE 20 PIEZAS)                    \n\
+ \n\
+¡¡¡¡ATENCION!!!!\n\
+MANIPULAR PIEZAS CON GUANTES DE LATEX EVITANDO CONTAMINAR LAS PIEZAS", -1, NULL)) {
+		axl_error_new (-1, "Expected to find valid characters, but it wasn't found", NULL, error);
+		return false;
+	}
+
+	return true;
+}
+
+/** 
+ * @brief Test Axl Item API while replacing nodes and adding content
+ * on a particular position.
+ * 
+ * @param error The optional axlError to be used to report errors.
+ * 
+ * @return true if the validity test is passed, false if not.
+ */
 bool test_23 (axlError ** error)
 {
 	axlDoc  * doc;
@@ -81,6 +117,8 @@ bool test_23 (axlError ** error)
 		return false;
 	}
 
+	/* free the document */
+	axl_doc_free (doc);
 	axl_doc_free (doc2);
 
 	/* test ok */
@@ -3142,6 +3180,8 @@ int main (int argc, char ** argv)
 		return -1;
 	}
 
+	goto test;
+
 	if (test_01 (&error))
 		printf ("Test 01: basic xml parsing [   OK   ]\n");
 	else {
@@ -3396,6 +3436,17 @@ int main (int argc, char ** argv)
 		printf ("Test 23: Axl item modification [   OK   ]\n");
 	} else {
 		printf ("Test 23: Axl item modification [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}
+
+ test:
+	
+	if (test_24 (&error)) {
+		printf ("Test 24: Invalid sequences detection [   OK   ]\n");
+	}else {
+		printf ("Test 24: Invalid sequences detection [ FAILED ]\n  (CODE: %d) %s\n",
 			axl_error_get_code (error), axl_error_get (error));
 		axl_error_free (error);
 		return -1;
