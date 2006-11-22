@@ -319,81 +319,6 @@ axlNode * __axl_node_create_internal (char * name)
 
 /** 
  * @internal
- * 
- * Allows to check if the provided string have escape sequences that
- * must be defined by using the entity reference rather the value
- * itself.
- *
- * @param content The content to check.
- *
- * @param additional_size An integer reference where the additional
- * size variable will be added.
- * 
- * @return true if the string contains non valid sequences that
- * must be escaped using entity references.
- */
-bool     __axl_node_content_have_not_valid_sequences (char * content, 
-						      int    content_size,
-						      int * additional_size)
-{
-	int      iterator = 0;
-	bool     result   = false;
-	axl_return_val_if_fail (content, false);
-
-	/* reset additional size value */
-	*additional_size = 0;
-
-#ifdef SHOW_DEBUG_LOG
-	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "checking valid sequence: content size=%d", content_size);
-#endif
-
-	/* iterate over all content defined */
-	while (iterator < content_size) {
-		/* check for &apos; */
-		if (content [iterator] == '\'') {
-			result = true;
-			(*additional_size) += 5;
-		}
-
-		/* check for &quot; */
-		if (content [iterator] == '"') {
-			result = true;
-			(*additional_size) += 5;
-		}
-
-		/* check for &amp; */
-		if (content [iterator] == '&') {
-			result = true;
-			(*additional_size) += 4;
-		}
-
-		/* check for &gt; */
-		if (content [iterator] == '>') {
-			result = true;
-			(*additional_size) += 3;
-		}
-
-		/* check for &lt; */
-		if (content [iterator] == '<') {
-			result = true;
-			(*additional_size) += 3;
-		}
-
-		/* update the iterator */
-		iterator++;
-	}
-
-#ifdef SHOW_DEBUG_LOG
-	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "valid sequence checking result=%d: content size=%d, additional size=%d", 
-		 result, content_size, *additional_size);
-#endif
-
-	/* return results */
-	return result;
-}
-
-/** 
- * @internal
  *
  * Internal function which allocates the enough memory to copy
  * received content changing all escape sequences.
@@ -893,8 +818,8 @@ void      axl_node_set_attribute      (axlNode * node, char * attribute, char * 
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "setting attribute: %s='%s'", attribute, value);
 
 	/* check attribute name */
-	if (__axl_node_content_have_not_valid_sequences (attribute, strlen (attribute),
-							 &additional_size)) {
+	if (axl_node_has_invalid_chars (attribute, strlen (attribute),
+					&additional_size)) {
 
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found attribute content with escapable, non-valid content");
 		_attr = __axl_node_content_copy_and_escape (attribute, 
@@ -908,8 +833,8 @@ void      axl_node_set_attribute      (axlNode * node, char * attribute, char * 
 
 	/* check attribute value */
 	additional_size = 0;
-	if (__axl_node_content_have_not_valid_sequences (value, strlen (value),
-							 &additional_size)) {
+	if (axl_node_has_invalid_chars (value, strlen (value),
+					&additional_size)) {
 
 		_value = __axl_node_content_copy_and_escape (value, 
 							     strlen (value),
@@ -2228,8 +2153,8 @@ void      axl_node_set_content        (axlNode * node, char * content, int conte
 	itemContent  = axl_new (axlNodeContent, 1);
 
 	/* check if the string received have escapable characters */
-	if (__axl_node_content_have_not_valid_sequences (content, content_size, 
-							 &additional_size)) {
+	if (axl_node_has_invalid_chars (content, content_size, 
+					&additional_size)) {
 		/* copy content */
 		itemContent->content        = __axl_node_content_copy_and_escape (content, 
 										  content_size, 
@@ -3965,6 +3890,100 @@ int       axl_node_dump_at                  (axlNode * node,
 
 	/* return the result */
 	return desp;
+}
+
+/** 
+ * @brief Allows to check if the provided string have escape sequences
+ * that must be defined by using the entity reference rather the value
+ * itself.
+ *
+ * This function is useful in the sense it allows to know if a
+ * particular content will contain elements not allowed by the XML 1.0
+ * definition to be placed directly (like &, <, ;, ' and ").
+ *
+ * @param content The content to check.
+ *
+ * @param content_size The size of the content to be checked. If -1 is
+ * provided, the function will calculate the content length.
+ *
+ * @param added_size An integer reference where the additional size
+ * variable will be added. This additional size will be the space
+ * required to replace non-valid characters with entity
+ * references. This parameter is optional, so passing a NULL value is
+ * allowed.
+ * 
+ * @return true if the string contains non valid sequences that
+ * must be escaped using entity references.
+ */
+bool      axl_node_has_invalid_chars        (const char * content,
+					     int          content_size,
+					     int        * added_size)
+{
+	int      iterator = 0;
+	bool     result   = false;
+	axl_return_val_if_fail (content, false);
+
+	/* reset additional size value */
+	if (added_size != NULL)
+		*added_size = 0;
+
+	/* calculate the content size */
+	if (content_size == -1)
+		content_size = strlen (content);
+
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "checking valid sequence: content size=%d", content_size);
+
+	/* iterate over all content defined */
+	while (iterator < content_size) {
+		/* check for &apos; */
+		if (content [iterator] == '\'') {
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found invalid sequence='\\'");
+			result = true;
+			if (added_size != NULL)
+				(*added_size) += 5;
+		}
+
+		/* check for &quot; */
+		if (content [iterator] == '"') {
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found invalid sequence='\"'");
+			result = true;
+			if (added_size != NULL)
+				(*added_size) += 5;
+		}
+
+		/* check for &amp; */
+		if (content [iterator] == '&') {
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found invalid sequence='&'");
+			result = true;
+			if (added_size != NULL)
+				(*added_size) += 4;
+		}
+
+		/* check for &gt; */
+		if (content [iterator] == '>') {
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found invalid sequence='>'");
+			result = true;
+			if (added_size != NULL)
+				(*added_size) += 3;
+		}
+
+		/* check for &lt; */
+		if (content [iterator] == '<') {
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found invalid sequence='<'");
+			result = true;
+			if (added_size != NULL)
+				(*added_size) += 3;
+		}
+
+		/* update the iterator */
+		iterator++;
+	}
+
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "valid sequence checking result=%d: content size=%d, additional size=%d resul=%s", 
+		   result, content_size, (added_size != NULL) ? *added_size : 0, result ? "HAS INVALID SEQUENCES" : "HAS NO INVALID SEQUENCES");
+
+	/* return results */
+	return result;
 }
 
 void __axl_node_free_internal (axlNode * node, bool also_childs)
