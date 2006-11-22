@@ -82,6 +82,9 @@ int       axl_doc_get_flat_size            (axlDoc * doc);
 bool      axl_doc_are_equal                (axlDoc * doc, 
 					    axlDoc * doc2);
 
+bool      axl_doc_are_equal_trimmed        (axlDoc * doc,
+					    axlDoc * doc2);
+
 axlNode * axl_doc_get_root                 (axlDoc * doc);
 
 void      axl_doc_set_root                 (axlDoc * doc, 
@@ -124,6 +127,9 @@ axlPI   * axl_pi_create                    (char * name,
 					    char * content);
 
 axlPI   * axl_pi_copy                      (axlPI  * pi);
+
+bool      axl_pi_are_equal                 (axlPI  * pi, 
+					    axlPI * pi2);
 
 char    * axl_pi_get_name                  (axlPI  * pi);
 
