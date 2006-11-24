@@ -3180,8 +3180,6 @@ int main (int argc, char ** argv)
 		return -1;
 	}
 
-	goto test;
-
 	if (test_01 (&error))
 		printf ("Test 01: basic xml parsing [   OK   ]\n");
 	else {
@@ -3441,8 +3439,6 @@ int main (int argc, char ** argv)
 		return -1;
 	}
 
- test:
-	
 	if (test_24 (&error)) {
 		printf ("Test 24: Invalid sequences detection [   OK   ]\n");
 	}else {
