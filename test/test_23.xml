@@ -1,0 +1,26 @@
+<?xml version='1.0' ?>
+<document>
+  Some content inside the document <strong>this content goes
+  bold</strong> more data stored directly inside the document node.
+
+ <childs>
+   <!-- here goes a comment before text block -->
+   More text after child declaration.
+   <child4c />
+   <child1 />
+
+   <child4a />
+
+   This is a text <b> more text </b> text ... <max> more data </max>
+
+   <child3a />
+
+   <child2 />
+   <child3> 
+     This more content inside the child3 element
+     <strong>value</strong> more text <italic> italic text </italic>
+     and finaly more text.
+   </child3>
+ </childs>
+
+</document>
