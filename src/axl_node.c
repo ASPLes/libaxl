@@ -1038,6 +1038,35 @@ char    * axl_node_get_attribute_value_trans (axlNode * node, char * attribute)
 }
 
 /** 
+ * @brief Convenience function that allows to check if a particular
+ * attribute with a particular value is found at the provided node.
+ *
+ * This function will check if the attribute provided in the node is
+ * found and in such case, if the value that is contained inside the
+ * node is actually the same as the one provide to this function.
+ *
+ * You can also use hits macro associated: \ref HAS_ATTR_VALUE.
+ * 
+ * @param node The node that will be checked.
+ * @param attribute The attribute to be checked.
+ * @param value The value to checked if the attribute is found.
+ * 
+ * @return \ref true if the node has the attribute with the provided
+ * value.
+ */
+bool axl_node_has_attribute_value       (axlNode * node, 
+					 char * attribute, 
+					 char * value)
+{
+	axl_return_val_if_fail (node, false);
+	axl_return_val_if_fail (attribute, false);
+	axl_return_val_if_fail (value, false);
+
+	/* return if the attribute value found is the same */
+	return axl_cmp (axl_node_get_attribute_value (node, attribute), value);
+}
+
+/** 
  * @internal function which checks and initializes the hash used for
  * anotated data.
  */
