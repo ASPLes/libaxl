@@ -71,6 +71,16 @@ char    * axl_node_get_attribute_value_copy (axlNode * node, char * attribute);
 
 char    * axl_node_get_attribute_value_trans (axlNode * node, char * attribute);
 
+/**
+ * @brief Convenience macro wrapping \ref
+ * axl_node_has_attribute_value.
+ */
+#define HAS_ATTR_VALUE(node, attr,value) (axl_node_has_attribute_value (node, attr, value))
+
+bool      axl_node_has_attribute_value       (axlNode * node, 
+					      char * attribute, 
+					      char * value);
+
 /* user defined data interface store arbitrary data inside the
  * hash  */
 void      axl_node_anotate_data                 (axlNode     * node, 
