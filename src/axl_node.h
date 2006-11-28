@@ -63,7 +63,33 @@ void      axl_node_set_attribute            (axlNode * node, char * attribute, c
 
 void      axl_node_set_attribute_ref        (axlNode * node, char * attribute, char * value);
 
+/** 
+ * @brief Macro definition which works as an alias for \ref
+ * axl_node_get_attribute_value.
+ * 
+ * @param node The node being checked to have an attribute value.
+ * @param attr The attribute that is being check to be present in the node provided.
+ * 
+ * @return \ref true if the node has the provided attribute, otherwise
+ * \ref false is returned.
+ */
+#define HAS_ATTR(node,attr) axl_node_has_attribute(node,attr)
+
 bool      axl_node_has_attribute            (axlNode * node, char * attribute);
+
+/** 
+ * @brief Macro definition, which works as an alias for \ref
+ * axl_node_get_attribute_value.
+ * 
+ * @param node The node that is being required to return the content
+ * of a particular node.
+ *
+ * @param attr The attribute that is requested.
+ * 
+ * @return The value assocaited to the attribute value or null if it
+ * fails. See \ref axl_node_get_attribute_value.
+ */
+#define ATTR_VALUE(node,attr) axl_node_get_attribute_value(node, attr)
 
 char    * axl_node_get_attribute_value      (axlNode * node, char * attribute);
 
