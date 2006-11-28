@@ -355,6 +355,12 @@ struct _axlDoc {
 	 * or after the xml header definition.
 	 */
 	bool    headerProcess;
+
+	/** 
+	 * @internal Factory to create items in a memory efficient
+	 * manner.
+	 */
+	axlItemFactory * item_factory;
 };
 
 struct _axlPI {
@@ -387,8 +393,9 @@ axlDoc * __axl_doc_new (bool create_parent_stack)
 	axlDoc    * result = axl_new (axlDoc, 1);
 
 	/* default container lists */
-	result->parentNode = axl_stack_new (NULL);
-	result->piTargets  = axl_list_new (axl_list_always_return_1, (axlDestroyFunc) axl_pi_free);
+	result->parentNode   = axl_stack_new (NULL);
+	result->piTargets    = axl_list_new (axl_list_always_return_1, (axlDestroyFunc) axl_pi_free);
+	result->item_factory = axl_item_factory_create ();
 
 	return result;
 }
@@ -2828,6 +2835,10 @@ void     axl_doc_free         (axlDoc * doc)
 	if (doc->parentNode != NULL)
 		axl_stack_free (doc->parentNode);
 
+	/* free item factory */
+	if (doc->item_factory != NULL)
+		axl_item_factory_free (doc->item_factory);
+
 	/* free pi targets read */
 	if (doc->piTargets != NULL)
 		axl_list_free (doc->piTargets);
@@ -3047,6 +3058,20 @@ bool      axl_doc_consume_pi (axlDoc * doc, axlNode * node,
 
 
 	return true;
+}
+
+/** 
+ * @internal Function that allows to get axlItemFactory associated to
+ * the provided document.
+ * 
+ * @param doc The axl document that is requested to return its item
+ * factory.
+ * 
+ * @return An internal reference to the item factory. Do not dealloc.
+ */
+axlItemFactory * axl_doc_get_item_factory  (axlDoc * doc)
+{
+	return doc->item_factory;
 }
 
 /* @} */

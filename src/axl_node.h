@@ -57,11 +57,16 @@ axlNode * axl_node_copy                     (axlNode * node,
 
 axlDoc  * axl_node_get_doc                  (axlNode * node);
 
-void      axl_node_set_doc                  (axlNode * node, axlDoc * doc);
+void      axl_node_set_doc                  (axlNode * node, 
+					     axlDoc  * doc);
 
-void      axl_node_set_attribute            (axlNode * node, char * attribute, char * value);
+void      axl_node_set_attribute            (axlNode    * node, 
+					     char * attribute, 
+					     char * value);
 
-void      axl_node_set_attribute_ref        (axlNode * node, char * attribute, char * value);
+void      axl_node_set_attribute_ref        (axlNode * node, 
+					     char    * attribute, 
+					     char    * value);
 
 /** 
  * @brief Macro definition which works as an alias for \ref
@@ -75,7 +80,8 @@ void      axl_node_set_attribute_ref        (axlNode * node, char * attribute, c
  */
 #define HAS_ATTR(node,attr) axl_node_has_attribute(node,attr)
 
-bool      axl_node_has_attribute            (axlNode * node, char * attribute);
+bool      axl_node_has_attribute            (axlNode    * node, 
+					     char * attribute);
 
 /** 
  * @brief Macro definition, which works as an alias for \ref
@@ -91,11 +97,14 @@ bool      axl_node_has_attribute            (axlNode * node, char * attribute);
  */
 #define ATTR_VALUE(node,attr) axl_node_get_attribute_value(node, attr)
 
-char    * axl_node_get_attribute_value      (axlNode * node, char * attribute);
+char    * axl_node_get_attribute_value      (axlNode    * node, 
+					     char       * attribute);
 
-char    * axl_node_get_attribute_value_copy (axlNode * node, char * attribute);
+char    * axl_node_get_attribute_value_copy (axlNode    * node, 
+					     char       * attribute);
 
-char    * axl_node_get_attribute_value_trans (axlNode * node, char * attribute);
+char    * axl_node_get_attribute_value_trans (axlNode * node, 
+					      char * attribute);
 
 /**
  * @brief Convenience macro wrapping \ref
@@ -270,8 +279,8 @@ int       axl_node_dump_at                  (axlNode * node,
 					     int       tabular);
 
 bool      axl_node_has_invalid_chars        (const char * content,
-					     int          content_size,
-					     int        * added_size);
+					     int    content_size,
+					     int  * added_size);
 
 void      axl_node_free            (axlNode * node);
 
@@ -340,6 +349,12 @@ bool          axl_item_are_equal      (axlItem * item,
 
 void          axl_item_free           (axlItem * item,
 				       bool      dealloc);
+
+axlItemFactory * axl_item_factory_create ();
+
+axlItem        * axl_item_factory_get (axlItemFactory * factory);
+
+void             axl_item_factory_free (axlItemFactory * factory);
 
 END_C_DECLS
 
