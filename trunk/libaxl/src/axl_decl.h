@@ -113,6 +113,11 @@ typedef struct _axlDoc axlDoc;
  */
 typedef struct _axlItem axlItem;
 
+/** 
+ * @internal Item factory representation.
+ */
+typedef struct _axlItemFactory axlItemFactory;
+
 /**
  * @brief Axl XML node type definition.
  *
@@ -473,7 +478,7 @@ typedef enum {
 	 * reference to an \ref axlNode.
 	 *
 	 */
-	ITEM_NODE      = 1,
+	ITEM_NODE      = 1 << 0,
 	/** 
 	 * @brief The \ref axlItem is encapsulating an node
 	 * content. Calling to \ref axl_item_get_data will return a
@@ -484,14 +489,14 @@ typedef enum {
 	 * is stored on the \ref axlItem.
 	 *
 	 */
-	ITEM_CONTENT   = 2,
+	ITEM_CONTENT   = 1 << 1,
 	/** 
 	 * @brief The \ref axlItem is encapsulating an application
 	 * process instruction. Calling to \ref axl_item_get_data will
 	 * return a reference to a \ref axlPI.
 	 *
 	 */
-	ITEM_PI        = 3,
+	ITEM_PI        = 1 << 2,
 	
 	/** 
 	 * @brief The \ref axlItem is encapsulating an xml
@@ -505,7 +510,7 @@ typedef enum {
 	 * axl_item_get_content to get the comment content and the size that
 	 * is stored on the \ref axlItem.
 	 */
-	ITEM_COMMENT   = 4,
+	ITEM_COMMENT   = 1 << 3,
 	/** 
 	 * @brief The \ref axlItem is encapsulating an xml entity
 	 * reference that wasn't resolved yet.
@@ -514,7 +519,7 @@ typedef enum {
 	 * axl_item_get_content to get the entity reference name and the size that
 	 * is stored on the \ref axlItem.
 	 */
-	ITEM_REF       = 5,
+	ITEM_REF       = 1 << 4,
 	/** 
 	 * @brief The \ref axlItem is encapsulating an xml content
 	 * that was enclosed using the <![CDATA[]]> construction. This
@@ -529,7 +534,14 @@ typedef enum {
 	 * is stored on the \ref axlItem.
 	 *
 	 */
-	ITEM_CDATA     = 6
+	ITEM_CDATA     = 1 << 6,
+
+	/** 
+	 * @internal Item type which allows to signal that the item
+	 * comes from an item factory and should be deallocated in the
+	 * usual manner.
+	 */
+	ITEM_FROM_FACTORY = 1 << 7,
 }AxlItemType;
 
 /** 

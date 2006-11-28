@@ -616,7 +616,7 @@ axlNode * axl_node_copy                     (axlNode * node,
 			
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "  new item created (copy operation) with parent=<%s> and type=%d",
 				   copy->parent->name,
-				   copy->type);
+				   axl_node_get_type (copy));
 
 			/* set the content */
 			axl_item_set_child_ref (result, copy);
@@ -679,8 +679,8 @@ void      axl_node_set_doc                  (axlNode * node, axlDoc * doc)
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "node received doesn't have a holder reference, creating");
 
 		/* create an empty reference */
-		item         = axl_new (axlItem, 1);
-		item->type   = ITEM_NODE;
+		item         = axl_item_factory_get (axl_doc_get_item_factory (doc)); 
+		item->type   = ITEM_NODE | ITEM_FROM_FACTORY;
 		item->data   = node;
 		node->holder = item;
 		
@@ -1602,8 +1602,8 @@ void      axl_node_set_is_empty (axlNode * node, bool     empty)
 
 		/* check item node that represents content, and
 		 * therefore, an emptyless state */
-		if (child->type == ITEM_CONTENT || 
-		    child->type == ITEM_CDATA) {
+		if (axl_item_get_type (child) == ITEM_CONTENT || 
+		    axl_item_get_type (child) == ITEM_CDATA) {
 
 			/* remove the node */
 			axl_item_remove (child, true);
@@ -1925,7 +1925,7 @@ axlNode * axl_node_get_first_child    (axlNode * node)
 	item = node->first;
 	while (item != NULL) {
 		/* check the item type */
-		if (item->type == ITEM_NODE)
+		if (axl_item_get_type (item) == ITEM_NODE)
 			return item->data;
 
 		/* get the next */
@@ -1957,7 +1957,7 @@ axlNode * axl_node_get_last_child     (axlNode * node)
 	item = node->last;
 	while (item != NULL) {
 		/* check the item type */
-		if (item->type == ITEM_NODE)
+		if (axl_item_get_type (item) == ITEM_NODE)
 			return item->data;
 
 		/* get the next */
@@ -2016,8 +2016,8 @@ bool          axl_node_is_empty        (axlNode * node)
 		
 		/* check item node that represents content, and
 		 * therefore, an emptyless state */
-		if (child->type == ITEM_CONTENT || 
-		    child->type == ITEM_CDATA) {
+		if (axl_item_get_type (child) == ITEM_CONTENT || 
+		    axl_item_get_type (child) == ITEM_CDATA) {
 
 			/* the node has content */
 			return false;
@@ -2096,8 +2096,8 @@ char    * axl_node_get_content     (axlNode * node, int * content_size)
 		
 		/* check item node that represents content, and
 		 * therefore, an emptyless state */
-		if (child->type == ITEM_CONTENT || 
-		    child->type == ITEM_CDATA) {
+		if (axl_item_get_type (child) == ITEM_CONTENT || 
+		    axl_item_get_type (child) == ITEM_CDATA) {
 			/* cast a reference */
 			content = child->data;
 
@@ -2435,8 +2435,8 @@ char    * axl_node_get_content_trim   (axlNode * node,
 		
 		/* check item node that represents content, and
 		 * therefore, an emptyless state */
-		if (child->type == ITEM_CONTENT || 
-		    child->type == ITEM_CDATA) {
+		if (axl_item_get_type (child) == ITEM_CONTENT || 
+		    axl_item_get_type (child) == ITEM_CDATA) {
 			/* cast a reference */
 			content = child->data;
 
@@ -2784,7 +2784,7 @@ bool          axl_node_have_childs        (axlNode * node)
 	item = node->first;
 	while (item != NULL) {
 		/* check item type */
-		if (item->type == ITEM_NODE)
+		if (axl_item_get_type (item) == ITEM_NODE)
 			return true;
 
 		/* go to the next */
@@ -2824,7 +2824,7 @@ axlNode * axl_node_get_child_called   (axlNode * parent, char * name)
 	item = parent->first;
 	while (item != NULL) {
 		/* check item type */
-		if (item->type == ITEM_NODE) {
+		if (axl_item_get_type (item) == ITEM_NODE) {
 			/* get a reference to the node */
 			node = item->data;
 
@@ -2873,7 +2873,7 @@ axlNode * axl_node_get_child_nth      (axlNode * parent, int position)
 	iterator = 0;
 	while (item != NULL) {
 		/* check the item type */
-		if (item->type == ITEM_NODE) {
+		if (axl_item_get_type (item) == ITEM_NODE) {
 			if (iterator == position) {
 				return item->data;
 			} else
@@ -2912,7 +2912,7 @@ int       axl_node_get_child_num      (axlNode * parent)
 	while (item != NULL) {
 		
 		/* check item type */
-		if (item->type == ITEM_NODE)
+		if (axl_item_get_type (item) == ITEM_NODE)
 			count++;
 		
 		/* get the next */
@@ -2969,7 +2969,7 @@ axlList * axl_node_get_childs         (axlNode * node)
 
 	while (child != NULL) {
 		/* check the node type */
-		if (child->type == ITEM_NODE) {
+		if (axl_item_get_type (child) == ITEM_NODE) {
 			/* add the child to the list */
 			axl_list_add (result, child->data);
 			
@@ -3165,7 +3165,7 @@ bool          axl_node_has_pi_target            (axlNode * node,
 	while (item != NULL) {
 		
 		/* check the type */
-		if (item->type == ITEM_PI) {
+		if (axl_item_get_type (item) == ITEM_PI) {
 			/* get a reference */
 			pi = item->data;
 
@@ -3208,7 +3208,7 @@ char    * axl_node_get_pi_target_content    (axlNode * node,
 	while (item != NULL) {
 		
 		/* check the type */
-		if (item->type == ITEM_PI) {
+		if (axl_item_get_type (item) == ITEM_PI) {
 			/* get a reference */
 			pi = item->data;
 
@@ -3336,7 +3336,7 @@ axlList * axl_node_get_pi_target_list       (axlNode * node)
 	while (item != NULL) {
 		
 		/* check the type */
-		if (item->type == ITEM_PI) {
+		if (axl_item_get_type (item) == ITEM_PI) {
 			/* create the result list */
 			if (result == NULL)
 				result = axl_list_new (axl_list_always_return_1, (axlDestroyFunc) axl_pi_free);	 
@@ -3484,7 +3484,7 @@ int       axl_node_get_flat_size            (axlNode * node, bool pretty_print, 
 	item = node->first;
 	while (item != NULL) {
 		/* according to the type, check a size */
-		switch (item->type) {
+		switch (axl_item_get_type (item)) {
 		case ITEM_NODE:
 			/* count how many bytes the node holds */
 			result += axl_node_get_flat_size (item->data, pretty_print, level + 1, tabular);
@@ -3521,6 +3521,9 @@ int       axl_node_get_flat_size            (axlNode * node, bool pretty_print, 
 			/* item ref + '&' + ';' */
 			content = (axlNodeContent *) item->data;
 			result += content->content_size + 2;
+			break;
+		case ITEM_FROM_FACTORY:
+			/* never reached */
 			break;
 		}
 		/* get next item */
@@ -3666,7 +3669,7 @@ int __axl_node_dump_items (axlItem * item, char * content, int level, bool prett
 	/* get first child */
 	while (item != NULL) {
 		/* according to the type, check a size */
-		switch (item->type) {
+		switch (axl_item_get_type (item)) {
 		case ITEM_NODE:
 			/* write axl node content */
 			desp  = axl_node_dump_at (item->data, content, desp, pretty_print, level + 1, tabular);
@@ -3762,6 +3765,9 @@ int __axl_node_dump_items (axlItem * item, char * content, int level, bool prett
 			
 			memcpy (content + desp, ";", 1);
 			desp += 1;
+			break;
+		case ITEM_FROM_FACTORY:
+			/* never reached */
 			break;
 		}
 		
@@ -4060,8 +4066,10 @@ void __axl_node_free_internal (axlNode * node, bool also_childs)
 	} /* end if */
 
 	/* free the item itself */
-	if (node->holder)
-		axl_free (node->holder);
+	if (node->holder) {
+		if ((node->holder->type & ITEM_FROM_FACTORY) == 0)
+			axl_free (node->holder);
+	}
 
 	/* do not free the node itself */
 	return;
@@ -4152,7 +4160,7 @@ axlItem     * axl_item_new             (AxlItemType type,
 	item         = axl_new (axlItem, 1);
 	item->type   = type;
 
-	switch (item->type) {
+	switch (axl_item_get_type (item)) {
 	case ITEM_NODE:
 		/* item the node */
 		node                 = axl_node_copy (item->data, true, true);
@@ -4176,6 +4184,9 @@ axlItem     * axl_item_new             (AxlItemType type,
 		break;
 	case ITEM_REF:
 		/* not implemented yet */
+		break;
+	case ITEM_FROM_FACTORY:
+		/* never reached */
 		break;
 	} /* end switch */
 
@@ -4208,7 +4219,8 @@ axlItem     * axl_item_new_ref         (AxlItemType type,
 	/* allocate an item type */
 	item         = axl_new (axlItem, 1);
 	item->type   = type;
-	switch (item->type) {
+
+	switch (axl_item_get_type (item)) {
 	case ITEM_NODE:
 		/* item the node */
 		node = data;
@@ -4232,6 +4244,9 @@ axlItem     * axl_item_new_ref         (AxlItemType type,
 		break;
 	case ITEM_REF:
 		/* not implemented yet */
+		break;
+	case ITEM_FROM_FACTORY:
+		/* never reached */
 		break;
 	} /* end switch */
 
@@ -4459,10 +4474,8 @@ axlItem     * axl_item_get_last_child  (axlNode * node)
  */
 AxlItemType   axl_item_get_type        (axlItem * item)
 {
-	axl_return_val_if_fail (item, -1);
-
 	/* return stored type */
-	return item->type;
+	return item->type & (~ ITEM_FROM_FACTORY);
 }
 
 /** 
@@ -4517,7 +4530,7 @@ char        * axl_item_get_content     (axlItem * item,
 	/* check if the item reference is NULL */
 	axl_return_val_if_fail (item, 
 				NULL);
-	axl_return_val_if_fail (item->type != ITEM_NODE && item->type != ITEM_PI, 
+	axl_return_val_if_fail (axl_item_get_type (item) != ITEM_NODE && axl_item_get_type (item) != ITEM_PI, 
 				NULL);
 
 	/* get the content */
@@ -4559,7 +4572,7 @@ void axl_item_set_child (axlNode * parent, AxlItemType type, axlPointer data)
 
 	/* check if the node received already have a pointer to a
 	 * holder created */
-	if (type == ITEM_NODE) {
+	if (type & ITEM_NODE) {
 		/* get a reference to the node */
 		node = (axlNode *) data;
 
@@ -4569,13 +4582,18 @@ void axl_item_set_child (axlNode * parent, AxlItemType type, axlPointer data)
 
 	/* create an item to hold the child, configuring the node, the
 	 * parent and the document */
-	if (item == NULL)
-		item   = axl_new (axlItem, 1);
+	if (item == NULL) {
+		if ((parent->holder != NULL) && (parent->holder->doc != NULL)) {
+			item = axl_item_factory_get (axl_doc_get_item_factory (parent->holder->doc));
+			type = type | ITEM_FROM_FACTORY; 
+		} else 
+			item   = axl_new (axlItem, 1);
+	}
 	item->type     = type;
 	item->data     = data;
 	item->doc      = (parent->holder != NULL) ? parent->holder->doc : NULL;
 
-	if (type == ITEM_NODE) {
+	if (item->type & ITEM_NODE) {
 		/* now configure the item that will hold the new child */
 		node->holder  = item;
 		
@@ -4641,10 +4659,10 @@ axlItem * axl_item_copy (axlItem * item, axlNode * set_parent)
 
 	/* allocate an copy type */
 	copy         = axl_new (axlItem, 1);
-	copy->type   = item->type;
+	copy->type   = axl_item_get_type (item);
 	copy->parent = set_parent;
 
-	switch (item->type) {
+	switch (axl_item_get_type (item)) {
 	case ITEM_NODE:
 		/* copy the node */
 		node                 = axl_node_copy (item->data, true, true);
@@ -4668,6 +4686,9 @@ axlItem * axl_item_copy (axlItem * item, axlNode * set_parent)
 		break;
 	case ITEM_REF:
 		/* not implemented yet */
+		break;
+	case ITEM_FROM_FACTORY:
+		/* never reached */
 		break;
 	} /* end switch */
 
@@ -4701,7 +4722,7 @@ void          axl_item_remove          (axlItem * item,
 		item->next->previous = item->previous;
 
 	/* realloc parent references in the case of a node */
-	if (item->type == ITEM_NODE) {
+	if (axl_item_get_type (item) == ITEM_NODE) {
 		if (item->previous == NULL)
 			item->parent->first = item->next;
 
@@ -4754,7 +4775,7 @@ void          axl_item_replace        (axlItem * item,
 	}
 
 	/* realloc parent references in the case of a node */
-	if (item->type == ITEM_NODE) {
+	if (axl_item_get_type (item) == ITEM_NODE) {
 		if (item->previous == NULL)
 			item->parent->first = new_item;
 
@@ -4891,11 +4912,11 @@ bool          axl_item_are_equal      (axlItem * item,
 	axl_return_val_if_fail (item2, false);
 
 	/* basic type check */
-	if (item->type != item2->type)
+	if (axl_item_get_type (item) != axl_item_get_type (item2))
 		return false;
 
 	/* according the type */
-	switch (item->type) {
+	switch (axl_item_get_type (item)) {
 	case ITEM_NODE:
 		/* check that both nodes are equal */
 		return axl_node_are_equal (item->data, item2->data);
@@ -4959,7 +4980,7 @@ void          axl_item_free           (axlItem * item,
 
 	
 	/* according the type */
-	switch (item->type) {
+	switch (axl_item_get_type (item)) {
 	case ITEM_NODE:
 		/* free the node */
 		axl_node_free (item->data);
@@ -4971,18 +4992,110 @@ void          axl_item_free           (axlItem * item,
 		/* all of them, managed equally */
 		axl_free (((axlNodeContent *)item->data)->content);
 		axl_free ((axlNodeContent *)item->data);
-		axl_free (item);
+		
+		if ((item->type & ITEM_FROM_FACTORY) == 0)
+			axl_free (item);
 		break;
 	case ITEM_PI:
 		/* an process instruction */
 		axl_pi_free (item->data);
 		
 		/* free the item */
-		axl_free (item);
+		if ((item->type & ITEM_FROM_FACTORY) == 0)
+			axl_free (item);
+		break;
+	case ITEM_FROM_FACTORY:
+		/* never reached */
 		break;
 		
 	} /* end switch */
 
+
+	return;
+}
+
+typedef struct _axlItemBlock axlItemBlock;
+
+struct _axlItemBlock {
+	axlItem       * items;
+	axlItemBlock  * next;
+};
+
+struct _axlItemFactory {
+	int       count;
+	int       step;
+	axlItemBlock * block;
+};
+
+
+axlItemFactory * axl_item_factory_create ()
+{
+	axlItemFactory * result;
+
+	/* create the first node */
+	result        = axl_new (axlItemFactory, 1);
+	result->step  = 8192 / sizeof (axlItem);
+	
+	/* create the first block */
+	result->block        = axl_new (axlItemBlock, 1);
+	result->block->items = axl_new (axlItem, result->step);
+
+	/* return result created */
+	return result;
+}
+
+axlItem        * axl_item_factory_get (axlItemFactory * factory)
+{
+	axlItemBlock * block;
+
+	/* update factory used blocks */
+	factory->count++;
+
+	/* check if the have to alloc a new block */
+	if ((factory->count) > factory->step) {
+		block          = axl_new (axlItemBlock, 1);
+		block->items   = axl_new (axlItem, factory->step);
+		factory->count = 1;
+
+		/* configure next for the new block created */
+		block->next    = factory->block;
+
+		/* configure new factory block */
+		factory->block = block;
+	}
+
+	/* return item created */
+	return &(factory->block->items [factory->count - 1]);
+
+}
+
+void             axl_item_factory_free (axlItemFactory * factory)
+{
+	axlItemBlock * block;
+	axlItemBlock * aux;
+
+	/* do nothing if null received */
+	if (factory == NULL)
+		return;
+
+	/* get the first block */
+	block = factory->block;
+	
+	while (block != NULL) {
+		
+		/* get a reference to the next */
+		aux = block->next;
+
+		/* free items and the block */
+		axl_free (block->items);
+		axl_free (block);
+
+		/* get the next */
+		block = aux;
+
+	} /* end while */
+
+	axl_free (factory);
 
 	return;
 }

@@ -168,6 +168,8 @@ bool  axl_doc_consume_pi                   (axlDoc     * doc,
 					    axlStream  * stream, 
 					    axlError  ** error);
 
+axlItemFactory * axl_doc_get_item_factory  (axlDoc * doc);
+
 /* @} */
 
 END_C_DECLS
