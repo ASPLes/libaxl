@@ -587,7 +587,6 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 	char    * string_aux2;
 	axlNode * node;
 	int       matched_chunk;
-	int       iterator;
 	int       length;
 	bool      delim;
 	
@@ -609,8 +608,8 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 
 	/* get node name, keeping in mind the following:
 	   chunk_matched
-	   >: 0
-	   />: 1
+	   >  : 0
+	   /> : 1
 	   " ": 2
 	 */
 	string_aux = axl_stream_get_until (stream, NULL, &matched_chunk, true, 2, ">", " ");
@@ -633,13 +632,8 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 			/* flag as matched /> */
 			matched_chunk          = 1;
 			string_aux[length - 1] = 0;
-
-			/* clear all white spaces */
-			iterator               = 2;
-			while (axl_stream_is_white_space (string_aux + length - iterator))
-				string_aux [length - iterator] = 0;
-		}
-	}
+		} /* end if */
+	} /* end if */
 
 	/* create the node and associate it */
 	axl_stream_nullify (stream, LAST_CHUNK);
@@ -676,8 +670,7 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 
 	/* now, until the node ends, we have to find the node
 	 * attributes or the node defintion end */
-	iterator = 0;
-	do {
+	while (1) {
 		/* check if we have an attribute for the node, or the node
 		 * definition have ended or the node definition is an empty
 		 * one 
@@ -779,19 +772,15 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 			AXL_CONSUME_SPACES (stream);
 			continue;
 		}
+		
+		/* if reached this point, error found */
+		axl_error_new (-2, "Parse error while reading a node being opened", stream, error);
+		axl_stream_free (stream);
+		return false;
 
-		/* do not iterate for ever */
-		if (iterator == 3) {
-			axl_error_new (-2, "Parse error while reading a node being opened", stream, error);
-			axl_stream_free (stream);
-			return false;
-		}
-		iterator++;
-	} while (axl_stream_remains (stream));
-
-	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found end xml node definition (2)");
+	} /* end while */
 	
-	/* document properly parsed */
+	/* node properly parsed  */
 	return true;
 }
 
