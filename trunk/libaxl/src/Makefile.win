@@ -9,7 +9,8 @@ OBJ  = axl.o \
        axl_node.o \
        axl_stack.o \
        axl_hash.o \
-       axl_stream.o
+       axl_stream.o \
+       axl_factory.o
 
 DLL        = $(axl_dll).dll
 IMPORT_DLL = $(DLL).a
