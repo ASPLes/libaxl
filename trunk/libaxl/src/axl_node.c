@@ -4666,31 +4666,14 @@ char        * axl_item_get_content     (axlItem * item,
 	return content->content;
 }
 
-/** 
- * @internal Function that helps adding a new item to the provided
- * parent node.
- *
- * The new item will be added as flaged by the type provided. The
- * function isn't exposed to the public API because there are better
- * alternatives to add items to a \ref axlNode. Don't use this API
- * directly.
- * 
- * @param parent The axl node that will receive the new content.
- *
- * @param type The type to configure to the new item.
- *
- * @param data The data associated to the data being stored.
- *
- * NOTE: the function doesn't check data received as it is supposed to
- * receive calls from the library.
- */
-void axl_item_set_child (axlNode * parent, AxlItemType type, axlPointer data)
+/* prepare the item to be added to the xml document */
+axlItem *  __axl_item_common_configure (axlNode * parent, AxlItemType type, axlPointer data)
 {
-	axlItem * item = NULL;
 	axlNode * node = NULL;
+	axlItem * item = NULL;
 
 	/* return if the parent is defined */
-	axl_return_if_fail (parent);
+	axl_return_val_if_fail (parent, NULL);
 
 	/* check if the node received already have a pointer to a
 	 * holder created */
@@ -4719,10 +4702,75 @@ void axl_item_set_child (axlNode * parent, AxlItemType type, axlPointer data)
 		/* now configure the item that will hold the new child */
 		node->holder  = item;
 		
-	} /* end if */
+	} /* end if */	
+	
+	/* return item created */
+	return item;
+}
+
+/** 
+ * @internal Function that helps adding a new item to the provided
+ * parent node.
+ *
+ * The new item will be added as flaged by the type provided. The
+ * function isn't exposed to the public API because there are better
+ * alternatives to add items to a \ref axlNode. Don't use this API
+ * directly.
+ * 
+ * @param parent The axl node that will receive the new content.
+ *
+ * @param type The type to configure to the new item.
+ *
+ * @param data The data associated to the data being stored.
+ *
+ * NOTE: the function doesn't check data received as it is supposed to
+ * receive calls from the library.
+ */
+void axl_item_set_child (axlNode * parent, AxlItemType type, axlPointer data)
+{
+	axlItem * item;
+
+	/* prepare the item to be added to the xml document */
+	item = __axl_item_common_configure (parent, type, data);
 
 	/* call to set child with a created item */
 	axl_item_set_child_ref (parent, item);
+
+	return;
+}
+
+/** 
+ * @brief Allows to configure xml content just after the item used as
+ * reference. 
+ *
+ * @param item The item used as reference to place the content after it.
+ *
+ * @param type AxlItemType to configure the content to be placed.
+ *
+ * @param data Pointer that is 
+ */
+void          axl_item_set_after       (axlItem * item,
+					AxlItemType type,
+					axlPointer data)
+{
+	axlItem * new_item = NULL;
+
+	/* prepare the item to be added to the xml document */
+	new_item = __axl_item_common_configure (item->parent, type, data);
+
+	/* configure the parent node */
+	new_item->parent   = item->parent;
+
+	/* configure new item references */
+	new_item->previous = item;
+	new_item->next     = item->next;
+	
+	/* configure item references */
+	if (item->next != NULL)
+		item->next->previous = new_item;
+	else
+		item->parent->last  = new_item;
+	item->next = new_item;
 
 	return;
 }
