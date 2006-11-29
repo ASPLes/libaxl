@@ -93,6 +93,10 @@ char      * axl_stream_get_until_ref_zero  (axlStream * stream,
 					    int       * result_size,
 					    int         chunk_num, ...);
 
+void       axl_stream_set_buffer_alloc   (axlStream * stream,
+					  axlStreamAlloc handler,
+					  axlPointer     data);
+
 /** 
  * @brief Enum value that allows to configure which item to nullify
  * inside the provided \ref axlStream reference.

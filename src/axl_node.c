@@ -83,6 +83,12 @@ struct _axlNodeAttr {
 	char        * value;
 
 	/** 
+	 * @internal Flags the attribute pair to be considered from a
+	 * factory.
+	 */
+	bool          from_factory;
+
+	/** 
 	 * @internal Next attribute.
 	 */
 	axlNodeAttr * next;
@@ -138,8 +144,11 @@ void __axl_node_free_attr_list (axlNodeAttr * attr)
 		next = attr->next;
 
 		/* free attribute description */
-		axl_free (attr->attribute);
-		axl_free (attr->value);
+		if (! attr->from_factory) {
+			axl_free (attr->attribute);
+			axl_free (attr->value);
+		} /* end if */
+		
 		axl_free (attr);
 
 		/* get the next */
@@ -204,6 +213,20 @@ bool __axl_node_attr_list_is_equal (axlNodeAttr * attr, axlNodeAttr * attr2)
 	return true;
 }
 
+typedef enum {
+	/** 
+	 * @internal Signal axl library that the node was allocated by
+	 * a factory not by the system alloc.
+	 */
+	NODE_FROM_FACTORY      = 1,
+
+	/** 
+	 * @internal Signal axl library that the node node was
+	 * allocated by a factory not by the system alloc.
+	 */
+	NODE_NAME_FROM_FACTORY = 1 << 2
+} axlNodeConf;
+
 struct _axlNode {
 	/** 
 	 * @internal
@@ -253,7 +276,7 @@ struct _axlNode {
 	/** 
 	 * @internal Value that contains flags for configuration.
 	 */
-	int             from_factory;
+	int             conf;
 };
 
 struct _axlItem {
@@ -551,7 +574,7 @@ axlNode * axl_node_create_ref         (char * name)
 void      axl_node_set_name                 (axlNode * node, const char * name)
 {
 	/* check the name to be already configured and dealloc it */
-	if (node->name != NULL)
+	if (node->name != NULL && ! (node->conf & NODE_NAME_FROM_FACTORY))
 		axl_free (node->name);
 
 	/* alloc the new name */
@@ -575,11 +598,33 @@ void      axl_node_set_name                 (axlNode * node, const char * name)
 void      axl_node_set_name_ref             (axlNode * node, char * name)
 {
 	/* check the name to be already configured and dealloc it */
-	if (node->name != NULL)
+	if (node->name != NULL && ! (node->conf & NODE_NAME_FROM_FACTORY))
 		axl_free (node->name);
 
 	/* alloc the new name */
 	node->name = name;
+	
+	return;
+}
+
+/** 
+ * @internal Allows to configure the xml node, flaging the string
+ * received to be owned by a factory. Do not use this API from your
+ * application. This is only useful for Axl Library internals.
+ * 
+ * @param node The xml node that is going to be configured.
+ *
+ * @param name The xml node name to be configured. Previous
+ * configuration won't be deallocated as it is supposed that this
+ * function is only used from inside axl library.
+ */
+void axl_node_set_name_from_factory (axlNode * node, char * name)
+{
+	/* set node name */
+	node->name = name;
+
+	/* update configuration */
+	node->conf |= NODE_NAME_FROM_FACTORY;
 	
 	return;
 }
@@ -750,7 +795,7 @@ void      axl_node_set_doc                  (axlNode * node, axlDoc * doc)
  * Support function to install attribute information provided into the
  * \ref axlNode provided.
  */
-void      __axl_node_set_attribute      (axlNode * node, char * attribute, char * value)
+void      __axl_node_set_attribute      (axlNode * node, char * attribute, char * value, bool from_factory)
 {
 	axlNodeAttr * attr;
 	axlNodeAttr * next;
@@ -762,9 +807,10 @@ void      __axl_node_set_attribute      (axlNode * node, char * attribute, char 
 		node->attr_num   = 1;
 		
 		/* create the node */
-		attr             = axl_new (axlNodeAttr, 1);
-		attr->attribute  = attribute;
-		attr->value      = value;
+		attr               = axl_new (axlNodeAttr, 1);
+		attr->from_factory = from_factory;
+		attr->attribute    = attribute;
+		attr->value        = value;
 		
 		/* store the node */
 		node->attributes = (axlPointer) attr;
@@ -776,9 +822,10 @@ void      __axl_node_set_attribute      (axlNode * node, char * attribute, char 
 	if (node->attr_num < 10) {
 
 		/* create the node */
-		attr             = axl_new (axlNodeAttr, 1);
-		attr->attribute  = attribute;
-		attr->value      = value;
+		attr               = axl_new (axlNodeAttr, 1);
+		attr->from_factory = from_factory;
+		attr->attribute    = attribute;
+		attr->value        = value;
 
 		/* set the next to the new item to be the current first */
 		attr->next       = (axlNodeAttr *) node->attributes;
@@ -800,9 +847,9 @@ void      __axl_node_set_attribute      (axlNode * node, char * attribute, char 
 				/* add the attribute */	
 				axl_hash_insert_full ((axlHash *) node->attributes, 
 						      /* attribute name */
-						      attr->attribute, axl_free, 
+						      attr->attribute, attr->from_factory ?  NULL : axl_free, 
 						      /* attribute value */
-						      attr->value, axl_free);				
+						      attr->value, attr->from_factory ? NULL : axl_free);
 				/* free current node */
 				next = attr->next;
 				axl_free (attr);
@@ -814,7 +861,9 @@ void      __axl_node_set_attribute      (axlNode * node, char * attribute, char 
 		} /* end if */
 
 		/* add the attribute */	
-		axl_hash_insert_full ((axlHash *) node->attributes, attribute, axl_free, value, axl_free);				
+		axl_hash_insert_full ((axlHash *) node->attributes, 
+				      attribute, from_factory ? NULL : axl_free, 
+				      value, from_factory ? NULL : axl_free);				
 		
 	} /* end if */
 
@@ -895,7 +944,7 @@ void      axl_node_set_attribute      (axlNode * node, char * attribute, char * 
 	}
 
 	/* insert the attribute */
-	__axl_node_set_attribute (node, _attr, _value);
+	__axl_node_set_attribute (node, _attr, _value, false);
 	return;
 }
 
@@ -923,7 +972,29 @@ void      axl_node_set_attribute_ref  (axlNode * node, char * attribute, char * 
 	axl_return_if_fail (value);
 
 	/* insert the attribute */
-	__axl_node_set_attribute (node, attribute, value);
+	__axl_node_set_attribute (node, attribute, value, false);
+
+	return;
+}
+
+/** 
+ * @internal Function that allows configuring attributes to the
+ * selected node, notifying that they come from a factory and
+ * shouldn't be deallocated in the usual way. This function shouldn't
+ * be used by API consumers. This is only useful for Axl Library
+ * internals.
+ * 
+ * @param node The node to be configured with the attribute values.
+ *
+ * @param attribute The attribute to configure.
+ * @param value The attribute value to configure.
+ */
+void      axl_node_set_attribute_from_factory  (axlNode * node, 
+						char    * attribute, 
+						char    * value)
+{
+	/* insert the attribute */
+	__axl_node_set_attribute (node, attribute, value, true);
 
 	return;
 }
@@ -4078,7 +4149,7 @@ void __axl_node_free_internal (axlNode * node, bool also_childs)
 	axl_return_if_fail (node);
 
 	/* free current node */
-	if (node->name != NULL)
+	if (node->name != NULL && ! (node->conf & NODE_NAME_FROM_FACTORY))
 		axl_free (node->name);
 
 	/* release memory hold by attributes */
@@ -4139,7 +4210,7 @@ void axl_node_free (axlNode * node)
 	__axl_node_free_internal (node, true);
 
 	/* free attributes */
-	if (! node->from_factory)
+	if (! (node->conf & NODE_FROM_FACTORY))
 		axl_free (node);
 	
 	/* the node to release */
@@ -4162,7 +4233,7 @@ void      axl_node_free_full       (axlNode * node, bool also_childs)
 	__axl_node_free_internal (node, false);
 
 	/* free the node itself */
-	if (! node->from_factory)
+	if (!(node->conf & NODE_FROM_FACTORY))
 		axl_free (node);
 
 	return;
@@ -5086,7 +5157,7 @@ axlNode    * axl_node_factory_get (axlFactory * factory)
 	axlNode * node = axl_factory_get (factory);
 	
 	/* configure it */
-	node->from_factory = true;
+	node->conf = NODE_FROM_FACTORY;
 
 	return node;
 }

@@ -57,6 +57,9 @@ void      axl_node_set_name                 (axlNode * node,
 void      axl_node_set_name_ref             (axlNode * node, 
 					     char * name);
 
+void      axl_node_set_name_from_factory    (axlNode * node, 
+					     char * name);
+
 axlNode * axl_node_copy                     (axlNode * node,
 					     bool      copy_attributes,
 					     bool      copy_childs);
@@ -73,6 +76,10 @@ void      axl_node_set_attribute            (axlNode    * node,
 void      axl_node_set_attribute_ref        (axlNode * node, 
 					     char    * attribute, 
 					     char    * value);
+
+void      axl_node_set_attribute_from_factory  (axlNode * node, 
+						char    * attribute, 
+						char    * value);
 
 /** 
  * @brief Macro definition which works as an alias for \ref

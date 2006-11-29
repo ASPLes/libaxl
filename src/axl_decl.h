@@ -114,9 +114,14 @@ typedef struct _axlDoc axlDoc;
 typedef struct _axlItem axlItem;
 
 /** 
- * @internal Item factory representation.
+ * @internal Factory allocation type.
  */
 typedef struct _axlFactory axlFactory;
+
+/** 
+ * @internal String factory allocation type.
+ */
+typedef struct _axlStrFactory axlStrFactory;
 
 /**
  * @brief Axl XML node type definition.
@@ -716,6 +721,20 @@ typedef int (*axlEqualFunc) (axlPointer a, axlPointer b);
  * @param ptr The pointer to the memory to be released.
  */
 typedef void (*axlDestroyFunc) (axlPointer ptr);
+
+/** 
+ * @brief Handler used to represent the set of functions that could be
+ * used to configure the axl stream allocation method. See \ref
+ * axl_stream_set_buffer_alloc.
+ * 
+ * @param size The amount of memory to be allocated (memory requested by the axl stream).
+ * 
+ * @param data User defined pointer configured at \ref axl_stream_set_buffer_alloc.
+ * 
+ * @return The handler must return newly allocated memory to hold <b>size</b>
+ * bytes.
+ */
+typedef char * (*axlStreamAlloc) (int size, axlPointer data);
 
 /** 
  * @brief Axl debug levels.

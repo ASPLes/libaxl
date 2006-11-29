@@ -6,6 +6,7 @@ endif
 
 INCLUDES = -I../src/ -Wall $(LOG)
 
+# replace with bin_PROGRAMS to check performance
 noinst_PROGRAMS = test_01 test_02 test_01a test_02a test_03 test_03a
 
 test_01_SOURCES = test_01.c
