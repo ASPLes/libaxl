@@ -867,6 +867,9 @@ char      * axl_stream_get_until_ref_zero  (axlStream * stream,
  *
  * @param handler The handler to be called when the streams requires
  * to alloc memory.
+ *
+ * @param data User defined pointer to be called to the allocator
+ * function defined by the <b>handler</b> parameter.
  */
 void       axl_stream_set_buffer_alloc   (axlStream      * stream,
 					  axlStreamAlloc   handler,
