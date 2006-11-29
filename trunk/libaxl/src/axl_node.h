@@ -51,6 +51,12 @@ axlNode * axl_node_create                   (char * name);
 
 axlNode * axl_node_create_ref               (char * name);
 
+void      axl_node_set_name                 (axlNode * node, 
+					     const char * name);
+
+void      axl_node_set_name_ref             (axlNode * node, 
+					     char * name);
+
 axlNode * axl_node_copy                     (axlNode * node,
 					     bool      copy_attributes,
 					     bool      copy_childs);
@@ -350,11 +356,13 @@ bool          axl_item_are_equal      (axlItem * item,
 void          axl_item_free           (axlItem * item,
 				       bool      dealloc);
 
-axlItemFactory * axl_item_factory_create ();
+axlFactory     * axl_item_factory_create ();
 
-axlItem        * axl_item_factory_get (axlItemFactory * factory);
+axlItem        * axl_item_factory_get (axlFactory * factory);
 
-void             axl_item_factory_free (axlItemFactory * factory);
+axlFactory     * axl_node_factory_create ();
+
+axlNode        * axl_node_factory_get (axlFactory * factory);
 
 END_C_DECLS
 

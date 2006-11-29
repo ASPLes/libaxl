@@ -360,7 +360,13 @@ struct _axlDoc {
 	 * @internal Factory to create items in a memory efficient
 	 * manner.
 	 */
-	axlItemFactory * item_factory;
+	axlFactory * item_factory;
+
+	/** 
+	 * @internal Factory to create nodes in a memory efficient
+	 * manner.
+	 */
+	axlFactory * node_factory;
 };
 
 struct _axlPI {
@@ -395,8 +401,10 @@ axlDoc * __axl_doc_new (bool create_parent_stack)
 	/* default container lists */
 	result->parentNode   = axl_stack_new (NULL);
 	result->piTargets    = axl_list_new (axl_list_always_return_1, (axlDestroyFunc) axl_pi_free);
-	result->item_factory = axl_item_factory_create ();
 
+	/* create factories */
+	result->item_factory = axl_item_factory_create ();
+	result->node_factory = axl_node_factory_create ();
 	return result;
 }
 
@@ -642,9 +650,11 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 		} /* end if */
 	} /* end if */
 
-	/* create the node and associate it */
+	/* create the node and associate it the node name found */
 	axl_stream_nullify (stream, LAST_CHUNK);
-	node = axl_node_create_ref (string_aux);  
+	/* node = axl_node_create_ref (string_aux);  */
+	node = axl_node_factory_get (doc->node_factory);
+	axl_node_set_name_ref (node, string_aux);
 
 	if (doc->rootNode == NULL) {
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "setting as first node found, the root node: <%s>", string_aux);
@@ -2837,7 +2847,11 @@ void     axl_doc_free         (axlDoc * doc)
 
 	/* free item factory */
 	if (doc->item_factory != NULL)
-		axl_item_factory_free (doc->item_factory);
+		axl_factory_free (doc->item_factory);
+
+	/* free node factory */
+	if (doc->node_factory != NULL)
+		axl_factory_free (doc->node_factory);
 
 	/* free pi targets read */
 	if (doc->piTargets != NULL)
@@ -3061,7 +3075,7 @@ bool      axl_doc_consume_pi (axlDoc * doc, axlNode * node,
 }
 
 /** 
- * @internal Function that allows to get axlItemFactory associated to
+ * @internal Function that allows to get axlFactory associated to
  * the provided document.
  * 
  * @param doc The axl document that is requested to return its item
@@ -3069,7 +3083,7 @@ bool      axl_doc_consume_pi (axlDoc * doc, axlNode * node,
  * 
  * @return An internal reference to the item factory. Do not dealloc.
  */
-axlItemFactory * axl_doc_get_item_factory  (axlDoc * doc)
+axlFactory * axl_doc_get_item_factory  (axlDoc * doc)
 {
 	return doc->item_factory;
 }

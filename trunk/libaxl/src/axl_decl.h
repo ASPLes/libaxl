@@ -116,7 +116,7 @@ typedef struct _axlItem axlItem;
 /** 
  * @internal Item factory representation.
  */
-typedef struct _axlItemFactory axlItemFactory;
+typedef struct _axlFactory axlFactory;
 
 /**
  * @brief Axl XML node type definition.
