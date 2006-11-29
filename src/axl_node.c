@@ -249,6 +249,11 @@ struct _axlNode {
 	 * containing the axl node reference.
 	 */
 	axlItem       * holder;
+	
+	/** 
+	 * @internal Value that contains flags for configuration.
+	 */
+	int             from_factory;
 };
 
 struct _axlItem {
@@ -303,19 +308,6 @@ int __axl_node_equal (axlPointer a, axlPointer b)
 {
 	return 1;
 }
-
-
-axlNode * __axl_node_create_internal (char * name)
-{
-	axlNode * node = NULL;
-
-	/* init the node */
-	node        = axl_new (axlNode, 1);
-	node->name  = name;
-
-	return node;
-}
-
 
 /** 
  * @internal
@@ -482,18 +474,23 @@ char * __axl_node_content_translate_defaults (char * content,
  * received. See also \ref axl_node_create_ref for an explanation
  * about saving memory.
  *
- * @param name The name to be used for the node be created.
+ * @param name The name to be used for the node be created. The
+ * function doesn't check if the paramater received is null.
  * 
  * @return A newly allocate \ref axlNode reference, that must be
  * deallocated by \ref axl_node_free.
  */
 axlNode * axl_node_create (char * name)
 {
-	axl_return_val_if_fail (name, NULL);
+	axlNode * node;
+
+	/* init the node */
+	node        = axl_new (axlNode, 1);
+	node->name  = axl_strdup (name);
 	
-	/* return a reference to a new axlNode */
-	return __axl_node_create_internal (axl_strdup (name));
+	return node;
 }
+
 
 /** 
  * @brief Creates a new \ref axlNode but using the memory passed in by
@@ -522,17 +519,69 @@ axlNode * axl_node_create (char * name)
  * \endcode
  *
  * @param name A reference to the node name that is hold by
- * dinamically allocated memory from the user space code.
+ * dinamically allocated memory from the user space code. The function
+ * doesn't check if the parameter received is null.
  * 
  * @return A newly created \ref axlNode reference that must be
  * deallocated by \ref axl_node_free.
  */
 axlNode * axl_node_create_ref         (char * name)
 {
-	axl_return_val_if_fail (name, NULL);
+	axlNode * node;
+
+	/* init the node */
+	node        = axl_new (axlNode, 1);
+	node->name  = name;
 	
 	/* return a reference to a new axlNode */
-	return __axl_node_create_internal (name);
+	return node;
+}
+
+/** 
+ * @brief Allows to configure the node name, using the value provided. 
+ * 
+ * The function will dealloc the previous name stored, if found.
+ *
+ * @param node The node to be configured with a new name.
+ * 
+ * @param name The new name to configure to the node. The value
+ * provided will be allocated, to create a local copy. The function
+ * won't check the name parameter received to be a non-null pointer.
+ */
+void      axl_node_set_name                 (axlNode * node, const char * name)
+{
+	/* check the name to be already configured and dealloc it */
+	if (node->name != NULL)
+		axl_free (node->name);
+
+	/* alloc the new name */
+	node->name = axl_strdup (name);
+	
+	return;
+}
+
+/** 
+ * @brief Allows to configure the node name, using the value provided
+ * as a reference allocated and to be owned by the node.
+ * 
+ * The function will dealloc the previous name stored, if found.
+ *
+ * @param node The node to be configured with a new name.
+ * 
+ * @param name The new name to configure to the node. The value
+ * provided will be owned by the node. The function won't check the
+ * name parameter received to be a non-null pointer.
+ */
+void      axl_node_set_name_ref             (axlNode * node, char * name)
+{
+	/* check the name to be already configured and dealloc it */
+	if (node->name != NULL)
+		axl_free (node->name);
+
+	/* alloc the new name */
+	node->name = name;
+	
+	return;
 }
 
 axlPointer __axl_node_copy_key (axlPointer key, axlDestroyFunc key_destroy, 
@@ -4090,7 +4139,8 @@ void axl_node_free (axlNode * node)
 	__axl_node_free_internal (node, true);
 
 	/* free attributes */
-	axl_free (node);
+	if (! node->from_factory)
+		axl_free (node);
 	
 	/* the node to release */
 	return;
@@ -4112,7 +4162,8 @@ void      axl_node_free_full       (axlNode * node, bool also_childs)
 	__axl_node_free_internal (node, false);
 
 	/* free the node itself */
-	axl_free (node);
+	if (! node->from_factory)
+		axl_free (node);
 
 	return;
 }
@@ -5014,90 +5065,30 @@ void          axl_item_free           (axlItem * item,
 	return;
 }
 
-typedef struct _axlItemBlock axlItemBlock;
-
-struct _axlItemBlock {
-	axlItem       * items;
-	axlItemBlock  * next;
-};
-
-struct _axlItemFactory {
-	int       count;
-	int       step;
-	axlItemBlock * block;
-};
-
-
-axlItemFactory * axl_item_factory_create ()
+axlFactory * axl_item_factory_create ()
 {
-	axlItemFactory * result;
-
-	/* create the first node */
-	result        = axl_new (axlItemFactory, 1);
-	result->step  = 8192 / sizeof (axlItem);
-	
-	/* create the first block */
-	result->block        = axl_new (axlItemBlock, 1);
-	result->block->items = axl_new (axlItem, result->step);
-
-	/* return result created */
-	return result;
+	return axl_factory_create (sizeof (axlItem));
 }
 
-axlItem        * axl_item_factory_get (axlItemFactory * factory)
+axlItem        * axl_item_factory_get (axlFactory * factory)
 {
-	axlItemBlock * block;
-
-	/* update factory used blocks */
-	factory->count++;
-
-	/* check if the have to alloc a new block */
-	if ((factory->count) > factory->step) {
-		block          = axl_new (axlItemBlock, 1);
-		block->items   = axl_new (axlItem, factory->step);
-		factory->count = 1;
-
-		/* configure next for the new block created */
-		block->next    = factory->block;
-
-		/* configure new factory block */
-		factory->block = block;
-	}
-
-	/* return item created */
-	return &(factory->block->items [factory->count - 1]);
-
+	return axl_factory_get (factory);
 }
 
-void             axl_item_factory_free (axlItemFactory * factory)
+axlFactory * axl_node_factory_create ()
 {
-	axlItemBlock * block;
-	axlItemBlock * aux;
+	return axl_factory_create (sizeof (axlNode));
+}
 
-	/* do nothing if null received */
-	if (factory == NULL)
-		return;
-
-	/* get the first block */
-	block = factory->block;
+axlNode    * axl_node_factory_get (axlFactory * factory)
+{
+	/* get a node */
+	axlNode * node = axl_factory_get (factory);
 	
-	while (block != NULL) {
-		
-		/* get a reference to the next */
-		aux = block->next;
+	/* configure it */
+	node->from_factory = true;
 
-		/* free items and the block */
-		axl_free (block->items);
-		axl_free (block);
-
-		/* get the next */
-		block = aux;
-
-	} /* end while */
-
-	axl_free (factory);
-
-	return;
+	return node;
 }
 
 /* @} */

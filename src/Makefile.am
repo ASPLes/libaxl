@@ -12,8 +12,8 @@ libaxlincludedir = $(includedir)/axl
 
 lib_LTLIBRARIES = libaxl.la
 
-libaxl_la_SOURCES     = axl.c  axl_decl.c axl_node.c axl_doc.c axl_error.c axl_stream.c axl_log.c axl_list.c axl_stack.c axl_dtd.c axl_hash.c
-libaxlinclude_HEADERS = axl.h axl_config.h axl_decl.h axl_node.h axl_doc.h axl_error.h axl_stream.h axl_log.h axl_list.h axl_stack.h axl_dtd.h axl_hash.h
+libaxl_la_SOURCES     = axl.c  axl_decl.c axl_node.c axl_doc.c axl_error.c axl_stream.c axl_log.c axl_list.c axl_stack.c axl_dtd.c axl_hash.c axl_factory.c
+libaxlinclude_HEADERS = axl.h axl_config.h axl_decl.h axl_node.h axl_doc.h axl_error.h axl_stream.h axl_log.h axl_list.h axl_stack.h axl_dtd.h axl_hash.h axl_factory.h
 
 libaxl_la_LDFLAGS = -no-undefined -export-symbols-regex '^(axl|__axl).*'
 

@@ -1,4 +1,4 @@
-/*
+/**
  *  LibAxl:  Another XML library
  *  Copyright (C) 2006 Advanced Software Production Line, S.L.
  *
@@ -28,41 +28,22 @@
  *          
  *      Postal address:
  *         Advanced Software Production Line, S.L.
- *         C/ Dr. Michavila Nº 14
+ *         C/ Dr. Michavila NÂº 14
  *         Coslada 28820 Madrid
  *         Spain
  *
  *      Email address:
  *         info@aspl.es - http://fact.aspl.es
  */
-#ifndef __AXL_H__
-#define __AXL_H__
+#ifndef __AXL_FACTORY_H__
+#define __AXL_FACTORY_H__
 
-#include <axl_decl.h>
-#include <axl_list.h>
-#include <axl_stack.h>
-#include <axl_hash.h>
-#include <axl_stream.h>
-#include <axl_doc.h>
-#include <axl_node.h>
-#include <axl_dtd.h>
-#include <axl_error.h>
-#include <axl_log.h>
-#include <axl_factory.h>
+#include <axl.h>
 
-BEGIN_C_DECLS
+axlFactory * axl_factory_create (int size_of_type);
 
-/** 
- * \addtogroup axl_module
- * @{
- */
+axlPointer   axl_factory_get (axlFactory * factory);
 
-bool  axl_init ();
-
-void  axl_end ();
-
-/* @} */
-
-END_C_DECLS
+void         axl_factory_free (axlFactory * factory);
 
 #endif
