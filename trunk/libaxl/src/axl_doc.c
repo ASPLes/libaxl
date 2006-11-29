@@ -366,7 +366,12 @@ struct _axlDoc {
 	 * @internal Factory to create nodes in a memory efficient
 	 * manner.
 	 */
-	axlFactory * node_factory;
+	axlFactory    * node_factory;
+
+	/** 
+	 * @internal Factory to alloc strings.
+	 */
+	axlStrFactory * str_factory;
 };
 
 struct _axlPI {
@@ -405,6 +410,7 @@ axlDoc * __axl_doc_new (bool create_parent_stack)
 	/* create factories */
 	result->item_factory = axl_item_factory_create ();
 	result->node_factory = axl_node_factory_create ();
+	result->str_factory  = axl_string_factory_create ();
 	return result;
 }
 
@@ -424,6 +430,25 @@ void __axl_doc_clean (axlDoc * doc)
 	}
 
 	return;
+}
+
+/** 
+ * @internal Function used by the axl doc module to allocate memory to
+ * be used by the axl stream. Currently this is used to alloc xml node
+ * names and xml attribute key and its value. The rest of items are
+ * allocated by the system memory allocation.
+ * 
+ * @param size The size that is required by the axl stream to be allocated.
+ *
+ * @param doc The axlDoc reference, which contains a reference to the
+ * string factory used to allocate memory.
+ * 
+ * @return A reference to the allocated memory. 
+ */
+char * __axl_doc_alloc (int size, axlDoc * doc)
+{
+	/* just return a piece of memory */
+	return axl_string_factory_alloc (doc->str_factory, size);
 }
 
 /** 
@@ -622,12 +647,22 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 	}
 
 	/* get node name, keeping in mind the following:
-	   chunk_matched
-	   >  : 0
-	   /> : 1
-	   " ": 2
+	 * chunk_matched
+	 * >  : 0
+	 * /> : 1
+	 * " ": 2
+	 *
+	 * We also reconfigure the alloc method used by the axl stream
+	 * to ensure that the module name is allocated through the
+	 * string factory.
 	 */
+	axl_stream_set_buffer_alloc (stream, (axlStreamAlloc)__axl_doc_alloc, doc);
 	string_aux = axl_stream_get_until (stream, NULL, &matched_chunk, true, 2, ">", " ");
+	axl_stream_set_buffer_alloc (stream, NULL, NULL);
+
+	/* nullify */
+	axl_stream_nullify (stream, LAST_CHUNK);
+
 	if (AXL_IS_STR_EMPTY (string_aux)) {
 		axl_error_new (-2, "expected an non empty content for the node name not found.", stream, error);
 		axl_stream_free (stream);
@@ -651,10 +686,8 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 	} /* end if */
 
 	/* create the node and associate it the node name found */
-	axl_stream_nullify (stream, LAST_CHUNK);
-	/* node = axl_node_create_ref (string_aux);  */
 	node = axl_node_factory_get (doc->node_factory);
-	axl_node_set_name_ref (node, string_aux);
+	axl_node_set_name_from_factory (node, string_aux); 
 
 	if (doc->rootNode == NULL) {
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "setting as first node found, the root node: <%s>", string_aux);
@@ -740,8 +773,15 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 		/* get rid from spaces */
 		AXL_CONSUME_SPACES (stream);
 
-		/* found attribute declaration, try to read it */
+		/* found attribute declaration, try to read it.
+		 *
+		 * We also reconfigure the alloc method used by the
+		 * axl stream to ensure that xml node attributes are
+		 * allocated through the string factory.
+		 */
+		 axl_stream_set_buffer_alloc (stream, (axlStreamAlloc)__axl_doc_alloc, doc);
 		string_aux = axl_stream_get_until (stream, NULL, NULL, true, 1, "=");
+		axl_stream_set_buffer_alloc (stream, NULL, NULL);
 		if (string_aux != NULL) {
 
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "attribute found: [%s]", string_aux);
@@ -768,10 +808,12 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 			
 			
 			/* now get the attribute value */
+			axl_stream_set_buffer_alloc (stream, (axlStreamAlloc)__axl_doc_alloc, doc);
 			if (delim)
 				string_aux2 = axl_stream_get_until (stream, NULL, NULL, true, 1, "\"");
 			else
 				string_aux2 = axl_stream_get_until (stream, NULL, NULL, true, 1, "'");
+			axl_stream_set_buffer_alloc (stream, NULL, NULL);
 
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "value found: [%s]", string_aux2);
 			
@@ -781,7 +823,7 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 			axl_stream_nullify (stream, LAST_CHUNK);
 			
 			/* set a new attribute for the given node */
-			axl_node_set_attribute_ref (node, string_aux, string_aux2);
+			axl_node_set_attribute_from_factory (node, string_aux, string_aux2);
 
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "attribute installed..");
 
@@ -867,7 +909,6 @@ bool __axl_doc_parse_close_node (axlStream * stream, axlDoc * doc, axlNode ** _n
 
 	return false;
 }
-
 
 /** 
  * @internal
@@ -2852,6 +2893,9 @@ void     axl_doc_free         (axlDoc * doc)
 	/* free node factory */
 	if (doc->node_factory != NULL)
 		axl_factory_free (doc->node_factory);
+
+	if (doc->str_factory != NULL)
+		axl_string_factory_free (doc->str_factory);
 
 	/* free pi targets read */
 	if (doc->piTargets != NULL)

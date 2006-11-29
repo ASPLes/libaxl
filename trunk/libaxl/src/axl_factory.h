@@ -46,4 +46,10 @@ axlPointer   axl_factory_get (axlFactory * factory);
 
 void         axl_factory_free (axlFactory * factory);
 
+axlStrFactory * axl_string_factory_create ();
+
+char          * axl_string_factory_alloc  (axlStrFactory * factory, int size);
+
+void            axl_string_factory_free   (axlStrFactory * factory);
+
 #endif

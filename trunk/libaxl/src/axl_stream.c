@@ -144,7 +144,24 @@ struct _axlStream {
 	 * terminator character found.
 	 */
 	bool        zero;
+
+	/** 
+	 * @internal Alloc function to be used to require memory for
+	 * chunks to be returned. This is used by Axl Stream to allow
+	 * external modules to handle how memory is allocated while
+	 * calling to axl_stream_get_until* API. 
+	 *
+	 * Currently, it is used by the axl_doc module to allocate axl
+	 * stream using a string factory.
+	 */
+	axlStreamAlloc alloc;
 	
+	/** 
+	 * @internal User defined data to be passed to the alloc
+	 * function.
+	 */
+	axlPointer     alloc_data;
+
 };
 
 
@@ -843,6 +860,28 @@ char      * axl_stream_get_until_ref_zero  (axlStream * stream,
 }
 
 /** 
+ * @brief Allows to configure the handler to be executed to alloc
+ * memory for the axl_stream_get_until* API.
+ * 
+ * @param stream The stream to configure with the alloc function.
+ *
+ * @param handler The handler to be called when the streams requires
+ * to alloc memory.
+ */
+void       axl_stream_set_buffer_alloc   (axlStream      * stream,
+					  axlStreamAlloc   handler,
+					  axlPointer       data)
+{
+	axl_return_if_fail (stream);
+
+	/* just configure the alloc handler */
+	stream->alloc      = handler;
+	stream->alloc_data = data;
+
+	return;
+}
+
+/** 
  * @brief Allows to nullify the internal reference of the stream,
  * making that reference to be not deallocated once the stream is
  * moving.
@@ -902,17 +941,6 @@ char * __axl_stream_get_untilv_wide (axlStream * stream, va_list args)
 	/* get how many bytes remains to be read */
 	int          remains;
 	
-	/* perform some environmental checks */
-	axl_return_val_if_fail (stream, NULL);
-	axl_return_val_if_fail (stream->chunk_num > 0, NULL);
-
-	/* check max inspected chunks */
-	if (stream->chunk_num > MAX_INSPECTED_CHUNKS) {
-		__axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "unable to parse stream for the number of chunks to recognize. Max number supported is %d, but received %d",
-			   MAX_INSPECTED_CHUNKS, stream->chunk_num);
-		return NULL;
-	}
-
 	/* set current matched value */
 	stream->chunk_matched = -1;
 	
@@ -1094,12 +1122,18 @@ char * __axl_stream_get_untilv_wide (axlStream * stream, va_list args)
 			
 			/* get a copy to the chunk to be returned */
 			if (! stream->result_size) {
-				stream->last_chunk = axl_new (char, index + 1);
+				if (stream->alloc != NULL)
+					stream->last_chunk = stream->alloc (index + 1, stream->alloc_data);
+				else 
+					stream->last_chunk = axl_new (char, index + 1);
 				memcpy (stream->last_chunk, stream->stream + stream->stream_index, index);
 			}else {
 				/* *result_size = index;*/
 				stream->result_size = index;
 				string       = stream->stream + stream->stream_index;
+				
+				/* set a termination mark */
+				string [ index ] = 0;
 			}
 			
 			/* in the case a memory chunk is being read */
@@ -1164,6 +1198,13 @@ char      * axl_stream_get_untilv      (axlStream * stream,
 {
 	char * result;
 
+
+	/* check max inspected chunks */
+	if (chunk_num > MAX_INSPECTED_CHUNKS) {
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "unable to parse stream for the number of chunks to recognize. Max number supported is %d, but received %d",
+			   MAX_INSPECTED_CHUNKS, stream->chunk_num);
+		return NULL;
+	}
 
 	/* configure variables for the operation */
 	stream->valid_chars       = valid_chars;
