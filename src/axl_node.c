@@ -616,7 +616,7 @@ axlNode * axl_node_copy                     (axlNode * node,
 			
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "  new item created (copy operation) with parent=<%s> and type=%d",
 				   copy->parent->name,
-				   axl_node_get_type (copy));
+				   axl_item_get_type (copy));
 
 			/* set the content */
 			axl_item_set_child_ref (result, copy);
