@@ -246,9 +246,17 @@ void      axl_node_set_content_ref    (axlNode * node,
 				       char * content, 
 				       int content_size);
 
+void      axl_node_set_content_from_factory (axlNode * node,
+					     char    * content,
+					     int       content_size);
+
 void      axl_node_set_cdata_content  (axlNode * node,
 				       char * content,
 				       int content_size);
+
+void      axl_node_set_cdata_content_from_factory (axlNode * node,
+						   char    * content,
+						   int       content_size);
 
 void      axl_node_set_comment        (axlNode * node,
 				       char * comment,

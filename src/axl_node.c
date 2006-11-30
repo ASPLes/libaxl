@@ -44,6 +44,16 @@
  */
 
 /** 
+ * @internal An abstraction that represents an single content unit
+ * that can be found inside an \ref axlNode as element that is located
+ * at the same level compared to other content (\ref axlNodeContent)
+ * or other nodes (\ref axlNode), as well processing instructions
+ * (\ref axlPI) and comments (\ref axlNodeContent).
+ *
+ */
+typedef struct _axlNodeContent axlNodeContent;
+
+/** 
  * \addtogroup axl_node_module
  * @{
  */
@@ -2328,6 +2338,48 @@ void      axl_node_set_content        (axlNode * node, char * content, int conte
 }
 
 /** 
+ * @internal Common implementation for axl_node_set_content_ref and
+ * axl_node_set_content_from_factory.
+ */
+void __axl_node_set_content_common_ref (axlNode * node, 
+					char    * content, 
+					int       content_size, 
+					bool      from_factory)
+{
+	
+	axlNodeContent * itemContent;
+
+	axl_return_if_fail (node);
+	axl_return_if_fail (content);
+
+	/* get current content in the case a -1 is provided */
+	if (content_size == -1)
+		content_size = strlen (content);
+
+	/* create a content */
+	itemContent = axl_new (axlNodeContent, 1);
+		
+	/* configure content size */
+	itemContent->content_size = content_size;
+
+	/* set current content */
+	itemContent->content  = content;
+
+	if (from_factory) {
+		/* store it */
+		axl_item_set_child (node, ITEM_CONTENT | ITEM_CONTENT_FROM_FACTORY, itemContent);
+	} else {
+		/* store it */
+		axl_item_set_child (node, ITEM_CONTENT, itemContent);
+	} /* end if */
+
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "setting xml node (name: %s) content (size: %d) %s",
+		   node->name, itemContent->content_size, itemContent->content);
+
+	return;
+}
+
+/** 
  * @brief Set the content for the provided node, reusing the reference
  * provided, without making a local copy.
  *
@@ -2354,32 +2406,30 @@ void      axl_node_set_content_ref    (axlNode * node,
 				       char * content, 
 				       int content_size)
 {
-	axlNodeContent * itemContent;
 
-	axl_return_if_fail (node);
-	axl_return_if_fail (content);
-
-	/* get current content in the case a -1 is provided */
-	if (content_size == -1)
-		content_size = strlen (content);
-
-	/* create a content */
-	itemContent = axl_new (axlNodeContent, 1);
-		
-	/* configure content size */
-	itemContent->content_size = content_size;
-
-	/* set current content */
-	itemContent->content  = content;
-
-	/* store it */
-	axl_item_set_child (node, ITEM_CONTENT, itemContent);
-
-	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "setting xml node (name: %s) content (size: %d) %s",
-		   node->name, itemContent->content_size, itemContent->content);
-
+	/* call to set content without signaling that the content
+	 * wasn't allocated by a factory. */
+	__axl_node_set_content_common_ref (node, content, content_size, false);
+	
 	/* job done */
 	return;	
+}
+
+/** 
+ * @internal Internal API used by the axl doc module to signal that
+ * the content was allocated though the string factory and shouldn't
+ * be deallocated.
+ */
+void      axl_node_set_content_from_factory (axlNode * node,
+					     char    * content,
+					     int       content_size)
+{
+	/* call to set content without signaling that the content was
+	 * allocated by a factory. */
+	__axl_node_set_content_common_ref (node, content, content_size, true);
+	
+	/* job done */
+	return;
 }
 
 /** 
@@ -3643,6 +3693,7 @@ int       axl_node_get_flat_size            (axlNode * node, bool pretty_print, 
 			result += content->content_size + 2;
 			break;
 		case ITEM_FROM_FACTORY:
+		case ITEM_CONTENT_FROM_FACTORY:
 			/* never reached */
 			break;
 		}
@@ -3887,6 +3938,7 @@ int __axl_node_dump_items (axlItem * item, char * content, int level, bool prett
 			desp += 1;
 			break;
 		case ITEM_FROM_FACTORY:
+		case ITEM_CONTENT_FROM_FACTORY:
 			/* never reached */
 			break;
 		}
@@ -4308,6 +4360,7 @@ axlItem     * axl_item_new             (AxlItemType type,
 		/* not implemented yet */
 		break;
 	case ITEM_FROM_FACTORY:
+	case ITEM_CONTENT_FROM_FACTORY:
 		/* never reached */
 		break;
 	} /* end switch */
@@ -4368,6 +4421,7 @@ axlItem     * axl_item_new_ref         (AxlItemType type,
 		/* not implemented yet */
 		break;
 	case ITEM_FROM_FACTORY:
+	case ITEM_CONTENT_FROM_FACTORY:
 		/* never reached */
 		break;
 	} /* end switch */
@@ -4597,7 +4651,7 @@ axlItem     * axl_item_get_last_child  (axlNode * node)
 AxlItemType   axl_item_get_type        (axlItem * item)
 {
 	/* return stored type */
-	return item->type & (~ ITEM_FROM_FACTORY);
+	return item->type & (~ (ITEM_FROM_FACTORY | ITEM_CONTENT_FROM_FACTORY));
 }
 
 /** 
@@ -4858,6 +4912,7 @@ axlItem * axl_item_copy (axlItem * item, axlNode * set_parent)
 		/* not implemented yet */
 		break;
 	case ITEM_FROM_FACTORY:
+	case ITEM_CONTENT_FROM_FACTORY:
 		/* never reached */
 		break;
 	} /* end switch */
@@ -5160,7 +5215,12 @@ void          axl_item_free           (axlItem * item,
 	case ITEM_COMMENT:
 	case ITEM_REF:
 		/* all of them, managed equally */
-		axl_free (((axlNodeContent *)item->data)->content);
+
+		/* check and free content */
+		if ((item->type & ITEM_CONTENT_FROM_FACTORY) == 0)
+			axl_free (((axlNodeContent *)item->data)->content);
+
+		/* free node */
 		axl_free ((axlNodeContent *)item->data);
 		
 		if ((item->type & ITEM_FROM_FACTORY) == 0)
@@ -5175,6 +5235,7 @@ void          axl_item_free           (axlItem * item,
 			axl_free (item);
 		break;
 	case ITEM_FROM_FACTORY:
+	case ITEM_CONTENT_FROM_FACTORY:
 		/* never reached */
 		break;
 		

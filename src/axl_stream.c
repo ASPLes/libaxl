@@ -1561,7 +1561,7 @@ void axl_stream_consume_white_spaces (axlStream * stream)
 	/* get how many bytes remains to be read */
 	int remains = stream->stream_size - stream->stream_index;
 
-	do {
+	while (true) {
 		/* decrase the number of bytes remaining to be read
 		 * and check if it is zero or less than zero to
 		 * prebuffer. NOTE: remains could be 1 (remains one
@@ -1595,8 +1595,7 @@ void axl_stream_consume_white_spaces (axlStream * stream)
 			return;
 		}
 		
-
-	}while (true);
+	} /* end while */
 
 	return;
 }

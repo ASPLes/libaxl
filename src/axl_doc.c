@@ -658,12 +658,14 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 	 */
 	axl_stream_set_buffer_alloc (stream, (axlStreamAlloc)__axl_doc_alloc, doc);
 	string_aux = axl_stream_get_until (stream, NULL, &matched_chunk, true, 2, ">", " ");
-	axl_stream_set_buffer_alloc (stream, NULL, NULL);
 
 	/* nullify */
 	axl_stream_nullify (stream, LAST_CHUNK);
 
 	if (AXL_IS_STR_EMPTY (string_aux)) {
+		/* use alloc though string factory */
+		axl_stream_set_buffer_alloc (stream, NULL, NULL);
+
 		axl_error_new (-2, "expected an non empty content for the node name not found.", stream, error);
 		axl_stream_free (stream);
 		return false;
@@ -731,6 +733,8 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 		 * are on "/>" case */
 		if ((matched_chunk == 1) ||
 		    axl_stream_inspect (stream, "/>", 2) > 0) {
+			/* use alloc though string factory */
+			axl_stream_set_buffer_alloc (stream, NULL, NULL);
 
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found end xml node definition '/>'");
 
@@ -759,6 +763,8 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 		 * are on ">" case */
 		if ((matched_chunk == 0) ||
 		    (axl_stream_inspect (stream, ">", 1) > 0)) {
+			/* use alloc though string factory */
+			axl_stream_set_buffer_alloc (stream, NULL, NULL);
 			
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found [end] xml node definition '>', for node: [%s]",
 				   axl_node_get_name (node));
@@ -779,9 +785,7 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 		 * axl stream to ensure that xml node attributes are
 		 * allocated through the string factory.
 		 */
-		 axl_stream_set_buffer_alloc (stream, (axlStreamAlloc)__axl_doc_alloc, doc);
 		string_aux = axl_stream_get_until (stream, NULL, NULL, true, 1, "=");
-		axl_stream_set_buffer_alloc (stream, NULL, NULL);
 		if (string_aux != NULL) {
 
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "attribute found: [%s]", string_aux);
@@ -799,6 +803,9 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 				 * looking for ' */
 				delim = false;
 				if (! (axl_stream_inspect (stream, "\'", 1) > 0)) {
+					/* use alloc though string factory */
+					axl_stream_set_buffer_alloc (stream, NULL, NULL);
+
 					axl_error_new (-2, "Expected to find an attribute value initiator (\") or ('), every attribute value must start with them", 
 						       stream, error);
 					axl_stream_free (stream);
@@ -808,12 +815,10 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 			
 			
 			/* now get the attribute value */
-			axl_stream_set_buffer_alloc (stream, (axlStreamAlloc)__axl_doc_alloc, doc);
 			if (delim)
 				string_aux2 = axl_stream_get_until (stream, NULL, NULL, true, 1, "\"");
 			else
 				string_aux2 = axl_stream_get_until (stream, NULL, NULL, true, 1, "'");
-			axl_stream_set_buffer_alloc (stream, NULL, NULL);
 
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "value found: [%s]", string_aux2);
 			
@@ -852,28 +857,21 @@ bool __axl_doc_parse_close_node (axlStream * stream, axlDoc * doc, axlNode ** _n
 {
 	char    * string;
 	int       result_size = -1;
-	int       iterator;
-	int       matched_chunk;
 	axlNode * node;
 
 	/* get the node being closed to check to the current parent */
-	string = axl_stream_get_until_ref (stream, NULL, &matched_chunk, true, &result_size, 1, ">");
+	string = axl_stream_get_until_ref (stream, NULL, NULL, true, &result_size, 1, ">");
 	if (string == NULL) {
-		
 		axl_error_new (-1, "An error was found while closing the xml node", stream, error);
 		axl_stream_free (stream);
 		return false;
 	}
 
-	/* check for spaces inside the trailing result */
-	iterator = 1;
-	while (axl_stream_is_white_space (string + result_size - iterator)) {
-		/* nullify to remove white spaces */
-		string [result_size - iterator] = 0;
-
-		/* update the iterator */
-		iterator++;
-	}
+	/* check for optional white space inside the trailing result */
+	if (axl_stream_is_white_space (string + result_size - 1)) {
+		/* nullify to remove the optional white spaces */
+		string [result_size - 1] = 0;
+	} /* end if */
 
 	/* get current parent node */
 	node   = axl_stack_peek (doc->parentNode);
@@ -884,8 +882,8 @@ bool __axl_doc_parse_close_node (axlStream * stream, axlDoc * doc, axlNode ** _n
 		return false;
 	}
 	
-	if (axl_stream_cmp (axl_node_get_name (node), string, strlen (axl_node_get_name (node))) &&
-	    axl_stream_cmp (axl_node_get_name (node), string, result_size)) {
+	/* check current axl node name against closed string */
+	if (axl_cmp (axl_node_get_name (node), string)) { 
 
 		/* ok, axl node to be closed is the one expected */
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "closing xml node, that matched with parent opened");
@@ -1022,7 +1020,7 @@ axlDoc * __axl_doc_parse_common (const char * entity, int entity_size,
 				axl_stream_nullify (stream, LAST_CHUNK);
 
 				/* set current data */
-				axl_node_set_content_ref (node, string, -1);
+				axl_node_set_content_ref (node, string, -1); 
 				continue;
 			} /* end if */
 
@@ -1050,7 +1048,10 @@ axlDoc * __axl_doc_parse_common (const char * entity, int entity_size,
 			}
 			
 			/* found node content */
+			axl_stream_set_buffer_alloc (stream, (axlStreamAlloc)__axl_doc_alloc, doc);
 			string = axl_stream_get_until (stream, NULL, NULL, false, 1, "<");
+			axl_stream_set_buffer_alloc (stream, NULL, NULL);
+
 			/* check for a null content found */
 			if (string == NULL) {
 				axl_error_new (-1, "an error was found while reading the xml node content", stream, error);
@@ -1063,7 +1064,8 @@ axlDoc * __axl_doc_parse_common (const char * entity, int entity_size,
 			axl_stream_nullify (stream, LAST_CHUNK);
 
 			/* set current data */
-			axl_node_set_content_ref (node, string, -1);
+			/* axl_node_set_content_ref (node, string, -1); */
+			axl_node_set_content_from_factory (node, string, -1); 
 
 			/* keep on looping */
 		}
