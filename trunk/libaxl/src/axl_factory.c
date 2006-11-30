@@ -157,6 +157,7 @@ struct _axlStrBlock {
 
 struct _axlStrFactory {
 	int           index;
+	int           step;
 	int           size;
 	axlStrBlock * block;
 };
@@ -174,6 +175,7 @@ axlStrFactory * axl_string_factory_create ()
 
 	/* create a factory */
 	factory                = axl_new (axlStrFactory, 1);
+	factory->step          = 1024;
 	factory->size          = 1024;
 	factory->block         = axl_new (axlStrBlock, 1);
 	factory->block->buffer = axl_new (char, factory->size);
@@ -206,10 +208,14 @@ char          * axl_string_factory_alloc  (axlStrFactory * factory, int size)
 		block = axl_new (axlStrBlock, 1);
 
 		/* ensure the block can hold the string */
-		if (size > factory->size)
+		if (size > factory->size) {
 			block->buffer = axl_new (char, size);
-		else
+			factory->size = size;
+		} else {
+			/* store step allocation */
+			factory->size = factory->step;
 			block->buffer = axl_new (char, factory->size);
+		}
 
 		/* configure the new block */
 		block->next    = factory->block;

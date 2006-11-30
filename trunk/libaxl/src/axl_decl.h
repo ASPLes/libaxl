@@ -168,16 +168,6 @@ typedef struct _axlStrFactory axlStrFactory;
  */
 typedef struct _axlNode axlNode;
 
-/** 
- * @brief An abstraction that represents an single content unit that
- * can be found inside an \ref axlNode as element that is located at
- * the same level compared to other content (\ref axlNodeContent) or
- * other nodes (\ref axlNode), as well processing instructions (\ref
- * axlPI) and comments (\ref axlNodeContent).
- *
- */
-typedef struct _axlNodeContent axlNodeContent;
-
 /**
  * @brief Axl XML Attribute type definition.
  */
@@ -543,10 +533,16 @@ typedef enum {
 
 	/** 
 	 * @internal Item type which allows to signal that the item
-	 * comes from an item factory and should be deallocated in the
-	 * usual manner.
+	 * comes from an item factory and shouldn't be deallocated in
+	 * the usual manner.
 	 */
 	ITEM_FROM_FACTORY = 1 << 7,
+	/** 
+	 * @internal Item type which allows to signal that the content
+	 * item comes from an item factory and shouldn't be
+	 * deallocated in the usual manner. 
+	 */
+	ITEM_CONTENT_FROM_FACTORY = 1 << 8
 }AxlItemType;
 
 /** 
