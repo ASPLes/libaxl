@@ -77,9 +77,10 @@ void      axl_node_set_attribute_ref        (axlNode * node,
 					     char    * attribute, 
 					     char    * value);
 
-void      axl_node_set_attribute_from_factory  (axlNode * node, 
-						char    * attribute, 
-						char    * value);
+void      axl_node_set_attribute_from_factory  (axlFactory * factory, 
+						axlNode    * node, 
+						char       * attribute, 
+						char       * value);
 
 /** 
  * @brief Macro definition which works as an alias for \ref
@@ -246,17 +247,19 @@ void      axl_node_set_content_ref    (axlNode * node,
 				       char * content, 
 				       int content_size);
 
-void      axl_node_set_content_from_factory (axlNode * node,
-					     char    * content,
-					     int       content_size);
+void      axl_node_set_content_from_factory (axlFactory * factory,
+					     axlNode    * node,
+					     char       * content,
+					     int          content_size);
 
 void      axl_node_set_cdata_content  (axlNode * node,
 				       char * content,
 				       int content_size);
 
-void      axl_node_set_cdata_content_from_factory (axlNode * node,
-						   char    * content,
-						   int       content_size);
+void      axl_node_set_cdata_content_from_factory (axlFactory * factory,
+						   axlNode    * node,
+						   char       * content,
+						   int          content_size);
 
 void      axl_node_set_comment        (axlNode * node,
 				       char * comment,
@@ -382,6 +385,10 @@ axlItem        * axl_item_factory_get (axlFactory * factory);
 axlFactory     * axl_node_factory_create ();
 
 axlNode        * axl_node_factory_get (axlFactory * factory);
+
+axlFactory     * axl_item_content_factory_create ();
+
+axlFactory     * axl_item_attr_factory_create ();
 
 END_C_DECLS
 

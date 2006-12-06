@@ -369,6 +369,17 @@ struct _axlDoc {
 	axlFactory    * node_factory;
 
 	/** 
+	 * @internal Factory to create nodes to hold content elements.
+	 */
+	axlFactory    * content_factory;
+
+	/** 
+	 * @internal Factory to create nodes to hold attribute
+	 * elements.
+	 */
+	axlFactory    * attr_factory;
+
+	/** 
 	 * @internal Factory to alloc strings.
 	 */
 	axlStrFactory * str_factory;
@@ -408,9 +419,11 @@ axlDoc * __axl_doc_new (bool create_parent_stack)
 	result->piTargets    = axl_list_new (axl_list_always_return_1, (axlDestroyFunc) axl_pi_free);
 
 	/* create factories */
-	result->item_factory = axl_item_factory_create ();
-	result->node_factory = axl_node_factory_create ();
-	result->str_factory  = axl_string_factory_create ();
+	result->item_factory    = axl_item_factory_create ();
+	result->node_factory    = axl_node_factory_create ();
+	result->content_factory = axl_item_content_factory_create ();
+	result->attr_factory    = axl_item_attr_factory_create ();
+	result->str_factory     = axl_string_factory_create ();
 	return result;
 }
 
@@ -828,7 +841,7 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 			axl_stream_nullify (stream, LAST_CHUNK);
 			
 			/* set a new attribute for the given node */
-			axl_node_set_attribute_from_factory (node, string_aux, string_aux2);
+			axl_node_set_attribute_from_factory (doc->attr_factory, node, string_aux, string_aux2);
 
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "attribute installed..");
 
@@ -1065,7 +1078,7 @@ axlDoc * __axl_doc_parse_common (const char * entity, int entity_size,
 
 			/* set current data */
 			/* axl_node_set_content_ref (node, string, -1); */
-			axl_node_set_content_from_factory (node, string, -1); 
+			axl_node_set_content_from_factory (doc->content_factory, node, string, -1); 
 
 			/* keep on looping */
 		}
@@ -2891,6 +2904,14 @@ void     axl_doc_free         (axlDoc * doc)
 	/* free item factory */
 	if (doc->item_factory != NULL)
 		axl_factory_free (doc->item_factory);
+
+	/* free content holding nodes factory */
+	if (doc->content_factory != NULL)
+		axl_factory_free (doc->content_factory);
+
+	/* free attribute holding factory */
+	if (doc->attr_factory != NULL)
+		axl_factory_free (doc->attr_factory);
 
 	/* free node factory */
 	if (doc->node_factory != NULL)
