@@ -1,0 +1,168 @@
+          ###################################
+          # Axl Library release note: 0.3.0 #
+          ###################################
+
+Advanced Software Production Line is proud to announce a new Axl
+Library release.
+
+Axl Library is an small and efficient XML toolkit, that will allow you
+to produce efficient and clear code that interfaces with XML data.
+
+The library was produced to support XML requirements needed by
+software developed by Advanced Software Production Line, S.L. 
+
+At this moment the library is being used by Vortex Library,
+Af-Arch, Shaper and Fovap.
+
+Resources
+~~~~~~~~~
+   Axl Homepage
+   [ http://xml.aspl.es ]
+
+   Advanced Software Production Line, S.L.
+   [ http://www.aspl.es ]
+
+   Memory report for this release
+   [ http://xml.aspl.es/memory-report-0.3.0.html ]
+
+
+This release in short
+~~~~~~~~~~~~~~~~~~~~~
+
+  This is the first release where Axl Library is faster than LibXML,
+  using our reference tests, while consuming less memory.
+
+  This release includes a new memory allocator (that works
+  transparently to the developer) which has increased memory
+  performance, reduced execution time and reduced the amount of
+  administrative memory consumed by the library. 
+
+  See the following report to its exceptional results:
+
+   Memory report for this release
+   [ http://xml.aspl.es/memory-report-0.3.0.html ]
+ 
+  Improved API including new functions to place content just after an
+  item selected as a reference, changing xml nodes and some fixes
+  while parsing documents with empty nodes.
+
+Changes from previous release 0.2.7
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* [fix] Fixed a bug which was causing to place content found next to a
+  xml empty node. Added a new regression test to check this.
+
+* [fix] Moved axl_stream_trim and axl_stream_trim_with_size to the axl
+  strings handling section.
+
+* [new] Added new functions to create axlItem:
+
+   - axl_item_new
+   - axl_item_new_ref
+
+* [fix] Fixed axl_doc_are_equal function which was only checking that
+  both documents share the same xml node structure but not content in
+  the middle of each node (mixed content). Now the function checks
+  every item found.
+
+* [new] Added a new function that allows performing an equal check
+  considering the content trimmed (without white spaces starting and
+  ending the content being checked).
+
+   - axl_doc_are_equal_trimmed
+
+* [new] Moved to the public API
+  __axl_node_content_have_not_valid_sequences to
+  axl_node_has_invalid_chars, which allows to check if the provided
+  check has invalid chars (;, &, ', <, ", >). Added regression test to
+  check this.
+
+* [fix] Added new functions to the axl node module to check if a
+  particular node has an attribute with a particular value. API added:
+
+    - axl_node_has_attribute_value
+    - HAS_ATTR_VALUE 
+
+* [fix] committing missing test files (test_23.xml and test_23b.xml).
+
+* [new] New macros added to the axl node module. API added:
+
+   - HAS_ATTR
+   - ATTR_VALUE
+
+* [new] Making axlItem to be allocated through a factory which
+  allocates blocks of axlItems rather mallocing every single item,
+  reducing the heap-admin memory used.
+
+* [fix] Added new module to implement item factory allocation.
+
+* [new] Added two new functions to allow updating xml node name value:
+  
+   - axl_node_set_name
+   - axl_node_set_name_ref
+
+* [new] General update to include support for an axl string factory,
+  at the axl factory module, which allows to implement an efficient
+  memory allocation pattern, according to the Axl Library function, to
+  alloc strings.
+
+* [new] Updated axl stream module to include support for an external
+  module to configure its allocation function. API added:
+
+   - axlStreamAlloc (handler)
+   - axl_stream_set_buffer_alloc
+
+* [fix] Updated axl doc module to use new feature from axl stream to
+  change its allocator function, and used the axl string factory to
+  allocate the xml node names and its attributes (key and
+  values). With this change, and previous ones, axl library test
+  reference (test_01a) executes in 0.049s...  GREAT!!!!! Now axl is as
+  fast as LibXML but much more memory efficient!!
+
+* [fix] Added a new function to the axl item API which allows
+  configure more content after a selected axl item (used as a
+  reference):
+
+    - axl_item_set_after
+
+* [fix] Making node content to be also allocated through the string
+  factory.  Reimplemented axl document node closing parsing, improving
+  test_01 and test_01a performance 3%. Now axl library is a bit faster
+  than LibXML (0.045ms), Axl (0.0.44ms).
+
+* [fix] Making memory allocated for hold attribute nodes and xml node
+  content to be handled through axlFactory, reducing number of alloc
+  operations pairs (alloc/free) from 34088 to 8803!! (test_01) and
+  14663 to 2076!!  Execution due to previous changes makes Axl to be
+  faster LibXml (around 10% faster, 98% less allocs pairs operations
+  and around 2.5 times memory efficient.  GREAT!!!!)
+
+
+About Advanced Software Production Line, S.L.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Advanced Software Production Line is leading the Af-Arch project: a
+  complete framework to develop distributed application to manage
+  enterprise process.
+
+  Af-Arch project uses Axl library to support its XML requirements
+  while exchanging data between nodes.
+
+  Advanced Software Production Line also provides GNU/Linux support
+  and consulting services to enable organization to introduce
+  GNU/Linux inside its process, making other platforms to interact
+  with GNU/Linux.
+
+  Contact us, using English or Spanish, to get commercial support
+  and/or XML based development services.
+
+  You can reach us:
+
+       http://www.aspl.es - info@aspl.es
+
+  We hope Axl Library help you. Enjoy Axl Library!
+
+--
+Francis Brosnan Blázquez           - francis@aspl.es
+Advanced Software Production Line  - http://www.aspl.es
+6th Dec 2006, Madrid (Spain)
