@@ -44,19 +44,18 @@
  */
 
 /** 
+ * \addtogroup axl_node_module
+ * @{
+ */
+
+/** 
  * @internal An abstraction that represents an single content unit
  * that can be found inside an \ref axlNode as element that is located
  * at the same level compared to other content (\ref axlNodeContent)
  * or other nodes (\ref axlNode), as well processing instructions
  * (\ref axlPI) and comments (\ref axlNodeContent).
- *
  */
 typedef struct _axlNodeContent axlNodeContent;
-
-/** 
- * \addtogroup axl_node_module
- * @{
- */
 
 struct _axlNodeContent {
 	/** 
@@ -157,9 +156,8 @@ void __axl_node_free_attr_list (axlNodeAttr * attr)
 		if (! attr->from_factory) {
 			axl_free (attr->attribute);
 			axl_free (attr->value);
+			axl_free (attr);
 		} /* end if */
-		
-		axl_free (attr);
 
 		/* get the next */
 		attr = next;
@@ -805,7 +803,11 @@ void      axl_node_set_doc                  (axlNode * node, axlDoc * doc)
  * Support function to install attribute information provided into the
  * \ref axlNode provided.
  */
-void      __axl_node_set_attribute      (axlNode * node, char * attribute, char * value, bool from_factory)
+void      __axl_node_set_attribute      (axlFactory * factory, 
+					 axlNode    * node, 
+					 char       * attribute, 
+					 char       * value, 
+					 bool         from_factory)
 {
 	axlNodeAttr * attr;
 	axlNodeAttr * next;
@@ -817,7 +819,10 @@ void      __axl_node_set_attribute      (axlNode * node, char * attribute, char 
 		node->attr_num   = 1;
 		
 		/* create the node */
-		attr               = axl_new (axlNodeAttr, 1);
+		if (from_factory)
+			attr = axl_factory_get (factory);
+		else
+			attr = axl_new (axlNodeAttr, 1);
 		attr->from_factory = from_factory;
 		attr->attribute    = attribute;
 		attr->value        = value;
@@ -832,7 +837,10 @@ void      __axl_node_set_attribute      (axlNode * node, char * attribute, char 
 	if (node->attr_num < 10) {
 
 		/* create the node */
-		attr               = axl_new (axlNodeAttr, 1);
+		if (from_factory)
+			attr = axl_factory_get (factory);
+		else
+			attr = axl_new (axlNodeAttr, 1);
 		attr->from_factory = from_factory;
 		attr->attribute    = attribute;
 		attr->value        = value;
@@ -862,7 +870,8 @@ void      __axl_node_set_attribute      (axlNode * node, char * attribute, char 
 						      attr->value, attr->from_factory ? NULL : axl_free);
 				/* free current node */
 				next = attr->next;
-				axl_free (attr);
+				if (! attr->from_factory)
+					axl_free (attr);
 
 				/* get the next item to store */
 				attr = next;
@@ -954,7 +963,7 @@ void      axl_node_set_attribute      (axlNode * node, char * attribute, char * 
 	}
 
 	/* insert the attribute */
-	__axl_node_set_attribute (node, _attr, _value, false);
+	__axl_node_set_attribute (NULL, node, _attr, _value, false);
 	return;
 }
 
@@ -982,7 +991,7 @@ void      axl_node_set_attribute_ref  (axlNode * node, char * attribute, char * 
 	axl_return_if_fail (value);
 
 	/* insert the attribute */
-	__axl_node_set_attribute (node, attribute, value, false);
+	__axl_node_set_attribute (NULL, node, attribute, value, false);
 
 	return;
 }
@@ -999,12 +1008,13 @@ void      axl_node_set_attribute_ref  (axlNode * node, char * attribute, char * 
  * @param attribute The attribute to configure.
  * @param value The attribute value to configure.
  */
-void      axl_node_set_attribute_from_factory  (axlNode * node, 
-						char    * attribute, 
-						char    * value)
+void      axl_node_set_attribute_from_factory  (axlFactory * factory, 
+						axlNode    * node, 
+						char       * attribute, 
+						char       * value)
 {
 	/* insert the attribute */
-	__axl_node_set_attribute (node, attribute, value, true);
+	__axl_node_set_attribute (factory, node, attribute, value, true);
 
 	return;
 }
@@ -2341,10 +2351,11 @@ void      axl_node_set_content        (axlNode * node, char * content, int conte
  * @internal Common implementation for axl_node_set_content_ref and
  * axl_node_set_content_from_factory.
  */
-void __axl_node_set_content_common_ref (axlNode * node, 
-					char    * content, 
-					int       content_size, 
-					bool      from_factory)
+void __axl_node_set_content_common_ref (axlFactory * factory, 
+					axlNode    * node, 
+					char       * content, 
+					int          content_size, 
+					bool         from_factory)
 {
 	
 	axlNodeContent * itemContent;
@@ -2357,7 +2368,10 @@ void __axl_node_set_content_common_ref (axlNode * node,
 		content_size = strlen (content);
 
 	/* create a content */
-	itemContent = axl_new (axlNodeContent, 1);
+	if (from_factory)
+		itemContent = axl_factory_get (factory);
+	else 
+		itemContent = axl_new (axlNodeContent, 1);
 		
 	/* configure content size */
 	itemContent->content_size = content_size;
@@ -2409,7 +2423,7 @@ void      axl_node_set_content_ref    (axlNode * node,
 
 	/* call to set content without signaling that the content
 	 * wasn't allocated by a factory. */
-	__axl_node_set_content_common_ref (node, content, content_size, false);
+	__axl_node_set_content_common_ref (NULL, node, content, content_size, false);
 	
 	/* job done */
 	return;	
@@ -2420,13 +2434,14 @@ void      axl_node_set_content_ref    (axlNode * node,
  * the content was allocated though the string factory and shouldn't
  * be deallocated.
  */
-void      axl_node_set_content_from_factory (axlNode * node,
-					     char    * content,
-					     int       content_size)
+void      axl_node_set_content_from_factory (axlFactory * factory,
+					     axlNode    * node,
+					     char       * content,
+					     int          content_size)
 {
 	/* call to set content without signaling that the content was
 	 * allocated by a factory. */
-	__axl_node_set_content_common_ref (node, content, content_size, true);
+	__axl_node_set_content_common_ref (factory, node, content, content_size, true);
 	
 	/* job done */
 	return;
@@ -5217,11 +5232,12 @@ void          axl_item_free           (axlItem * item,
 		/* all of them, managed equally */
 
 		/* check and free content */
-		if ((item->type & ITEM_CONTENT_FROM_FACTORY) == 0)
+		if ((item->type & ITEM_CONTENT_FROM_FACTORY) == 0) {
 			axl_free (((axlNodeContent *)item->data)->content);
 
-		/* free node */
-		axl_free ((axlNodeContent *)item->data);
+			/* free node */
+			axl_free ((axlNodeContent *)item->data);
+		}
 		
 		if ((item->type & ITEM_FROM_FACTORY) == 0)
 			axl_free (item);
@@ -5269,6 +5285,18 @@ axlNode    * axl_node_factory_get (axlFactory * factory)
 	node->conf = NODE_FROM_FACTORY;
 
 	return node;
+}
+
+axlFactory     * axl_item_content_factory_create ()
+{
+	/* create a factory for axlNodeContent elements */
+	return axl_factory_create (sizeof (axlNodeContent));
+}
+
+axlFactory     * axl_item_attr_factory_create ()
+{
+	/* create a factory for axlNodeAttr elements */
+	return axl_factory_create (sizeof (axlNodeAttr));
 }
 
 /* @} */
