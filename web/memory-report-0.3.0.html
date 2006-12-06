@@ -1,0 +1,267 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-15">
+<link rel="stylesheet" type="text/css" href="axl-web.css"></link>
+<title>Axl Library (Another XML Library), XML Library, XML, XML Software, XML Parser</title>
+</head>
+
+<body>
+<div class="main-page">
+
+<div class="header-content">
+<img class="slogan" src="axl-slogan.png" />
+<a href="http://www.aspl.es"><img class="aspl-logo" src="aspl-logo.png" /></a>
+<pre class="pre-menu">
+ <a href="index.html">&lt;home/> </a><a href="news.html">&lt;news/></a> <a href="doc.html">&lt;doc, support and downloads/></a> 
+</pre>
+</div><!-- header-content -->
+<h2><img src="arrow.png" /> Axl memory usage report for 0.3.0 release</h2>
+
+<h3><img src="arrow.png" />1. Introduction</h3>
+
+<p>The following information was gathered through several modifications
+performed to the LibAxl library, using a machine with a Intel(R) Pentium(R)
+4. This report covers the memory profile that the library has and compares
+that result with the LibXML library. </p>
+
+<p>In also contains a brief about improvements done to the library to
+reduce its execution time, memory pairs allocation and memory usage,
+while supporting the same features.</p>
+
+<p>It is in no way a complete library comparison at all, but provides
+some useful information about the motivations for building LibAxl
+library and how basic features compares to LibXML.</p>
+
+<p>The implementation reference chosen was <a
+href="http:/www.xmlsoft.org">LibXML-2.0 (version 2.6.26)</a> mainly
+because it was used by <a
+href="http://fact.aspl.es">Af-Arch</a> and <a
+href="http://vortex.aspl.es">Vortex Library</a>.
+
+<p>To produce the memory profiling results showed in this report it
+was used the <a href="http://www.valgrind.org">valgrind</a> tool and
+its extension to profile heap allocation and memory performance,
+called <b>massif</b>. It was also used the <b>callgrind</b> tool which
+gives statistical performance information.</p>
+
+<p>The test used for this memory usage report was the following for
+the case of Axl library results:</p>
+
+<pre class="code">
+#include <axl.h>
+#include <stdio.h>
+
+int main (int argc, char ** argv)
+{
+	axlError ** error;
+
+	/* top level definitions */
+	axlDoc * doc = NULL;
+
+	/* initialize axl library */
+	if (! axl_init ()) {
+		printf ("Unable to initialize Axl library\n");
+		return -1;
+	}
+
+	/* get current doc reference */
+	doc = axl_doc_parse_from_file ("large.xml", error);
+	if (doc == NULL)
+		return AXL_FALSE;
+
+	/* cleanup axl library */
+	axl_end ();
+
+	/* release the document */
+	axl_doc_free (doc);
+
+	return AXL_TRUE;
+}
+</pre>
+
+<p>For the performance results get for the LibXML-2.0 library, the
+test code was:</p>
+
+<pre class="code">
+#include <libxml/parser.h>
+#include <libxml/xmlmemory.h>
+
+int main (int argc, char ** argv)
+{
+	
+	xmlDocPtr     doc;
+
+	/* init libXml */
+	LIBXML_TEST_VERSION
+	
+	/* load the document */
+	doc = xmlParseFile ("large.xml");
+	if (doc == NULL) {
+		printf ("Failed to load the xml document.\n");
+		return -1;
+	}
+
+	/* release memory */
+	xmlFreeDoc (doc);
+
+	xmlCleanupParser();
+
+	return 0;
+}
+</pre>
+
+<p>The xml file used is a glade file definition that is 650K sized
+approx (found inside the test directory bundle with the source code:
+large.xml). </p>
+
+<p>Test was run using the following command to get memory usage:</p>
+
+<pre class="code">
+  bash: ~$ valgrind --leak-check --show-reachable=yes ./test_file
+</pre>
+
+<p>The following command was used to get the memory profiling
+information for both libraries.</p>
+
+<pre class="code">
+ bash: ~$ valgrind --tool=massif ./test_file
+</pre>
+
+
+<p>Conventions used on this report to identify memory allocations,
+memory deallocations and total amount of memory used are the
+following:</p>
+
+<pre class="code">
+  (A) = allocations (number of request to the memory system)
+  (F) = deallocations (number of times memory requested was returned)
+  (T) = total amount of memory allocated (in bytes)
+</pre>
+
+<h3><img src="arrow.png" /> 2. Initial status</h3>
+
+<p>Before starting we are going to remember previous performance state
+covered by the following report: <a
+href="memory-report-0.2.6.html">for Axl Library 0.2.6</a>, that shows the
+following data as initial status for memory consumption and runtime
+performance.
+
+<pre class="code">
+ MEMORY CONSUMED BY AXL 0.2.6:
+
+ LibAxl:
+ (A) 106,208 (F) 106,208 (T) 1,513,687
+
+ LibXML:
+ (A) 127,811 (F) 127,811 (T) 4,201,777
+</pre>
+
+<pre class="code">
+  RUNTIME PERFORMANCE BY AXL 0.2.6:
+
+  test_01a (axl): 0.077ms
+  test_01b (xml): 0.047ms
+</pre>
+
+<h3><img src="arrow.png" /> 3. Improve operations performed</h3>
+
+<p>This new release includes support for memory allocation factory, a
+simple implementation to alloc regions of memory that contains element
+for the same type (memory size), that are requested allocating bigger
+blocks, reducing the number of memory allocs and deallocs
+performed. </p>
+
+<p>This technique not only improves program execution, but also reduce
+administrative memory used by the system to manage memory allocated by
+the program on the heap. </p>
+
+<p>Previous Axl Library releases was suffering this problem: its
+allocation pattern was making the system to hold more memory to manage
+memory allocated by the application than the memory allocated by the
+application itself. </p>
+
+<p>Looking at the following memory profiling result, for the Axl
+Library 0.2.1 release, it is clearly showed: the library was requiring
+less memory than the heap-admin required by the system to manage such
+memory: </p>
+
+<img src="massif.5610.png" />
+
+<p>In the next section it is showed the radical change performed due to
+introducing the factory memory allocation. </p>
+
+<p>After doing changes described, we can say that Axl Library is now
+faster than LibXML, using the test reference described. Here are the
+result for the run time execution:</p>
+
+<pre class="code">
+  RUNTIME PERFORMANCE BY AXL 0.3.0:
+
+  test_01a (axl): 0.043ms
+  test_01b (xml): 0.050ms
+</pre>
+
+<h3><img src="arrow.png" /> 4. Memory consumption</h3>
+
+<p>Memory allocation through the factory has improved the overall
+library performance, for its measured elements: allocations
+operations and memory heap admin used.</p>
+
+<p>Here are the exceptional results that shows Axl Library execution
+against results obtained with LibXML.</p>
+
+<pre class="code">
+ MEMORY CONSUMED BY AXL 0.3.0:
+
+ LibAxl:
+ (A) 2,076 (F) 2,076 (T) 1,678,824
+
+ LibXML:
+ (A) 127,811 (F) 127,811 (T) 4,201,777
+</pre>
+
+<p>Here is the memory profile (produced with massif) for the LibXML
+library:</p>
+
+<img src="report-image-0.3.0-02.png" />
+
+<p>And the memory profile for the Axl Library:</p>
+
+<img src="report-image-0.3.0-01.png" />
+
+<h3><img src="arrow.png" /> 4. Conclusion</h3>
+
+<p>Conclusions are pretty clear: Axl Library has improved its memory
+allocation pattern, not only reducing its memory allocations requests,
+but also reducing its heap memory admin. This has also improved
+library efficient to make it, for the first time, faster than LibXML
+(around <b>14% faster</b>). </p>
+
+<p>At the same time, the library keeps on consuming around <b>2.5
+times</b> less than LibXML for the same document which makes it really
+memory efficient.</p>
+
+<h3><img src="arrow.png" /> 5. References</h3>
+
+<ul class="list">
+   <li><a href="http://valgrind.org">Valgrind</a> Homepage for this profiling tool and its extensions.</li>
+   <li><a href="http://xmlsoft.org">LibXML</a> LibXML homepage, tutorials, references and manuals.</li>
+</ul>
+
+<div class="author">
+</div>
+
+<div class="footer">
+<p>
+<!-- hhmts start -->Last modified: Wed Dec  6 20:48:37 CET 2006 <!-- hhmts end -->
+</p>
+</div>
+<div> <!-- main-page -->
+<script src="http://www.google-analytics.com/urchin.js" type="text/javascript">
+</script>
+<script type="text/javascript">
+_uacct = "UA-123192-5";
+urchinTracker();
+</script>
+</body> </html>

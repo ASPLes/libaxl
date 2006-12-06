@@ -49,11 +49,8 @@
  */
 
 /** 
- * @internal An abstraction that represents an single content unit
- * that can be found inside an \ref axlNode as element that is located
- * at the same level compared to other content (\ref axlNodeContent)
- * or other nodes (\ref axlNode), as well processing instructions
- * (\ref axlPI) and comments (\ref axlNodeContent).
+ * @internal Axl content representation used to store comments, xml
+ * content, CDATA content and entity references.
  */
 typedef struct _axlNodeContent axlNodeContent;
 
@@ -4697,7 +4694,7 @@ axlPointer axl_item_get_data (axlItem * item)
  * its size) from the received \ref axlItem, supposing it is storing
  * an \ref ITEM_CONTENT, \ref ITEM_CDATA, \ref ITEM_COMMENT or \ref ITEM_REF.
  *
- * @param item The \ref axlItem that is supposed to store an \ref axlNodeContent element.
+ * @param item The \ref axlItem that is supposed to store an item with type: \ref ITEM_CONTENT, \ref ITEM_CDATA, \ref ITEM_COMMENT or \ref ITEM_REF.
  *
  * @param size Optional variable reference. If defined, if returns the
  * content size.

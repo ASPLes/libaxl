@@ -476,13 +476,9 @@ typedef enum {
 	ITEM_NODE      = 1 << 0,
 	/** 
 	 * @brief The \ref axlItem is encapsulating an node
-	 * content. Calling to \ref axl_item_get_data will return a
-	 * reference to an \ref axlNodeContent.
-	 *
-	 * You can also use the convenience function \ref
+	 * content. Calling to the convenience function \ref
 	 * axl_item_get_content to get the content and the size that
-	 * is stored on the \ref axlItem.
-	 *
+	 * is stored in the \ref axlItem with this type.
 	 */
 	ITEM_CONTENT   = 1 << 1,
 	/** 
@@ -495,24 +491,23 @@ typedef enum {
 	
 	/** 
 	 * @brief The \ref axlItem is encapsulating an xml
-	 * comment. Calling to \ref axl_item_get_data will return a
-	 * reference to a \ref axlNodeContent. XML comments inside Axl
-	 * are also handled using this type. The comment that is
-	 * returned from the function has the initial '<!--' and the
-	 * ending '-->' elements stripped.
+	 * comment. 
+	 * 
+	 * XML comments inside Axl are handled xml node content. The
+	 * comment that is returned from the function has the initial
+	 * '<!--' and the ending '-->' elements stripped from its
+	 * body.
 	 *
-	 * You can also use the convenience function \ref
-	 * axl_item_get_content to get the comment content and the size that
-	 * is stored on the \ref axlItem.
+	 * You must use the convenience function \ref
+	 * axl_item_get_content to get the comment content and the
+	 * size that is stored on the \ref axlItem.
 	 */
 	ITEM_COMMENT   = 1 << 3,
 	/** 
 	 * @brief The \ref axlItem is encapsulating an xml entity
 	 * reference that wasn't resolved yet.
 	 *
-	 * You can also use the convenience function \ref
-	 * axl_item_get_content to get the entity reference name and the size that
-	 * is stored on the \ref axlItem.
+	 * Not implemented yet.
 	 */
 	ITEM_REF       = 1 << 4,
 	/** 
@@ -520,13 +515,11 @@ typedef enum {
 	 * that was enclosed using the <![CDATA[]]> construction. This
 	 * child item works the same as \ref ITEM_CONTENT but, adding
 	 * the CDATA semantic and the fact that the content wasn't
-	 * parsed by the Axl XML engine. Calling to the \ref
-	 * axl_item_get_data will return an \ref axlNodeContent
-	 * reference.
+	 * parsed by the Axl XML engine. 
 	 *
-	 * You can also use the convenience function \ref
-	 * axl_item_get_content to get the CDATA content and the size that
-	 * is stored on the \ref axlItem.
+	 * You must use the convenience function \ref
+	 * axl_item_get_content to get the CDATA content and the size
+	 * that is stored on the \ref axlItem.
 	 *
 	 */
 	ITEM_CDATA     = 1 << 6,
