@@ -209,12 +209,12 @@ char          * axl_string_factory_alloc  (axlStrFactory * factory, int size)
 
 		/* ensure the block can hold the string */
 		if (size > factory->size) {
-			block->buffer = axl_new (char, size);
-			factory->size = size;
+			block->buffer = axl_new (char, size + 1);
+			factory->size = size + 1;
 		} else {
 			/* store step allocation */
 			factory->size = factory->step;
-			block->buffer = axl_new (char, factory->size);
+			block->buffer = axl_new (char, factory->size + 1);
 		}
 
 		/* configure the new block */
