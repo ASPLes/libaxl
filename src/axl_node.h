@@ -70,8 +70,8 @@ void      axl_node_set_doc                  (axlNode * node,
 					     axlDoc  * doc);
 
 void      axl_node_set_attribute            (axlNode    * node, 
-					     char * attribute, 
-					     char * value);
+					     const char * attribute, 
+					     const char * value);
 
 void      axl_node_set_attribute_ref        (axlNode * node, 
 					     char    * attribute, 
@@ -116,6 +116,18 @@ const char    * axl_node_get_attribute_value      (axlNode    * node,
 
 char    * axl_node_get_attribute_value_copy (axlNode    * node, 
 					     char       * attribute);
+
+/** 
+ * @brief Simple alias definition to \ref axl_node_get_attribute_value_trans function.
+ * 
+ * @param node The node which contains the attribute requested.
+ *
+ * @param attr The attribute key that is being requested.
+ * 
+ * @return A newly allocated string containing the attribute value,
+ * with known entity references translated.
+ */
+#define ATTR_VALUE_TRANS(node,attr) axl_node_get_attribute_value_trans(node,attr)
 
 char    * axl_node_get_attribute_value_trans (axlNode * node, 
 					      char * attribute);
