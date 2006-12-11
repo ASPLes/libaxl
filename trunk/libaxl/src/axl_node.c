@@ -343,9 +343,9 @@ int __axl_node_equal (axlPointer a, axlPointer b)
  * Internal function which allocates the enough memory to copy
  * received content changing all escape sequences.
  */
-char * __axl_node_content_copy_and_escape (char * content, 
-					   int    content_size, 
-					   int    additional_size)
+char * __axl_node_content_copy_and_escape (const char * content, 
+					   int          content_size, 
+					   int          additional_size)
 {
 	int    iterator  = 0;
 	int    iterator2 = 0;
@@ -919,7 +919,9 @@ void      __axl_node_set_attribute      (axlFactory * factory,
  * @param value The value associated to the attribute to be
  * configured. This value can't be NULL.
  */
-void      axl_node_set_attribute      (axlNode * node, char * attribute, char * value)
+void      axl_node_set_attribute      (axlNode    * node, 
+				       const char * attribute, 
+				       const char * value)
 {
 	int    additional_size = 0;
 	char * _attr;
@@ -1621,6 +1623,10 @@ int        axl_node_anotate_get_int             (axlNode    * node,
 	/* get the anotated data */
 	data = axl_node_anotate_get (node, key, lookup_in_parent);
 
+	/* check for null value. */
+	if (data == NULL)
+		return 0;
+
 	if (data->type != ANOTATE_INT) {
 		/* drop a log */
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "accesing to a anotation data that isn't flaged as integer");
@@ -1659,6 +1665,10 @@ char *     axl_node_anotate_get_string          (axlNode    * node,
 	/* get the anotated data */
 	data = axl_node_anotate_get (node, key, lookup_in_parent);
 
+	/* check for null value. */
+	if (data == NULL)
+		return NULL;
+
 	if (data->type != ANOTATE_STRING) {
 		/* drop a log */
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "accesing to a anotation data that isn't flaged as string");
@@ -1696,6 +1706,10 @@ double     axl_node_anotate_get_double          (axlNode    * node,
 
 	/* get the anotated data */
 	data = axl_node_anotate_get (node, key, lookup_in_parent);
+
+	/* check for null value. */
+	if (data == NULL)
+		return 0.0;
 
 	if (data->type != ANOTATE_DOUBLE) {
 		/* drop a log */
