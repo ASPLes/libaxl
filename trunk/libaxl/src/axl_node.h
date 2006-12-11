@@ -95,7 +95,7 @@ void      axl_node_set_attribute_from_factory  (axlFactory * factory,
 #define HAS_ATTR(node,attr) axl_node_has_attribute(node,attr)
 
 bool      axl_node_has_attribute            (axlNode    * node, 
-					     char * attribute);
+					     const char * attribute);
 
 /** 
  * @brief Macro definition, which works as an alias for \ref
@@ -111,8 +111,8 @@ bool      axl_node_has_attribute            (axlNode    * node,
  */
 #define ATTR_VALUE(node,attr) axl_node_get_attribute_value(node, attr)
 
-char    * axl_node_get_attribute_value      (axlNode    * node, 
-					     char       * attribute);
+const char    * axl_node_get_attribute_value      (axlNode    * node, 
+						   const char * attribute);
 
 char    * axl_node_get_attribute_value_copy (axlNode    * node, 
 					     char       * attribute);
@@ -126,9 +126,9 @@ char    * axl_node_get_attribute_value_trans (axlNode * node,
  */
 #define HAS_ATTR_VALUE(node, attr,value) (axl_node_has_attribute_value (node, attr, value))
 
-bool      axl_node_has_attribute_value       (axlNode * node, 
-					      char * attribute, 
-					      char * value);
+bool      axl_node_has_attribute_value       (axlNode    * node, 
+					      const char * attribute, 
+					      const char * value);
 
 /* user defined data interface store arbitrary data inside the
  * hash  */

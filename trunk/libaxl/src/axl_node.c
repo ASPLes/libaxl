@@ -1028,7 +1028,7 @@ void      axl_node_set_attribute_from_factory  (axlFactory * factory,
  * @return A \ref true if the attribute value is set, otherwise
  * \ref false is returned.
  */
-bool          axl_node_has_attribute      (axlNode * node, char * attribute)
+bool          axl_node_has_attribute      (axlNode * node, const char * attribute)
 {
 	axlNodeAttr * attr;
 
@@ -1056,7 +1056,7 @@ bool          axl_node_has_attribute      (axlNode * node, char * attribute)
 	} /* end if */
 
 	/* hashed configuration */
-	return axl_hash_exists ((axlHash *) node->attributes, attribute);
+	return axl_hash_exists ((axlHash *) node->attributes, (axlPointer) attribute);
 }
 
 /** 
@@ -1076,7 +1076,7 @@ bool          axl_node_has_attribute      (axlNode * node, char * attribute)
  * a local copy. Use \ref axl_strdup function to get a persistent
  * copy.
  */
-char    * axl_node_get_attribute_value (axlNode * node, char * attribute)
+const char    * axl_node_get_attribute_value (axlNode * node, const char * attribute)
 {
 	axlNodeAttr * attr;
 
@@ -1105,7 +1105,7 @@ char    * axl_node_get_attribute_value (axlNode * node, char * attribute)
 	} /* end if */
 
 	/* return value stored for the provided key */
-	return axl_hash_get ((axlHash *) node->attributes, attribute);
+	return axl_hash_get ((axlHash *) node->attributes, (axlPointer) attribute);
 }
 
 /** 
@@ -1125,7 +1125,7 @@ char    * axl_node_get_attribute_value (axlNode * node, char * attribute)
  */
 char    * axl_node_get_attribute_value_copy (axlNode * node, char * attribute)
 {
-	char * _value;
+	const char * _value;
 
 	/* get the attribute */
 	_value = axl_node_get_attribute_value (node, attribute);
@@ -1163,7 +1163,7 @@ char    * axl_node_get_attribute_value_trans (axlNode * node, char * attribute)
 	int    size;
 
 	/* get the attribute */
-	_value = axl_node_get_attribute_value (node, attribute);
+	_value = (char *) axl_node_get_attribute_value (node, attribute);
 	axl_return_val_if_fail (_value, NULL);
 
 	/* perform a local copy */
@@ -1191,9 +1191,9 @@ char    * axl_node_get_attribute_value_trans (axlNode * node, char * attribute)
  * @return \ref true if the node has the attribute with the provided
  * value.
  */
-bool axl_node_has_attribute_value       (axlNode * node, 
-					 char * attribute, 
-					 char * value)
+bool axl_node_has_attribute_value       (axlNode    * node, 
+					 const char * attribute, 
+					 const char * value)
 {
 	axl_return_val_if_fail (node, false);
 	axl_return_val_if_fail (attribute, false);
