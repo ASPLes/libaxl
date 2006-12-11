@@ -710,6 +710,11 @@ bool test_20 (axlError ** error)
 		return false;
 	}
 
+	if (axl_node_anotate_get_string (root, "string-not-found", false) != NULL) {
+		axl_error_new (-1, "Expected to find empty value for an anotated element which isn't installed", NULL, error);
+		return false;
+	}
+
 	/* free document created */
 	axl_doc_free (doc);
 
