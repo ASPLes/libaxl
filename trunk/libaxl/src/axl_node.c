@@ -1245,7 +1245,7 @@ void __init_node_anotation (axlNode * node)
  * @param data The data to be stored associated to the key provided.
  */
 void      axl_node_anotate_data                 (axlNode     * node, 
-						 char        * key, 
+						 const char    * key,
 						 axlPointer    data)
 {
 	axl_return_if_fail (node);
@@ -1254,7 +1254,7 @@ void      axl_node_anotate_data                 (axlNode     * node,
 	__init_node_anotation (node);
 	
 	/* insert data */
-	axl_hash_insert (node->anotate_data, key, data);
+	axl_hash_insert (node->anotate_data, (axlPointer) key, data);
 
 	/* nothing more to do */
 	return;
@@ -1283,7 +1283,7 @@ void      axl_node_anotate_data                 (axlNode     * node,
  * the data provided.
  */
 void      axl_node_anotate_data_full            (axlNode       * node,
-						 char          * key, 
+						 const char    * key,
 						 axlDestroyFunc  key_destroy,
 						 axlPointer      data,
 						 axlDestroyFunc  data_destroy)
@@ -1294,7 +1294,7 @@ void      axl_node_anotate_data_full            (axlNode       * node,
 	__init_node_anotation (node);
 
 	/* insert data */
-	axl_hash_insert_full (node->anotate_data, key, key_destroy, data, data_destroy);
+	axl_hash_insert_full (node->anotate_data, (axlPointer) key, key_destroy, data, data_destroy);
 
 	/* nothing more to do */
 	return;
@@ -1317,9 +1317,9 @@ void      axl_node_anotate_data_full            (axlNode       * node,
  * @return The data associated to the key according to the lookup
  * configuration (lookup_in_parent and lookup_in_doc).
  */
-axlPointer axl_node_anotate_get                 (axlNode * node,
-						 char    * key,
-						 bool      lookup_in_parent)
+axlPointer axl_node_anotate_get                 (axlNode     * node,
+						 const char  * key,
+						 bool          lookup_in_parent)
 {
 	axlPointer   result = NULL;
 	axlNode    * parent;
@@ -1331,7 +1331,7 @@ axlPointer axl_node_anotate_get                 (axlNode * node,
 	/* lookup the data in the current node */
 	if (node->anotate_data != NULL) {
 		/* lookup the data */
-		result = axl_hash_get (node->anotate_data, key);
+		result = axl_hash_get (node->anotate_data, (axlPointer) key);
 
 		/* check result returned */
 		if (result != NULL)
@@ -1347,7 +1347,7 @@ axlPointer axl_node_anotate_get                 (axlNode * node,
 		while (parent != NULL) {
 			/* lookup the data */
 			if (parent->anotate_data)
-				result = axl_hash_get (parent->anotate_data, key);
+				result = axl_hash_get (parent->anotate_data, (axlPointer) key);
 
 			/* check result returned */
 			if (result != NULL)
@@ -1450,9 +1450,9 @@ void __axl_anotate_data_free (AnotateNodeData * data)
  * @param int_value An integer value that will be anotated to the node
  * received under the key provided.
  */
-void       axl_node_anotate_int                 (axlNode * node,
-						 char    * key,
-						 int       int_value)
+void       axl_node_anotate_int                 (axlNode    * node,
+						 const char * key,
+						 int          int_value)
 {
 	AnotateNodeData * data;
 	
@@ -1511,9 +1511,9 @@ void       axl_node_anotate_int                 (axlNode * node,
  * node received under the key provided. This value will be copied and
  * released once the node is deallocated.
  */
-void       axl_node_anotate_string              (axlNode * node,
-						 char    * key,
-						 char    * string_value)
+void       axl_node_anotate_string              (axlNode       * node,
+						 const char    * key,
+						 const char    * string_value)
 {
 	AnotateNodeData * data;
 	
@@ -1572,9 +1572,9 @@ void       axl_node_anotate_string              (axlNode * node,
  * @param double_value A string value that will be anotated to the node
  * received under the key provided.
  */
-void       axl_node_anotate_double              (axlNode * node,
-						 char    * key,
-						 double    double_value)
+void       axl_node_anotate_double              (axlNode    * node,
+						 const char * key,
+						 double       double_value)
 {
 	AnotateNodeData * data;
 	
@@ -1608,9 +1608,9 @@ void       axl_node_anotate_double              (axlNode * node,
  * 
  * @return The integer value stored using \ref axl_node_anotate_int. 
  */
-int        axl_node_anotate_get_int             (axlNode * node,
-						 char    * key,
-						 bool      lookup_in_parent)
+int        axl_node_anotate_get_int             (axlNode    * node,
+						 const char * key,
+						 bool         lookup_in_parent)
 {
 	AnotateNodeData * data;
 	
@@ -1646,9 +1646,9 @@ int        axl_node_anotate_get_int             (axlNode * node,
  * 
  * @return The string value stored using \ref axl_node_anotate_string. 
  */
-char *     axl_node_anotate_get_string          (axlNode * node,
-						 char    * key,
-						 bool      lookup_in_parent)
+char *     axl_node_anotate_get_string          (axlNode    * node,
+						 const char * key,
+						 bool         lookup_in_parent)
 {
 	AnotateNodeData * data;
 	
@@ -1684,9 +1684,9 @@ char *     axl_node_anotate_get_string          (axlNode * node,
  * 
  * @return The double value stored using \ref axl_node_anotate_double. 
  */
-double     axl_node_anotate_get_double          (axlNode * node,
-						 char    * key,
-						 bool      lookup_in_parent)
+double     axl_node_anotate_get_double          (axlNode    * node,
+						 const char * key,
+						 bool         lookup_in_parent)
 {
 	AnotateNodeData * data;
 	

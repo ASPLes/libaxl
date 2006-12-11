@@ -136,7 +136,7 @@ bool test_22 (axlError ** error)
 {
 	axlDoc  * doc;
 	axlNode * node;
-	char    * value;
+	const char  * value;
 
 	
 	/* create a document */

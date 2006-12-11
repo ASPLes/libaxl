@@ -133,42 +133,42 @@ bool      axl_node_has_attribute_value       (axlNode    * node,
 /* user defined data interface store arbitrary data inside the
  * hash  */
 void      axl_node_anotate_data                 (axlNode     * node, 
-						 char        * key, 
+						 const char  * key, 
 						 axlPointer    data);
 
 void      axl_node_anotate_data_full            (axlNode       * node,
-						 char          * key, 
+						 const char    * key, 
 						 axlDestroyFunc  key_destroy,
 						 axlPointer      data,
 						 axlDestroyFunc  data_destroy);
 
-axlPointer axl_node_anotate_get                 (axlNode * node,
-						 char    * key,
-						 bool      lookup_in_parent);
+axlPointer axl_node_anotate_get                 (axlNode       * node,
+						 const char    * key,
+						 bool            lookup_in_parent);
 
 void       axl_node_anotate_int                 (axlNode * node,
-						 char    * key,
-						 int       int_value);
+						 const char    * key,
+						 int             int_value);
 
 void       axl_node_anotate_string              (axlNode * node,
-						 char    * key,
-						 char    * string_value);
+						 const char    * key,
+						 const char    * string_value);
 
-void       axl_node_anotate_double              (axlNode * node,
-						 char    * key,
-						 double    double_value);
+void       axl_node_anotate_double              (axlNode    * node,
+						 const char * key,
+						 double       double_value);
 
-int        axl_node_anotate_get_int             (axlNode * node,
-						 char    * key,
-						 bool      lookup_in_parent);
+int        axl_node_anotate_get_int             (axlNode     * node,
+						 const char  * key,
+						 bool          lookup_in_parent);
 
-char *     axl_node_anotate_get_string          (axlNode * node,
-						 char    * key,
-						 bool      lookup_in_parent);
+char *     axl_node_anotate_get_string          (axlNode       * node,
+						 const char    * key,
+						 bool            lookup_in_parent);
 
-double     axl_node_anotate_get_double          (axlNode * node,
-						 char    * key,
-						 bool      lookup_in_parent);
+double     axl_node_anotate_get_double          (axlNode       * node,
+						 const char    * key,
+						 bool            lookup_in_parent);
 
 /** 
  * @brief Allows to easily check that the given xml node (\ref
