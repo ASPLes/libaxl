@@ -62,6 +62,10 @@
  * <li>A clean implementation, that only includes, those elements
  * defined, and only those, inside the XML 1.0 standard, as defined in <a href="http://www.w3.org/TR/REC-xml/">the third edition</a>.</li>
  *
+ * <li>To be a fast and memory efficient implementation. If you still
+ * think that XML is slow and memory inefficient, you didn't taste Axl
+ * Library. You'll find report about its performance and memory usage at: http://xml.aspl.es/doc.html </li>
+ *
  * <li>Ensure that the library is implemented using abstract data types,
  * commonly known as opaque types, to avoid exposing details to the
  * user space code that is consuming the API. 
