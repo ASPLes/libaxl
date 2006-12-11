@@ -9,7 +9,7 @@ body {
 }
 
 .thepage, body, h1, h2, h3, a, b, span, p, li, ul, b {
-   font-family: sans-serif,sans,arial,helvetica;
+   font-family: Arial, FreeSans, Sans, Sans-Serif, Helvetica;
 }
 
 h1, h2, h3, a { 
