@@ -251,8 +251,8 @@ char    * axl_node_get_content_trans  (axlNode * node,
 char    * axl_node_get_content_trim   (axlNode * node,
 				       int * content_size);
 
-void      axl_node_set_content        (axlNode * node, 
-				       char * content, 
+void      axl_node_set_content        (axlNode    * node, 
+				       const char * content, 
 				       int content_size);
 
 void      axl_node_set_content_ref    (axlNode * node, 

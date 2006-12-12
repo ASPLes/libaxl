@@ -2317,7 +2317,9 @@ char    * axl_node_get_content     (axlNode * node, int * content_size)
  * is used, the function will use strlen function to get current
  * content size.
  */
-void      axl_node_set_content        (axlNode * node, char * content, int content_size)
+void      axl_node_set_content        (axlNode    * node, 
+				       const char * content, 
+				       int          content_size)
 {
 	axlNodeContent * itemContent;
 	int              additional_size = 0;
