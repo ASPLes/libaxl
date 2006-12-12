@@ -1242,12 +1242,6 @@ bool __axl_doc_dump_common (axlDoc * doc, char ** content, int * size, bool pret
 	memcpy (result, "<?xml version='1.0' ", 20);
 	index = 20;
 
-	/* standalone attribute */
-	if (doc->standalone) {
-		memcpy (result + index, "standalone='yes' ", 17); 
-		index += 17;
-	}
-
 	/* encoding declaration */
 	if (doc->encoding) {
 		/* initial encoding declaration */
@@ -1261,6 +1255,12 @@ bool __axl_doc_dump_common (axlDoc * doc, char ** content, int * size, bool pret
 		/* encoding trailing */
 		memcpy (result + index, "' ", 2);
 		index += 2;
+	}
+
+	/* standalone attribute */
+	if (doc->standalone) {
+		memcpy (result + index, "standalone='yes' ", 17); 
+		index += 17;
 	}
 
 	/* header trailing */
