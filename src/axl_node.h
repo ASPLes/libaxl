@@ -115,7 +115,7 @@ const char    * axl_node_get_attribute_value      (axlNode    * node,
 						   const char * attribute);
 
 char    * axl_node_get_attribute_value_copy (axlNode    * node, 
-					     char       * attribute);
+					     const char * attribute);
 
 /** 
  * @brief Simple alias definition to \ref axl_node_get_attribute_value_trans function.
@@ -130,7 +130,26 @@ char    * axl_node_get_attribute_value_copy (axlNode    * node,
 #define ATTR_VALUE_TRANS(node,attr) axl_node_get_attribute_value_trans(node,attr)
 
 char    * axl_node_get_attribute_value_trans (axlNode * node, 
-					      char * attribute);
+					      const char * attribute);
+
+/** 
+ * @brief Allows to get the value associated to the attributed
+ * provided, inside the node selected, removing trailing and ending
+ * white spaces (in the W3C sence: \n, \t, \r, ' ').
+ *
+ * This is a macro alias to \ref axl_node_get_attribute_value_trimmed.
+ * 
+ * @param node The node that is requested to return the associated 
+ * value to the attributed.
+ *
+ * @param attr The attribute that is being requested.
+ * 
+ * @return A reference to the attribute value or NULL if it fails.
+ */
+#define ATTR_VALUE_TRIMMED(node,attr) axl_node_get_attribute_value_trimmed(node,attr)
+
+const char    * axl_node_get_attribute_value_trimmed (axlNode    * node,
+						      const char * attribute);
 
 /**
  * @brief Convenience macro wrapping \ref
