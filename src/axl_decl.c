@@ -47,9 +47,6 @@
  */
 void axl_free (axlPointer ref)
 {
-	if (ref == NULL)
-		return;
-
 	free (ref);
 	return;
 }

@@ -2556,10 +2556,12 @@ char    * axl_pi_get_content               (axlPI  * pi)
  */
 void axl_pi_free (axlPI * pi)
 {
+	if (pi == NULL)
+		return;
+
 	/* free PI target */
 	axl_free (pi->name);
-	if (pi->content != NULL) 
-		axl_free (pi->content);
+	axl_free (pi->content);
 	axl_free (pi);
 	return;
 }
@@ -2924,15 +2926,11 @@ void     axl_doc_free         (axlDoc * doc)
 	if (doc->piTargets != NULL)
 		axl_list_free (doc->piTargets);
 
-	if (doc->encoding != NULL) {
-		/* free enconding allocated */
-		axl_free (doc->encoding);
-	}
+	/* free enconding allocated */
+	axl_free (doc->encoding);
 	
-	if (doc->version != NULL) {
-		/* free allocated version value */
-		axl_free (doc->version);
-	}
+	/* free allocated version value */
+	axl_free (doc->version);
 
 	/* free document allocated */
 	axl_free (doc);
