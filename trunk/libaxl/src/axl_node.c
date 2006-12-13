@@ -1125,7 +1125,8 @@ const char    * axl_node_get_attribute_value (axlNode * node, const char * attri
  * @return A newly allocated reference that must be deallocated when
  * no longer needed calling to axl_free.
  */
-char    * axl_node_get_attribute_value_copy (axlNode * node, char * attribute)
+char    * axl_node_get_attribute_value_copy (axlNode    * node, 
+					     const char * attribute)
 {
 	const char * _value;
 
@@ -1159,7 +1160,8 @@ char    * axl_node_get_attribute_value_copy (axlNode * node, char * attribute)
  * entities found. The function returns a dinamilly allocated string
  * so \ref axl_free must be used.
  */
-char    * axl_node_get_attribute_value_trans (axlNode * node, char * attribute)
+char    * axl_node_get_attribute_value_trans (axlNode    * node, 
+					      const char * attribute)
 {
 	char * _value;
 	int    size;
@@ -1174,6 +1176,38 @@ char    * axl_node_get_attribute_value_trans (axlNode * node, char * attribute)
 	/* return a copy */
 	size   = strlen (_value);
 	return __axl_node_content_translate_defaults (_value, &size);
+}
+
+/** 
+ * @brief Allows to get the value associated to the attributed
+ * provided, inside the node selected, removing trailing and ending
+ * white spaces (in the W3C sence: \n, \t, \r, ' ').
+ *
+ * See \ref ATTR_VALUE_TRIMMED for a convenience macro.
+ * 
+ * @param node The node that is requested to return the associated 
+ * value to the attributed.
+ *
+ * @param attr The attribute that is being requested.
+ * 
+ * @return A reference to the attribute value or NULL if it fails. The
+ * function doesn't return a copy, it returns a reference to the
+ * internal value.
+ */
+const char    * axl_node_get_attribute_value_trimmed (axlNode    * node,
+						      const char * attribute)
+{
+	char * _value;
+
+	/* get the attribute */
+	_value = (char *) axl_node_get_attribute_value (node, attribute);
+	axl_return_val_if_fail (_value, NULL);
+
+	/* trim the value */
+	axl_stream_trim (_value);
+
+	/* return value */
+	return _value;
 }
 
 /** 
