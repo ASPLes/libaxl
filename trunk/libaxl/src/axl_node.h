@@ -135,7 +135,7 @@ char    * axl_node_get_attribute_value_trans (axlNode * node,
 /** 
  * @brief Allows to get the value associated to the attributed
  * provided, inside the node selected, removing trailing and ending
- * white spaces (in the W3C sence: \n, \t, \r, ' ').
+ * white spaces (in the W3C sence: \\n, \\t, \\r, ' ').
  *
  * This is a macro alias to \ref axl_node_get_attribute_value_trimmed.
  * 
@@ -301,6 +301,8 @@ void      axl_node_set_have_childs    (axlNode * node, bool     childs);
 bool      axl_node_have_childs        (axlNode * node);
 
 axlNode * axl_node_get_child_called   (axlNode * parent, char * name);
+
+axlNode * axl_node_find_called        (axlNode * parent, char * name);
 
 axlNode * axl_node_get_child_nth      (axlNode * parent, int position);
 

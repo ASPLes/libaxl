@@ -96,6 +96,21 @@ axlList * axl_doc_get_list                 (axlDoc * doc,
 axlNode * axl_doc_get                      (axlDoc * doc, 
 					    char * path_to);
 
+/** 
+ * @brief Convenience macro that allows to call \ref
+ * axl_node_find_called, providing a document, making the parent
+ * reference to use the root document node.
+ *
+ * See \ref axl_node_find_called for more information.
+ * 
+ * @param doc The document where the node lookup will be produced.
+ * @param name The child node name that is looked up.
+ * 
+ * @return A reference to the node found or NULL if it fails to find
+ * the node requested.
+ */
+#define axl_doc_find_called(doc,name) (axl_node_find_called(axl_doc_get_root(doc),name))
+
 char    * axl_doc_get_content_at           (axlDoc * doc,
 					    char   * path_to,
 					    int    * content_size);
