@@ -2,6 +2,62 @@
 #include <stdio.h>
 
 /** 
+ * @brief Test Axl Item API while performing lookups.
+ * 
+ * @param error The optional axlError to be used to report errors.
+ * 
+ * @return true if the validity test is passed, false if not.
+ */
+bool test_25 (axlError ** error) {
+	
+	axlDoc  * doc;
+	axlNode * root;
+	axlNode * node;
+
+	/* load the document */
+	doc = axl_doc_parse_from_file ("test_23.xml", error);
+	if (doc == NULL)
+		return false;	
+
+	/* get root node */
+	root = axl_doc_get_root (doc);
+
+	/* lookup a node */
+	node = axl_node_find_called (root, "child3");
+
+	if (! NODE_CMP_NAME (node, "child3")) {
+		axl_error_new (-1, "Expected to find <child3> node but it wasn't found", NULL, error);
+		return false;
+	} 
+
+	/* lookup a node */
+	node = axl_node_find_called (root, "strong");
+
+	if (! NODE_CMP_NAME (node, "strong")) {
+		axl_error_new (-1, "Expected to find <strong> node but it wasn't found", NULL, error);
+		return false;
+	} 
+
+	if (! axl_cmp (axl_node_get_content (node, NULL), "this content goes\n  bold")) {
+		axl_error_new (-1, "Expected to find <strong> node content, but it wasn't found", NULL, error);
+		return false;
+	}
+
+	/* lookup a node */
+	node = axl_node_find_called (root, "strong1");
+	if (node != NULL) {
+		axl_error_new (-1, "Expected to not find node content, but it wasn't found", NULL, error);
+		return false;
+	}
+
+	/* free the document */
+	axl_doc_free (doc);
+	
+	return true;
+}
+
+
+/** 
  * @brief Test Axl Item API while replacing nodes and adding content
  * on a particular position.
  * 
@@ -3453,6 +3509,15 @@ int main (int argc, char ** argv)
 		return -1;
 	}
 
+	if (test_25 (&error)) {
+		printf ("Test 25: Lookup functions [   OK   ]\n");
+	}else {
+		printf ("Test 25: Lookup [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}
+	
 	/* cleanup axl library */
 	axl_end ();
 	return 0;

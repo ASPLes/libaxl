@@ -1181,14 +1181,14 @@ char    * axl_node_get_attribute_value_trans (axlNode    * node,
 /** 
  * @brief Allows to get the value associated to the attributed
  * provided, inside the node selected, removing trailing and ending
- * white spaces (in the W3C sence: \n, \t, \r, ' ').
+ * white spaces (in the W3C sence: \\n, \\t, \\r, ' ').
  *
  * See \ref ATTR_VALUE_TRIMMED for a convenience macro.
  * 
  * @param node The node that is requested to return the associated 
  * value to the attributed.
  *
- * @param attr The attribute that is being requested.
+ * @param attribute The attribute that is being requested.
  * 
  * @return A reference to the attribute value or NULL if it fails. The
  * function doesn't return a copy, it returns a reference to the
@@ -3071,6 +3071,63 @@ axlNode * axl_node_get_child_called   (axlNode * parent, char * name)
 	}
 
 	/* no child was found */
+	return NULL;
+}
+
+/** 
+ * @brief Allows to find the first child called as provided inside the
+ * childs (including its descendants) hold by the parent provided.
+ *
+ * This function is similar to \ref axl_node_get_child_called but it
+ * will look for a child node called as provided not only in direct
+ * childs hold by the parent but also on its all descendants.
+ *
+ * If you are looking for a function to search for a particular child
+ * node inside direct childs stored for the provided parent, then you
+ * must use \ref axl_node_get_child_called.
+ *
+ * There is also a convenience function that allows to perform a
+ * lookup using as a reference a document (using the root node from
+ * it): \ref axl_doc_find_called.
+ *
+ * @param parent The parent where the lookup will be produced.
+ *
+ * @param name The name of the child to be looked up.
+ * 
+ * @return A reference to the node found (first instaned matching the
+ * name) or NULL if it fails to find a child. 
+ */
+axlNode * axl_node_find_called    (axlNode * parent, char * name)
+{
+	axlNode * node;
+	axlNode * child;
+
+	/* for the first child found */
+	node = axl_node_get_first_child (parent);
+	while (node != NULL) {
+		/* check and return the node found */
+		if (NODE_CMP_NAME (node, name))
+			return node;
+		
+		/* get next */
+		node = axl_node_get_next (node);
+	} /* end while */
+
+	/* now, for all childs, try to look for the node */
+	node = axl_node_get_first_child (parent);
+	while (node != NULL) {
+		/* make the search */
+		child = axl_node_find_called (node, name);
+		
+		/* child found, return the reference */
+		if (child != NULL)
+			return child;
+		
+		/* get next */
+		node = axl_node_get_next (node);
+	} /* end while */
+
+	/* child note found */
 	return NULL;
 }
 
