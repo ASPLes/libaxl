@@ -508,8 +508,9 @@ char * __axl_node_content_translate_defaults (char * content,
  * @return A newly allocate \ref axlNode reference, that must be
  * deallocated by \ref axl_node_free.
  */
-axlNode * axl_node_create (char * name)
+axlNode * axl_node_create (const char * name)
 {
+
 	axlNode * node;
 
 	/* init the node */

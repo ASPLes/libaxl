@@ -47,7 +47,7 @@ BEGIN_C_DECLS
  * @{
  */
 
-axlNode * axl_node_create                   (char * name);
+axlNode * axl_node_create                   (const char * name);
 
 axlNode * axl_node_create_ref               (char * name);
 
