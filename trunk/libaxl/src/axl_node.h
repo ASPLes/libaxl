@@ -163,9 +163,22 @@ bool      axl_node_has_attribute_value       (axlNode    * node,
 
 /* user defined data interface store arbitrary data inside the
  * hash  */
+
+/** 
+ * @brief Simple alias to fix the interface problem for the annotate
+ * API that includes only one "n". See \ref axl_node_anotate_data.
+ */
+#define axl_node_annotate_data axl_node_anotate_data
+
 void      axl_node_anotate_data                 (axlNode     * node, 
 						 const char  * key, 
 						 axlPointer    data);
+
+/** 
+ * @brief Simple alias to fix the interface problem for the annotate
+ * API that includes only one "n". See \ref axl_node_anotate_data_full.
+ */
+#define axl_node_annotate_data_full axl_node_anotate_data_full
 
 void      axl_node_anotate_data_full            (axlNode       * node,
 						 const char    * key, 
@@ -173,30 +186,65 @@ void      axl_node_anotate_data_full            (axlNode       * node,
 						 axlPointer      data,
 						 axlDestroyFunc  data_destroy);
 
+/** 
+ * @brief Simple alias to fix the interface problem for the annotate
+ * API that includes only one "n". See \ref axl_node_anotate_get.
+ */
+#define axl_node_annotate_get axl_node_anotate_get
 axlPointer axl_node_anotate_get                 (axlNode       * node,
 						 const char    * key,
 						 bool            lookup_in_parent);
 
+/** 
+ * @brief Simple alias to fix the interface problem for the annotate
+ * API that includes only one "n". See \ref axl_node_anotate_int.
+ */
+#define axl_node_annotate_int axl_node_anotate_int
 void       axl_node_anotate_int                 (axlNode * node,
 						 const char    * key,
 						 int             int_value);
 
+/** 
+ * @brief Simple alias to fix the interface problem for the annotate
+ * API that includes only one "n". See \ref axl_node_anotate_string.
+ */
+#define axl_node_annotate_string axl_node_anotate_string
 void       axl_node_anotate_string              (axlNode * node,
 						 const char    * key,
 						 const char    * string_value);
 
+/** 
+ * @brief Simple alias to fix the interface problem for the annotate
+ * API that includes only one "n". See \ref axl_node_anotate_double.
+ */
+#define axl_node_annotate_double axl_node_anotate_double
 void       axl_node_anotate_double              (axlNode    * node,
 						 const char * key,
 						 double       double_value);
 
+/** 
+ * @brief Simple alias to fix the interface problem for the annotate
+ * API that includes only one "n". See \ref axl_node_anotate_get_int.
+ */
+#define axl_node_annotate_get_int axl_node_anotate_get_int
 int        axl_node_anotate_get_int             (axlNode     * node,
 						 const char  * key,
 						 bool          lookup_in_parent);
 
+/** 
+ * @brief Simple alias to fix the interface problem for the annotate
+ * API that includes only one "n". See \ref axl_node_anotate_get_string.
+ */
+#define axl_node_annotate_get_string axl_node_anotate_get_string
 char *     axl_node_anotate_get_string          (axlNode       * node,
 						 const char    * key,
 						 bool            lookup_in_parent);
 
+/** 
+ * @brief Simple alias to fix the interface problem for the annotate
+ * API that includes only one "n". See \ref axl_node_anotate_get_double.
+ */
+#define axl_node_annotate_get_double axl_node_anotate_get_double
 double     axl_node_anotate_get_double          (axlNode       * node,
 						 const char    * key,
 						 bool            lookup_in_parent);
