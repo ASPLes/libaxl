@@ -4702,9 +4702,6 @@ bool test_02_02 ()
 		iterator++;
 	}
 
-	printf ("performed %d lookups in a hash with %d items\n", 
-		lookups, axl_hash_items (hash));
-
 	/* destroy the hash */
 	axl_hash_free (hash);
 
@@ -4884,7 +4881,187 @@ bool test_02_04 ()
 
 }
 
+bool test_02_05 ()
+{
+	axlHash       * hash;
+	axlHashCursor * cursor;
+	int             iterator;
+	char          * key, * value;
+	
+	/* create the hash */
+	hash = axl_hash_new (axl_hash_string, axl_hash_equal_string);
 
+	/* insert data */
+	axl_hash_insert (hash, "sword", "sword"); 
+	axl_hash_insert (hash, "mace", "mace");
+	axl_hash_insert (hash, "axe", "axe");
+	axl_hash_insert (hash, "arrow", "arrow");
+	axl_hash_insert (hash, "shield", "shield");
+	axl_hash_insert (hash, "bag", "bag");
+	axl_hash_insert (hash, "stone", "stone");
+	axl_hash_insert (hash, "key", "key");
+	axl_hash_insert (hash, "skull", "skull");
+	axl_hash_insert (hash, "jar", "jar");
+	axl_hash_insert (hash, "bottle", "bottle");
+	axl_hash_insert (hash, "fairy", "fairy");
+	axl_hash_insert (hash, "potion", "potion");
+	axl_hash_insert (hash, "water", "water");
+	axl_hash_insert (hash, "spoon", "spoon");
+	axl_hash_insert (hash, "book", "book");
+	axl_hash_insert (hash, "spear", "spear");
+	axl_hash_insert (hash, "dagger", "dagger");
+	axl_hash_insert (hash, "katana", "katana");
+	axl_hash_insert (hash, "helmet", "helmet");
+	axl_hash_insert (hash, "chain", "chain");
+	axl_hash_insert (hash, "halberd", "halberd");
+	axl_hash_insert (hash, "pipe", "pipe");
+	axl_hash_insert (hash, "hat", "hat");
+	axl_hash_insert (hash, "eyeofnewt", "eyeofnewt");
+	axl_hash_insert (hash, "soup", "soup");
+	axl_hash_insert (hash, "wolfbane", "wolfbane");
+	axl_hash_insert (hash, "instantcoffee", "instantcoffee");
+	axl_hash_insert (hash, "bugspray", "bugspray");
+	axl_hash_insert (hash, "flint", "flint");
+	axl_hash_insert (hash, "soap", "soap");
+	axl_hash_insert (hash, "bones", "bones");
+	axl_hash_insert (hash, "orb", "orb");
+	axl_hash_insert (hash, "gold", "gold");
+	axl_hash_insert (hash, "silver", "silver");
+	axl_hash_insert (hash, "wine", "wine");
+	axl_hash_insert (hash, "bread", "bread");
+
+	/* create a cursor */
+	cursor   = axl_hash_cursor_new (hash);
+	iterator = 0;
+	while (axl_hash_cursor_has_item (cursor)) {
+		/* first item */
+		if (! axl_cmp (axl_hash_cursor_get_key (cursor),
+			       axl_hash_cursor_get_value (cursor))) {
+			printf ("error: supposed to find key and value equal (%s==%s), but not found..\n",
+				(char*)axl_hash_cursor_get_key (cursor),
+				(char*)axl_hash_cursor_get_value (cursor));
+			return false;
+		} /* end if */
+
+		/* get next */
+		axl_hash_cursor_next (cursor);
+
+		iterator++;
+
+		if (iterator == 38) {
+			printf ("error: found more items than actually expected..\n");
+			return false;
+		}
+	} /* end while */
+
+	if (iterator != 37) {
+		printf ("error: found more items than actually expected..\n");
+		return false;
+	}
+
+	iterator = 0;
+	axl_hash_cursor_first (cursor);
+	while (axl_hash_cursor_has_item (cursor)) {
+		/* first item */
+		if (! axl_cmp (axl_hash_cursor_get_key (cursor),
+			       axl_hash_cursor_get_value (cursor))) {
+			printf ("error: supposed to find key and value equal (%s==%s), but not found..\n",
+				(char*)axl_hash_cursor_get_key (cursor),
+				(char*)axl_hash_cursor_get_value (cursor));
+			return false;
+		} /* end if */
+
+		iterator++;
+
+		if (iterator < 37) {
+			if (! axl_hash_cursor_has_next (cursor)) {
+				printf ("error: expected to find next node on iterator (%d)\n", iterator);
+				return false;
+			} /* end if */
+		} /* end if */
+
+		/* get next */
+		axl_hash_cursor_next (cursor);
+
+		if (iterator == 38) {
+			printf ("error: found more items than actually expected..\n");
+			return false;
+		}
+	} /* end while */
+
+	if (iterator != 37) {
+		printf ("error: found different count of items than actually expected (%d != 37)..\n", iterator);
+		return false;
+	}
+
+	/* check last api */
+	axl_hash_cursor_last (cursor);
+	if (! axl_hash_cursor_has_item (cursor)) {
+		printf ("error: expected to find last element defined..\n");
+		return false;
+	}
+
+	/* check last */
+	if (! axl_cmp ("flint", axl_hash_cursor_get_key (cursor))) {
+		printf ("error: expected to find last element \"flint\"=\"%s\"\n", (char*) axl_hash_cursor_get_key (cursor));
+		return false;
+	}
+
+
+	if (axl_hash_cursor_has_next (cursor)) {
+		printf ("error: expected to not find next element defined..\n");
+		return false;
+	} /* end if */
+
+	axl_hash_cursor_first (cursor);
+	while (axl_hash_cursor_has_item (cursor)) {
+		/* first item */
+		if (! axl_cmp (axl_hash_cursor_get_key (cursor),
+			       axl_hash_cursor_get_value (cursor))) {
+			printf ("error: supposed to find key and value equal (%s==%s), but not found..\n",
+				(char*)axl_hash_cursor_get_key (cursor),
+				(char*)axl_hash_cursor_get_value (cursor));
+			return false;
+		} /* end if */
+
+		/* get value */
+		key   = axl_hash_cursor_get_key (cursor);
+		value = axl_hash_cursor_get_value (cursor);
+
+		/* check key to exists */
+		if (! axl_hash_exists (axl_hash_cursor_hash (cursor), key)) {
+			printf ("error: expected to find key defined=<%s>\n", key);
+			return false;
+		}
+
+		/* check value to exists */
+		if (! axl_cmp (axl_hash_get (axl_hash_cursor_hash (cursor), key), value)) {
+			printf ("error: expected to find value not found: <%s>!=<%s>\n", 
+				value, (char*) axl_hash_get (axl_hash_cursor_hash (cursor), key));
+			return false;
+		} /* end if */
+		
+
+		/* remove items */
+		axl_hash_cursor_remove (cursor);
+		
+	} /* end while */
+
+	if (axl_hash_items (hash) != 0) {
+		printf ("error: expected to find hash with 0 size (but found: %d)\n",
+			axl_hash_items (hash));
+		return false;
+	} /* end if */
+
+	/* free cursor */
+	axl_hash_cursor_free (cursor);
+
+	/* free the hash */
+	axl_hash_free (hash);
+
+	/* test ok */
+	return true;
+}
 
 /** 
  * Test01: Initial xml header checking.
@@ -4904,30 +5081,35 @@ int main (int argc, char ** argv)
 		printf ("Test 01-01: LibAxl list implementation [   OK   ]\n");
 	}else {
 		printf ("Test 01-01 ##: LibAxl list implementation [ FAILED ]\n");
+		return -1;
 	}
 
 	if (test_01_02 ()) {
 		printf ("Test 01-02: LibAxl FIFO implementation [   OK   ]\n");
 	}else {
 		printf ("Test 01-02: LibAxl list implementation [ FAILED ]\n");
+		return -1;
 	}
 
 	if (test_01_03 ()) {
 		printf ("Test 01-03: LibAxl string functions    [   OK   ]\n");
 	}else {
 		printf ("Test 01-03: LibAxl string functions    [ FAILED ]\n");
+		return -1;
 	}
 
 	if (test_01_04 ()) {
 		printf ("Test 01-04: LibAxl list implementation (II) [   OK   ]\n");
 	}else {
 		printf ("Test 01-04: LibAxl list implementation (II) [ FAILED ]\n");
+		return -1;
 	}
 
 	if (test_01_05 ()) {
 		printf ("Test 01-05: LibAxl error reporting [   OK   ]\n");
 	}else {
 		printf ("Test 01-05: LibAxl error reporting [ FAILED ]\n");
+		return -1;
 	}
 
 	/* HASH IMPLEMENTATION CHECKS */
@@ -4935,26 +5117,37 @@ int main (int argc, char ** argv)
 		printf ("Test 02-01: LibAxl hash implementation [   OK   ]\n");
 	}else {
 		printf ("Test 02-01: LibAxl hash implementation [ FAILEDp ]\n");
+		return -1;
 	}
 
 	if (test_02_02 ()) {
 		printf ("Test 02-02: LibAxl hash implementation (lookup) [   OK   ]\n");
 	}else {
 		printf ("Test 02-02: LibAxl hash implementation (lookup) [ FAILED ]\n");
+		return -1;
 	}
 
 	if (test_02_03 ()) {
 		printf ("Test 02-03: LibAxl hash implementation (replace) [   OK   ]\n");
 	}else {
 		printf ("Test 02-03: LibAxl hash implementation (replace) [ FAILED ]\n");
+		return -1;
 	}
 
 	if (test_02_04 ()) {
 		printf ("Test 02-04: LibAxl hash implementation (remove) [   OK   ]\n");
 	}else {
 		printf ("Test 02-04: LibAxl hash implementation (remove) [ FAILED ]\n");
+		return -1;
 	}
 
+	if (test_02_05 ()) {
+		printf ("Test 02-04: LibAxl hash cursor [   OK   ]\n");
+	}else {
+		printf ("Test 02-04: LibAxl hash cursor [ FAILED ]\n");
+		return -1;
+	}
+	
 	/* LIBRARY TESTS */
 	if (test_01 (&error))
 		printf ("Test 01: basic xml parsing [   OK   ]\n");
