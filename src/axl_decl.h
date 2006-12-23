@@ -689,6 +689,13 @@ typedef struct _axlStack axlStack;
 typedef struct _axlHash  axlHash;
 
 /** 
+ * @brief \ref axlHashCursor definition, a support type that is used
+ * to iterate a hash in a linear mode, without calling to \ref
+ * axl_hash_foreach family functions (see \ref axl_hash_cursor_get).
+ */
+typedef struct _axlHashCursor axlHashCursor;
+
+/** 
  * @brief Handler definition used to compare two elements.
  * 
  * In the case they are equal, 0 is returned. In the case a should be
