@@ -7,22 +7,16 @@ endif
 INCLUDES = -I../src/ -Wall $(LOG)
 
 # replace with bin_PROGRAMS to check performance
-bin_PROGRAMS = test_01 test_02 test_01a test_02a test_03 test_03a
+bin_PROGRAMS = test_01 test_01a test_02a test_03a
 
 test_01_SOURCES = test_01.c
 test_01_LDADD   = ../src/libaxl.la 
-
-test_02_SOURCES = test_02.c
-test_02_LDADD   = ../src/libaxl.la
 
 test_01a_SOURCES = test_01a.c
 test_01a_LDADD   = ../src/libaxl.la 
 
 test_02a_SOURCES = test_02a.c
 test_02a_LDADD   = ../src/libaxl.la 
-
-test_03_SOURCES = test_03.c
-test_03_LDADD   = ../src/libaxl.la
 
 test_03a_SOURCES = test_03a.c
 test_03a_LDADD   = ../src/libaxl.la

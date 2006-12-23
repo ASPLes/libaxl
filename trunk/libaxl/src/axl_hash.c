@@ -601,9 +601,12 @@ void            axl_hash_remove       (axlHash    * hash,
 		/* if data destruction is defined */
 		if (node->data_destroy != NULL)
 			node->data_destroy (node->data);
+
+		/* decreases elements found */
+		hash->items--;
 					
 		/* delete the node */
-		axl_free (node);
+		/* axl_free (node); */
 
 		/* element destroyed, nothing more to do around
 		 * here */
@@ -1202,6 +1205,9 @@ void __axl_hash_cursor_init (axlHashCursor * cursor, bool first)
 	axlHashNode   * node = NULL;
 
 	if (first) {
+		/* configure first */
+		cursor->index = 0;
+
 		/* foreach element inside the has, check the first value */
 		while (cursor->index < cursor->hash->hash_size) {
 			/* check the table at the current position */
@@ -1218,6 +1224,7 @@ void __axl_hash_cursor_init (axlHashCursor * cursor, bool first)
 	} else {
 		/* find last value */
 		cursor->index = cursor->hash->hash_size - 1;
+		cursor->node  = NULL;
 		while (cursor->index > 0) {
 			/* check the table at the current position */
 			node = cursor->hash->table[cursor->index];
@@ -1373,16 +1380,22 @@ void            axl_hash_cursor_next     (axlHashCursor * cursor)
 
 	/* check if the current node is null and do nothing if nothing
 	 * is found */
-	if (cursor->node == NULL)
+	if (cursor->node == NULL) {
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "no nodes found....");
 		return;
+	}
 
 	/* basic case, the item is found in the same level */
 	if (cursor->node->next != NULL) {
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "getting next node....");
 		/* configure new current node */
 		cursor->node = cursor->node->next;
 
 		return; 
 	} /* end if */
+
+	/* node not found, go next position */
+	cursor->index++;
 
 	/* seems next is null, see in other positions  */
 	while (cursor->index < cursor->hash->hash_size) {
@@ -1417,11 +1430,13 @@ bool            axl_hash_cursor_has_next (axlHashCursor * cursor)
 	axl_return_val_if_fail (cursor, false);
 
 	/* check basic case */
-	if (cursor->node != NULL && cursor->node->next != NULL)
+	if (cursor->node != NULL && cursor->node->next != NULL) {
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "next is defined..");
 		return true;
+	}
 
 	/* seems next is null, see in other positions  */
-	iterator = cursor->index;
+	iterator = cursor->index + 1;
 	while (iterator < cursor->hash->hash_size) {
 		/* check the table at the current position */
 		if (cursor->hash->table[iterator] != NULL)

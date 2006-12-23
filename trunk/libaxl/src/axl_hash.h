@@ -122,6 +122,8 @@ axlHashCursor * axl_hash_cursor_new          (axlHash * hash);
 
 void            axl_hash_cursor_first        (axlHashCursor * cursor);
 
+void            axl_hash_cursor_last         (axlHashCursor * cursor);
+
 void            axl_hash_cursor_next         (axlHashCursor * cursor);
 
 bool            axl_hash_cursor_has_next     (axlHashCursor * cursor);
