@@ -116,6 +116,27 @@ void            axl_hash_show_status_full (axlHash * hash,
 
 
 void            axl_hash_free         (axlHash * hash);
+
+/* cursor interface */
+axlHashCursor * axl_hash_cursor_new          (axlHash * hash);
+
+void            axl_hash_cursor_first        (axlHashCursor * cursor);
+
+void            axl_hash_cursor_next         (axlHashCursor * cursor);
+
+bool            axl_hash_cursor_has_next     (axlHashCursor * cursor);
+
+bool            axl_hash_cursor_has_item     (axlHashCursor * cursor);
+
+void            axl_hash_cursor_remove       (axlHashCursor * cursor);
+
+axlPointer      axl_hash_cursor_get_key      (axlHashCursor * cursor);
+
+axlPointer      axl_hash_cursor_get_value    (axlHashCursor * cursor);
+
+axlHash       * axl_hash_cursor_hash         (axlHashCursor * cursor);
+
+void            axl_hash_cursor_free         (axlHashCursor * cursor);
 			   
 
 END_C_DECLS

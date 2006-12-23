@@ -36,6 +36,7 @@
  *         info@aspl.es - http://fact.aspl.es
  */
 #include <axl_hash.h>
+#include <axl_factory.h>
 #include <axl_log.h>
 
 #define LOG_DOMAIN "axl-hash"
@@ -73,6 +74,9 @@ struct _axlHash {
 	 * resolution. */
 	axlHashNode ** table;
 
+	/* factory to allocate nodes */
+	axlFactory   * factory;
+
 	/* stored items in the hash */
 	int items;
 
@@ -82,6 +86,21 @@ struct _axlHash {
 	/* steps: how many slots are allocated when the hash is
 	 * resized */
 	int step;
+};
+
+/** 
+ * @internal Implementation of the axl hash cursor.
+ */
+struct _axlHashCursor {
+	/* a pointer to the hash */
+	axlHash     * hash;
+
+	/* a pointer to the node inside the hash (current value) */
+	axlHashNode * node;
+
+	/* the value if the index being accessed by the node
+	 * pointed (current value) */
+	int           index;
 };
 
 /** 
@@ -313,10 +332,11 @@ axlHash       * axl_hash_new_full     (axlHashFunc    hash,
 	/* create the hash */
 	axlHash * result;
 
-	result        = axl_new (axlHash, 1);
-	result->hash  = hash;
-	result->equal = equal;
-	result->step  = step;
+	result           = axl_new (axlHash, 1);
+	result->factory  = axl_factory_create (sizeof (axlHashNode));
+	result->hash     = hash;
+	result->equal    = equal;
+	result->step     = step;
 
 	/* return the hash table created */
 	return result;	
@@ -358,8 +378,8 @@ void      axl_hash_insert       (axlHash    * hash,
  * @internal Function used to create the node that will be stored in
  * the hash.
  */
-#define __axl_hash_create_node(node, key, key_destroy, data, data_destroy)\
-node                = axl_new (axlHashNode, 1);\
+#define __axl_hash_create_node(factory, node, key, key_destroy, data, data_destroy)\
+node                = axl_factory_get (factory);\
 node->key           = key;\
 node->key_destroy   = key_destroy;\
 node->data          = data;\
@@ -423,7 +443,7 @@ void       axl_hash_insert_full (axlHash        * hash,
 		hash->hash_size = hash->step;
 		
 		/* create the node to store */
-		__axl_hash_create_node (node, key, key_destroy, data, data_destroy);
+		__axl_hash_create_node (hash->factory, node, key, key_destroy, data, data_destroy);
 
 		/* insert the node into the hash */
 		__axl_hash_insert_node (pos, hash, key, node, true);
@@ -506,7 +526,7 @@ void       axl_hash_insert_full (axlHash        * hash,
 	   node to store */
 	if (node == NULL) {
 		/* create a new node */
-		__axl_hash_create_node (node, key, key_destroy, data, data_destroy);
+		__axl_hash_create_node (hash->factory, node, key, key_destroy, data, data_destroy);
 
 		/* insert the node into the hash as usual */
 		__axl_hash_insert_node (pos, hash, key, node, true);
@@ -1147,9 +1167,6 @@ void       axl_hash_free        (axlHash *  hash)
 					aux  = node;
 					node = node->next;
 					
-					/* delete the node */
-					axl_free (aux);
-					
 					/* while more nodes */
 				} while (node != NULL);
 			} /* end if */
@@ -1160,7 +1177,10 @@ void       axl_hash_free        (axlHash *  hash)
 
 		/* now release the table */
 		axl_free (hash->table);
-	}
+	} /* end if */
+
+	/* free factory */
+	axl_factory_free (hash->factory);
 
 	/* now release the hash itself */
 	axl_free (hash);
@@ -1168,5 +1188,382 @@ void       axl_hash_free        (axlHash *  hash)
 	/* nothing more to free */
 	return;
 }
+
+/* @} */
+
+/**
+ * \defgroup axl_hash_cursor_module Axl Hash Cursor: Iterator support for the Axl Hash
+ */
+
+/* init the cursor */
+void __axl_hash_cursor_init (axlHashCursor * cursor, bool first)
+{
+	/* pointer to a hash node (basic atom holding key and value) */
+	axlHashNode   * node = NULL;
+
+	if (first) {
+		/* foreach element inside the has, check the first value */
+		while (cursor->index < cursor->hash->hash_size) {
+			/* check the table at the current position */
+			node = cursor->hash->table[cursor->index];
+			if (node != NULL) {
+				/* first node found, store it */
+				cursor->node = node;
+				break;
+			} /* end if */
+			
+			/* node not found, go next position */
+			cursor->index++;
+		} /* end while */
+	} else {
+		/* find last value */
+		cursor->index = cursor->hash->hash_size - 1;
+		while (cursor->index > 0) {
+			/* check the table at the current position */
+			node = cursor->hash->table[cursor->index];
+			if (node != NULL) {
+				/* find last entry filled, now find
+				 * last entry in the same index */
+				while (node->next != NULL)
+					node = node->next;
+				
+				/* configure it */
+				cursor->node = node;
+				break;
+			} /* end if */
+			
+			/* node not found, go next position */
+			cursor->index--;
+		} /* end while */
+	} /* end if */
+		
+	/* if the node wasn't found, reset index */
+	if (node == NULL)
+		cursor->index = 0;
+
+	/* cursor initialized */
+	return;
+}
+
+/** 
+ * \addtogroup axl_hash_cursor_module
+ * @{
+ */
+
+/** 
+ * @brief Allows to get a cursor to iterate the hash in a linear and
+ * efficient way.
+ *
+ * The \ref axlHashCursor could be used to iterate an \ref axlHash in
+ * an efficient way because it stores current state (position). Then
+ * using the following functions you can modify the state (current
+ * position to get):
+ * 
+ *   - \ref axl_hash_cursor_first
+ *   - \ref axl_hash_cursor_last
+ *   - \ref axl_hash_cursor_next
+ *
+ * Finally, a function is provided to get the data stored at a
+ * particular position, pointed by the current status of the cursor:
+ * 
+ *   - \ref axl_hash_cursor_get_key
+ *   - \ref axl_hash_cursor_get_value
+ *
+ * You are allowed to remove elements from the hash (\ref axlHash)
+ * having a cursor created (\ref axlHashCursor), using \ref
+ * axl_hash_cursor_remove. 
+ *
+ * Here is an example:
+ * \code
+ * axlPointer      key;
+ * axlPointer      value;
+ * axlHashCursor * cursor;
+ * 
+ * // create the cursor 
+ * cursor   = axl_hash_cursor_new (hash);
+ *
+ * // while there are more elements 
+ * while (axl_hash_cursor_has_item (cursor)) {
+ *
+ *   // get the value and key
+ *   value = axl_hash_cursor_get_key   (cursor);
+ *   value = axl_hash_cursor_get_value (cursor);
+ *
+ *   // get the next 
+ *   axl_hash_cursor_next (cursor);
+ *
+ *   // update the iterator 
+ *   iterator++;
+ *		
+ * } 
+ *
+ * // free the cursor 
+ * axl_hash_cursor_free (cursor);
+ * \endcode
+ * 
+ * @param hash The hash that the new cursor (\ref axlHashCursor) will
+ * provide access.
+ * 
+ * @return A newly created \ref axlHashCursor used to iterate the
+ * hash. Once finished you must call to \ref axl_hash_cursor_free.
+ */
+axlHashCursor * axl_hash_cursor_new      (axlHash * hash)
+{
+	axlHashCursor * cursor;
+
+	axl_return_val_if_fail (hash, NULL);
+
+	/* create the cursor */
+	cursor = axl_new (axlHashCursor, 1);
+
+	/* initial configuration */
+	cursor->hash    = hash;
+
+	/* init the cursor */
+	__axl_hash_cursor_init (cursor, true);
+
+	/* return cursor */
+	return cursor;
+}
+
+/** 
+ * @brief Allows to configure the cursor to point to the first item of
+ * the hash (if there are any).
+ * 
+ * @param cursor The cursor that is required to be configured to point the first item.
+ */
+void            axl_hash_cursor_first    (axlHashCursor * cursor)
+{
+	axl_return_if_fail (cursor);
+
+	/* init the cursor at the initial state */
+	__axl_hash_cursor_init (cursor, true);
+
+	return;
+}
+
+/** 
+ * @brief Allows to configure the cursor to point to the last item of
+ * the hash (if there are any).
+ * 
+ * @param cursor The cursor that is required to be configured to point
+ * to the last item.
+ */
+void            axl_hash_cursor_last     (axlHashCursor * cursor)
+{
+	axl_return_if_fail (cursor);
+
+	/* init the cursor at the initial state, selecting the last
+	 * node */
+	__axl_hash_cursor_init (cursor, false);
+
+	return;
+}
+
+/** 
+ * @brief Allows to configure the cursor to point to the next item of
+ * the hash (if there are any).
+ * 
+ * @param cursor The cursor that is required to be configured to point
+ * to the next item.
+ */
+void            axl_hash_cursor_next     (axlHashCursor * cursor)
+{
+	axl_return_if_fail (cursor);
+
+	/* check if the current node is null and do nothing if nothing
+	 * is found */
+	if (cursor->node == NULL)
+		return;
+
+	/* basic case, the item is found in the same level */
+	if (cursor->node->next != NULL) {
+		/* configure new current node */
+		cursor->node = cursor->node->next;
+
+		return; 
+	} /* end if */
+
+	/* seems next is null, see in other positions  */
+	while (cursor->index < cursor->hash->hash_size) {
+		/* check the table at the current position */
+		cursor->node = cursor->hash->table[cursor->index];
+		if (cursor->node != NULL) {
+			/* node found, stop! */
+			break;
+		} /* end if */
+			
+		/* node not found, go next position */
+		cursor->index++;
+	} /* end while */
+	
+	/* nothing to be done */
+	return;
+}
+
+/** 
+ * @brief Allows to check if there are more elements next to the
+ * current element pointed by the cursor.
+ * 
+ * @param cursor The cursor that is required to return if there are
+ * next items.
+ * 
+ * @return \ref true if more items are found, otherwise \ref false is
+ * returned.
+ */
+bool            axl_hash_cursor_has_next (axlHashCursor * cursor)
+{
+	int iterator;
+	axl_return_val_if_fail (cursor, false);
+
+	/* check basic case */
+	if (cursor->node != NULL && cursor->node->next != NULL)
+		return true;
+
+	/* seems next is null, see in other positions  */
+	iterator = cursor->index;
+	while (iterator < cursor->hash->hash_size) {
+		/* check the table at the current position */
+		if (cursor->hash->table[iterator] != NULL)
+			return true;
+			
+		/* node not found, go next position */
+		iterator++;
+	} /* end while */
+
+	return false;
+}
+
+/** 
+ * @brief Allows to know if the current position has items.
+ * 
+ * @param cursor The cursor that is requested to return if a call to
+ * \ref axl_hash_cursor_get will return data.
+ * 
+ * @return \ref true if the hash that is iterated can return data at
+ * the current position, otherwise \ref false is returned.
+ */
+bool            axl_hash_cursor_has_item    (axlHashCursor * cursor)
+{
+	axl_return_val_if_fail (cursor, false);
+
+	/* return true if there are a item selected */
+	return (cursor->node != NULL);
+}
+
+/** 
+ * @brief Allows to remove current element pointed by the cursor,
+ * maintainig internal state of the cursor, calling to the destroy
+ * function associated in the hash.
+ *
+ * The function will call to the destroy function asociated to the
+ * hash. 
+ * 
+ * @param cursor The cursor pointing to the item inside the hash that
+ * must be removed.
+ */
+void            axl_hash_cursor_remove       (axlHashCursor * cursor)
+{
+	axlHashNode * node;
+
+	axl_return_if_fail (cursor);
+
+	/* if current cursor is pointing nowhere, just do nothing */
+	if (cursor->node == NULL)
+		return;
+
+	/* remember node */
+	node = cursor->node->next;
+
+	/* remove node selected */
+	axl_hash_remove (cursor->hash, cursor->node->key);
+
+	/* configure next item */
+	cursor->node = node;
+	if (cursor->node == NULL) {
+		while (cursor->index < cursor->hash->hash_size) {
+			/* check the table at the current position */
+			if (cursor->hash->table[cursor->index] != NULL) {
+				/* configure the next node */
+				cursor->node = cursor->hash->table[cursor->index];
+				return;
+			}
+			
+			/* node not found, go next position */
+			cursor->index++;
+		} /* end while */
+	} /* end if */
+
+	return;
+}
+
+/** 
+ * @brief Allows to get current value at the current cursor state.
+ * 
+ * @param cursor The cursor that will be used to return the data
+ * located at the hash, using cursor current state.
+ */
+axlPointer      axl_hash_cursor_get_value    (axlHashCursor * cursor)
+{
+	axl_return_val_if_fail (cursor, NULL);
+
+	/* nothing to return if current is NULL */
+	if (cursor->node == NULL)
+		return NULL;
+
+	/* return data */
+	return cursor->node->data;
+}
+
+/** 
+ * @brief Allows to get current key at the current cursor state.
+ * 
+ * @param cursor The cursor that will be used to return the data
+ * located at the hash, using cursor current state.
+ */
+axlPointer      axl_hash_cursor_get_key    (axlHashCursor * cursor)
+{
+	axl_return_val_if_fail (cursor, NULL);
+
+	/* nothing to return if current is NULL */
+	if (cursor->node == NULL)
+		return NULL;
+
+	/* return key pointer */
+	return cursor->node->key;
+}
+
+/** 
+ * @brief Allows to get the reference to the hash that is associated
+ * to the cursor received.
+ * 
+ * @param cursor The cursor that is required to return the hash associated.
+ * 
+ * @return A reference to the hash being iterated or NULL if fails.
+ */
+axlHash       * axl_hash_cursor_hash         (axlHashCursor * cursor)
+{
+	/* check incoming cursor */
+	axl_return_val_if_fail (cursor, NULL);
+
+	/* return the hash */
+	return cursor->hash;
+}
+
+/** 
+ * @brief Deallocates memory used by the cursor. 
+ *
+ * @param cursor The cursor to be deallocated.
+ */
+void            axl_hash_cursor_free     (axlHashCursor * cursor)
+{
+	axl_return_if_fail (cursor);
+
+	/* free the cursor */
+	axl_free (cursor);
+
+	return;
+}
+
 
 /* @} */
