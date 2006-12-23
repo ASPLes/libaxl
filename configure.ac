@@ -189,10 +189,12 @@ esac
 AC_OUTPUT([
 Makefile
 src/Makefile
+ns/Makefile
 doc/Makefile
 doc/axl-doc.doxygen
 test/Makefile
-axl.pc])
+axl.pc
+axl-ns.pc])
 
 echo "------------------------------------------"
 echo "--       LibAXL LIBRARY SETTINGS        --"
