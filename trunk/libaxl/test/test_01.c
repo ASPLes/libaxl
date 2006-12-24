@@ -190,9 +190,10 @@ bool test_23 (axlError ** error)
  */
 bool test_22 (axlError ** error)
 {
-	axlDoc  * doc;
-	axlNode * node;
-	const char  * value;
+	axlDoc        * doc;
+	axlNode       * node;
+	const   char  * value;
+	axlAttrCursor * cursor;
 
 	
 	/* create a document */
@@ -236,6 +237,49 @@ bool test_22 (axlError ** error)
 	axl_node_set_attribute (node, "attribute4", "value4");
 	axl_node_set_attribute (node, "attribute5", "value5");
 	axl_node_set_attribute (node, "attribute6", "value6");
+
+	/* check axl attribute iteration API */
+	cursor = axl_node_attr_cursor_new (node);
+	while (axl_node_attr_cursor_has_item (cursor)) {
+		
+		if (axl_cmp ("attribute2", axl_node_attr_cursor_get_key (cursor)) &&
+		    ! axl_cmp ("value2", axl_node_attr_cursor_get_value (cursor))) {
+			axl_error_new (-1, "Found that the value associated to 'attribute2' isn't 'value2'", NULL, error);
+			return false;
+		} /* end if */
+
+		if (axl_cmp ("attribute3", axl_node_attr_cursor_get_key (cursor)) &&
+		    ! axl_cmp ("value3", axl_node_attr_cursor_get_value (cursor))) {
+			axl_error_new (-1, "Found that the value associated to 'attribute3' isn't 'value3'", NULL, error);
+			return false;
+		} /* end if */
+
+		if (axl_cmp ("attribute4", axl_node_attr_cursor_get_key (cursor)) &&
+		    ! axl_cmp ("value4", axl_node_attr_cursor_get_value (cursor))) {
+			axl_error_new (-1, "Found that the value associated to 'attribute4' isn't 'value4'", NULL, error);
+			return false;
+		} /* end if */
+			     
+		if (axl_cmp ("attribute5", axl_node_attr_cursor_get_key (cursor)) &&
+		    ! axl_cmp ("value5", axl_node_attr_cursor_get_value (cursor))) {
+			axl_error_new (-1, "Found that the value associated to 'attribute5' isn't 'value5'", NULL, error);
+			return false;
+		} /* end if */
+
+		if (axl_cmp ("attribute6", axl_node_attr_cursor_get_key (cursor)) &&
+		    ! axl_cmp ("value6", axl_node_attr_cursor_get_value (cursor))) {
+			axl_error_new (-1, "Found that the value associated to 'attribute6' isn't 'value6'", NULL, error);
+			return false;
+		} /* end if */
+
+		/* go next */
+		axl_node_attr_cursor_next (cursor);
+
+	} /* end if */
+
+	axl_node_attr_cursor_free (cursor);
+
+
 	axl_node_set_attribute (node, "attribute7", "value7");
 	axl_node_set_attribute (node, "attribute8", "value8");
 	axl_node_set_attribute (node, "attribute9", "value9");
@@ -257,20 +301,21 @@ bool test_22 (axlError ** error)
 
 	/* check for attributes */
 	if (! axl_node_has_attribute (node, "attribute2")) {
-		axl_error_new (-1, "Not found an attribute requested, which should exists", NULL, error);
+		axl_error_new (-1, "Not found an attribute requested, which should exists(2)", NULL, error);
 		return false;
 	}
 
 	/* get attribute */
 	value = axl_node_get_attribute_value (node, "attribute2");
 	if (! axl_cmp (value, "value2")) {
-		axl_error_new (-1, "Not found an attribute requested, which should exists", NULL, error);
+		printf ("value2 != %s\n", value);
+		axl_error_new (-1, "Not found an attribute requested, which should exists(value2)", NULL, error);
 		return false;
 	}
 
 	/* check for attributes */
 	if (! axl_node_has_attribute (node, "attribute3")) {
-		axl_error_new (-1, "Not found an attribute requested, which should exists", NULL, error);
+		axl_error_new (-1, "Not found an attribute requested, which should exists(3)", NULL, error);
 		return false;
 	}
 
@@ -385,7 +430,76 @@ bool test_22 (axlError ** error)
 		return false;
 	}
 
+	/* check axl attribute iteration API */
+	cursor = axl_node_attr_cursor_new (node);
+	while (axl_node_attr_cursor_has_item (cursor)) {
+		
+		if (axl_cmp ("attribute2", axl_node_attr_cursor_get_key (cursor)) &&
+		    ! axl_cmp ("value2", axl_node_attr_cursor_get_value (cursor))) {
+			axl_error_new (-1, "Found that the value associated to 'attribute2' isn't 'value2'", NULL, error);
+			return false;
+		} /* end if */
 
+		if (axl_cmp ("attribute3", axl_node_attr_cursor_get_key (cursor)) &&
+		    ! axl_cmp ("value3", axl_node_attr_cursor_get_value (cursor))) {
+			axl_error_new (-1, "Found that the value associated to 'attribute3' isn't 'value3'", NULL, error);
+			return false;
+		} /* end if */
+
+		if (axl_cmp ("attribute4", axl_node_attr_cursor_get_key (cursor)) &&
+		    ! axl_cmp ("value4", axl_node_attr_cursor_get_value (cursor))) {
+			axl_error_new (-1, "Found that the value associated to 'attribute4' isn't 'value4'", NULL, error);
+			return false;
+		} /* end if */
+			     
+		if (axl_cmp ("attribute5", axl_node_attr_cursor_get_key (cursor)) &&
+		    ! axl_cmp ("value5", axl_node_attr_cursor_get_value (cursor))) {
+			axl_error_new (-1, "Found that the value associated to 'attribute5' isn't 'value5'", NULL, error);
+			return false;
+		} /* end if */
+
+		if (axl_cmp ("attribute6", axl_node_attr_cursor_get_key (cursor)) &&
+		    ! axl_cmp ("value6", axl_node_attr_cursor_get_value (cursor))) {
+			axl_error_new (-1, "Found that the value associated to 'attribute6' isn't 'value6'", NULL, error);
+			return false;
+		} /* end if */
+
+		if (axl_cmp ("attribute7", axl_node_attr_cursor_get_key (cursor)) &&
+		    ! axl_cmp ("value7", axl_node_attr_cursor_get_value (cursor))) {
+			axl_error_new (-1, "Found that the value associated to 'attribute7' isn't 'value7'", NULL, error);
+			return false;
+		} /* end if */
+
+		if (axl_cmp ("attribute8", axl_node_attr_cursor_get_key (cursor)) &&
+		    ! axl_cmp ("value8", axl_node_attr_cursor_get_value (cursor))) {
+			axl_error_new (-1, "Found that the value associated to 'attribute8' isn't 'value8'", NULL, error);
+			return false;
+		} /* end if */
+
+		if (axl_cmp ("attribute9", axl_node_attr_cursor_get_key (cursor)) &&
+		    ! axl_cmp ("value9", axl_node_attr_cursor_get_value (cursor))) {
+			axl_error_new (-1, "Found that the value associated to 'attribute9' isn't 'value9'", NULL, error);
+			return false;
+		} /* end if */
+
+		if (axl_cmp ("attribute10", axl_node_attr_cursor_get_key (cursor)) &&
+		    ! axl_cmp ("value10", axl_node_attr_cursor_get_value (cursor))) {
+			axl_error_new (-1, "Found that the value associated to 'attribute10' isn't 'value10'", NULL, error);
+			return false;
+		} /* end if */
+
+		if (axl_cmp ("attribute11", axl_node_attr_cursor_get_key (cursor)) &&
+		    ! axl_cmp ("value11", axl_node_attr_cursor_get_value (cursor))) {
+			axl_error_new (-1, "Found that the value associated to 'attribute11' isn't 'value11'", NULL, error);
+			return false;
+		} /* end if */
+
+		/* go next */
+		axl_node_attr_cursor_next (cursor);
+
+	} /* end if */
+
+	axl_node_attr_cursor_free (cursor);
 	
 	/* free document */
 	axl_doc_free (doc);

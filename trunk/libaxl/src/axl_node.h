@@ -161,6 +161,25 @@ bool      axl_node_has_attribute_value       (axlNode    * node,
 					      const char * attribute, 
 					      const char * value);
 
+
+/* XML node attribute iteration API provided to traverse all
+ * attributes without knowing them. */
+axlAttrCursor * axl_node_attr_cursor_new       (axlNode * node);
+
+void            axl_node_attr_cursor_first     (axlAttrCursor * cursor);
+
+void            axl_node_attr_cursor_next      (axlAttrCursor * cursor);
+
+bool            axl_node_attr_cursor_has_next  (axlAttrCursor * cursor);
+
+bool            axl_node_attr_cursor_has_item  (axlAttrCursor * cursor);
+
+const char *    axl_node_attr_cursor_get_key   (axlAttrCursor * cursor);
+
+const char *    axl_node_attr_cursor_get_value (axlAttrCursor * cursor);
+
+void            axl_node_attr_cursor_free      (axlAttrCursor * cursor);
+
 /* user defined data interface store arbitrary data inside the
  * hash  */
 
