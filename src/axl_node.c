@@ -1069,6 +1069,23 @@ bool          axl_node_has_attribute      (axlNode * node, const char * attribut
 }
 
 /** 
+ * @brief Allows to check if the provided has any attribute installed.
+ * 
+ * @param node The node to be checked for attributes.
+ * 
+ * @return \ref true if the node has attributes, otherwise \ref false
+ * is returned. The function also returns \ref false if a null
+ * reference for the node is provided.
+ */
+bool      axl_node_has_attributes (axlNode * node)
+{
+	axl_return_val_if_fail (node, false);
+
+	/* return if the attributes reference is configured */
+	return (node->attributes != NULL);
+}
+
+/** 
  * @brief Allows to get current content of the provided attribute
  * inside the given node.
  *
@@ -1862,7 +1879,7 @@ void      axl_node_set_is_empty (axlNode * node, bool     empty)
  * not deallocated. If a copy is required use \ref axl_strdup
  * function.
  */
-char    * axl_node_get_name           (axlNode * node)
+const char    * axl_node_get_name           (axlNode * node)
 {
 	axl_return_val_if_fail (node, NULL);
 
@@ -4361,8 +4378,7 @@ void __axl_node_free_internal (axlNode * node, bool also_childs)
 	}
 
 	/* free annotation */
-	if (node->annotate_data != NULL)
-		axl_hash_free (node->annotate_data);
+	axl_hash_free (node->annotate_data);
 
 	/* release memory hold by childs */
 	if (node->first != NULL && also_childs) {
@@ -4578,8 +4594,13 @@ void                 axl_node_attr_cursor_next      (axlAttrCursor * cursor)
 	} /* end if */
 
 	if (cursor->count <= 10) {
+		/* check null values */
+		if (cursor->data == NULL)
+			return;
+
 		/* just point to the first attribute (managed as AxlAttribute) */
 		cursor->data = ((axlNodeAttr *) cursor->data)->next;
+
 		return;
 	} /* end if */
 

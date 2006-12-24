@@ -161,6 +161,8 @@ bool      axl_node_has_attribute_value       (axlNode    * node,
 					      const char * attribute, 
 					      const char * value);
 
+bool      axl_node_has_attributes (axlNode * node);
+
 /**
  * @}
  */
@@ -309,7 +311,7 @@ double     axl_node_anotate_get_double          (axlNode       * node,
  */
 #define NODE_CMP_NAME(node,name) (axl_cmp ((node != NULL) ? axl_node_get_name(node) : "><", (name != NULL) ? name : "<>"))
 
-char    * axl_node_get_name           (axlNode * node);
+const char * axl_node_get_name           (axlNode * node);
 
 axlNode * axl_node_get_parent         (axlNode * node);
 
