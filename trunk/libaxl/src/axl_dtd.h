@@ -60,7 +60,8 @@ bool                 axl_dtd_validate         (axlDoc * doc,
 
 axlDtdElement      * axl_dtd_get_root         (axlDtd * dtd); 
 
-axlDtdElement      * axl_dtd_get_element      (axlDtd * dtd, char * name);
+axlDtdElement      * axl_dtd_get_element      (axlDtd * dtd, 
+					       const char * name);
 
 char               * axl_dtd_get_element_name (axlDtdElement * element);
 

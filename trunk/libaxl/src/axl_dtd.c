@@ -2635,14 +2635,14 @@ bool __find_dtd_element (axlPointer _element, axlPointer data)
  * @return A reference to the \ref axlDtdElement searched or NULL if
  * fails. The function also returns NULL if values received are NULL.
  */
-axlDtdElement      * axl_dtd_get_element      (axlDtd * dtd, char * name)
+axlDtdElement      * axl_dtd_get_element      (axlDtd * dtd, const char * name)
 {
 
 	axl_return_val_if_fail (dtd, NULL);
 	axl_return_val_if_fail (name, NULL);
 
 	/* perform the lookup */
-	return axl_list_lookup (dtd->elements, __find_dtd_element, name);
+	return axl_list_lookup (dtd->elements, __find_dtd_element, (axlPointer) name);
 }
 
 /** 
