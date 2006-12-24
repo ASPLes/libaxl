@@ -2,8 +2,56 @@
 #include <axl_ns.h>
 #include <stdio.h>
 
+#define HTML_NS "http://www.w3.org/1999/xhtml"
 #define BOOK_NS "urn:loc.gov:books"
 #define ISBN_NS "urn:ISBN:0-395-36341-6"
+
+/** 
+ * @brief Test namespace defaulting support from axl ns library.
+ * 
+ * @param error The optional axlError to be used to report errors.
+ * 
+ * @return true if the validity test is passed, false if not.
+ */
+bool test_28 (axlError ** error)
+{
+	axlDoc  * doc;
+	axlNode * node;
+
+	/* parse namespace file */
+	doc = axl_doc_parse_from_file ("test_28.xml", error);
+	if (doc == NULL)
+		return false;
+
+	/* call to validate namespace */
+	if (! axl_ns_doc_validate (doc, error))
+		return false;
+
+	/* get root document */
+	node = axl_doc_get_root (doc);
+
+	/* get following node */
+	node = axl_node_get_first_child (node);
+
+	/* check default namespace */
+	if (! axl_ns_node_cmp (node, HTML_NS, "table")) {
+		axl_error_new (-1, "expected to find a valid ns-node-cmp, but it wasn't found", NULL, error);
+		return false;
+	}
+
+	/* get the following */
+	node = axl_node_get_first_child (node);
+
+	/* check default namespace */
+	if (! axl_ns_node_cmp (node, HTML_NS, "th")) {
+		axl_error_new (-1, "expected to find a valid ns-node-cmp, but it wasn't found", NULL, error);
+		return false;
+	}
+
+	axl_doc_free (doc);
+
+	return true;
+}
 
 /** 
  * @brief Test namespace support from axl ns library.
@@ -5316,8 +5364,6 @@ int main (int argc, char ** argv)
 		return -1;
 	}
 
-	goto test;
-
 	/* DATA STRUCTURE TESTS */
 	if (test_01_01 ()) {
 		printf ("Test 01-01: LibAxl list implementation [   OK   ]\n");
@@ -5668,8 +5714,6 @@ int main (int argc, char ** argv)
 		return -1;
 	}
 
- test:
-
 	if (test_26 (&error)) {
 		printf ("Test 26: Namespace support (basic) [   OK   ]\n");
 	}else {
@@ -5680,9 +5724,18 @@ int main (int argc, char ** argv)
 	}
 
 	if (test_27 (&error)) {
-		printf ("Test 26: Namespace support [   OK   ]\n");
+		printf ("Test 27: Namespace support [   OK   ]\n");
 	}else {
-		printf ("Test 26: Namespace support [ FAILED ]\n  (CODE: %d) %s\n",
+		printf ("Test 27: Namespace support [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}
+
+	if (test_28 (&error)) {
+		printf ("Test 28: Namespace defaulting support [   OK   ]\n");
+	}else {
+		printf ("Test 28: Namespace defaulting support [ FAILED ]\n  (CODE: %d) %s\n",
 			axl_error_get_code (error), axl_error_get (error));
 		axl_error_free (error);
 		return -1;
