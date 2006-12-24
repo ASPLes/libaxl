@@ -42,9 +42,21 @@
 
 BEGIN_C_DECLS
 
-bool axl_ns_node_cmp          (axlNode * node, 
-			       const char * ns, 
-			       const char * name);
+bool      axl_ns_node_cmp          (axlNode * node, 
+				    const char * ns, 
+				    const char * name);
+
+axlNode * axl_ns_node_find_called  (axlNode    * parent,
+				    const char * ns,
+				    const char * name);
+
+axlNode * axl_ns_node_get_child_called   (axlNode    * parent, 
+					  const char * ns,
+					  const char * name);
+
+axlNode * axl_ns_node_get_next_called    (axlNode    * parent,
+					  const char * ns,
+					  const char * name);
 
 /** 
  * @brief Allows to check if an xml node is prefixed (by a xml

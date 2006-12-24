@@ -13,6 +13,61 @@
  * 
  * @return true if the validity test is passed, false if not.
  */
+bool test_29 (axlError ** error)
+{
+	axlDoc  * doc;
+	axlNode * node;
+
+	/* parse namespace file */
+	doc = axl_doc_parse_from_file ("test_29.xml", error);
+	if (doc == NULL)
+		return false;
+
+	/* call to validate namespace */
+	if (! axl_ns_doc_validate (doc, error))
+		return false;
+
+	/* get root document */
+	node = axl_doc_get_root (doc);
+
+	/* find number inside isbn namespace */
+	node = axl_ns_node_find_called (node, HTML_NS, "p");
+	if (node == NULL || ! axl_ns_node_cmp (node, HTML_NS, "p")) {
+		axl_error_new (-1, "Expected to find xhtml p node, but it wasn't found", NULL, error);
+		return false;
+	} /* end if */
+
+	/* get root document */
+	node = axl_doc_get_root (doc);
+
+	/* find number inside isbn namespace */
+	node = axl_ns_node_get_child_called (node, ISBN_NS, "number");
+	if (node == NULL || ! axl_ns_node_cmp (node, ISBN_NS, "number")) {
+		axl_error_new (-1, "Expected to find isbn number node, but it wasn't found", NULL, error);
+		return false;
+	} /* end if */
+
+	/* find number inside isbn namespace */
+	node = axl_ns_node_get_next_called (node, ISBN_NS, "test");
+	if (node == NULL || ! axl_ns_node_cmp (node, ISBN_NS, "test")) {
+		axl_error_new (-1, "Expected to find isbn test node, but it wasn't found", NULL, error);
+		return false;
+	} /* end if */
+
+	
+	/* free document */
+	axl_doc_free (doc);
+
+	return true;
+}
+
+/** 
+ * @brief Test namespace defaulting support from axl ns library.
+ * 
+ * @param error The optional axlError to be used to report errors.
+ * 
+ * @return true if the validity test is passed, false if not.
+ */
 bool test_28 (axlError ** error)
 {
 	axlDoc  * doc;
@@ -5736,6 +5791,15 @@ int main (int argc, char ** argv)
 		printf ("Test 28: Namespace defaulting support [   OK   ]\n");
 	}else {
 		printf ("Test 28: Namespace defaulting support [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}
+
+	if (test_29 (&error)) {
+		printf ("Test 29: Namespace lookup support [   OK   ]\n");
+	}else {
+		printf ("Test 29: Namespace lookup support [ FAILED ]\n  (CODE: %d) %s\n",
 			axl_error_get_code (error), axl_error_get (error));
 		axl_error_free (error);
 		return -1;
