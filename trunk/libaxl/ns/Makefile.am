@@ -12,8 +12,8 @@ libaxl_nsincludedir = $(includedir)/axl
 
 lib_LTLIBRARIES = libaxl-ns.la
 
-libaxl_ns_la_SOURCES     = axl_ns_doc.c
-libaxl_nsinclude_HEADERS = axl_ns.h axl_ns_doc.h
+libaxl_ns_la_SOURCES     = axl_ns_doc.c axl_ns_node.c
+libaxl_nsinclude_HEADERS = axl_ns.h axl_ns_doc.h axl_ns_node.h
 
 libaxl_ns_la_LDFLAGS = -no-undefined -export-symbols-regex '^(axl|__axl).*'
 

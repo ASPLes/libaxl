@@ -35,18 +35,31 @@
  *      Email address:
  *         info@aspl.es - http://fact.aspl.es
  */
-#ifndef __AXL_NS_DOC_H__
-#define __AXL_NS_DOC_H__
+#ifndef __AXL_NS_NODE_H__
+#define __AXL_NS_NODE_H__
 
 #include <axl_ns.h>
 
 BEGIN_C_DECLS
 
-bool axl_ns_doc_validate (axlDoc * doc, axlError ** error);
+bool axl_ns_node_cmp          (axlNode * node, 
+			       const char * ns, 
+			       const char * name);
 
-bool axl_ns_doc_node_check (axlNode    * node, 
-			    const char * ns_prefix, 
-			    const char * ns);
+/** 
+ * @brief Allows to check if an xml node is prefixed (by a xml
+ * namespace declaration).
+ *
+ * See \ref axl_ns_node_is_prefixed.
+ * 
+ * @param node The node to check.
+ * 
+ * @return \ref true if prefixed, otherwise \ref false is returned.
+ */
+#define AXL_IS_PREFIXED(node) (axl_ns_node_is_prefixed(node, NULL))
+
+bool axl_ns_node_is_prefixed  (axlNode * node, 
+			       int     * position);
 
 END_C_DECLS
 

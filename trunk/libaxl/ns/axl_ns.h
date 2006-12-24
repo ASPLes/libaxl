@@ -43,6 +43,7 @@
 
 /* axl ns library local includes */
 #include <axl_ns_doc.h>
+#include <axl_ns_node.h>
 
 #endif
 
