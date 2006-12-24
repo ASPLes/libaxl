@@ -1,0 +1,6 @@
+<?xml version='1.0' ?>
+<x xmlns:edi='http://ecommerce.example.org/schema'>
+  <!-- the edit prefix is bound to http://ecommerce.example.org/schema
+       for the x element and contents -->
+  <edi:price edit2:units='Euro'>32.18</edi:price>
+</x>
