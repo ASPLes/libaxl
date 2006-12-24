@@ -161,6 +161,14 @@ bool      axl_node_has_attribute_value       (axlNode    * node,
 					      const char * attribute, 
 					      const char * value);
 
+/**
+ * @}
+ */
+
+/** 
+ * \addtogroup axl_node_attribute_cursor
+ * @{
+ */
 
 /* XML node attribute iteration API provided to traverse all
  * attributes without knowing them. */
@@ -180,8 +188,14 @@ const char *    axl_node_attr_cursor_get_value (axlAttrCursor * cursor);
 
 void            axl_node_attr_cursor_free      (axlAttrCursor * cursor);
 
-/* user defined data interface store arbitrary data inside the
- * hash  */
+/**
+ * @}
+ */
+
+/** 
+ * \addtogroup axl_node_annotate
+ * @{
+ */
 
 /** 
  * @brief Simple alias to fix the interface problem for the annotate
@@ -268,6 +282,16 @@ double     axl_node_anotate_get_double          (axlNode       * node,
 						 const char    * key,
 						 bool            lookup_in_parent);
 
+/**
+ * @}
+ */
+
+
+/** 
+ * \addtogroup axl_node_module
+ * @{
+ */
+
 /** 
  * @brief Allows to easily check that the given xml node (\ref
  * axlNode) have the provided name.
@@ -305,10 +329,6 @@ axlNode * axl_node_get_last_child     (axlNode * node);
 
 void      axl_node_set_child          (axlNode * parent, 
 				       axlNode * child);
-
-void      axl_item_set_after          (axlItem * item,
-				       AxlItemType type,
-				       axlPointer data);
 
 void      axl_node_replace            (axlNode * node, 
 				       axlNode * new_node,
@@ -457,6 +477,10 @@ void          axl_item_set_child       (axlNode * parent,
 
 void          axl_item_set_child_ref   (axlNode * parent, 
 					axlItem * item);
+
+void          axl_item_set_after       (axlItem * item,
+					AxlItemType type,
+					axlPointer data);
 
 axlItem     * axl_item_copy            (axlItem * item,
 					axlNode * set_parent);

@@ -1246,6 +1246,19 @@ bool axl_node_has_attribute_value       (axlNode    * node,
 	return axl_cmp (axl_node_get_attribute_value (node, attribute), value);
 }
 
+/**
+ * @}
+ */
+
+/**
+ * \defgroup axl_node_annotate Axl Node Annotate: An interface that allows associate arbitrary data to a particular node, indexed as a hash.
+ */
+
+/** 
+ * \addtogroup axl_node_annotate
+ * @{
+ */
+
 /** 
  * @internal function which checks and initializes the hash used for
  * annotated data.
@@ -1761,6 +1774,15 @@ double     axl_node_anotate_get_double          (axlNode    * node,
 	/* return the double value inside */
 	return data->value.double_value;
 }
+
+/**
+ * @}
+ */
+
+/** 
+ * \addtogroup axl_node_module
+ * @{
+ */
 
 /** 
  * @brief Allows to configure the given node to be empty.

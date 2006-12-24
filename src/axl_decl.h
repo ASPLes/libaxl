@@ -170,7 +170,7 @@ typedef struct _axlNode axlNode;
 
 /** 
  * @brief Public cursor type used to iterate over attributes installed
- * on a particular node.
+ * on a particular node (see \ref axl_node_attr_cursor_new to get examples and more information).
  */
 typedef struct _axlAttrCursor axlAttrCursor;
 
