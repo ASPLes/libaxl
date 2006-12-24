@@ -85,12 +85,16 @@ bool axl_ns_node_cmp (axlNode    * node,
 
 		/* now check the node name (now we know the namespace is checked) */
 		return axl_cmp (name, _name + position + 1);
-		
-	} 
+	} /* end if */
+
 	/* look for the default namespace */
-	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "default ns case..");
+	if (! axl_ns_doc_check_default (node, ns)) {
+		/* default namespace for the current node doesn't match */
+		return false;
+	}
 	
-	return false;
+	/* default namespace match, check the node name */
+	return axl_cmp (name, axl_node_get_name (node));
 }
 
 /** 
