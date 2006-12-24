@@ -1,5 +1,131 @@
 #include <axl.h>
+#include <axl_ns.h>
 #include <stdio.h>
+
+#define BOOK_NS "urn:loc.gov:books"
+#define ISBN_NS "urn:ISBN:0-395-36341-6"
+
+/** 
+ * @brief Test namespace support from axl ns library.
+ * 
+ * @param error The optional axlError to be used to report errors.
+ * 
+ * @return true if the validity test is passed, false if not.
+ */
+bool test_27 (axlError ** error)
+{
+	axlDoc  * doc;
+	axlNode * node;
+
+	/* parse namespace file */
+	doc = axl_doc_parse_from_file ("test_27.xml", error);
+	if (doc == NULL)
+		return false;
+
+	/* call to validate namespace */
+	if (! axl_ns_doc_validate (doc, error))
+		return false;
+
+	/* get root document */
+	node = axl_doc_get_root (doc);
+
+	if (! axl_ns_node_cmp (node, BOOK_NS, "book")) {
+		axl_error_new (-1, "expected to find a valid ns-node-cmp, but it wasn't found", NULL, error);
+		return false;
+	}
+
+	/* get first child */
+	node = axl_node_get_first_child (node);
+
+	if (! axl_ns_node_cmp (node, BOOK_NS, "title")) {
+		axl_error_new (-1, "expected to find a failure validating with ns-node-cmp, but it wasn't found", NULL, error);
+		return false;
+	}
+
+	node = axl_node_get_next (node);
+	if (axl_ns_node_cmp (node, BOOK_NS, "number")) {
+		axl_error_new (-1, "expected to find a failure validating with ns-node-cmp, but it wasn't found", NULL, error);
+		return false;
+	}
+
+	/* get next */
+	if (! axl_ns_node_cmp (node, ISBN_NS, "number")) {
+		axl_error_new (-1, "expected to find a valid ns-node-cmp, but it wasn't found", NULL, error);
+		return false;
+	}
+
+	axl_doc_free (doc);
+
+	return true;
+}
+
+
+/** 
+ * @brief Test namespace support from axl ns library.
+ * 
+ * @param error The optional axlError to be used to report errors.
+ * 
+ * @return true if the validity test is passed, false if not.
+ */
+bool test_26 (axlError ** error)
+{
+	axlDoc * doc;
+
+	/* parse namespace file */
+	doc = axl_doc_parse_from_file ("test_26.xml", error);
+	if (doc == NULL)
+		return false;
+
+	/* call to validate namespace */
+	if (! axl_ns_doc_validate (doc, error))
+		return false;
+
+	axl_doc_free (doc);
+
+	/* parse a namespace file that do not follow rules (node) */
+	doc = axl_doc_parse_from_file ("test_26b.xml", error);
+	if (doc == NULL)
+		return false;
+
+	/* call to validate namespace */
+	if (axl_ns_doc_validate (doc, error)) {
+		axl_error_new (-1, "Expected to find ns validation error, but not found (test_26b)", NULL, error);
+		return false;
+	}
+	axl_error_free (*error);
+
+	axl_doc_free (doc);
+
+	/* parse a namespace file that do not follow rules (attribute) */
+	doc = axl_doc_parse_from_file ("test_26c.xml", error);
+	if (doc == NULL)
+		return false;
+
+	/* call to validate namespace */
+	if (axl_ns_doc_validate (doc, error)) {
+		axl_error_new (-1, "Expected to find ns validation error, but not found (test_26c)", NULL, error);
+		return false;
+	}
+	axl_error_free (*error);
+
+	axl_doc_free (doc);
+
+	/* parse a namespace file that do not follow rules (declaring twice default namespace) */
+	doc = axl_doc_parse_from_file ("test_26d.xml", error);
+	if (doc == NULL)
+		return false;
+
+	/* call to validate namespace */
+	if (axl_ns_doc_validate (doc, error)) {
+		axl_error_new (-1, "Expected to find ns validation error, but not found (test_26d)", NULL, error);
+		return false;
+	}
+	axl_error_free (*error);
+
+	axl_doc_free (doc);
+
+	return true;
+}
 
 /** 
  * @brief Test Axl Item API while performing lookups.
@@ -5190,6 +5316,8 @@ int main (int argc, char ** argv)
 		return -1;
 	}
 
+	goto test;
+
 	/* DATA STRUCTURE TESTS */
 	if (test_01_01 ()) {
 		printf ("Test 01-01: LibAxl list implementation [   OK   ]\n");
@@ -5535,6 +5663,26 @@ int main (int argc, char ** argv)
 		printf ("Test 25: Lookup functions [   OK   ]\n");
 	}else {
 		printf ("Test 25: Lookup [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}
+
+ test:
+
+	if (test_26 (&error)) {
+		printf ("Test 26: Namespace support (basic) [   OK   ]\n");
+	}else {
+		printf ("Test 26: Namespace support (basic) [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}
+
+	if (test_27 (&error)) {
+		printf ("Test 26: Namespace support [   OK   ]\n");
+	}else {
+		printf ("Test 26: Namespace support [ FAILED ]\n  (CODE: %d) %s\n",
 			axl_error_get_code (error), axl_error_get (error));
 		axl_error_free (error);
 		return -1;
