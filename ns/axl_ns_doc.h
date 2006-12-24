@@ -48,6 +48,9 @@ bool axl_ns_doc_node_check (axlNode    * node,
 			    const char * ns_prefix, 
 			    const char * ns);
 
+bool axl_ns_doc_check_default (axlNode    * node, 
+			       const char * ns);
+
 END_C_DECLS
 
 #endif

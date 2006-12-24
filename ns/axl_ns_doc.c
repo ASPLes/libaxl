@@ -421,3 +421,42 @@ bool axl_ns_doc_node_check (axlNode    * node,
 	/* reached this point, return false */
 	return false;
 }
+
+/** 
+ * @internal Function that allows to check if the default namespace is
+ * the value provided, using as reference, the node received.
+ * 
+ * @param node The node to check for its default namespace to match
+ * the value provided.
+ *
+ * @param ns The namespace that is provided to match.
+ * 
+ * @return \ref true if the node has as default namespace the value
+ * received. Otherwise \ref false is returned.
+ */
+bool axl_ns_doc_check_default (axlNode    * node, 
+			       const char * ns)
+{
+	axlNode    * parent   = node;
+	axlNsTable * ns_table = NULL;
+
+	/* foreach node, up to the root parent, starting from the node
+	 * provided, do: */
+	while (parent != NULL) {
+		/* try to get the ns table having the prefix declaration */
+		ns_table = axl_node_annotate_get (parent, NS_TABLE, false);
+		
+		/* check the namespace */
+		if (ns_table != NULL && ns_table->defaultNs != NULL) {
+			/* prefix found, check its value */
+			return axl_cmp (ns_table->defaultNs, ns);
+		} /* end if */
+		
+		/* not found, get the parent */
+		parent = axl_node_get_parent (parent);
+
+	} /* end while */	
+
+	/* reached this point, return false */
+	return false;
+}
