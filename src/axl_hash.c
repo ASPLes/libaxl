@@ -1262,19 +1262,19 @@ void __axl_hash_cursor_init (axlHashCursor * cursor, bool first)
  * efficient way.
  *
  * The \ref axlHashCursor could be used to iterate an \ref axlHash in
- * an efficient way because it stores current state (position). Then
- * using the following functions you can modify the state (current
- * position to get):
+ * an efficient way because it stores current state (position), hiding
+ * all module details. Then using the following functions you can
+ * modify the state (current position to get):
  * 
  *   - \ref axl_hash_cursor_first
  *   - \ref axl_hash_cursor_last
  *   - \ref axl_hash_cursor_next
  *
- * Finally, a function is provided to get the data stored at a
+ * Finally, the following functions are provided to get the data stored at a
  * particular position, pointed by the current status of the cursor:
  * 
- *   - \ref axl_hash_cursor_get_key
- *   - \ref axl_hash_cursor_get_value
+ *   - \ref axl_hash_cursor_get_key (returns the key of the current position)
+ *   - \ref axl_hash_cursor_get_value (returns the value of the current position)
  *
  * You are allowed to remove elements from the hash (\ref axlHash)
  * having a cursor created (\ref axlHashCursor), using \ref
@@ -1299,9 +1299,6 @@ void __axl_hash_cursor_init (axlHashCursor * cursor, bool first)
  *   // get the next 
  *   axl_hash_cursor_next (cursor);
  *
- *   // update the iterator 
- *   iterator++;
- *		
  * } 
  *
  * // free the cursor 
@@ -1452,8 +1449,8 @@ bool            axl_hash_cursor_has_next (axlHashCursor * cursor)
 /** 
  * @brief Allows to know if the current position has items.
  * 
- * @param cursor The cursor that is requested to return if a call to
- * \ref axl_hash_cursor_get will return data.
+ * @param cursor The cursor pointing to a particular element inside
+ * the hash (or not).
  * 
  * @return \ref true if the hash that is iterated can return data at
  * the current position, otherwise \ref false is returned.

@@ -168,10 +168,11 @@ typedef struct _axlStrFactory axlStrFactory;
  */
 typedef struct _axlNode axlNode;
 
-/**
- * @brief Axl XML Attribute type definition.
+/** 
+ * @brief Public cursor type used to iterate over attributes installed
+ * on a particular node.
  */
-typedef struct _axlAttribute axlAttribute;
+typedef struct _axlAttrCursor axlAttrCursor;
 
 /** 
  * @brief Axl DTD entity representation.
@@ -691,7 +692,7 @@ typedef struct _axlHash  axlHash;
 /** 
  * @brief \ref axlHashCursor definition, a support type that is used
  * to iterate a hash in a linear mode, without calling to \ref
- * axl_hash_foreach family functions (see \ref axl_hash_cursor_get).
+ * axl_hash_foreach family functions (see \ref axl_hash_cursor_new).
  */
 typedef struct _axlHashCursor axlHashCursor;
 

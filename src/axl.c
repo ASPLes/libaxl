@@ -664,6 +664,7 @@
  * 
  *    - \ref axl_error_module
  *    - \ref axl_log_module
+ *
  *  <li><b>Auxiliary modules, supporting data types, string handling, etc:</b></li>
  *
  * - \ref axl_stream_module
@@ -671,6 +672,7 @@
  * - \ref axl_list_cursor_module
  * - \ref axl_stack_module
  * - \ref axl_hash_module
+ * - \ref axl_hash_cursor_module
  * - \ref axl_string_module 
  *
  *  </li>

@@ -48,6 +48,12 @@
  * @{
  */
 
+struct _axlAttrCursor {
+	axlPointer     data;
+	int            count;
+	axlNode      * node;
+};
+
 /** 
  * @internal Axl content representation used to store comments, xml
  * content, CDATA content and entity references.
@@ -4407,6 +4413,283 @@ void      axl_node_free_full       (axlNode * node, bool also_childs)
 	/* free the node itself */
 	if (!(node->conf & NODE_FROM_FACTORY))
 		axl_free (node);
+
+	return;
+}
+
+/**
+ * @}
+ */
+
+/**
+ * \defgroup axl_node_attribute_cursor Axl Node Attribute iteration: An interface provided to iterate attribute nodes without knowing them.
+ */
+
+/** 
+ * \addtogroup axl_node_attribute_cursor
+ * @{
+ */
+
+
+/** 
+ * @brief Allows to get a cursor to iterate attributes found in the
+ * provided node in a linear and efficient way.
+ *
+ * The \ref axlAttrCursor could be used to iterate attributes
+ * inside a particular node in an efficient way because it stores
+ * current state (position), hiding all module details, providing
+ * access to attributes without knowing them. Then using the following
+ * functions you can modify the state (current position to get):
+ * 
+ *   - \ref axl_node_attr_cursor_first
+ *   - \ref axl_node_attr_cursor_next
+ *
+ * Finally, the following functions are provided to get the the key
+ * and the value data associated to the current selected attribute,
+ * pointed by the current status of the cursor:
+ * 
+ *   - \ref axl_node_attr_cursor_get_key (returns the key of the current attribute selected)
+ *   - \ref axl_node_attr_cursor_get_value (returns the value of the current attribute selected)
+ *
+ * Here is an example:
+ * \code
+ * axlPointer           key;
+ * axlPointer           value;
+ * axlAttrCursor * cursor;
+ * 
+ * // create the cursor 
+ * cursor   = axl_node_attr_cursor_new (node);
+ *
+ * // while there are more elements 
+ * while (axl_node_attr_cursor_has_item (cursor)) {
+ *
+ *   // get the value and key
+ *   key   = axl_node_attr_cursor_get_key   (cursor);
+ *   value = axl_node_attr_cursor_get_value (cursor);
+ *
+ *   // get the next 
+ *   axl_node_attr_cursor_next (cursor);
+ *
+ * } 
+ *
+ * // free the cursor 
+ * axl_node_attr_cursor_free (cursor);
+ * \endcode
+ *
+ * Once created the \ref axlAttrCursor you must release it and
+ * create a new one if you modify your \ref axlNode attribute configuration
+ * adding more items.
+ * 
+ * @param node The node that is requested to create the \ref
+ * axlAttrCursor reference to iterate all attributes inside.
+ * 
+ * @return A newly created \ref axlAttrCursor used to iterate
+ * attributes inside the node provided. Once finished you must call to
+ * \ref axl_node_attr_cursor_free.
+ */
+axlAttrCursor * axl_node_attr_cursor_new       (axlNode * node)
+{
+	axlAttrCursor * cursor;
+
+	axl_return_val_if_fail (node, NULL);
+
+	/* create and configure basics */
+	cursor        = axl_new (axlAttrCursor, 1);
+	cursor->node  = node;
+	cursor->count = node->attr_num;
+
+	/* according to the number of attributes configure the hash or
+	 * the linked attribte list */
+	if (cursor->count <= 10) {
+		/* just point to the first attribute (managed as AxlNodeAttr) */
+		cursor->data = node->attributes;		
+	} else {
+		/* create an axl hash cursor */
+		cursor->data = axl_hash_cursor_new ((axlHash *) node->attributes);
+	} /* end if */
+
+	/* return created cursor */
+	return cursor;
+}
+
+/** 
+ * @brief Allows to configure the provided cursor to point to the
+ * first attribute found inside the node.
+ * 
+ * @param cursor The cursor that is going to be configured.
+ */
+void                 axl_node_attr_cursor_first     (axlAttrCursor * cursor)
+{
+	axl_return_if_fail (cursor);
+
+	/* check attribute configuration */
+	if (cursor->count != cursor->node->attr_num) {
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "Your cursor was created with another attribute configuration, renew it.");
+		return;
+	} /* end if */
+
+	if (cursor->count <= 10) {
+		/* just point to the first attribute (managed as AxlAttribute) */
+		cursor->data = cursor->node->attributes;		
+	} else {
+		/* make hash cursor to point to the first */ 
+		axl_hash_cursor_first (cursor->data);
+	} /* end if */
+	
+	return;
+}
+
+/** 
+ * @brief Configures the provided attribute cursor to point to the
+ * next attribute.
+ * 
+ * @param cursor The attribute cursor to be configured.
+ */
+void                 axl_node_attr_cursor_next      (axlAttrCursor * cursor)
+{
+	axl_return_if_fail (cursor);
+
+	/* check attribute configuration */
+	if (cursor->count != cursor->node->attr_num) {
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "Your cursor was created with another attribute configuration, renew it.");
+		return;
+	} /* end if */
+
+	if (cursor->count <= 10) {
+		/* just point to the first attribute (managed as AxlAttribute) */
+		cursor->data = ((axlNodeAttr *) cursor->data)->next;
+		return;
+	} /* end if */
+
+	/* make hash cursor to point to the first */ 
+	axl_hash_cursor_next (cursor->data);
+
+	
+	return;
+}
+
+/** 
+ * @brief Allows to check if the is a next attribute, following
+ * current attribute selected.
+ * 
+ * @param cursor The cursor to be configured.
+ *
+ * @return \ref true if it has next element, otherwise \ref false.
+ */
+bool                 axl_node_attr_cursor_has_next  (axlAttrCursor * cursor)
+{
+	axl_return_val_if_fail (cursor, false);
+
+	if (cursor->count != cursor->node->attr_num) {
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "Your cursor was created with another attribute configuration, renew it.");
+		return false;
+	} /* end if */
+
+	if (cursor->count <= 10) {
+		/* just point to the first attribute (managed as AxlAttribute) */
+		return (((axlNodeAttr *) cursor->data)->next) != NULL;
+	}  /* end if */
+	
+	/* make hash cursor to point to the first */ 
+	return axl_hash_cursor_has_next (cursor->data);
+}
+
+/** 
+ * @brief Allows to check if the current position selected has an
+ * attribute reference.
+ * 
+ * @param cursor The cursor that is being queried.
+ *
+ * @return \ref true if it has item element, otherwise \ref false.
+ */
+bool                 axl_node_attr_cursor_has_item  (axlAttrCursor * cursor)
+{
+	axl_return_val_if_fail (cursor, false);
+
+	/* check attribute configuration */
+	if (cursor->count != cursor->node->attr_num) {
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "Your cursor was created with another attribute configuration, renew it.");
+		return false;
+	} /* end if */
+
+	if (cursor->count <= 10) {
+		/* just point to the first attribute (managed as AxlAttribute) */
+		return cursor->data != NULL;
+	}  /* end if */
+	
+	/* make hash cursor to point to the first */ 
+	return axl_hash_cursor_has_item (cursor->data);
+}
+
+/** 
+ * @brief Allows to get the attribute key associated to the attribute
+ * selected by the cursor.
+ * 
+ * @param cursor The cursor that is being queried.
+ * 
+ * @return A reference to the attribute key or NULL if it fails.
+ */
+const char *         axl_node_attr_cursor_get_key   (axlAttrCursor * cursor)
+{
+	axl_return_val_if_fail (cursor, NULL);
+
+	/* check attribute configuration */
+	if (cursor->count != cursor->node->attr_num) {
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "Your cursor was created with another attribute configuration, renew it.");
+		return NULL;
+	} /* end if */
+
+	if (cursor->count <= 10) {
+		/* just point to the first attribute (managed as AxlAttribute) */
+		return ((axlNodeAttr *) cursor->data)->attribute;
+	}  /* end if */
+	
+	/* make hash cursor to point to the first */ 
+	return axl_hash_cursor_get_key (cursor->data);
+}
+
+/** 
+ * @brief Allows to get the attribute value associated to the
+ * attribute selected by the cursor.
+ * 
+ * @param cursor The cursor that is being queried.
+ * 
+ * @return A reference to the attribute value or NULL if it fails.
+ */
+const char *         axl_node_attr_cursor_get_value (axlAttrCursor * cursor)
+{
+	axl_return_val_if_fail (cursor, NULL);
+
+	/* check attribute configuration */
+	if (cursor->count != cursor->node->attr_num) {
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "Your cursor was created with another attribute configuration, renew it.");
+		return NULL;
+	} /* end if */
+
+	if (cursor->count <= 10) {
+		/* just point to the first attribute (managed as AxlAttribute) */
+		return ((axlNodeAttr *) cursor->data)->value;
+	}  /* end if */
+	
+	/* make hash cursor to point to the first */ 
+	return axl_hash_cursor_get_value (cursor->data);	
+}
+
+/** 
+ * @brief Allows to release \ref axlAttrCursor.
+ * 
+ * @param cursor The cursor to release.
+ */
+void                 axl_node_attr_cursor_free      (axlAttrCursor * cursor)
+{
+	axl_return_if_fail (cursor);
+
+	/* free hash cursor */
+	if (cursor->count > 10)
+		axl_hash_cursor_free (cursor->data);
+
+	/* free the cursor */
+	axl_free (cursor);
 
 	return;
 }
