@@ -42,6 +42,9 @@
 /** 
  * @brief Allows to perform a node name (tag) checking using XML 1.0
  * Namespace rules.
+ *
+ * This function must be used instead of \ref NODE_CMP_NAME if your application must support
+ * XML 1.0 namespaces.
  * 
  * @param node The node that will be checked.
  *
@@ -95,6 +98,148 @@ bool axl_ns_node_cmp (axlNode    * node,
 	
 	/* default namespace match, check the node name */
 	return axl_cmp (name, axl_node_get_name (node));
+}
+
+/** 
+ * @brief Allows to find the first child called as provided inside the
+ * childs (including its descendants) hold by the parent provided,
+ * with namespace support.
+ *
+ * This function must be used instead of \ref
+ * axl_node_find_called if your application must support
+ * XML 1.0 namespaces.
+ *
+ * This function is similar to \ref axl_ns_node_get_child_called but
+ * it will look for a child node called as provided not only in direct
+ * childs hold by the parent but also on its all descendants, giving
+ * support to configure the namespace where the lookup will be run.
+ *
+ * If you are looking for a function to search for a particular child
+ * node inside direct childs stored for the provided parent, then you
+ * must use \ref axl_ns_node_get_child_called.
+ *
+ * There is also a convenience function that allows to perform a
+ * lookup using as a reference a document (using the root node from
+ * it): \ref axl_ns_doc_find_called.
+ *
+ * @param parent The parent where the lookup will be produced.
+ *
+ * @param ns The namespace where the node will be searched
+ *
+ * @param name The name of the child to be looked up.
+ * 
+ * @return A reference to the node found (first instaned matching the
+ * name) or NULL if it fails to find a child. 
+ */
+axlNode * axl_ns_node_find_called  (axlNode    * parent,
+				    const char * ns,
+				    const char * name)
+{
+	axlNode * node;
+	axlNode * child;
+
+	/* for the first child found */
+	node = axl_ns_node_get_child_called (parent, ns, name);
+	if (node != NULL)
+		return node;
+
+	/* now, for all childs, try to look for the node */
+	node = axl_node_get_first_child (parent);
+	while (node != NULL) {
+		/* make the search */
+		child = axl_ns_node_find_called (node, ns, name);
+		
+		/* child found, return the reference */
+		if (child != NULL)
+			return child;
+		
+		/* get next */
+		node = axl_node_get_next (node);
+	} /* end while */
+
+	/* child note found */
+	return NULL;
+}
+
+/** 
+ * @brief Allows to get a particular child node for the given node
+ * (\ref axlNode), inside the provided namespace.
+ *
+ * This function must be used instead of \ref
+ * axl_node_get_child_called if your application must support
+ * XML 1.0 namespaces.
+ * 
+ * @param parent The parent node where the child will be looked up.
+ *
+ * @param ns The namespace where the lookup will be run.
+ *
+ * @param name The name for the child to search.
+ * 
+ * @return A refernce to a \ref axlNode or NULL if no child exists
+ * called by the name provided, inside the node provided.
+ */
+axlNode * axl_ns_node_get_child_called   (axlNode    * parent, 
+					  const char * ns,
+					  const char * name)
+{
+	axlNode * node;
+
+	/* for the first child found */
+	node = axl_node_get_first_child (parent);
+	while (node != NULL) {
+		/* check and return the node found */
+		if (axl_ns_node_cmp (node, ns, name))
+			return node;
+		
+		/* get next */
+		node = axl_node_get_next (node);
+	} /* end while */
+
+	return NULL;
+}
+
+/** 
+ * @brief Allows to get the next node, following to the node provided,
+ * matching the given name, inside the namespace configuration
+ * provided.
+ *
+ * This function must be used instead of \ref
+ * axl_node_get_next_called if your application must support
+ * XML 1.0 namespaces.
+ * 
+ * @param node The node that is requested to return its next sibling
+ * node.
+ * 
+ * @param ns The namespace value to use to perform the search.
+ *
+ * @param name The name to match for the next node.
+ * 
+ * @return A reference to the next node or NULL if it fails. The
+ * returned reference mustn't be deallocated.
+ */
+axlNode * axl_ns_node_get_next_called    (axlNode    * parent,
+					  const char * ns,
+					  const char * name)
+{
+	axlNode * next;
+
+	axl_return_val_if_fail (parent, NULL);
+	axl_return_val_if_fail (ns, NULL);
+	axl_return_val_if_fail (name, NULL);
+
+	/* while there is a next node */
+	next = axl_node_get_next (parent);
+	while (next != NULL) {
+		/* check the node */
+		if (axl_ns_node_cmp (next, ns, name))
+			return next;
+
+		/* update to the next */
+		next = axl_node_get_next (next);
+	} /* end while */
+
+	/* no node was found */
+	return NULL;
 }
 
 /** 
