@@ -1993,7 +1993,7 @@ axlNode * axl_node_get_next_called    (axlNode * node,
 {
 	axlNode * next;
 	axl_return_val_if_fail (node, NULL);
-	axl_return_val_if_fail (node, NULL);
+	axl_return_val_if_fail (name, NULL);
 
 	/* while there is a next node */
 	next = axl_node_get_next (node);
@@ -2063,7 +2063,7 @@ axlNode * axl_node_get_previous_called    (axlNode * node,
 	axlNode * previous;
 
 	axl_return_val_if_fail (node, NULL);
-	axl_return_val_if_fail (node, NULL);
+	axl_return_val_if_fail (name, NULL);
 
 	/* while there is a previous node */
 	previous = axl_node_get_previous (node);

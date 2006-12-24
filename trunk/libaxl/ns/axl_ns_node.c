@@ -217,18 +217,18 @@ axlNode * axl_ns_node_get_child_called   (axlNode    * parent,
  * @return A reference to the next node or NULL if it fails. The
  * returned reference mustn't be deallocated.
  */
-axlNode * axl_ns_node_get_next_called    (axlNode    * parent,
+axlNode * axl_ns_node_get_next_called    (axlNode    * node,
 					  const char * ns,
 					  const char * name)
 {
 	axlNode * next;
 
-	axl_return_val_if_fail (parent, NULL);
+	axl_return_val_if_fail (node, NULL);
 	axl_return_val_if_fail (ns, NULL);
 	axl_return_val_if_fail (name, NULL);
 
 	/* while there is a next node */
-	next = axl_node_get_next (parent);
+	next = axl_node_get_next (node);
 	while (next != NULL) {
 		/* check the node */
 		if (axl_ns_node_cmp (next, ns, name))
@@ -236,6 +236,46 @@ axlNode * axl_ns_node_get_next_called    (axlNode    * parent,
 
 		/* update to the next */
 		next = axl_node_get_next (next);
+	} /* end while */
+
+	/* no node was found */
+	return NULL;
+}
+
+/** 
+ * @brief Allows to get the previous node, preceding to the node
+ * provided, matching the given name, inside the given namespace
+ * value.
+ * 
+ * @param node The node that is requested to return its previous
+ * sibling node.
+ *
+ * @param ns The namespace to be used to perform the lookup.
+ *
+ * @param name The name to match for the previous node.
+ * 
+ * @return A reference to the previous node or NULL if it fails. The
+ * returned reference mustn't be deallocated.
+ */
+axlNode * axl_ns_node_get_previous_called (axlNode    * node,
+					   const char * ns,
+					   const char * name)
+{
+	axlNode * previous;
+
+	axl_return_val_if_fail (node, NULL);
+	axl_return_val_if_fail (ns, NULL);
+	axl_return_val_if_fail (name, NULL);
+
+	/* while there is a previous node */
+	previous = axl_node_get_previous (node);
+	while (previous != NULL) {
+		/* check the node */
+		if (axl_ns_node_cmp (previous, ns, name))
+			return previous;
+
+		/* update to the next */
+		previous = axl_node_get_previous (previous);
 	} /* end while */
 
 	/* no node was found */
