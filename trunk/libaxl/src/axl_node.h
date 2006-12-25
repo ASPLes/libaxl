@@ -301,6 +301,8 @@ double     axl_node_anotate_get_double          (axlNode       * node,
  * This macro is provided as a convenience to check that a particular
  * node have a particular name. Check the documentation that this
  * macro is wrapping to get examples: \ref axl_node_get_name.
+ *
+ * <i><b>NOTE:</b> This function isn't XML Namespace aware. You must use \ref axl_ns_node_cmp instead. See \ref axl_ns_doc_validate. </i>
  * 
  * @param node The \ref axlNode where the name will be compared with
  * the provided value.

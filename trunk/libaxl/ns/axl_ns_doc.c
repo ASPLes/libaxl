@@ -39,6 +39,15 @@
 
 #define LOG_DOMAIN "axl-ns-doc"
 
+/**
+ * \defgroup axl_ns_doc_module Axl Doc Namespace: Xml 1.0 namespace support for XML documents
+ */
+
+/** 
+ * \addtogroup axl_ns_doc_module
+ * @{
+ */
+
 /** 
  * @internal Name of the key used to access and store the ns table for
  * each node.
@@ -337,10 +346,72 @@ bool __axl_ns_node_validate (axlNode * node, axlError ** error)
  * are resistent to tag clashing, making your product to be more
  * usable at any level, being mixed with other products.
  *
- * This function allows you to check a valid xml document, already
- * loaded with the Axl Doc base API (\ref axl_doc_parse_from_file,
- * \ref axl_doc_parse or \ref axl_doc_create), to check if it follows
- * the namespaces contrains. 
+ * This function allows you to check a xml document, already loaded
+ * with the Axl Doc base API (\ref axl_doc_parse_from_file, \ref
+ * axl_doc_parse or \ref axl_doc_create), if it follows the namespaces
+ * contrains (XML 1.0 Namespaces http://www.w3.org/TR/REC-xml-names/).
+ *
+ * The idea behind this function is to ensure that the document has
+ * the proper XML 1.0 Namespace declarations, which will be used by
+ * the following function to help you detect those tags recognized by
+ * your XML software, ensuring this matching is done inside your
+ * namespace:
+ * 
+ *   - \ref axl_ns_node_cmp
+ *   - \ref axl_ns_node_find_called
+ *   - See \ref axl_ns_node_module "Axl namespace support for nodes" to get more information about function used to read your xml documents in a namespace aware manner.
+ * 
+ * Here is a simple example on how to load a xml document, add
+ * namespace checking support, and read content inside without
+ * compromissing your code to node tag collitions:
+ * 
+ * \include ns_example.c
+ *
+ * As a gold rule, your code must not use prefixed names (full
+ * qualified names) to check xml node names (tags), because they will
+ * make your code fragile to changes introduced in xml documents read
+ * by your application.
+ * 
+ * Instead, you must provide your namespace where the validation will take
+ * place and the local name of the node being checked (knowing that
+ * the prefix and the local name for <b>&lt;shaper:xml-rpc-invoke&gt;</b> is
+ * <b>shaper</b> and <b>xml-rpc-invoke</b> respectively).
+ *
+ * Let's see an an example to clarify this. Assuming the following xml document: 
+ *
+ * <div class="xml-doc">
+ * \include ns_shaper.xml
+ * </div>
+ *
+ * Previous examples shows a simple shaper description, which is using
+ * <b>shaper</b> as prefix for its nodes. Under this situation you
+ * must not use the following to check for an xml node name:
+ *
+ * \code
+ * if (NODE_CMP_NAME (node, "shaper:xml-rpc-invoke")) {
+ *     // found shaper:xml-rpc-invoke tag 
+ * }
+ * \endcode
+ *
+ * This is because, as we have said, you are placing direct references
+ * to the namespace prefix declared at the document, but this is
+ * wrong. You can't ensure the user won't change the namespace binding
+ * that links your namespace with the prefix <b>shaper</b>.
+ *
+ * The proper way to check xml node names (tags) in a namespace aware
+ * manner is:
+ * 
+ * \code
+ * // supposing SHAPER_NS defines the namespace string 
+ * if (axl_ns_node_cmp (node, SHAPER_NS, "xml-rpc-invoke")) {
+ *     // found xml-rpc-invoke tag 
+ * }
+ * \endcode
+ * 
+ * Now, the user will be able to change the binding between your
+ * namespace and the prefix used. This will enable him to use the
+ * prefix <b>shaper</b> for its products, without breaking your
+ * software.
  *
  * <i><b>NOTE:</b> providing a document without content (at least one
  * root node configured), will cause the function to return \ref
@@ -460,3 +531,7 @@ bool axl_ns_doc_check_default (axlNode    * node,
 	/* reached this point, return false */
 	return false;
 }
+
+/**
+ * @}
+ */

@@ -59,10 +59,10 @@
  *
  * <ul>
  * 
- * <li>A clean implementation, that only includes, those elements
+ * <li><b>A clean implementation</b>, that only includes, those elements
  * defined, and only those, inside the XML 1.0 standard, as defined in <a href="http://www.w3.org/TR/REC-xml/">the third edition</a>.</li>
  *
- * <li>To be a fast and memory efficient implementation. If you still
+ * <li>To be a <b>fast and memory efficient</b> implementation. If you still
  * think that XML is slow and memory inefficient, you didn't taste Axl
  * Library. You'll find report about its performance and memory usage at: http://xml.aspl.es/doc.html </li>
  *
@@ -75,14 +75,19 @@
  * In fact, this design have being already used to improve the library
  * performance greatly. See reports founds at: http://xml.aspl.es/doc.html</a>.</li>
  *
- * <li>To be small and efficient, ensuring on every stable release that
+ * <li>To be <b>small and efficient</b>, ensuring on every stable release that
  * the library do not leak, not only while using the library in a
  * proper manner but also when errors were found. 
  * This point is really important for us because Af-Arch server
  * applications needs to be working for a long time. </li>
-
+ *
+ * <li>Have a <b>modular</b> design that allows to use only those
+ * elements required by your software. At this moment it is provided a
+ * base library (with implements XML 1.0) and an optional library that
+ * provides additional features to support XML Namespaces 1.0.</li>
+ *
  * <li>The other issue is that the Af-Arch client platform should be
- * easily embedded, so, a small footprint is a requirement.</li>
+ * easily embedded, so, a <b>small footprint</b> is a requirement. Currently LibAxl (89K) and LibAxl-Ns (9K)</li>
  *
  * </ul>
  *
@@ -92,11 +97,11 @@
  * GNU/Linux and Windows with a really good performance. See reports found at http://xml.aspl.es/doc.html to know more about this.
  *
  * The library already covers the 95% of common requires that XML
- * development. Among others, it support:
+ * development needs. Among others, it support:
  *
- *  - XML parsing, from memory and files, allowing a great level of
- * detail while accessing to the data (comments, process instructions,
- * xml nodes, and content).
+ *  - XML tree parsing, from memory and files, allowing a great level
+ * of detail while accessing to the data (comments, process
+ * instructions, xml nodes, and content).
  * 
  *  - DTD validation. At this moment DTD validation is limited to the
  * <b><!ELEMENT</b> directive, allowing to only validate XML
@@ -108,11 +113,12 @@
  *  axlDoc) root node (\ref axlNode), and <b>CHILDREN API</b>: an API
  *  that allows to traverse the node using as reference only the nodes
  *  (\ref axlNode) inside the document (\ref axlDoc).
- * 
- * The library is being used by <a href="http://fact.aspl.es">Af-Arch</a> and <a
- * href="http://vortex.aspl.es">Vortex Library</a> which are projects
- * with common XML requirements.
  *
+ *  - <a href="http://www.w3.org/TR/REC-xml-names/">XML 1.0
+ *  Namespaces</a> full support, through the additional component
+ *  (libaxl-ns), allowing to produce xml applications that are
+ *  XML Namespace aware. 
+ * 
  * \section documentation Library Documentation
  *
  * The library documentation is composed into two pieces. The Axl
@@ -146,6 +152,7 @@
  * - \ref modifying
  * - \ref dumping_functions
  * - \ref validation
+ * - \ref xml_namespace
  * - \ref futher
  *
  *
@@ -175,16 +182,18 @@
  * \section concepts Some concepts before starting to use Axl Library
  *
  * Here is a simple example of a XML 1.0 document:
- * <pre class="xml-doc">
- * <span class="eblue">&lt;?xml version="1.0"></span>
- * <span class="red">&lt;!-- This is a comment --></span>
- * &lt;<span class="node">complex</span>>
- *   &lt;<span class="node">data</span>>
- *     &lt;<span class="node">simple</span>><span class="content">10</span>&lt;<span class="node">/simple</span>>
- *     &lt;<span class="node">empty</span> <span class="attr">attr1="value1"</span> />
- *   &lt;<span class="node">/data</span>>
- * &lt;<span class="node">/complex</span>>
- * </pre>
+ * <div class="xml-doc">
+ * \code
+ * <?xml version="1.0">
+ * <!-- This is a comment -->
+ * <complex>
+ *   <data>
+ *     <simple>10</simple>
+ *     <empty attr1="value1" />
+ *   </data>
+ * </complex>
+ * \endcode
+ * </div>
  *
  * Previous XML document represents an structure with a top level
  * node, called <b>complex</b>, that has one single child called
@@ -267,43 +276,49 @@
  *
  * Lets see an example for both formats to clarify:
  * 
- * <pre class="xml-doc">
- * &lt;?xml version='1.0' ?>
- * &lt;document>
- *    &lt;!-- Children XML format example: as you can see      -->
- *    &lt;!-- nodes only contains either nodes or node content -->
- *    &lt;!-- but nothing mixed at the same level              -->
- *    &lt;node1> 
+ * <div class="xml-doc">
+ * \code
+ * <?xml version='1.0' ?>
+ * <document>
+ *    <!-- Children XML format example: as you can see      -->
+ *    <!-- nodes only contains either nodes or node content -->
+ *    <!-- but nothing mixed at the same level              -->
+ *    <node1> 
  *       This is node1 content 
- *    &lt;/node1>
- *    &lt;node2>
- *      &lt;node3>
+ *    </node1>
+ *    <node2>
+ *      <node3>
  *         This is node3 content
- *      &lt;/node3>
- *      &lt;node4 />
- *    &lt;/node2>
- * &lt;/document></pre>
+ *      </node3>
+ *      <node4 />
+ *    </node2>
+ * </document>
+ * \endcode
+ * </div>
  *
  * While an MIXED xml document could be:
  * 
- * <pre class="xml-doc">
- * &lt;?xml version='1.0' ?>
- * &lt;document>
- *    &lt;!-- Children XML format example: as you can see      -->
- *    &lt;!-- nodes only contains either nodes or node content -->
- *    &lt;!-- but nothing mixed at the same level              -->
- *    &lt;node1> 
+ * <div class="xml-doc">
+ * \code
+ * <?xml version='1.0' ?>
+ * <document>
+ *    <!-- Children XML format example: as you can see      -->
+ *    <!-- nodes only contains either nodes or node content -->
+ *    <!-- but nothing mixed at the same level              -->
+ *    <node1> 
  *       This is node1 content 
- *    &lt;/node1>
+ *    </node1>
  *    Content mixed with xml nodes at the same level. 
- *    &lt;node2>
+ *    <node2>
  *      More content....
- *      &lt;node3>
+ *      <node3>
  *         This is node3 content
- *      &lt;/node3>
- *      &lt;node4 />
- *    &lt;/node2>
- * &lt;/document></pre>
+ *      </node3>
+ *      <node4 />
+ *    </node2>
+ * </document>
+ * \endcode
+ * </div>
  *
  * Both approaches, which are valid using the XML 1.0 standard, are
  * appropriate for particular situations:
@@ -525,13 +540,16 @@
  * Let start with the DTD syntax used to configure restrictions about
  * node structure:
  *
- * <pre class="xml-doc">
- * <span class="red">&lt;!-- sequence specification --></span>
- * <span class="eblue">&lt;!ELEMENT testA (test1, test2, test3)></span>
+ * <div class="xml-doc">
+ * \code
+ * <!-- sequence specification -->
+ * <!ELEMENT testA (test1, test2, test3)>
  *
- * <span class="red">&lt;!-- choice specification --></span>
- * <span class="eblue">&lt;!ELEMENT testB (test1 | test2 | test3)></span>
- * </pre>
+ * <!-- choice specification -->
+ * <!ELEMENT testB (test1 | test2 | test3)>
+ * \endcode
+ * </div>
+ *
  *
  * DTD <b><!ELEMENT</b> is modeled on top of two concepts which are
  * later expanded with repetition patterns. We will explain then
@@ -559,14 +577,18 @@
  * Suppose that all nodes that are inside testA and testB are final
  * ones. Then this could be its DTD specification:
  *
- * <pre class="xml-doc">
- * <span class="red">&lt;!-- test1 is a node that only have content --></span>
- * <span class="blue"><!ELEMENT test1 (\#PCDATA)></span>
- * <span class="red">&lt;!-- test2 is a node that is always empty --></span>
- * <span class="blue"><!ELEMENT test1 EMPTY></span>
- * <span class="red">&lt;!-- test3 is a node that could have either test1 or test2 --></span>
- * <span class="blue"><!ELEMENT test3 (test1 | test2)></span>
- * </pre>
+ * <div class="xml-doc">
+ * \code
+ * <!-- test1 is a node that only have content -->
+ * <!ELEMENT test1 (#PCDATA)>
+ *
+ * <!-- test2 is a node that is always empty -->
+ * <!ELEMENT test1 EMPTY>
+ *
+ * <!-- test3 is a node that could have either test1 or test2 -->
+ * <!ELEMENT test3 (test1 | test2)>
+ * \endcode
+ * </div>
  *
  * Sequences and choices could be composed to create richer DTD
  * expressions that combines sequences of choices and so on.
@@ -594,10 +616,12 @@
  * time, being that sequence: test1, test2 and test3. We only need to
  * add a <b>+</b> repetition pattern as follows:
  *
- * <pre class="xml-doc">
- * <span class="red">&lt;!-- sequence specification --></span>
- * <span class="eblue">&lt;!ELEMENT testA (test1, test2, test3)+></span>
- * </pre>
+ * <div class="xml-doc">
+ * \code
+ * <!-- sequence specification -->
+ * <!ELEMENT testA (test1, test2, test3)+>
+ * \endcode
+ * </div>
  *
  * So, we are saying to our validation engine that the sequence inside
  * testA could be found one or many times, but the entire sequence
@@ -635,6 +659,42 @@
  *      return true;
  * }
  * \endcode
+ *
+ * \section xml_namespace Enabling your software with XML Namespaces
+ *
+ * XML 1.0 initial design didn't take care about situations where
+ * several software vendors could introduce content inside the same
+ * XML documents. This has several benefits, but one problem to solve:
+ * <i>how to avoid xml node names (tags) to clash from each other.</i>
+ *
+ * Think about using &lt;table> as a tag for your document. Many XML
+ * applications uses &lt;table> as a valid tag for its XML language
+ * set. However, each of them has a different meaning and must be
+ * handled by the proper XML software.
+ *
+ * While developing applications with XML, and supposing such XML
+ * documents will be used by more applications than yours, you are
+ * likely to be interested in use XML Namespaces. In other words, many
+ * of the new XML standards that are appearing uses XML Namespaces to
+ * allow defining its xml node names, while allowing users/developers
+ * to use their own set of xml tags, under their own XML Namespaces,
+ * in order they can use them in the same document.
+ *
+ * XML Namespaces support inside Axl Library is handled through a
+ * separated library, which requires the base library to function. \ref axl_install "Here are some instructions to get Axl Library Namespace installed."
+ *
+ * This library provides functions that replaces some of the functions
+ * used by XML applications that don't require XML Namespaces. In
+ * particular, some of them are:
+ * 
+ * - \ref axl_ns_doc_validate (see this for an example)
+ * - \ref axl_ns_node_cmp
+ *
+ * See also API documentation for all functions that are provided to
+ * enable your application with XML Namespaces:
+ * 
+ * - \ref axl_ns_doc_module
+ * - \ref axl_ns_node_module
  * 
  *
  * \section futher Futher reading
@@ -650,7 +710,7 @@
  * Here is the API for the modules defined inside the library:
  * 
  * <ul>
- *  <li><b>Basic API to interact with XML documents: </b></li>
+ *  <li><b>Basic API to interact with XML documents (base library libaxl): </b></li>
  * 
  *    - \ref axl_module
  *    - \ref axl_doc_module
@@ -661,13 +721,20 @@
  *    - \ref axl_dtd_module
  *    - \ref axl_decl_module
  *    - \ref axl_handlers
+ *
  *  </li>
- *  <li><b>Error reporting and debugging functions: </b></li>
+ *  <li><b>XML Namespaces API (required additional library libaxl-ns): </b></li>
+ *
+ *    - \ref axl_ns_doc_module
+ *    - \ref axl_ns_node_module
+ *
+ *  </li>
+ *  <li><b>Error reporting and debugging functions (base library libaxl): </b></li>
  * 
  *    - \ref axl_error_module
  *    - \ref axl_log_module
  *
- *  <li><b>Auxiliary modules, supporting data types, string handling, etc:</b></li>
+ *  <li><b>Auxiliary modules, supporting data types, string handling, etc (base library libaxl):</b></li>
  *
  * - \ref axl_stream_module
  * - \ref axl_list_module
@@ -688,8 +755,11 @@
  * \section intro Introduction
  *
  * Axl library is an XML library written in ANSI C, which is known to
- * work on Microsoft Windows and GNU/Linux platforms. Here are a set
- * of instructions to get the library compiled for your platform:
+ * work on Microsoft Windows, GNU/Linux, *-BSD, GNU/Linux under
+ * Amd64/Itanium and MacOS/X platforms. 
+ *
+ * Here are a set of instructions to get the library compiled for your
+ * platform:
  *
  * \section unix GNU/Linux (or any posix OS) installation instructions
  *
@@ -715,6 +785,10 @@
  * Check <a href="http://www.aspl.es/axl/doc.html">the download section to get them</a>.
  *
  * \section using Using LibAxl library (installations with pkg-config infrastructure)
+ *
+ * Axl Library is composed by a base library, which provides all XML
+ * 1.0 function. Additionally, a separated library is provided for
+ * Namespace functions. 
  * 
  * Axl library comes with pkg-config support, which makes easy to use
  * it inside your pkg-config enable projects.
@@ -724,19 +798,31 @@
  * \code
  *  bash: ~$ pkg-config --libs --cflags axl
  * \endcode
- * 
+ *
+ * In the case you want give support for XML Namespaces, you must use:
+ * \code
+ *  bash: ~$ pkg-config --libs --cflags axl-ns
+ * \endcode
+ *
  * To include support into your autotool checks (configure.ac/in
  * files) you can place the following piece:
  * \code
  * PKG_CHECK_MODULES(LIBRARIES, axl) 
  * \endcode
- * 
  *
+ * Again, add <b>axl-ns</b> to the previous instruction if you want
+ * your package to also check for Axl Library Namespace support.
+ * 
  * \section Including Axl Library headers
  *
- * For all platforms, Axl Library headers has to be included as follows:
+ * For all platforms, Axl Library base headers has to be included as follows:
  * \code
  * #include <axl.h>
+ * \endcode
+ *
+ * In the case Namespace is required, you must use: 
+ * \code
+ * #include <axl_ns.h>
  * \endcode
  */
 

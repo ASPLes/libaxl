@@ -39,12 +39,41 @@
 
 #define LOG_DOMAIN "axl-ns-node"
 
+/**
+ * \defgroup axl_ns_node_module Axl Node Namespace: Xml 1.0 namespace support for XML nodes
+ */
+
+/** 
+ * \addtogroup axl_ns_node_module
+ * @{
+ */
+
 /** 
  * @brief Allows to perform a node name (tag) checking using XML 1.0
  * Namespace rules.
  *
  * This function must be used instead of \ref NODE_CMP_NAME if your application must support
  * XML 1.0 namespaces.
+ *
+ * The idea is that you declares the namespace that you will recognize
+ * using a macro definition at some place in your headers, as follows:
+ * \code
+ * #define YOUR_NS "http://yourdomain.com/somepath/yourapplication"
+ * \endcode
+ *
+ * Previous namespace must be unique. This is crucial to avoid tag
+ * clashing. Now, you use this namespace identifier and the local name
+ * of your tag to check a particular node to have a particular name as
+ * follows:
+ * 
+ * \code
+ * if (axl_ns_node_cmp (node, YOUR_NS, "table")) {
+ *     // found table node inside your namespace
+ * }
+ * \endcode
+ *
+ * It is required to call first to \ref axl_ns_doc_validate in order
+ * to make this function to properly work. 
  * 
  * @param node The node that will be checked.
  *
@@ -329,3 +358,7 @@ bool axl_ns_node_is_prefixed  (axlNode * node, int * position)
 	/* reached this point, false must be returned */
 	return false;
 }
+
+/**
+ * @}
+ */

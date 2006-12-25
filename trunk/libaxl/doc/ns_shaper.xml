@@ -1,0 +1,27 @@
+<?xml version='1.0' ?>
+<document xmlns:foo="http://www.aspl.es/schemas/shaper"
+	  xmlns:shaper="http://another/shaper">
+   <!-- invoke to get customer associated data -->
+   <shaper:xml-rpc-invoke service="af_gestor_mecaes::customer::reference (customer_id)" register="cliente" />
+   <shaper:cached use="cliente.name" as="nombre"/>
+   <!-- get the surname 1 -->
+   <shaper:cached use="cliente.surname1" as="apellido1"/>
+   <!-- get the surname 2 -->
+   <shaper:cached use="cliente.surname2" as="apellido2"/>
+
+   <!-- get the hole name -->
+   <shaper:cached use="cliente" as="cliente"/>
+
+   <!-- get the invoice data associated -->
+   <shaper:xml-rpc-invoke service="af_gestor_mecaes::customer::list (0, 0)" register="customer-list" />
+   
+   <!-- do a foreach iteration -->
+   <shaper:foreach use="customer-list" register="customer" as="_plain">
+      <!-- use the hole array information -->
+      <customer>
+        <shaper:cached use="customer.id" as="id" />
+        <shaper:cached use="customer.name" as="name" />
+      </customer>
+      <!-- terminate foreach instruction -->
+   </shaper:foreach>
+</document>
