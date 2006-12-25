@@ -140,10 +140,30 @@ h2 a.anchor {
 
 }
 
-.xml-doc { 
+pre.xml-doc { 
   padding: 10px;
   border: 1px dashed #b0b0b0;
   background: #4a554a;
+  color: white;
+}
+
+div.xml-doc pre.fragment { 
+  margin: 0px;
+  padding: 10px;
+/*  background: #4a554a; */
+  background: #555753;
+  color: white;
+}
+
+div.xml-doc pre.fragment .stringliteral { 
+  color: #e9b96e;
+}
+
+div.xml-doc pre.fragment .keyword { 
+  color: white;
+}
+
+div.xml-doc pre.fragment .keywordflow { 
   color: white;
 }
 

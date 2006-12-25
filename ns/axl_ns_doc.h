@@ -42,6 +42,11 @@
 
 BEGIN_C_DECLS
 
+/** 
+ * \addtogroup axl_ns_doc_module
+ * @{
+ */
+
 bool axl_ns_doc_validate (axlDoc * doc, axlError ** error);
 
 bool axl_ns_doc_node_check (axlNode    * node, 
@@ -70,7 +75,12 @@ bool axl_ns_doc_check_default (axlNode    * node,
  */
 #define axl_ns_doc_find_called(doc,ns,name) (axl_ns_node_find_called(axl_doc_get_root(doc),ns,name))
 
+/**
+ * @}
+ */
+
 END_C_DECLS
 
 #endif
+
 

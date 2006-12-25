@@ -42,6 +42,11 @@
 
 BEGIN_C_DECLS
 
+/** 
+ * \addtogroup axl_ns_node_module
+ * @{
+ */
+
 bool      axl_ns_node_cmp          (axlNode * node, 
 				    const char * ns, 
 				    const char * name);
@@ -77,7 +82,10 @@ axlNode * axl_ns_node_get_previous_called (axlNode    * node,
 bool axl_ns_node_is_prefixed  (axlNode * node, 
 			       int     * position);
 
+/**
+ * @}
+ */
+
 END_C_DECLS
 
 #endif
-

@@ -1981,6 +1981,8 @@ axlNode * axl_node_get_next           (axlNode * node)
 /** 
  * @brief Allows to get the next node, following to the node provided,
  * matching the given name.
+ *
+ * <i><b>NOTE:</b> This function isn't XML Namespace aware. You must use \ref axl_ns_node_get_next_called instead. See \ref axl_ns_doc_validate. </i>
  * 
  * @param node The node that is requested to return its next sibling node.
  * @param name The name to match for the next node.
@@ -2050,6 +2052,8 @@ axlNode * axl_node_get_previous (axlNode * node)
 /** 
  * @brief Allows to get the previous node, preceding to the node
  * provided, matching the given name.
+ *
+ * <i><b>NOTE:</b> This function isn't XML Namespace aware. You must use \ref axl_ns_node_get_previous_called instead. See \ref axl_ns_doc_validate. </i>
  * 
  * @param node The node that is requested to return its previous sibling node.
  * @param name The name to match for the previous node.
@@ -3077,6 +3081,8 @@ bool          axl_node_have_childs        (axlNode * node)
 
 /** 
  * @brief Allows to get a particular child node for the given node (\ref axlNode).
+ *
+ * <i><b>NOTE:</b> This function isn't XML Namespace aware. You must use \ref axl_ns_node_get_child_called instead. See \ref axl_ns_doc_validate. </i>
  * 
  * @param parent The parent node where the child will be looked up.
  *
@@ -3135,6 +3141,8 @@ axlNode * axl_node_get_child_called   (axlNode * parent, char * name)
  * There is also a convenience function that allows to perform a
  * lookup using as a reference a document (using the root node from
  * it): \ref axl_doc_find_called.
+ *
+ * <i><b>NOTE:</b> This function isn't XML Namespace aware. You must use \ref axl_ns_node_find_called instead. See \ref axl_ns_doc_validate. </i>
  *
  * @param parent The parent where the lookup will be produced.
  *
