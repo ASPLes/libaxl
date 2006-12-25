@@ -701,7 +701,7 @@ char      * axl_stream_get_until       (axlStream * stream,
 
 /** 
  * @brief Works the same way like axl_strteam_get_until but wihtout
- * allocated the memory returned, and filling the size for the chunk
+ * allocating the memory returned, and filling the size for the chunk
  * returned in result_size reference.
  * 
  * @param stream The stream where the operation will be performed.
