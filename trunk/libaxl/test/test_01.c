@@ -2,6 +2,8 @@
 #include <axl_ns.h>
 #include <stdio.h>
 
+
+#ifdef AXL_NS_SUPPORT
 #define HTML_NS "http://www.w3.org/1999/xhtml"
 #define BOOK_NS "urn:loc.gov:books"
 #define ISBN_NS "urn:ISBN:0-395-36341-6"
@@ -229,6 +231,8 @@ bool test_26 (axlError ** error)
 
 	return true;
 }
+
+#endif /* end #ifdef AXL_NS_SUPPORT */
 
 /** 
  * @brief Test Axl Item API while performing lookups.
@@ -5769,6 +5773,7 @@ int main (int argc, char ** argv)
 		return -1;
 	}
 
+#ifdef AXL_NS_SUPPORT
 	if (test_26 (&error)) {
 		printf ("Test 26: Namespace support (basic) [   OK   ]\n");
 	}else {
@@ -5804,7 +5809,8 @@ int main (int argc, char ** argv)
 		axl_error_free (error);
 		return -1;
 	}
-	
+#endif /* end #ifdef AXL_NS_SUPPORT */	
+
 	/* cleanup axl library */
 	axl_end ();
 	return 0;
