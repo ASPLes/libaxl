@@ -51,12 +51,13 @@ if test x$enable_axl_doc = xyes ; then
 fi
 AM_CONDITIONAL(ENABLE_AF_ARCH_DOC, test "x$DOXYGEN" = "xyes")
 
-##########################
-# Check for doxygen tool #
-##########################
-dnl check for doxygen documentation
+dnl check to build test files
 AC_ARG_ENABLE(axl-test, [  --enable-axl-test     Enable building Axl test executables [default=yes]], enable_axl_test="$enableval", enable_axl_test=yes)
 AM_CONDITIONAL(ENABLE_AXL_TESTS, test "x$enable_axl_test" = "xyes")
+
+dnl check to build libaxl namespace support
+AC_ARG_ENABLE(axl-ns, [  --enable-axl-ns     Enable building Axl Namespace support [default=yes]], enable_axl_ns="$enableval", enable_axl_ns=yes)
+AM_CONDITIONAL(ENABLE_AXL_NS, test "x$enable_axl_ns" = "xyes")
 
 AC_ARG_ENABLE(axl-log, [  --enable-axl-log     Enable building Axl with debug log support [default=yes]], enable_axl_log="$enableval", enable_axl_log=yes)
 AM_CONDITIONAL(ENABLE_AXL_LOG, test "x$enable_axl_log" = "xyes")
@@ -133,6 +134,7 @@ $vasprintf_status
 #endif
 _______EOF
 
+	# Check if the file exists and it is equal, if not, overwrite it 
 	if cmp -s $outfile src/axl_config.h; then
 	  AC_MSG_NOTICE([axl_config.h is unchanged])
 	  rm -f $outfile
@@ -200,6 +202,8 @@ echo "------------------------------------------"
 echo "--       LibAXL LIBRARY SETTINGS        --"
 echo "------------------------------------------"
 echo "   Installation prefix:          [$prefix]"
+echo
+echo "   Build Axl Namespace support:  [$enable_axl_ns]"
 echo
 echo "   Build Axl Library tests:      [$enable_axl_test]"
 echo
