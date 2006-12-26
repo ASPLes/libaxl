@@ -144,15 +144,30 @@
  *
  * On this manual you'll find the following section:
  * 
+ * <b>Section 1: Basic elements to understand XML and Axl </b><br>
+ *
  * - \ref intro
  * - \ref concepts
  * - \ref two_apis
+ *
+ * <b>Section 2: Manipulating and producing XML documents </b><br>
+ *
  * - \ref parsing
  * - \ref iterating
  * - \ref modifying
  * - \ref dumping_functions
+ *
+ * <b>Section 3: Doing validation on your documents </b><br>
+ *
  * - \ref validation
  * - \ref xml_namespace
+ *
+ * <b>Section 4: Advanced topics </b><br>
+ *
+ * - \ref reducing_foot_print
+ *
+ * <b>Apendix</b><br>
+ *
  * - \ref futher
  *
  *
@@ -696,11 +711,64 @@
  * - \ref axl_ns_doc_module
  * - \ref axl_ns_node_module
  * 
+ * \section reducing_foot_print How to reduce the library footprint 
  *
- * \section futher Futher reading
+ * Axl Library is implemented in a modular way to ensure you are only
+ * linked against those software elements that you really
+ * require. Additionally, the library allows the following to reduce
+ * the library footprint to the minimum: 
+ *
+ * <ul>
+ * <li><b>Remove log information:</b> <br> Axl library uses a console log
+ * mechanism to report what's happening during processing. See \ref
+ * axl_log_module "Axl Log reporting" module for more
+ * information. However, under production environments this console
+ * log isn't necessary, so you can safely remove it, at compile time,
+ * using <b>--axl-log-disable</b> as follow:
+ *
+ * \code
+ * ./configure --axl-log-disable
+ * \endcode
+ *
+ * According to our results, the library including the log to console
+ * information is about <b>265K</b>. Without log to console information the
+ * library takes about <b>200K</b>.
+ *
+ * </li> 
+ * 
+ * <li><b>Remove debugging information from the library: </b> <br>You
+ * can also remove debugging information from your library on
+ * production environments doing the following once finished compilation process:
+ *
+ * \code
+ * make install-strip
+ * \endcode
+ *
+ * According to our results, the library without log to console and debugging information takes about <b>89K</b>.
+ * </li>
+ * </ul>
+ *
+ * Previous information applies to the Axl base Library
+ * (libaxl.so/.dll), however the same happens for the rest of software
+ * components bundle with Axl.
+ * 
+ *
+ * \section futher Futher reading where to go for more information
  * 
  * You can also check \ref axl_api "API documentation" for a complete
- * detailed explanation about the library.
+ * detailed explanation about the library. 
+ *
+ * Please, if you find that something isn't properly documented or you
+ * think that something could be improved, contact us in the mailing
+ * list. We are building Axl Library with the aim to produce a high
+ * quality, commercial grade, open source XML development kit, so, any
+ * help received will be welcome.
+ *
+ * Remember you can always contact us at the mailing list for any
+ * question not properly answered by this documentation. See <a
+ * href="http://www.aspl.es/axl/doc.html">Axl Library website
+ * documentation</a> to get more
+ * information about mailing list.
  *
  */
 
