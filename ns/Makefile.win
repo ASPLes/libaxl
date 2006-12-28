@@ -1,0 +1,35 @@
+# Makefile for windows (mingw)
+OBJ  = axl_ns_doc.o axl_ns_node.o
+
+DLL        = $(axl_dll)-ns.dll
+IMPORT_DLL = $(DLL).a
+STATIC_LIB = $(axl_dll)-ns.a
+
+LIBS = -Wall -g --add-stdcall-alias $(search_lib_path) 
+
+INCS = -I"."
+
+CFLAGS = $(INCS) -DVERSION=\""$(AXL_VERSION)"\" -Wall -g # -DSHOW_DEBUG_LOG
+
+RM = rm -f
+
+.PHONY: all clean
+
+all: $(DLL)
+
+clean: 
+	${RM} $(OBJ) $(DLL) *.a *.dll.a *.lib *.dll
+
+install: all
+
+
+$(DLL): $(OBJ)
+# add the following line to create an import library. At this point this step
+# is not requiered because gcc automatically get an import library from the dll.
+# -Wl,--out-implib,libaxl.lib
+	$(CC) -m$(MODE) -shared -Wl,--out-implib,$(IMPORT_DLL) --export-all-symbols \
+		  $(OBJ) -o $(DLL)        $(LIBS)
+	lib.exe /def:$(axl_dll)-ns.def
+
+%.o: %.c
+	$(CC) -c $< -o $@ $(CFLAGS)
