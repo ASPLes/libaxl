@@ -1,0 +1,13 @@
+EXPORTS
+__axl_ns_free_table
+__axl_ns_node_check_and_install_ns_decls
+__axl_ns_node_validate
+axl_ns_doc_check_default
+axl_ns_doc_node_check
+axl_ns_doc_validate
+axl_ns_node_cmp
+axl_ns_node_find_called
+axl_ns_node_get_child_called
+axl_ns_node_get_next_called
+axl_ns_node_get_previous_called
+axl_ns_node_is_prefixed
