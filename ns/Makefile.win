@@ -5,9 +5,9 @@ DLL        = $(axl_dll)-ns.dll
 IMPORT_DLL = $(DLL).a
 STATIC_LIB = $(axl_dll)-ns.a
 
-LIBS = -Wall -g --add-stdcall-alias $(search_lib_path) 
+LIBS = -Wall -g --add-stdcall-alias $(search_lib_path) -laxl -L"../src"
 
-INCS = -I"."
+INCS = -I"." -I"../src" 
 
 CFLAGS = $(INCS) -DVERSION=\""$(AXL_VERSION)"\" -Wall -g # -DSHOW_DEBUG_LOG
 
