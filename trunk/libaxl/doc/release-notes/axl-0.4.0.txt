@@ -1,0 +1,221 @@
+          ###################################
+          # Axl Library release note: 0.4.0 #
+          ###################################
+
+Advanced Software Production Line is proud to announce a new Axl
+Library release.
+
+Axl Library is an small and efficient XML toolkit, that will allow you
+to produce efficient and clear code that interfaces with XML data.
+
+The library was produced to support XML requirements needed by
+software developed by Advanced Software Production Line, S.L. 
+
+At this moment the library is being used by Vortex Library,
+Af-Arch, Shaper and Fovap.
+
+Resources
+~~~~~~~~~
+
+   Axl Homepage
+   [ http://xml.aspl.es ]
+
+   Advanced Software Production Line, S.L.
+   [ http://www.aspl.es ]
+
+This release in short
+~~~~~~~~~~~~~~~~~~~~~
+  
+  This new release includes a complete XML Namespaces 1.0 support. It
+  is implemented as a separated component, on top of the base library,
+  allowing to use it only if required.
+
+  Many new functions has being added, including an interface to
+  perform iterations over axlHash and node attributes (without knowing
+  them).
+
+  Fixed some bugs at the allocation code and the annotation API.
+
+Changes from previous release 0.3.0
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+
+* [fix] Fixed axl factory allocation when the block requested is
+  bigger than the region hold (making access to memory not allocated).
+
+* [fix] Added const declarations to the axl node module (functions for
+  attribute handling).
+
+* [fix] Updating axl node annotation API to use const declarations
+  where required.
+
+* [fix] Fixed null reference access at axl node annotate API.
+
+* [fix] Added new macro to access to a particular attribute value,
+  translating entity references. API added:
+  
+    - ATTR_VALUE_TRANS
+
+* [fix] Updated regression test to check bug fixed.
+
+* [fix] Adding const declaration to axl_node_set_content
+
+* [fix] Fixed axl_doc_dump* family of function which was producing
+  encoding header attribute to be placed after standalone declaration
+  which isn't correct from the W3C recommendation.
+
+* [fix] Added a new function to get the value associated to an
+  attribute, trimming the result. API added:
+
+   - axl_node_get_attribute_value_trimmed
+   - ATTR_VALUE_TRIMMED
+
+* [fix] Removing unnecessary checks previous to call axl_free (ANSIC
+  and glib defines free (NULL) as a null operation). Reported by Sam
+  Roberts.
+
+* [new] Added two new lookup functions that allows to find a child
+  called as provided inside all node descendants (added regression
+  tests to ensure API function). API added:
+
+   - axl_node_find_called
+   - axl_doc_find_called
+
+* [fix] Placing const declaration to axl_node_create.
+
+* [fix] Added some macro definitions to support both namings inside
+  the annotate API which is using one single "n" for the annotate
+  verb. Updated axl documentation to include this fix and updated axl
+  node internals to use annotate where possible without breaking
+  interfaces.  (suggestion from Elliotte Harold).
+
+* [fix] Integrating all tests done to the library into a single test
+  (test_01).
+
+* [fix] Removed integrated test (test_02.c and test_03.c).
+
+* [fix] Updating axl hash internals to use AxlFactory to allocate
+  nodes holding data rather calling system malloc.
+
+* [new] Added a new API to the axl hash module to make linear
+  iterations other the content inside (axlHashCursor). API added:
+ 
+   - axlHashCursor (type definition)
+   - axl_hash_cursor_new
+   - axl_hash_cursor_first
+   - axl_hash_cursor_next
+   - axl_hash_cursor_has_next
+   - axl_hash_cursor_has_item
+   - axl_hash_cursor_remove
+   - axl_hash_cursor_get_key
+   - axl_hash_cursor_get_value
+   - axl_hash_cursor_hash
+   - axl_hash_cursor_free
+
+* [fix] Adding initial files to implement namespace support.
+
+* [fix] Fixed bugs inside new axl hash cursor interface and fixed bug
+  inside axl_hash_remove (the function wasn't decreasing elements
+  inside the hash table once removed from it).
+
+* [new] Added a new API to allow doing iterations over attributes
+  installed on a particular node in a linear way. API added:
+
+   - axlAttrCursor (type)
+   - axl_node_attr_cursor_new
+   - axl_node_attr_cursor_first
+   - axl_node_attr_cursor_next
+   - axl_node_attr_cursor_has_next
+   - axl_node_attr_cursor_has_item
+   - axl_node_attr_cursor_get_key
+   - axl_node_attr_cursor_get_value
+   - axl_node_attr_cursor_free
+
+* [fix] Updated regression tests to check new axl node attribute
+  iteration API.
+
+* [fix] Updated documentation to show better new APIs that are
+  optional to the axl node module (axl attr iteration and axl node
+  anotation).
+
+* [fix] Added two new tests to check the Axl Namespace API. (test_26
+  and test_27). Works nice!!!
+
+* [new] Finished initial implementation for axl_ns_doc_validate, which
+  allows to check namespace rules to be properly used for a valid xml
+  document.
+
+* [new] Added new function to check node names (tags) in a namespace aware
+  manner. Also added function to check if a node name is prefixed. API added:
+  
+   - axl_ns_node_cmp
+   - axl_ns_node_is_prefixed
+   - AXL_IS_PREFIXED (alias)
+
+* [fix] making axl_node_cmp_name to return a const value.
+
+* [new] Added new function to allow checking if a node has attributes
+  installed.  API added:
+  
+    - axl_node_has_attributes
+
+* [fix] Making axl_node_attr_cursor_next to check cursor status before
+  updating.
+
+* [fix] Finished defaulting support for namespaces.
+
+* [fix] Added regression test to check namespace defaulting.
+
+* [new] Added lookup API found at the axl node but not namespace
+  aware.  Function added:
+
+  - axl_ns_doc_find_called
+  - axl_ns_node_find_called
+  - axl_ns_node_get_child_called
+  - axl_ns_node_get_next_called
+
+* [new] Updated regression test to check namespace lookup API.
+
+* [new] Added missing function to the node namespace API. API added:
+  
+   - axl_ns_node_get_previous_called
+
+* [fix] Committing general update to the documentation to include
+  references to the Axl Library XML Namespace support.
+
+* [fix] Fixed axl stream module documentation and updated axl web.
+
+* [fix] Doing changes to the source code to make it able to be
+  compiled without ns support, deactivating those tests for ns.
+
+* [fix] Updated axl library reference manual.
+
+* [fix] Committing windows makefile for axl namespaces.
+
+About Advanced Software Production Line, S.L.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Advanced Software Production Line is leading the Af-Arch project: a
+  complete framework to develop distributed application to manage
+  enterprise process.
+
+  Af-Arch project uses Axl library to support its XML requirements
+  while exchanging data between nodes.
+
+  Advanced Software Production Line also provides GNU/Linux support
+  and consulting services to enable organization to introduce
+  GNU/Linux inside its process, making other platforms to interact
+  with GNU/Linux.
+
+  Contact us, using English or Spanish, to get commercial support
+  and/or XML based development services.
+
+  You can reach us:
+
+       http://www.aspl.es - info@aspl.es
+
+  We hope Axl Library help you. Enjoy Axl Library!
+
+--
+Francis Brosnan Blázquez           - francis@aspl.es
+Advanced Software Production Line  - http://www.aspl.es
+2th Jan 2006, Madrid (Spain)
