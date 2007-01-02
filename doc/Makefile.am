@@ -1,6 +1,6 @@
 EXTRA_DIST = axl-doc.doxygen axl.css main-page-logo.png body_back.gif \
              axl-doc-footer.html \
-	     axl-doc-header.html image01.png
+	     axl-doc-header.html image01.png ns_example.c ns_shaper.xml
 
 bin_SCRIPTS = initial_build_doc
 
