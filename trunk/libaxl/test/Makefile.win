@@ -1,15 +1,13 @@
 # Project: vortex-listener vortex-client
 
 CC       = gcc.exe -g -Wall
-OBJ      = test_01.o \
-	   test_02.o
+OBJ      = test_01.o 
 
-PROGRAMS = test_01.exe \
-           test_02.exe
+PROGRAMS = test_01.exe 
 
-LIBS     = -Wall -g -L../src -laxl 
+LIBS     = -Wall -g -L../src -laxl -L"../ns" -laxl-ns
 
-INCS =  -I"." -I"../src"
+INCS =  -I"." -I"../src" -I"../ns" -DAXL_NS_SUPPORT
 
 CFLAGS   = $(INCS) -DVERSION=\""$(AXL_VERSION)"\" -Wall -g
 
@@ -28,11 +26,9 @@ clean:
 test_01.exe: test_01.o
 	$(CC) -mconsole $< -o $@ $(LIBS)
 
-test_02.exe: test_02.o
-	$(CC) -mconsole $< -o $@ $(LIBS)
-
 links:
 	cp ../src/libaxl.dll .
+	cp ../ns/libaxl-ns.dll .
 %.o: %.c
 	$(CC) -c $< -o $@ $(CFLAGS)
 
