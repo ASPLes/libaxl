@@ -1019,7 +1019,9 @@ axlDoc * __axl_doc_parse_common (const char * entity, int entity_size,
 				axl_stream_accept (stream);
 
 				/* found CDATA section, get current content */
+				axl_stream_set_buffer_alloc (stream, (axlStreamAlloc)__axl_doc_alloc, doc);
 				string = axl_stream_get_until (stream, NULL, NULL, true, 1, "]]>");
+				axl_stream_set_buffer_alloc (stream, NULL, NULL);
 				if (string == NULL) {
 					axl_error_new (-1, "Unable to get CDATA content. There was an error.", stream, error);
 					axl_stream_free (stream);
@@ -1033,7 +1035,8 @@ axlDoc * __axl_doc_parse_common (const char * entity, int entity_size,
 				axl_stream_nullify (stream, LAST_CHUNK);
 
 				/* set current data */
-				axl_node_set_content_ref (node, string, -1); 
+				/* axl_node_set_content_ref (node, string, -1);  */
+				axl_node_set_cdata_content_from_factory (doc->content_factory, node, string, -1);
 				continue;
 			} /* end if */
 
