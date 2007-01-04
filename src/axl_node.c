@@ -2452,7 +2452,8 @@ void __axl_node_set_content_common_ref (axlFactory * factory,
 					axlNode    * node, 
 					char       * content, 
 					int          content_size, 
-					bool         from_factory)
+					bool         from_factory,
+					bool         cdata)
 {
 	
 	axlNodeContent * itemContent;
@@ -2464,8 +2465,10 @@ void __axl_node_set_content_common_ref (axlFactory * factory,
 	if (content_size == -1)
 		content_size = strlen (content);
 
-	/* create a content */
-	if (from_factory)
+	/* create a content checking it it comes from the
+	 * factory. Because the string received could come from the
+	 * factory, already allocated, do not call to allocate */
+	if (from_factory && factory)
 		itemContent = axl_factory_get (factory);
 	else 
 		itemContent = axl_new (axlNodeContent, 1);
@@ -2477,8 +2480,13 @@ void __axl_node_set_content_common_ref (axlFactory * factory,
 	itemContent->content  = content;
 
 	if (from_factory) {
-		/* store it */
-		axl_item_set_child (node, ITEM_CONTENT | ITEM_CONTENT_FROM_FACTORY, itemContent);
+		if (cdata) {
+			/* store it */
+			axl_item_set_child (node, ITEM_CDATA | ITEM_CONTENT_FROM_FACTORY, itemContent);
+		} else {
+			/* store it */
+			axl_item_set_child (node, ITEM_CONTENT | ITEM_CONTENT_FROM_FACTORY, itemContent);
+		}
 	} else {
 		/* store it */
 		axl_item_set_child (node, ITEM_CONTENT, itemContent);
@@ -2520,7 +2528,7 @@ void      axl_node_set_content_ref    (axlNode * node,
 
 	/* call to set content without signaling that the content
 	 * wasn't allocated by a factory. */
-	__axl_node_set_content_common_ref (NULL, node, content, content_size, false);
+	__axl_node_set_content_common_ref (NULL, node, content, content_size, false, false);
 	
 	/* job done */
 	return;	
@@ -2538,7 +2546,7 @@ void      axl_node_set_content_from_factory (axlFactory * factory,
 {
 	/* call to set content without signaling that the content was
 	 * allocated by a factory. */
-	__axl_node_set_content_common_ref (factory, node, content, content_size, true);
+	__axl_node_set_content_common_ref (factory, node, content, content_size, true, false);
 	
 	/* job done */
 	return;
@@ -2588,6 +2596,25 @@ void      axl_node_set_cdata_content  (axlNode * node,
 	axl_node_set_content_ref (node, cdata, content_size);
 
 	return;
+}
+
+/** 
+ * @internal Internal API used by the axl doc module to signal that
+ * the content was allocated though the string factory and shouldn't
+ * be deallocated, and the content was found inside cdata
+ * declarations.
+ */
+void      axl_node_set_cdata_content_from_factory (axlFactory * factory,
+						   axlNode    * node,
+						   char       * content,
+						   int          content_size)
+{
+	/* call to set content without signaling that the content was
+	 * allocated by a factory. */
+	__axl_node_set_content_common_ref (factory, node, content, content_size, true, true);
+	
+	/* job done */
+	return;	
 }
 
 /** 
