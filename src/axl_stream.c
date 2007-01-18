@@ -2329,7 +2329,7 @@ char *     axl_stream_to_lower        (char  * chunk)
  * @return A new reference allocated containing the result or NULL if
  * it fails.
  */
-char      * axl_stream_to_upper_copy   (char  * chunk)
+char      * axl_stream_to_upper_copy   (const char  * chunk)
 {
 	char * result;
 
@@ -2356,7 +2356,7 @@ char      * axl_stream_to_upper_copy   (char  * chunk)
  * @return A new reference allocated containing the result or NULL if
  * it fails.
  */
-char      * axl_stream_to_lower_copy   (char  * chunk)
+char      * axl_stream_to_lower_copy   (const char  * chunk)
 {
 	char * result;
 

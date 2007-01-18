@@ -186,9 +186,9 @@ char      * axl_stream_to_upper        (char  * chunk);
 
 char      * axl_stream_to_lower        (char  * chunk);
 
-char      * axl_stream_to_upper_copy   (char  * chunk);
+char      * axl_stream_to_upper_copy   (const char  * chunk);
 
-char      * axl_stream_to_lower_copy   (char  * chunk);
+char      * axl_stream_to_lower_copy   (const char  * chunk);
 
 bool        axl_cmp (const char * string, const char * string2);
 
