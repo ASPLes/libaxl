@@ -1679,7 +1679,9 @@ void       axl_node_anotate_double              (axlNode    * node,
  * nodes. This mechanism allows to store data on parent nodes that are
  * shared by child nodes.
  * 
- * @return The integer value stored using \ref axl_node_anotate_int. 
+ * @return The integer value stored using \ref
+ * axl_node_anotate_int. If the key provided doesn't exists, the
+ * function returns 0.
  */
 int        axl_node_anotate_get_int             (axlNode    * node,
 						 const char * key,
@@ -1721,7 +1723,9 @@ int        axl_node_anotate_get_int             (axlNode    * node,
  * nodes. This mechanism allows to store data on parent nodes that are
  * shared by child nodes.
  * 
- * @return The string value stored using \ref axl_node_anotate_string. 
+ * @return The string value stored using \ref
+ * axl_node_anotate_string. If the key provided doesn't exists, the
+ * function returns NULL.
  */
 char *     axl_node_anotate_get_string          (axlNode    * node,
 						 const char * key,
@@ -1763,7 +1767,9 @@ char *     axl_node_anotate_get_string          (axlNode    * node,
  * nodes. This mechanism allows to store data on parent nodes that are
  * shared by child nodes.
  * 
- * @return The double value stored using \ref axl_node_anotate_double. 
+ * @return The double value stored using \ref
+ * axl_node_anotate_double. If the key provided doesn't exists, the
+ * function returns 0.0.
  */
 double     axl_node_anotate_get_double          (axlNode    * node,
 						 const char * key,
