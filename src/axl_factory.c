@@ -107,9 +107,10 @@ axlPointer   axl_factory_get (axlFactory * factory)
 
 		block->next    = factory->block;
 		factory->block = block;
-	}
+		
+	} /* end if */
 	
-	return factory->block->items + ((factory->count - 1) * factory->type_size);
+	return ((char *)factory->block->items) + ((factory->count - 1) * factory->type_size);
 } /* end if */
 
 /** 
