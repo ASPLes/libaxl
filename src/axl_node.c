@@ -2604,7 +2604,14 @@ void      axl_node_set_cdata_content  (axlNode * node,
 	axl_return_if_fail (node);
 	axl_return_if_fail (content);
 
-	cdata = axl_stream_strdup_printf ("<![CDATA[%s]]>", content);
+	/* allocate enough memory to hold <![CDATA[ and ]]> plus the
+	 * content provided. */
+	cdata = axl_new (char, 13 + content_size); 
+
+	/* copy the content */
+	memcpy (cdata, "<![CDATA[", 9);
+	memcpy (cdata + 9, content, content_size);
+	memcpy (cdata + 9 + content_size, "]]>", 3);
 	
 	/* calculate the new content size */
 	if (content_size > 0)

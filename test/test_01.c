@@ -1,7 +1,5 @@
 #include <axl.h>
 #include <axl_ns.h>
-#include <stdio.h>
-
 
 #ifdef AXL_NS_SUPPORT
 #define HTML_NS "http://www.w3.org/1999/xhtml"
@@ -3818,6 +3816,27 @@ bool test_01_02 ()
 	return true;
 }
 
+bool test_01_03_vargs (const char * format, ...)
+{
+	va_list args;
+
+	va_start (args, format);
+
+	/* get the result */
+	if (axl_stream_vprintf_len (format, args) != 8)
+		return false;
+
+	if (axl_stream_vprintf_len (format, args) != 8)
+		return false;
+
+	if (axl_stream_vprintf_len (format, args) != 8)
+		return false;
+	
+	va_end (args);
+
+	return true;
+}
+
 /** 
  *
  * @brief Checks some internal functions that the library provides to
@@ -3830,6 +3849,7 @@ bool test_01_03 ()
 {
 	char  * string;
 	char ** result;
+	int     res;
 	int     trimmed;
 
 	/* check that axl_stream_split works */
@@ -3957,6 +3977,239 @@ bool test_01_03 ()
 			trimmed, string);
 		return false;
 	}
+
+	/* check axl_stream_vprintf_len implementation */
+	if (axl_stream_vprintf_len (NULL, NULL) != 0) {
+		printf ("failed, expected to find an string value of 0, but it wasn't found\n");
+		return false;
+	} /* end if */
+
+	if (axl_stream_vprintf_len (" this is a test", NULL) != 16) {
+		printf ("failed, expected to find an string value of 16, but it wasn't found\n");
+		return false;
+	}
+
+	if (axl_stream_vprintf_len (" this %% is a %% test", NULL) != 20) {
+		printf ("failed, expected to find an string value of 20, but it wasn't found\n");
+		return false;
+	}
+
+	if (axl_stream_vprintf_len ("", NULL) != 1) {
+		printf ("failed, expected to find an string value of 1, but it wasn't found\n");
+		return false;
+	}
+
+	if (axl_stream_vprintf_len ("%%", NULL) != 2) {
+		printf ("failed, expected to find an string value of 2, but it wasn't found\n");
+		return false;
+	}
+
+	if (axl_stream_vprintf_len ("\"", NULL) != 2) {
+		printf ("failed, expected to find an string value of 2, but it wasn't found\n");
+		return false;
+	}
+
+	if (axl_stream_vprintf_len ("\"", NULL) != 2) {
+		printf ("failed, expected to find an string value of 2, but it wasn't found\n");
+		return false;
+	}
+
+	if (axl_stream_vprintf_len (" this is a test \r \t \n  asdf", NULL) != 28) {
+		printf ("failed, expected to find an string value of 28, but it wasn't found\n");
+		return false;
+	} /* end if */
+
+	res = axl_stream_printf_len ("%s", "This is a test");
+	if ( res != 15) {
+		printf ("failed, expected to find an string value of 15, but it was found (%d)\n", res);
+		return false;
+	}
+
+	res = axl_stream_printf_len (" adfasdf %s asdfasdf", "This is a test");
+	if ( res != 33) {
+		printf ("failed, expected to find an string value of 33, but it was found (%d)\n", res);
+		return false;
+	}
+
+	res = axl_stream_printf_len (" adfasdf %s asdfasdf %s", "This is a test", "fk2");
+	if ( res != 37) {
+		printf ("failed, expected to find an string value of 37, but it was found (%d)\n", res);
+		return false;
+	}
+
+	res = axl_stream_printf_len ("%% adfasdf %s asdfasdf %s", "This is a test", "fk2");
+	if ( res != 38) {
+		printf ("failed, expected to find an string value of 38, but it was found (%d)\n", res);
+		return false;
+	}
+
+	res = axl_stream_printf_len ("%d", 1);
+	if ( res != 2) {
+		printf ("failed, expected to find an string value of 2, but it was found (%d)\n", res);
+		return false;
+	}
+
+	res = axl_stream_printf_len ("%d", 10);
+	if ( res != 3) {
+		printf ("failed, expected to find an string value of 3, but it was found (%d)\n", res);
+		return false;
+	}
+
+	res = axl_stream_printf_len ("%d", -1);
+	if ( res != 3) {
+		printf ("failed, expected to find an string value of 3, but it was found (%d)\n", res);
+		return false;
+	}
+
+	res = axl_stream_printf_len ("%d", -10);
+	if ( res != 4) {
+		printf ("failed, expected to find an string value of 4, but it was found (%d)\n", res);
+		return false;
+	}
+
+	res = axl_stream_printf_len ("%d", -100);
+	if ( res != 5) {
+		printf ("failed, expected to find an string value of 5, but it was found (%d)\n", res);
+		return false;
+	}
+
+	res = axl_stream_printf_len ("%d", -10012);
+	if ( res != 7) {
+		printf ("failed, expected to find an string value of 7, but it was found (%d)\n", res);
+		return false;
+	}
+
+	res = axl_stream_printf_len ("This is a number %d", -10012);
+	if ( res != 24) {
+		printf ("failed, expected to find an string value of 24, but it was found (%d)\n", res);
+		return false;
+	}
+
+	res = axl_stream_printf_len ("This is a number %d with content ", -10012);
+	if ( res != 38) {
+		printf ("failed, expected to find an string value of 38, but it was found (%d)\n", res);
+		return false;
+	}
+
+	res = axl_stream_printf_len ("This is a number %d with content %s", -10012, "This more content");
+	if ( res != 55) {
+		printf ("failed, expected to find an string value of 55, but it was found (%d)\n", res);
+		return false;
+	}
+
+	res = axl_stream_printf_len ("%c", 1);
+	if ( res != 2) {
+		printf ("failed, expected to find an string value of 2, but it was found (%d)\n", res);
+		return false;
+	}
+
+	res = axl_stream_printf_len (" %c ", 1);
+	if ( res != 4) {
+		printf ("failed, expected to find an string value of 4, but it was found (%d)\n", res);
+		return false;
+	}
+
+	res = axl_stream_printf_len ("\x0D");
+	if ( res != 2) {
+		printf ("failed, expected to find an string value of 2, but it was found (%d)\n", res);
+		return false;
+	}
+
+	res = axl_stream_printf_len ("\x0D\x0A");
+	if ( res != 3) {
+		printf ("failed, expected to find an string value of 3, but it was found (%d)\n", res);
+		return false;
+	}
+
+	res = axl_stream_printf_len ("%ld", 182);
+	if ( res != 4) {
+		printf ("failed, expected to find an string value of 4, but it was found (%d)\n", res);
+		return false;
+	}
+
+	res = axl_stream_printf_len ("%lu", (unsigned long int) 182);
+	if ( res != 4) {
+		printf ("failed, expected to find an string value of 4, but it was found (%d)\n", res);
+		return false;
+	}
+
+	res = axl_stream_printf_len ("%llu", (unsigned long long int) 182);
+	if ( res != 4) {
+		printf ("failed (%%llu), expected to find an string value of 4, but it was found (%d)\n", res);
+		return false;
+	}
+
+	res = axl_stream_printf_len ("%lld", 182);
+	if ( res != 4) {
+		printf ("failed (%%lld), expected to find an string value of 4, but it was found (%d)\n", res);
+		return false;
+	}
+
+	res = axl_stream_printf_len ("%6d", 182);
+	if ( res != 7) {
+		printf ("failed (%%6d), expected to find an string value of 7, but it was found (%d)\n", res);
+		return false;
+	} 
+
+	res = axl_stream_printf_len ("%6lld", 182);
+	if ( res != 7) {
+		printf ("failed (%%6lld), expected to find an string value of 7, but it was found (%d)\n", res);
+		return false;
+	} 
+
+	res = axl_stream_printf_len ("%f", 182.0);
+	if ( res != 11) {
+		printf ("failed (%%f,182), expected to find an string value of 11, but it was found (%d)\n", res);
+		return false;
+	} 
+
+	res = axl_stream_printf_len ("%.2f", 18228.0);
+	if ( res != 9) {
+		printf ("failed (%%.2f), expected to find an string value of 7, but it was found (%d)\n", res);
+		return false;
+	} 
+
+	res = axl_stream_printf_len ("%8.2f", 182);
+	if ( res != 12) {
+		printf ("failed (%%8.2f), expected to find an string value of 12, but it was found (%d)\n", res);
+		return false;
+	} 
+
+	res = axl_stream_printf_len ("%.5f", 182.10);
+	if ( res != 10) {
+		printf ("failed (%%.5f), expected to find an string value of 10, but it was found (%d)\n", res);
+		return false;
+	} 
+
+	res = axl_stream_printf_len ("%g", (double) 182.23);
+	if ( res != 7) {
+		printf ("failed (%%g,182.23), expected to find an string value of 7, but it was found (%d)\n", res);
+		return false;
+	} 
+
+	res = axl_stream_printf_len ("%g", 182.39);
+	if ( res != 7) {
+		printf ("failed (%%g,182.39), expected to find an string value of 7, but it was found (%d)\n", res);
+		return false;
+	} 
+
+	res = axl_stream_printf_len ("%g", 182.1);
+	if ( res != 6) {
+		printf ("failed (%%g,182.1), expected to find an string value of 6, but it was found (%d)\n", res);
+		return false;
+	} 
+
+	res = axl_stream_printf_len ("%g", 182.102);
+	if ( res != 8) {
+		printf ("failed (%%g,182.1), expected to find an string value of 6, but it was found (%d)\n", res);
+		return false;
+	} 
+
+	if (! test_01_03_vargs ("%g", 182.102)) {
+		printf ("failed to reuse vargs..\n");
+		return false;
+	}
+	
 
 	/* release the memory */
 	axl_free (string);

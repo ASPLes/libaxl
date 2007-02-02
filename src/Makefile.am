@@ -17,6 +17,8 @@ libaxlinclude_HEADERS = axl.h axl_config.h axl_decl.h axl_node.h axl_doc.h axl_e
 
 libaxl_la_LDFLAGS = -no-undefined -export-symbols-regex '^(axl|__axl).*'
 
+libaxl_la_LIBADD = -lm
+
 libaxl.def: update-def
 
 update-def:

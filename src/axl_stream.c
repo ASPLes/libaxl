@@ -37,6 +37,7 @@
  */
 
 #include <axl.h>
+#include <math.h>
 
 #define LOG_DOMAIN "axl-stream"
 
@@ -1878,9 +1879,528 @@ int vsnprintf(char *str, size_t size, const char *format, va_list ap);
 
 
 /** 
+ * @internal Allows to calculate the amount of memory required to
+ * store the string that will representing the construction provided
+ * by the printf-like format received and its arguments.
+ * 
+ * @param format The printf-like format to be printed.
+ *
+ * @param args The set of arguments that the printf applies to.
+ * 
+ * @return Return the number of bytes that must be allocated to hold
+ * the string (including the string terminator \0). If the format is
+ * not correct or it is not properly formated according to the value
+ * found at the argument set, the function will return -1.
+ */
+int axl_stream_vprintf_len (const char * format, va_list args)
+{
+	int      iterator  = 0;
+	int      iterator2 = 0;
+	
+	int      size     = 0;
+	int      t_size;
+	char   * string;
+	int      int_value;
+	double   float_value;
+	double   double_value;
+	double   double_aux;
+	double   double_aux2;
+	
+	long int               long_value;
+	unsigned long int      ulong_value;
+	
+	long long int          long_long_value;
+	unsigned long long int ulong_long_value;
+	
+	char     int_buf[20];
+	int      precision;
+	int      field_width;
+
+	/* # */
+	bool     alter_flag;
+	/* 0 */
+	bool     zero_flag;
+	/* - */
+	bool     pad_flag;
+	
+
+	/* basic case */
+	if (format == NULL)
+		return 0;
+
+	/* for each character */
+	while (format [iterator] != 0) {
+
+		/* reset field with and precision */
+		field_width = 0;
+		precision   = 0;
+		
+		/* check if the byte have a reserved byte */
+		if (format [iterator] == '%') {
+			/* reset flags */
+			alter_flag = false;
+			zero_flag  = false;
+			pad_flag   = false;
+
+			/* update iterator */
+			iterator++;
+			
+			if (format [iterator] == '%') {
+				/* found reserved construction to place a single % */
+				goto next;
+			} /* end if */
+
+			/* check for alternative flag */
+			if (format [iterator] == '#') {
+				iterator++;
+				alter_flag = true;
+			} /* end if */
+				
+			/* check for zero_flag */
+			if (format [iterator] == '0') {
+				iterator++;
+				zero_flag = false;
+			} /* end if */
+
+			/* check for pad flag */
+			if (format [iterator] == '-') {
+				iterator++;
+				pad_flag = false;
+			} /* end if */
+			
+			if (format [iterator] == 's') {
+				/* found string conversion, consume
+				 * the iterator and increate the size
+				 * as the amount of bytes stored in the string */
+				iterator++;
+				
+				/* get the string */
+				string = va_arg (args, char *);
+				if (string == NULL)
+					return -1;
+
+				/* increase the size */
+				size+= strlen (string);
+
+				continue;
+			} /* end if */
+
+			/* get the field with */
+			iterator2  = 0;
+			memset (int_buf, 0, 20);
+			while (format[iterator] != 0 && iterator2 < 20) {
+				/* if found a non-digit, break the loop */
+				if (! isdigit (format[iterator])) {
+					int_buf[iterator2] = 0;
+					break;
+				}
+
+				/* copy the value */
+				int_buf[iterator2] = format[iterator];
+				iterator++;
+				iterator2++;
+			} /* end while */
+			
+			/* get field with */
+			field_width = atoi (int_buf);
+
+			/* check for optional field precision */
+			memset (int_buf, 0, 20);
+			if (format[iterator] == '.') {
+				/* found optional integer field
+				 * precision, consume it and get the
+				 * value */
+				iterator++;
+				
+				iterator2  = 0;
+				while (format[iterator] != 0 && iterator2 < 20) {
+					/* if found a non-digit, break the loop */
+					if (! isdigit (format[iterator])) {
+						int_buf[iterator2] = 0;
+						break;
+					}
+					
+					/* copy the value */
+					int_buf[iterator2] = format[iterator];
+					iterator++;
+					iterator2++;
+				} /* end while */
+			} /* end if */
+			
+			/* get field with */
+			precision = atoi (int_buf);
+
+			/* support for double %ll extension */
+			if (format[iterator] == 'l' && format [iterator + 1] == 'l') {
+				/* consume itertors */
+				iterator++;
+				iterator++;
+				
+				if ((format[iterator] == 'd' || format[iterator] == 'i')) {
+					/* found long declaration */
+					iterator++;
+					
+					/* get the long value */
+					long_long_value = va_arg (args, long long int);
+					t_size = 0;
+
+					/* increase the size by 1 (due the '-' sign) */
+					if (long_long_value < 0) {
+						t_size += 1;
+						long_long_value = long_long_value * -1;
+					} /* end if */
+
+					while (1) {
+						/* once the vaule gets from
+						 * 0..9 only one digit is
+						 * required */
+						if (long_long_value < 10) {
+							t_size++;
+							break;
+						} /* end if */
+						
+						/* decrease the value */
+						long_long_value = (long_long_value / (long long int) 10);
+						t_size ++;
+					} /* end while */
+
+					/* check field size */
+					if (field_width > t_size) 
+						size += field_width;
+					else
+						size += t_size;
+					
+					continue;
+				} /* end long format */
+
+				if (format[iterator] == 'u') {
+					/* found long declaration */
+					iterator++;
+					
+					/* get the long value */
+					ulong_long_value = va_arg (args, unsigned long long int);
+					t_size = 0;
+
+					/* increase the size by 1 (due the '-' sign) */
+					if (ulong_long_value < 0) {
+						t_size += 1;
+						ulong_long_value = ulong_long_value * -1;
+					} /* end if */
+
+					while (1) {
+						/* once the vaule gets from
+						 * 0..9 only one digit is
+						 * required */
+						if (ulong_long_value < 10) {
+							t_size++;
+							break;
+						} /* end if */
+						
+						/* decrease the value */
+						ulong_long_value = (ulong_long_value / (unsigned long long int) 10);
+						t_size ++;
+					} /* end while */
+
+					/* check field size */
+					if (field_width > t_size) 
+						size += field_width;
+					else
+						size += t_size;
+					
+					/* next */
+					continue;
+
+				} /* end long long unsigned */
+			} /* end if */
+
+			/* support for %l extension */
+			if (format[iterator] == 'l') { 
+				/* found long declaration */
+				iterator++;
+				
+				if (format[iterator] == 'd' || format[iterator] == 'i') {
+					/* found long declaration */
+					iterator++;
+					
+					/* get the long value */
+					long_value = va_arg (args, long);
+					t_size     = 0;
+					
+					/* increase the size by 1 (due the '-' sign) */
+					if (long_value < 0) {
+						t_size += 1;
+						long_value = long_value * -1;
+					} /* end if */
+					
+					while (1) {
+						/* once the vaule gets from
+						 * 0..9 only one digit is
+						 * required */
+						if (long_value < 10) {
+							t_size++;
+							break;
+						} /* end if */
+						
+						/* decrease the value */
+						long_value = (long_value / (long) 10);
+						t_size ++;
+					} /* end while */
+					
+					/* check field size */
+					if (field_width > t_size) 
+						size += field_width;
+					else
+						size += t_size;
+					
+					continue;
+				} /* end long format */
+
+				if (format[iterator] == 'u') {
+					/* found long declaration */
+					iterator++;
+					
+					/* get the long value */
+					ulong_value = va_arg (args, unsigned long int);
+					t_size = 0;
+
+					/* increase the size by 1 (due the '-' sign) */
+					if (ulong_value < 0) {
+						t_size += 1;
+						ulong_value = ulong_value * -1;
+					} /* end if */
+					
+					while (1) {
+						/* once the vaule gets from
+						 * 0..9 only one digit is
+						 * required */
+						if (ulong_value < 10) {
+							t_size++;
+							break;
+						} /* end if */
+						
+						/* decrease the value */
+						ulong_value = (ulong_value / (unsigned long int) 10);
+						t_size ++;
+					} /* end while */
+
+					/* check field size */
+					if (field_width > t_size) 
+						size += field_width;
+					else
+						size += t_size;
+					
+					continue;
+				} /* end long format */
+				
+			} /* end if */
+			
+			/* check integer format */
+			if (strchr ("di", format [iterator]) != NULL) {
+				/* found integer declaration, get the
+				 * value and consume the format
+				 * configuration */
+				iterator ++;
+
+				/* get the int value */
+				int_value = va_arg (args, int);
+				t_size = 0;
+
+				/* increase the size by 1 (due the '-' sign) */
+				if (int_value < 0) {
+					t_size += 1;
+					int_value = int_value * -1;
+				} /* end if */
+
+				while (1) {
+
+					/* once the vaule gets from
+					 * 0..9 only one digit is
+					 * required */
+					if (int_value < 10) {
+						t_size++;
+						break;
+					} /* end if */
+
+					/* decrease the value */
+					int_value = (int) (int_value / 10);
+					t_size ++;
+				} /* end while */
+
+				/* check field size */
+				if (field_width > t_size) 
+					size += field_width;
+				else
+					size += t_size;
+
+				continue;
+			} /* end if */
+
+			/* check for the format support */
+			if (format[iterator] == 'f') {
+				/* found integer declaration, get the
+				 * value and consume the format
+				 * configuration */
+				iterator ++;
+
+				/* get the int value */
+				float_value = va_arg (args, double);
+				t_size = 0;
+
+				/* increase the size by 1 (due the '-' sign) */
+				if (float_value < 0) {
+					t_size += 1;
+					float_value = float_value * -1;
+				} /* end if */
+				
+				while (1) {
+					/* once the vaule gets from
+					 * 0..9 only one digit is
+					 * required */
+					if (float_value < 10) {
+						t_size++;
+						break;
+					} /* end if */
+
+					/* decrease the value */
+					float_value = (double) (float_value / (double) 10);
+					t_size ++;
+				} /* end while */
+
+				/* check field size */
+				if (field_width > t_size) 
+					size += field_width;
+				else
+					size += t_size;
+
+				/* sum one element for the separator (.) */
+				size++;
+
+				if (precision == 0)
+					size += 6;
+				else
+					size += precision;
+
+				/* next */
+				continue;
+
+			} /* end if */
+
+			/* check for the format support */
+			if (format [iterator] == 'g' ) {
+				/* found integer declaration, get the
+				 * value and consume the format
+				 * configuration */
+				iterator ++;
+
+				/* get the int value */
+				double_value = va_arg (args, double);
+				double_aux   = double_value;
+				t_size = 0;
+
+				/* increase the size by 1 (due the '-' sign) */
+				if (double_value < 0) {
+					t_size += 1;
+					double_value = double_value * -1;
+				} /* end if */
+				
+				while (1) {
+					/* once the vaule gets from
+					 * 0..9 only one digit is
+					 * required */
+					if (double_value < 10) {
+						t_size++;
+						break;
+					} /* end if */
+
+					/* decrease the value */
+					double_value = (double) (double_value / (double) 10);
+					t_size ++;
+				} /* end while */
+
+				/* check field size */
+				if (field_width > t_size) 
+					size += field_width;
+				else
+					size += t_size;
+
+				double_aux2 = modf (double_aux, &double_aux2);
+				if (double_aux2 != 0) {
+					
+					/* sum one element for the separator (.) */
+					size++;
+					t_size = 0;
+
+					do {
+						double_aux2 = modf (double_aux, &double_aux2);
+						if (double_aux2 == 0)
+							break;
+						t_size++;
+						
+						double_aux *= 10;
+					} while (1);
+
+					
+					
+					/* sum the size */
+					size += t_size;
+				} /* end if */
+				
+				double_value = 0;
+				double_aux = 0;
+				
+				continue;
+			} /* end if */
+
+			/* check for character */
+			if (format[iterator] == 'c') {
+				goto next;
+			} /* end if */
+
+		} /* end if (format [iterator] == '%)' */
+		
+	next:
+		/* update size */
+		size++;
+		iterator++;
+
+	} /* end while */
+
+	/* return the size calculated */
+	return size + 1;
+}
+
+/** 
+ * @internal Function that allows to get how many bytes will be
+ * required to hold the format and the arguments provided.
+ * 
+ * @param format The printf-like format followed by the rest of
+ * arguments.
+ * 
+ * @return Return the number of bytes that must be allocated to hold
+ * the string (including the string terminator \0). If the format is
+ * not correct or it is not properly formated according to the value
+ * found at the argument set, the function will return -1.
+ */
+int axl_stream_printf_len (const char * format, ...)
+{
+	int     result;
+	va_list args;
+
+	va_start (args, format);
+
+	/* get the result */
+	result = axl_stream_vprintf_len (format, args);
+	
+	va_end (args);
+
+	return result;
+}
+
+
+/** 
  * @brief Allows to produce an newly allocated string produced by the
  * chunk received plus arguments, using the printf-like format.
- * 
+ *
  * @param chunk The chunk to copy.
  * 
  * @return A newly allocated chunk.
@@ -1931,6 +2451,18 @@ char  * axl_stream_strdup_printfv    (const char * chunk, va_list args)
 	/* get current buffer size to copy */
 	size     = vsnprintf (NULL, 0, chunk, args);
 
+
+	if (size == -1) {
+		/* get the amount of memory to be allocated */
+		size = axl_stream_vprintf_len (chunk, args);
+
+		/* check result */
+		if (size == -1) {
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "unable to calculate the amount of memory for the strdup_printf operation");
+			return NULL;
+		} /* end if */
+	} /* end if */
+
 	/* allocate memory */
 	result   = axl_new (char, size + 2);
 
@@ -1976,6 +2508,17 @@ char    * axl_stream_strdup_printf_len (const char * chunk, int * chunk_size, ..
 #else
 	/* get current buffer size to copy */
 	size     = vsnprintf (NULL, 0, chunk, args);
+	
+	if (size == -1) {
+		/* get the amount of memory to be allocated */
+		size = axl_stream_vprintf_len (chunk, args);
+
+		/* check result */
+		if (size == -1) {
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "unable to calculate the amount of memory for the strdup_printf operation");
+			return NULL;
+		} /* end if */
+	} /* end if */
 
 	/* allocate memory */
 	result   = axl_new (char, size + 2);
@@ -2175,6 +2718,10 @@ char     ** axl_stream_split           (const char * chunk, int separator_num, .
  */
 char      * axl_stream_concat          (const char * chunk1, const char * chunk2)
 {
+	char * result;
+	int    len1;
+	int    len2;
+
 	axl_return_val_if_fail ((chunk2 != NULL) || (chunk1 != NULL), NULL);
 
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "concat called..");
@@ -2199,7 +2746,19 @@ char      * axl_stream_concat          (const char * chunk1, const char * chunk2
 
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "concat called.., returning %s%s", chunk1, chunk2);
 
-	return axl_stream_strdup_printf ("%s%s", chunk1, chunk2);
+	/* alloc enough memory to hold both strings */
+	len1 = strlen (chunk1);
+	len2 = strlen (chunk2);
+	result = axl_new (char, len1 + len2 + 1);
+
+	/* copy the content */
+	memcpy (result, chunk1, len1);
+	memcpy (result + len1, chunk2, len2);
+
+	/* return the string created */
+	return result;
+
+
 }
 
 
