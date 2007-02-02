@@ -139,6 +139,7 @@ void axl_error_new (int code, char * error_code, axlStream * stream, axlError **
 {
 	axlError * error;
 	char     * following;
+	int        length;
 
 	/* get a reference to the error to be created */
 	if (_error == NULL)
@@ -148,10 +149,22 @@ void axl_error_new (int code, char * error_code, axlStream * stream, axlError **
 	error             = axl_new (axlError, 1); 
 	error->code       = code;
 	error->defined    = -346715;
-	if (stream == NULL)
-		error->error = axl_stream_strdup_printf ("Error found: %s\n", error_code);
-	else {
-		following    = axl_stream_get_following (stream, 10),
+	if (stream == NULL) {
+		/* get error code length */
+		length       = strlen (error_code);
+		
+		/* allocate enough memory */
+		error->error = axl_new (char, 17 + length);
+
+		/* copy */
+		memcpy (error->error, "Error found: ", 13);
+		memcpy (error->error + 13, error_code, length);
+		memcpy (error->error + 13 + length, "\n", 2);
+	} else {
+		/* get the following */
+		following    = axl_stream_get_following (stream, 10);
+		
+		/* alloc enough memory */
 		error->error = axl_stream_strdup_printf ("Error found (stream size: %d, at byte %d (global index: %d), near to ...%s..., while reading: %s): %s\n", 
 							 axl_stream_get_size (stream),
 							 axl_stream_get_index (stream),

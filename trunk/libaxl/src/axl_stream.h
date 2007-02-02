@@ -167,6 +167,12 @@ char      * axl_stream_strdup            (const char * chunk);
 
 char      * axl_stream_strdup_n          (const char * chunk, int n);
 
+int         axl_stream_vprintf_len       (const char * format, 
+					  va_list args);
+
+int         axl_stream_printf_len        (const char * format, 
+					  ...);
+
 char      * axl_stream_strdup_printf     (const char * chunk, ...);
 
 char      * axl_stream_strdup_printfv    (const char * chunk, va_list args);
@@ -203,6 +209,8 @@ char      * axl_strdup (const char * string);
 
 /** 
  * @brief Alias definition for \ref axl_stream_strdup_printf.
+ *
+ * See \ref axl_stream_strdup_printf information for more details.
  */
 #define axl_strdup_printf axl_stream_strdup_printf
 
