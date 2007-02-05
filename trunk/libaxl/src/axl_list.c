@@ -192,6 +192,57 @@ axlListNode * __axl_list_get_next_node_available (axlList * list)
  * elements at the same time rainy days will come and you'll get funny
  * behaviours.
  *
+ * To create the list you must provide two function that performs some
+ * minimal functions required by the list o properly order the data
+ * inside the list and how this data is deallocated (this is
+ * optional).
+ * 
+ * For example, to create a list that will hold strings dinamically
+ * allocated you can use:
+ * \code
+ * axlList * list = axl_list_new (axl_list_equal_string, axl_free);
+ * \endcode
+ * 
+ * Previous list will cause all strings inside to be deallocated once
+ * called to \ref axl_list_free. If you don't like this, do not
+ * provide the deallocation function.
+ *
+ * You can always use the following function to make the list to allways
+ * add all data at the end of the list: \ref axl_list_always_return_1,
+ * which, as its names indicates, allways return 1, causing the item
+ * to be added at the end of the list. See \ref axlEqualFunc
+ * documentation to know more about creating ordenation functions.
+ *
+ * Now you have your list created, you can use the following functions
+ * to add items:
+ *
+ *  - \ref axl_list_add
+ *  - \ref axl_list_add_at
+ *  - \ref axl_list_prepend
+ *  - \ref axl_list_append
+ *
+ * Once you have inserted some data, you can use the following piece
+ * of code to perform an iteration:
+ *
+ * \code
+ * int iterator = 0;
+ * while (iterator < axl_list_length (list)) {
+ *     // get the data at the given position 
+ *     data = axl_list_get_nth (list, iterator);
+ *
+ *     // update the iterator 
+ *     iterator++;
+ * }
+ * \endcode
+ *
+ * However, it is preferred to use the \ref axlListCursor, which is
+ * far more efficient. See the following function to get more
+ * information: \ref axl_list_cursor_new.
+ *
+ * In general, if you are going to perform a lookup for a single item
+ * you can use \ref axl_list_lookup (by providing a handler) or \ref
+ * axl_list_get_nth if you know the position.
+ *
  * 
  * @param are_equal The equal function to be used by the list to find
  * and order elements inside the list.
