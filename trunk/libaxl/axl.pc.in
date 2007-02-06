@@ -6,5 +6,5 @@ includedir=@includedir@
 Name: libAXL
 Description: LibAXL: Another XML library
 Version: @AXL_VERSION@ 
-Libs: -L${libdir} -laxl
+Libs: -L${libdir} -laxl -lm
 Cflags: -I${includedir}/axl
