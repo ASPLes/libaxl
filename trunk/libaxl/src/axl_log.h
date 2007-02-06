@@ -52,10 +52,14 @@ bool     axl_log_is_enabled ();
 bool     axl_log_color_is_enabled ();
 
 
-#ifdef SHOW_DEBUG_LOG
-#define __axl_log axl_log
+#if SHOW_DEBUG_LOG
+# define __axl_log axl_log
 #else
-#define __axl_log(domain, level, message, ...) /* nothing */
+# if AXL_OS_WIN32 && ! defined (__GNUC__)
+#   define __axl_log axl_log 
+# else
+#   define __axl_log(domain, level, message, ...) /* nothing */
+# endif
 #endif
 
 void axl_log (char * domain, AxlDebugLevel level, char * message, ...);
