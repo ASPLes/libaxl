@@ -2614,7 +2614,7 @@ char     ** axl_stream_split           (const char * chunk, int separator_num, .
 
 		/* update the index to the next item */
 		index++;
-	}
+	} /* end if */
 	
 	/* create the result that will hold items separated */
 	result = axl_new (char *, count + 2);
