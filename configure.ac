@@ -147,27 +147,27 @@ _______EOF
 # integer. This will allow us to know if we can cast directly a
 # integer to pointer and viceversa.
 case $ac_cv_sizeof_void_p in
-$ac_cv_sizeof_int)  	pti_cast=''        pti_cast=''                ;;
-$ac_cv_sizeof_long) 	pti_cast='(long)'  pti_cast='(unsigned long)' ;;
-*) 			pti_unknown_void_p=yes                        ;;
+$ac_cv_sizeof_int)  	pti_cast=''        ptui_cast=''                ;;
+$ac_cv_sizeof_long) 	pti_cast='(long)'  ptui_cast='(unsigned long)' ;;
+*) 			pti_unknown_void_p=yes                         ;;
 esac
 
 # Get current configure for the platform and the os we are running.
 case $host in
   *-*-beos*)
-    axl_platform="#define AXL_OS_BEOS"
+    axl_platform="#define AXL_OS_BEOS (1)"
     ;;
   *-*-cygwin*)
-    axl_platform="#define AXL_OS_UNIX
-#define AXL_PLATFORM_WIN32
-#define AXL_WITH_CYGWIN"
+    axl_platform="#define AXL_OS_UNIX (1)
+#define AXL_PLATFORM_WIN32 (1)
+#define AXL_WITH_CYGWIN (1)"
     ;;
   *-*-mingw*)
-    axl_platform="#define AXL_OS_WIN32
-#define AXL_PLATFORM_WIN32"
+    axl_platform="#define AXL_OS_WIN32 (1)
+#define AXL_PLATFORM_WIN32 (1)"
     ;;
   *)
-    axl_platform="#define AXL_OS_UNIX"
+    axl_platform="#define AXL_OS_UNIX (1)"
     ;;
 esac
 
@@ -178,7 +178,7 @@ yes)
  * function. Do not use this macro as it is supposed to be for
  * internal use.
  */
-#define AXL_HAVE_VASPRINTF 1"
+#define AXL_HAVE_VASPRINTF (1)"
      ;;
 no)
      vasprintf_status=""

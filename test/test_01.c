@@ -2,6 +2,7 @@
 #include <axl_ns.h>
 
 #ifdef AXL_NS_SUPPORT
+
 #define HTML_NS "http://www.w3.org/1999/xhtml"
 #define BOOK_NS "urn:loc.gov:books"
 #define ISBN_NS "urn:ISBN:0-395-36341-6"
@@ -4133,27 +4134,9 @@ bool test_01_03 ()
 		return false;
 	}
 
-	res = axl_stream_printf_len ("%llu", (unsigned long long int) 182);
-	if ( res != 4) {
-		printf ("failed (%%llu), expected to find an string value of 4, but it was found (%d)\n", res);
-		return false;
-	}
-
-	res = axl_stream_printf_len ("%lld", 182);
-	if ( res != 4) {
-		printf ("failed (%%lld), expected to find an string value of 4, but it was found (%d)\n", res);
-		return false;
-	}
-
 	res = axl_stream_printf_len ("%6d", 182);
 	if ( res != 7) {
 		printf ("failed (%%6d), expected to find an string value of 7, but it was found (%d)\n", res);
-		return false;
-	} 
-
-	res = axl_stream_printf_len ("%6lld", 182);
-	if ( res != 7) {
-		printf ("failed (%%6lld), expected to find an string value of 7, but it was found (%d)\n", res);
 		return false;
 	} 
 

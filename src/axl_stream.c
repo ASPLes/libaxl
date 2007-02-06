@@ -1878,15 +1878,6 @@ char      * axl_stream_strdup_n (const char * chunk, int n)
 int vsnprintf(char *str, size_t size, const char *format, va_list ap);
 
 /** 
- * @internal Declaration to support long long type under windows.
- */
-#if AXL_OS_WIN32 && ! defined (__GNUC__)
-#define __AXL_LONG_LONG __int64
-#else
-#define __AXL_LONG_LONG long long
-#endif
-
-/** 
  * @internal Allows to calculate the amount of memory required to
  * store the string that will representing the construction provided
  * by the printf-like format received and its arguments.
@@ -1894,7 +1885,13 @@ int vsnprintf(char *str, size_t size, const char *format, va_list ap);
  * @param format The printf-like format to be printed.
  *
  * @param args The set of arguments that the printf applies to.
- * 
+ *
+ * <i><b>NOTE:</b> not all printf specification is supported. Generally, the
+ * following is supported: %s, %d, %f, %g, %ld, %lg and all
+ * combinations that provides precision, number of items inside the
+ * integer part, etc: %6.2f, %+2d, etc. An especial case not supported
+ * is %lld, %llu and %llg.</i>
+ *
  * @return Return the number of bytes that must be allocated to hold
  * the string (including the string terminator \0). If the format is
  * not correct or it is not properly formated according to the value
@@ -1916,10 +1913,6 @@ int axl_stream_vprintf_len (const char * format, va_list args)
 	
 	long int               long_value;
 	unsigned long int      ulong_value;
-
-	
-	__AXL_LONG_LONG          long_long_value;
-	unsigned __AXL_LONG_LONG ulong_long_value;
 	
 	char     int_buf[20];
 	int      precision;
@@ -2036,89 +2029,6 @@ int axl_stream_vprintf_len (const char * format, va_list args)
 			
 			/* get field with */
 			precision = atoi (int_buf);
-
-			/* support for double %ll extension */
-			if (format[iterator] == 'l' && format [iterator + 1] == 'l') {
-				/* consume itertors */
-				iterator++;
-				iterator++;
-				
-				if ((format[iterator] == 'd' || format[iterator] == 'i')) {
-					/* found long declaration */
-					iterator++;
-					
-					/* get the long value */
-					long_long_value = va_arg (args, long long int);
-					t_size = 0;
-
-					/* increase the size by 1 (due the '-' sign) */
-					if (long_long_value < 0) {
-						t_size += 1;
-						long_long_value = long_long_value * -1;
-					} /* end if */
-
-					while (1) {
-						/* once the vaule gets from
-						 * 0..9 only one digit is
-						 * required */
-						if (long_long_value < 10) {
-							t_size++;
-							break;
-						} /* end if */
-						
-						/* decrease the value */
-						long_long_value = (long_long_value / (long long int) 10);
-						t_size ++;
-					} /* end while */
-
-					/* check field size */
-					if (field_width > t_size) 
-						size += field_width;
-					else
-						size += t_size;
-					
-					continue;
-				} /* end long format */
-
-				if (format[iterator] == 'u') {
-					/* found long declaration */
-					iterator++;
-					
-					/* get the long value */
-					ulong_long_value = va_arg (args, unsigned long long int);
-					t_size = 0;
-
-					/* increase the size by 1 (due the '-' sign) */
-					if (ulong_long_value < 0) {
-						t_size += 1;
-						ulong_long_value = ulong_long_value * -1;
-					} /* end if */
-
-					while (1) {
-						/* once the vaule gets from
-						 * 0..9 only one digit is
-						 * required */
-						if (ulong_long_value < 10) {
-							t_size++;
-							break;
-						} /* end if */
-						
-						/* decrease the value */
-						ulong_long_value = (ulong_long_value / (unsigned long long int) 10);
-						t_size ++;
-					} /* end while */
-
-					/* check field size */
-					if (field_width > t_size) 
-						size += field_width;
-					else
-						size += t_size;
-					
-					/* next */
-					continue;
-
-				} /* end long long unsigned */
-			} /* end if */
 
 			/* support for %l extension */
 			if (format[iterator] == 'l') { 
