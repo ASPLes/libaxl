@@ -1877,6 +1877,14 @@ char      * axl_stream_strdup_n (const char * chunk, int n)
  */
 int vsnprintf(char *str, size_t size, const char *format, va_list ap);
 
+/** 
+ * @internal Declaration to support long long type under windows.
+ */
+#if AXL_OS_WIN32 && ! defined (__GNUC__)
+#define __AXL_LONG_LONG __int64
+#else
+#define __AXL_LONG_LONG long long
+#endif
 
 /** 
  * @internal Allows to calculate the amount of memory required to
@@ -1908,9 +1916,10 @@ int axl_stream_vprintf_len (const char * format, va_list args)
 	
 	long int               long_value;
 	unsigned long int      ulong_value;
+
 	
-	long long int          long_long_value;
-	unsigned long long int ulong_long_value;
+	__AXL_LONG_LONG          long_long_value;
+	unsigned __AXL_LONG_LONG ulong_long_value;
 	
 	char     int_buf[20];
 	int      precision;
@@ -1976,11 +1985,9 @@ int axl_stream_vprintf_len (const char * format, va_list args)
 				
 				/* get the string */
 				string = va_arg (args, char *);
-				if (string == NULL)
-					return -1;
 
 				/* increase the size */
-				size+= strlen (string);
+				size+= (string != NULL) ? strlen (string) : 0;
 
 				continue;
 			} /* end if */
@@ -2448,24 +2455,18 @@ char  * axl_stream_strdup_printfv    (const char * chunk, va_list args)
 	/* do the operation using the GNU extension */
 	new_size = vasprintf (&result, chunk, args);
 #else
-	/* get current buffer size to copy */
-	size     = vsnprintf (NULL, 0, chunk, args);
+	/* get the amount of memory to be allocated */
+	size = axl_stream_vprintf_len (chunk, args);
 
-
+	/* check result */
 	if (size == -1) {
-		/* get the amount of memory to be allocated */
-		size = axl_stream_vprintf_len (chunk, args);
-
-		/* check result */
-		if (size == -1) {
-			__axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "unable to calculate the amount of memory for the strdup_printf operation");
-			return NULL;
-		} /* end if */
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "unable to calculate the amount of memory for the strdup_printf operation");
+		return NULL;
 	} /* end if */
 
 	/* allocate memory */
 	result   = axl_new (char, size + 2);
-
+	
 	/* copy current size */
 	new_size = vsnprintf (result, size + 1, chunk, args);
 #endif
@@ -2506,18 +2507,13 @@ char    * axl_stream_strdup_printf_len (const char * chunk, int * chunk_size, ..
 	/* do the operation using the GNU extension */
 	new_size = vasprintf (&result, chunk, args);
 #else
-	/* get current buffer size to copy */
-	size     = vsnprintf (NULL, 0, chunk, args);
+	/* get the amount of memory to be allocated */
+	size = axl_stream_vprintf_len (chunk, args);
 	
+	/* check result */
 	if (size == -1) {
-		/* get the amount of memory to be allocated */
-		size = axl_stream_vprintf_len (chunk, args);
-
-		/* check result */
-		if (size == -1) {
-			__axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "unable to calculate the amount of memory for the strdup_printf operation");
-			return NULL;
-		} /* end if */
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "unable to calculate the amount of memory for the strdup_printf operation");
+		return NULL;
 	} /* end if */
 
 	/* allocate memory */
@@ -2586,7 +2582,7 @@ char     ** axl_stream_split           (const char * chunk, int separator_num, .
 	while (iterator < separator_num) {
 		separators[iterator] = va_arg (args, char *);
 		iterator++;
-	}
+	} /* end if */
 	
 	va_end (args);
 
