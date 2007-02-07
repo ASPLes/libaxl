@@ -42,14 +42,14 @@
 				Optimization="0"
 				AdditionalIncludeDirectories="C:\msys\1.0\include;&quot;C:\msys\1.0\home\acinom\af-arch\trunk\libaxl\ns&quot;;&quot;C:\msys\1.0\home\acinom\af-arch\trunk\libaxl\src&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;AXL_NS_SUPPORT"
-				MinimalRebuild="true"
-				BasicRuntimeChecks="3"
-				RuntimeLibrary="3"
+				MinimalRebuild="false"
+				BasicRuntimeChecks="0"
+				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderThrough=""
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
-				DebugInformationFormat="4"
+				DebugInformationFormat="0"
 				CompileAs="1"
 			/>
 			<Tool
@@ -66,7 +66,7 @@
 				AdditionalDependencies="kernel32.lib $(NoInherit)"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="&quot;C:\msys\1.0\home\acinom\af-arch\trunk\libaxl\LibAxl&quot;"
-				GenerateDebugInformation="true"
+				GenerateDebugInformation="false"
 				SubSystem="1"
 				TargetMachine="1"
 			/>
@@ -175,11 +175,11 @@
 	<References>
 		<ProjectReference
 			ReferencedProjectIdentifier="{4AD56D01-116B-4146-B468-F4E85CFB8C7D}"
-			RelativePathToProject=".\LibAxl.vcproj"
+			RelativePathToProject=".\src\libaxl.vcproj"
 		/>
 		<ProjectReference
 			ReferencedProjectIdentifier="{298317EF-666F-4685-A241-7DFB39A44D8E}"
-			RelativePathToProject="..\libaxl-ns\libaxl-ns.vcproj"
+			RelativePathToProject=".\ns\libaxl-ns.vcproj"
 		/>
 	</References>
 	<Files>

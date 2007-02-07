@@ -38,6 +38,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalIncludeDirectories="C:\msys\1.0\include;&quot;C:\msys\1.0\home\acinom\af-arch\trunk\libaxl\src&quot;;&quot;C:\msys\1.0\home\acinom\af-arch\trunk\libaxl\ns&quot;"
+				RuntimeLibrary="2"
 				CompileAs="1"
 			/>
 			<Tool
