@@ -4153,7 +4153,7 @@ bool test_01_03 ()
 	} 
 
 	res = axl_stream_printf_len ("%8.2f", 182);
-	if ( res != 12) {
+	if ( res != 9) {
 		printf ("failed (%%8.2f), expected to find an string value of 12, but it was found (%d)\n", res);
 		return false;
 	} 
