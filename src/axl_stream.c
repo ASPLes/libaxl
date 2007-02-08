@@ -1864,7 +1864,7 @@ char      * axl_stream_strdup_n (const char * chunk, int n)
 	return result;
 }
 
-
+#ifndef AXL_OS_WIN32
 /** 
  * @internal
  *
@@ -1875,7 +1875,8 @@ char      * axl_stream_strdup_n (const char * chunk, int n)
  * program the library using ansi environment options to ensure the
  * maximum compatibility.
  */
-int vsnprintf(char *str, size_t size, const char *format, va_list ap);
+int vsnprintf(const char *str, size_t size, const char *format, va_list ap);
+#endif
 
 /** 
  * @internal Allows to calculate the amount of memory required to
@@ -1906,10 +1907,10 @@ int axl_stream_vprintf_len (const char * format, va_list args)
 	if (format == NULL)
 		return 0;
 #   if AXL_USE_VPRINTF_LEN
-	_tmp   = temfile ();
-	result = vprintf (_tmp, format, args);
+	_tmp   = tmpfile ();
+	result = vfprintf (_tmp, format, args);
 	fclose(_tmp);
-	return result;
+	return result + 1;
 #   else
 	return _vscprintf (format, args) + 1;
 #   endif
