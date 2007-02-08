@@ -1,4 +1,4 @@
-EXTRA_DIST = Makefile.win libaxl-ns.def
+EXTRA_DIST = Makefile.win libaxl-ns.def libaxl-ns.vcproj
 
 if ENABLE_AXL_LOG
 LOG = -DSHOW_DEBUG_LOG

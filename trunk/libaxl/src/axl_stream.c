@@ -1900,10 +1900,19 @@ int vsnprintf(char *str, size_t size, const char *format, va_list ap);
 int axl_stream_vprintf_len (const char * format, va_list args)
 {
 # if AXL_OS_WIN32 && ! defined (__GNUC__)
+	FILE * _tmp;
+	int    result;
 	/* use microsoft windows platform definition */
 	if (format == NULL)
 		return 0;
+#   if AXL_USE_VPRINTF_LEN
+	_tmp   = temfile ();
+	result = vprintf (_tmp, format, args);
+	fclose(_tmp);
+	return result;
+#   else
 	return _vscprintf (format, args) + 1;
+#   endif
 #else
 	return vsnprintf (NULL, 0, format, args) + 1;
 
