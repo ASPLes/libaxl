@@ -1864,20 +1864,6 @@ char      * axl_stream_strdup_n (const char * chunk, int n)
 	return result;
 }
 
-#ifndef AXL_OS_WIN32
-/** 
- * @internal
- *
- * Internal prototype declaration to avoid getting gcc complaining
- * every time it found a reference to this function. Many environment
- * support this function, in the case this function is not support we
- * will have to provide a fall back. However, it is required to
- * program the library using ansi environment options to ensure the
- * maximum compatibility.
- */
-int vsnprintf(const char *str, size_t size, const char *format, va_list ap);
-#endif
-
 /** 
  * @internal Allows to calculate the amount of memory required to
  * store the string that will representing the construction provided
@@ -2007,7 +1993,11 @@ char  * axl_stream_strdup_printfv    (const char * chunk, va_list args)
 	result   = axl_new (char, size + 2);
 	
 	/* copy current size */
+#if AXL_OS_WIN32 && ! defined (__GNUC__)
+	new_size = _vsnprintf (result, size + 1, chunk, args);
+#else
 	new_size = vsnprintf (result, size + 1, chunk, args);
+#endif
 #endif
 	/* return the result */
 	return result;
@@ -2059,7 +2049,11 @@ char    * axl_stream_strdup_printf_len (const char * chunk, int * chunk_size, ..
 	result   = axl_new (char, size + 2);
 
 	/* copy current size */
+#if AXL_OS_WIN32 && ! defined (__GNUC__)
+	new_size = _vsnprintf (result, size + 1, chunk, args);
+#else
 	new_size = vsnprintf (result, size + 1, chunk, args);
+#endif
 #endif
 	
 	/* close std args */
