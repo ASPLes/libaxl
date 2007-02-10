@@ -1,0 +1,82 @@
+             
+            -= Compiling LibAxl under Microsoft Windows =-
+
+1. Intro
+~~~~~~~~
+
+  There are two know ways to compile LibAxl under windows: using gcc
+tools, provided by the mingw project [1] or using one of the Microsoft
+C compilers. 
+
+  In any case, you must take into consideration these basic steps for
+both:
+
+  1) You must create an axl_config.h file, using the
+     axl_config_win32.h file provided. Just rename it. 
+
+  2) If you are using Microsoft C compilers, you must ensure you can
+     have access to the _vscprintf function or not. If you can, which
+     is the recomended, you must define a preprocessor as follows:
+  
+        HAVE_VSCPRINTF
+
+     See axl_stream_vprintf_len function inside the axl_stream.c
+     module to get a more accurate idea.
+
+     If you can't get access to such function (which is relatively
+     recent), just do nothing. This will make Axl Library to use
+     default implementation for the axl_stream_strdup* family of
+     functions to be limited to 8192 bytes. 
+
+     In many cases this isn't a problem, but you are adviced.
+
+2. GCC and Mingw
+~~~~~~~~~~~~~~~~
+
+  This is default platform we are using to get LibAxl working under
+windows. It is showed to get really good results and good performance,
+however there is a problem. Gcc tools do not produce a debug
+information format that could be used by Microsoft tools. 
+
+  Obviously, if this is not a problem for you, then you don't have any
+problem, and, under this situation we recomend to use gcc as default
+compilation tool.
+
+  You can use files provided inside the src, ns and test directory to
+compile Axl: Makefile.win
+
+3. Microsoft compilers
+
+  Axl library is tested to compile and run properly using Visual C 6.0,
+Visual Studio 2005 and its express edition.
+
+  With the source code are provided visual studio project files to
+make it easy to compile LibAxl. See libaxl.sln under the top source
+directory.
+
+4. Testing build done
+
+  Whatever you compiler is, you must execute the test_01 regression
+test, found inside the test directory to ensure your build will
+provide a proper function. All tests must be passed.
+
+5. Futher information and resources
+
+  Remember you can get more information at [1], [2], [3] and [4]. 
+
+  If you want commercial support, contact us directly at: info@aspl.es
+(either Spanish or English). 
+
+  A limited community support, according to the colaboration received,
+is also provided at the mailing list [4].
+
+6. Resources
+
+  [1] [Mingw project]         http://www.mingw.org
+  [2] [Axl library project]   http://xml.aspl.es
+  [3] [ASPL homwpage]         http://www.aspl.es
+  [3] [ASPL mailing list]     http://lists.aspl.es
+
+--
+Francis Brosnan Blázquez
+francis@aspl.es
