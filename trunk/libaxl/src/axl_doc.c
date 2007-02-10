@@ -1984,7 +1984,7 @@ int __axl_doc_get_are_equal (axlPointer a, axlPointer b)
  * nodes. Returned value must be deallocated by using \ref
  * axl_list_free.
  */
-axlList * axl_doc_get_list                  (axlDoc * doc, char * path_to)
+axlList * axl_doc_get_list                  (axlDoc * doc, const char * path_to)
 {
 	axlList  * nodes;
 	axlNode  * node     = NULL;
@@ -2083,7 +2083,7 @@ axlList * axl_doc_get_list                  (axlDoc * doc, char * path_to)
  * @return A reference to a \ref axlNode instace, or NULL if
  * fails. Returned reference must not be deallocated.
  */
-axlNode * axl_doc_get                      (axlDoc * doc, char * path_to)
+axlNode * axl_doc_get                      (axlDoc * doc, const char * path_to)
 {
 	axlList * list = NULL;
 	axlNode * node = NULL;
@@ -2123,9 +2123,9 @@ axlNode * axl_doc_get                      (axlDoc * doc, char * path_to)
  * content or because the node identified by the path doesn't
  * exist. The result returned must not be deallocated.
  */
-char    * axl_doc_get_content_at           (axlDoc * doc,
-					    char   * path_to,
-					    int    * content_size)
+const char    * axl_doc_get_content_at     (axlDoc     * doc,
+					    const char * path_to,
+					    int        * content_size)
 {
 
 	axlNode * node;
@@ -2148,7 +2148,7 @@ char    * axl_doc_get_content_at           (axlDoc * doc,
  * a NULL \ref axlDoc reference is received. The value returned by
  * this function must not be deallocated.
  */
-char   * axl_doc_get_encoding (axlDoc * doc)
+const char * axl_doc_get_encoding (axlDoc * doc)
 {
 	/* check parameter received */
 	axl_return_val_if_fail (doc, NULL);

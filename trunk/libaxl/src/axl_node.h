@@ -349,7 +349,7 @@ void      axl_node_set_is_empty       (axlNode  * node,
 
 bool      axl_node_is_empty           (axlNode * node);
 
-char    * axl_node_get_content        (axlNode * node, 
+const char    * axl_node_get_content  (axlNode * node, 
 				       int  * content_size);
 
 char    * axl_node_get_content_copy   (axlNode * node, 

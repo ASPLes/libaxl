@@ -1612,7 +1612,7 @@ bool test_14 (axlError ** error)
 
 	/* get the content */
 	size  = 11;
-	value = axl_node_get_content (node, &size);
+	value = (char*) axl_node_get_content (node, &size);
 	if (size != 0) {
 		axl_error_new (-1, "Expected to find a node content with 0 bytes but it 11 (/test)\n", NULL, error);
 		return false;
