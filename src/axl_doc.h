@@ -90,11 +90,11 @@ axlNode * axl_doc_get_root                 (axlDoc * doc);
 void      axl_doc_set_root                 (axlDoc * doc, 
 					    axlNode * root);
 
-axlList * axl_doc_get_list                 (axlDoc * doc, 
-					    char * path_to);
+axlList * axl_doc_get_list                 (axlDoc     * doc, 
+					    const char * path_to);
 
-axlNode * axl_doc_get                      (axlDoc * doc, 
-					    char * path_to);
+axlNode * axl_doc_get                      (axlDoc     * doc, 
+					    const char * path_to);
 
 /** 
  * @brief Convenience macro that allows to call \ref
@@ -111,11 +111,11 @@ axlNode * axl_doc_get                      (axlDoc * doc,
  */
 #define axl_doc_find_called(doc,name) (axl_node_find_called(axl_doc_get_root(doc),name))
 
-char    * axl_doc_get_content_at           (axlDoc * doc,
-					    char   * path_to,
-					    int    * content_size);
+const char * axl_doc_get_content_at        (axlDoc     * doc,
+					    const char * path_to,
+					    int        * content_size);
 
-char    * axl_doc_get_encoding             (axlDoc * doc);
+const char * axl_doc_get_encoding          (axlDoc * doc);
 
 bool      axl_doc_get_standalone           (axlDoc * doc);
 
