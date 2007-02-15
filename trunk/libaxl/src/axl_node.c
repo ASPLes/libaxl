@@ -4333,6 +4333,8 @@ int       axl_node_dump_at                  (axlNode * node,
  * particular content will contain elements not allowed by the XML 1.0
  * definition to be placed directly (like &, <, ;, ' and ").
  *
+ * 
+ *
  * @param content The content to check.
  *
  * @param content_size The size of the content to be checked. If -1 is
@@ -4417,6 +4419,47 @@ bool      axl_node_has_invalid_chars        (const char * content,
 	/* return results */
 	return result;
 }
+
+/** 
+ * @brief Allows to perform a copy for the content provided, doing an
+ * xml character escaping for non allowed values (&, <, >, ' and ").
+ *
+ * This function must be used with \ref axl_node_has_invalid_chars to
+ * check if the content has escapable chars an to get the additional
+ * content that must be allocated by this function.
+ *
+ * Here is an example:
+ * \code
+ * char * content = "Some content with invalid chars & < >";
+ * int    additional_size;
+ * char * new_content
+ *
+ * if (axl_node_has_invalid_chars (content, strlen (content), &additional_size)) {
+ *      // found that the string has invalid chars, escape them
+ *      new_content = axl_node_content_copy_and_escape (content, strlen (content), additional_size);
+ * } 
+ *
+ * \endcode
+ * 
+ * @param content The content to be escaped. If this parameter is
+ * null, the function returns NULL.
+ * 
+ * @param content_size The content size for the first parameter.
+ *
+ * @param additional_size The additional size calculated from \ref axl_node_has_invalid_chars.
+ *
+ * @return A newly allocated string with all characters escaped. Use
+ * \ref axl_free to dealloc the result.
+ */
+char * axl_node_content_copy_and_escape (const char * content, 
+					 int          content_size, 
+					 int          additional_size)
+{
+	axl_return_val_if_fail (content, NULL);
+	
+	/* call to the internal implementation */
+	return __axl_node_content_copy_and_escape (content, content_size, additional_size);
+} 
 
 void __axl_node_free_internal (axlNode * node, bool also_childs)
 {
