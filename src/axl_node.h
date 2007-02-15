@@ -434,6 +434,10 @@ bool      axl_node_has_invalid_chars        (const char * content,
 					     int    content_size,
 					     int  * added_size);
 
+char    * axl_node_content_copy_and_escape (const char * content, 
+					    int          content_size, 
+					    int          additional_size);
+
 void      axl_node_free            (axlNode * node);
 
 void      axl_node_free_full       (axlNode * node, bool also_childs);
