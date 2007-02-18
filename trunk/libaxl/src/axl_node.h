@@ -334,6 +334,9 @@ axlNode * axl_node_get_last_child     (axlNode * node);
 void      axl_node_set_child          (axlNode * parent, 
 				       axlNode * child);
 
+void      axl_node_set_child_after    (axlNode * reference,
+				       axlNode * child);
+
 void      axl_node_replace            (axlNode * node, 
 				       axlNode * new_node,
 				       bool      dealloc);
