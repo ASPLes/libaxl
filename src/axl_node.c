@@ -2890,6 +2890,10 @@ char    * axl_node_get_content_trans (axlNode * node, int * content_size)
  *
  * \endcode
  *
+ * See also \ref axl_node_set_child_after which could help you adding
+ * new nodes not using a parent node as a reference but a brother
+ * node.
+ *
  * @param parent The parent node.
  *
  * @param child The child node. The child node must be a deep
@@ -2908,6 +2912,25 @@ void      axl_node_set_child (axlNode * parent, axlNode * child)
 	axl_item_set_child (parent, ITEM_NODE, child);
 
         return;
+}
+
+/** 
+ * @brief Sets a new child after the node provided as a reference.
+ *
+ * This function is useful to allow configuring new childs placed
+ * after some particular node. The child configured will be placed
+ * after the reference and child of the reference's parent node.
+ * 
+ * @param reference The xml node acting as a reference.
+ * @param child The new xml node child to configure.
+ */
+void      axl_node_set_child_after    (axlNode * reference,
+				       axlNode * child)
+{
+	/* call to the item implementation */
+	axl_item_set_after (reference->holder, ITEM_NODE, child);
+
+	return;
 }
 
 
