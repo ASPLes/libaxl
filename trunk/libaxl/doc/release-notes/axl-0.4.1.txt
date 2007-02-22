@@ -1,0 +1,155 @@
+          ###################################
+          # Axl Library release note: 0.4.1 #
+          ###################################
+
+Advanced Software Production Line is proud to announce a new Axl
+Library release.
+
+Axl Library is an small and efficient XML toolkit, that will allow you
+to produce efficient and clear code that interfaces with XML data.
+
+The library was produced to support XML requirements needed by
+software developed by Advanced Software Production Line, S.L. 
+
+At this moment the library is being used by Vortex Library,
+Af-Arch, Shaper and Fovap.
+
+Resources
+~~~~~~~~~
+
+   Axl Homepage
+   [ http://xml.aspl.es ]
+
+   Advanced Software Production Line, S.L.
+   [ http://www.aspl.es ]
+
+This release in short
+~~~~~~~~~~~~~~~~~~~~~
+  
+  Bug fixes, added missing files and new functions implemented.
+
+Changes from previous release 0.4.0
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+
+* [fix] Committing missing file for the namespace library
+  (libaxl-ns.def).
+
+* [fix] General updates to the Makefile.win infrastructure to make Axl
+  library to be compiled under windows.
+
+* [fix] Making content enclosed by <![CDATA[..]]> declarations to be
+  flagged as is while reading xml documents.
+
+* [fix] added const declarations to axl_stream_to_upper_copy and
+  axl_stream_to_lower_copy.
+
+* [fix] Updated documentation for
+  axl_node_annotate_get_int/string/double to include a reference to the
+  default value returned if the key provided doesn't exists.
+
+* [fix] Added more documentation to annotate functions describing that
+  annotating double/int/string values, without using the proper
+  function, will lead to unpredictable results.
+
+* [fix] Added casting to the axl_factory_get function to make VC to
+  not complain (Reported and Fixed by Thomas Unterleitner).
+
+* [fix] Included support o calculate how many bytes will hold a
+  printf-like format going to be used with vsnprintf function,
+  allowing to also support platform that provides a broken
+  implementation which just returns -1 if provided a NULL buffer
+  (expecting to receive the amount of memory required to allocate,
+  like GNU/Linux platform does). This fixes Microsoft Windows
+  compilation with VC and VS compiler. Internal API implemented:
+
+    - axl_stream_vprintf_len
+    - axl_stream_printf_len
+
+   Previous will only be used as a fall back when no vasprintf is available in
+   the platform and the vsnprintf function return -1 if it is requested to
+   return the size to allocate). Added comprehensive tests to ensure previous
+   functions provided the proper values.
+
+* [fix] Making axl_node_set_cdata_content to use memcpy instructions to produce
+  better performance.
+
+* [fix] Fixed bugs at axl_error_new function.
+
+* [fix] Added some documentation to the axl_list_new and update
+  Makefile.win to include the new flag used by the library (-lm).
+
+* [fix] Adding math library link flag to the pkg-config file.
+
+* [fix] Added an internal definition to support long long type inside
+  visual studio and making axl_stream_vprintf_len to not return -1 if
+  an null argument is found.
+
+* [fix] Committing an update to the axl_log to make it compilable from
+  visual c.
+
+* [fix] Updating export symbols file (.def) for windows.
+
+* [new] Committing files to compile LibAxl using visual studio express
+  2005 (libaxl, libaxl-ns and test). Checked all tests runs properly.
+cd d
+* [fix] Fixed bugs inside the axl_strdup_printf family of functions.
+
+* [fix] making axl_stream_vprintf_len to use _vscprintf under windows
+  platform if not used gcc as compiler.
+
+* [fix] Updates to visual studio solution definition.
+
+* [fix] Updating autoconf files to include visual studio files. 
+
+* [fix] Making axl_stream_vprintf_len to support a fallback method if
+  not found _vscprintf in the windows platform. To activate it use:
+  AXL_USE_VPRINTF_LEN.
+
+* [fix] Detecting if _vscprintf is available while compiling axl on
+  windows platform, and using an alternative method.
+
+* [fix] More fixings to make axl to be compilable with Visual C 6.0
+
+* [fix] Fixed some constant declarations.
+
+* [fix] Committing general instructions to make Axl library to be
+  compiled under windows (added to the extra dist set).
+
+* [new] Added a new function to expose an internal API that allows to
+  escape xml invalid chars (&, <, >, ' and "). API added:
+
+  - axl_node_content_copy_and_escape
+
+* [new] Added a new function which allows to configure a new node
+  child for a parent and brother of a reference node provided:
+
+  - axl_node_set_child_after
+
+About Advanced Software Production Line, S.L.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Advanced Software Production Line is leading the Af-Arch project: a
+  complete framework to develop distributed application to manage
+  enterprise process.
+
+  Af-Arch project uses Axl library to support its XML requirements
+  while exchanging data between nodes.
+
+  Advanced Software Production Line also provides GNU/Linux support
+  and consulting services to enable organization to introduce
+  GNU/Linux inside its process, making other platforms to interact
+  with GNU/Linux.
+
+  Contact us, using English or Spanish, to get commercial support
+  and/or XML based development services.
+
+  You can reach us:
+
+       http://www.aspl.es - info@aspl.es
+
+  We hope Axl Library help you. Enjoy Axl Library!
+
+--
+Francis Brosnan Blázquez           - francis@aspl.es
+Advanced Software Production Line  - http://www.aspl.es
+2th Jan 2006, Madrid (Spain)
