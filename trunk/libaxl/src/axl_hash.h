@@ -70,7 +70,7 @@ void            axl_hash_insert_full  (axlHash        * hash,
 				       axlDestroyFunc   destroy_data);
 
 void            axl_hash_remove       (axlHash    * hash,
-				       axlPointer key);
+				       axlPointer   key);
 
 bool            axl_hash_exists       (axlHash   * hash,
 				       axlPointer  key);
