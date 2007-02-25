@@ -116,7 +116,7 @@ unsigned int axl_hash_string (axlPointer _key)
 	 * check it */
 	int    g, h = 0;
 	char * key  = _key;
-  
+
 	/* hashing taken from the Red Dragon book!! */
 	while (*key) {
 		h = (h << 4) + *key;
@@ -216,7 +216,6 @@ axlHashNode * __axl_hash_internal_lookup (axlHash * hash, axlPointer key)
 	axlHashNode * node;
 
 	axl_return_val_if_fail (hash, NULL);
-	axl_return_val_if_fail (key, NULL);
 
 	/* get the node at the provided position */
 	if (hash->hash_size == 0)
@@ -433,7 +432,6 @@ void       axl_hash_insert_full (axlHash        * hash,
 
 	/* check incoming data */
 	axl_return_if_fail (hash);
-	axl_return_if_fail (key);
 
 	/* check the really basic case where the hash has no data
 	 * stored yet. */
@@ -573,7 +571,6 @@ void            axl_hash_remove       (axlHash    * hash,
 	int           pos;
 
 	axl_return_if_fail (hash);
-	axl_return_if_fail (key);
 	
 	/* do not perform any operation if the hash is empty */
 	if (hash->hash_size == 0)
