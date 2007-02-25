@@ -654,7 +654,6 @@ axlPointer axl_hash_get         (axlHash * hash,
 	axlHashNode * node;
 
 	axl_return_val_if_fail (hash, NULL);
-	axl_return_val_if_fail (key, NULL);
 
 	/* lookup using internal function */
 	node =  __axl_hash_internal_lookup (hash, key);
