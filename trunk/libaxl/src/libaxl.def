@@ -255,6 +255,7 @@ axl_node_attr_cursor_has_item
 axl_node_attr_cursor_has_next
 axl_node_attr_cursor_new
 axl_node_attr_cursor_next
+axl_node_content_copy_and_escape
 axl_node_copy
 axl_node_create
 axl_node_create_ref
@@ -305,6 +306,7 @@ axl_node_set_attribute_ref
 axl_node_set_cdata_content
 axl_node_set_cdata_content_from_factory
 axl_node_set_child
+axl_node_set_child_after
 axl_node_set_comment
 axl_node_set_content
 axl_node_set_content_from_factory
