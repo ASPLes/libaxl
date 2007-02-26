@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="C:\msys\1.0\include;&quot;C:\msys\1.0\home\acinom\af-arch\trunk\libaxl\ns&quot;;&quot;C:\msys\1.0\home\acinom\af-arch\trunk\libaxl\src&quot;"
+				AdditionalIncludeDirectories="C:\msys\1.0\include;..\ns;..\src"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;AXL_NS_SUPPORT"
 				MinimalRebuild="false"
 				BasicRuntimeChecks="0"
