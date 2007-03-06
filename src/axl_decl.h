@@ -773,7 +773,7 @@ AxlDebugLevel;
 #define axl_new(type, count) (type *) calloc (count, sizeof (type))
 
 /** 
- * @brief The the provided pointer that was allocated using \ref
+ * @brief Free the provided pointer that was allocated using \ref
  * axl_new.
  * 
  * @param ref The reference to deallocate.

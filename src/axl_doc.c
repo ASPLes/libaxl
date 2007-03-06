@@ -1117,6 +1117,34 @@ axlDoc * __axl_doc_parse_common (const char * entity, int entity_size,
  *
  * This function allows to create the xml document representation the
  * must be used to add childs to it.
+ *
+ * The following is a simple example that creates a xml document (\ref
+ * axlDoc) with a single root node (\ref axlNode):
+ * \code
+ * // some variables 
+ * axlDoc  * doc;
+ * axlNode * node;
+ *
+ * // dump content variables
+ * char    * content;
+ * int       content_size;
+ *
+ * // create the document 
+ * doc = axl_doc_create (NULL, NULL, true);
+ *
+ * // create the root document node
+ * node = axl_node_create ("root-node");
+ * 
+ * // configure it as the root 
+ * axl_doc_set_root (doc, node);
+ *
+ * // dump pretty
+ * axl_doc_dump_pretty (doc, &content, &content_size, 4);
+ *
+ * // print the content and free
+ * printf ("document size=%d, content: %s\n", content_size, content);
+ * axl_free (content);
+ * \endcode
  * 
  * @param version The xml document version. This value is optional. If
  * NULL is used, the library will use "1.0" as version value.
