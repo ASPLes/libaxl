@@ -2604,6 +2604,10 @@ void      axl_node_set_cdata_content  (axlNode * node,
 	axl_return_if_fail (node);
 	axl_return_if_fail (content);
 
+	/* reconfigure content_size if found -1 value */
+	if (content_size == -1)
+		content_size = strlen (content);
+
 	/* allocate enough memory to hold <![CDATA[ and ]]> plus the
 	 * content provided. */
 	cdata = axl_new (char, 13 + content_size); 
