@@ -2424,6 +2424,7 @@ bool           axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 	axlStack           * stack;
 	axlDtdElement      * element;
 	bool                 top_level;
+	char               * err_msg;
 	
 	/* perform some checkings */
 	axl_return_val_if_fail (doc, false);
@@ -2555,11 +2556,16 @@ bool           axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 			if (element == NULL) {
 				__axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "found that the node <%s> doesn't have DTD especification", 
 					   axl_node_get_name (parent));
-				axl_error_new (-1, "Found a node that doesn't have a DTD element espefication to validate it, DTD validation failed", NULL, error);
+				/* prepare the error message */
+				err_msg = axl_strdup_printf ("Found a node <%s> that doesn't have a DTD element espefication to validate it, DTD validation failed",
+							     axl_node_get_name (parent));
+				axl_error_new (-1, err_msg, NULL, error);
+				axl_free (err_msg);
+
 				axl_stack_free (stack);
 				return false;
-			}
-		}
+			} /* end if */
+		} /* end if */
 
 		/* set the top level status */
 		top_level = false;
