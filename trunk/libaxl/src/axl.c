@@ -103,9 +103,7 @@
  * of detail while accessing to the data (comments, process
  * instructions, xml nodes, and content).
  * 
- *  - DTD validation. At this moment DTD validation is limited to the
- * <b><!ELEMENT</b> directive, allowing to only validate XML
- * structure.
+ *  - Full DTD validation, including <!ATTLIST>, <!ENTITY> and <!ELEMENT> elements.
  *
  *  - Two modes to inspect the xml documents at the same time,
  *  <b>MIXED API</b>: an API to traverse the document allowing access
@@ -546,11 +544,6 @@
  * which allows to specify the document grammar, how are nested
  * nodes, which attributes could contain, or if the are allocated to
  * be empty nodes or nodes that must have another child nodes.
- *
- * <i><b>NOTE:</b> At this moment Axl only support <b><!ELEMENT</b> directive,
- * which only allows to check XML document structure. Future releases
- * will add <b><!ATTLIST</b> support which allows to configure
- * restrictions applied to node attributes.</i>
  *
  * Let start with the DTD syntax used to configure restrictions about
  * node structure:

@@ -1322,6 +1322,9 @@ bool __find_attr_decl (axlPointer _element, axlPointer data)
  * @param prefix The reference prefix to recognize. Values allowed
  * are: % (DTD references) and & (general entity references).
  *
+ * @param error Optional reference to the axlError to report textual
+ * diagnostic errors.
+ *
  * @return The function return \ref false if some error while
  * resolving entity references was found. Otherwise the function
  * return true.
@@ -3015,7 +3018,7 @@ bool __find_dtd_attr (axlPointer _element, axlPointer data)
  * 
  * @param dtd A reference to the DTD document.
  *
- * @param name The xml node that is requested to return all attribute
+ * @param nodeName The xml node that is requested to return all attribute
  * declarations.
  * 
  * @return A reference to the \ref axlDtdAttribute or NULL if it
