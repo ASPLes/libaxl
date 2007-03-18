@@ -92,6 +92,10 @@ struct _axlStream {
 
 	/* current stream size */
 	int    stream_size;
+
+	/* stream buffer size (maximum amount of bytes to hold, used
+	 * also to measure the temporal buffer) */
+	int    buffer_size;
 	
 	/* previous inspected stream size */
 	int    previous_inspect;
@@ -129,7 +133,7 @@ struct _axlStream {
 	/* Temporal buffer used by the stream to handle prebuffering
 	 * operations.
 	 */
-	char  temp[STREAM_BUFFER_SIZE];
+	char      * temp;
 
 	/* more variables used to perform work: at get until */
 	char      * valid_chars;
@@ -183,6 +187,12 @@ struct _axlStream {
  * 
  * @param stream The stream where the pre-buffering operation will be
  * performed.
+ *
+ * @param appended_content New content to be included at the begining
+ * of the stream while doing the prebuffer operation. This value could
+ * be null.
+ *
+ * @param appended_size The size for the appended content to be added.
  * 
  * @return true if the requested padding and buffer size were
  * filled or false if end of file was reached. In that case the
@@ -196,13 +206,10 @@ bool axl_stream_prebuffer (axlStream * stream)
 	axl_return_val_if_fail (stream, false);
 
 	/* no prebuffering is the stream type is not a file descriptor
-	 * source */
-	if (stream->type != STREAM_FD)
+	 * source and if the socket is closed */
+	if (stream->type != STREAM_FD || stream->fd == -1) {
 		return false;
-
-	/* no prebuffering operation if the socket is closed */
-	if (stream->fd == -1)
-		return false;
+	} /* end if */
 
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "prebuffering the stream..");
 
@@ -224,7 +231,7 @@ bool axl_stream_prebuffer (axlStream * stream)
 
 		/* update the index to the positioned at the next byte
 		 * available on the buffer */
-		stream->stream_size  = stream->stream_size - stream->stream_index;
+		stream->stream_size  = (stream->stream_size - stream->stream_index);
 	}else {
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "   nothing to prebuffer on the tail");
 		stream->stream_size  = 0;
@@ -238,7 +245,7 @@ bool axl_stream_prebuffer (axlStream * stream)
 
 	/* read current content */
 	bytes_read = read (stream->fd, stream->stream + stream->stream_size,
-			   STREAM_BUFFER_SIZE - stream->stream_size);
+			   stream->buffer_size - stream->stream_size);
 
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "   bytes read from the file: %d", bytes_read);
 
@@ -359,11 +366,13 @@ axlStream * axl_stream_new (const char * stream_source, int stream_size,
 
 		/* create the stream holder */
 		stream               = axl_new (axlStream, 1);
+		stream->buffer_size  = STREAM_BUFFER_SIZE;
 		stream->type         = STREAM_FD;
 		stream->fd           = fd;
 
 		/* allocate 4k to perform streaming */
-		stream->stream       = axl_new (char, STREAM_BUFFER_SIZE + 1);
+		stream->stream       = axl_new (char, stream->buffer_size + 1);
+		stream->temp         = axl_new (char, stream->buffer_size + 1);
 
 		/* prebuffer */
 		axl_stream_prebuffer (stream);
@@ -380,6 +389,7 @@ axlStream * axl_stream_new (const char * stream_source, int stream_size,
 
 		/* create the stream holder */
 		stream               = axl_new (axlStream, 1);
+		stream->buffer_size  = stream_size;
 		stream->type         = STREAM_MEM;
 
 		/* copy source */
@@ -470,7 +480,7 @@ while (chunk [i] != 0 && (stream->stream + stream->stream_index) [i] != 0) {\
  * - <b>-2</b> means that the parameters received are wrong either
  * because stream is a NULL reference or because chunk is the same.
  */
-int         axl_stream_inspect (axlStream * stream, char * chunk, int inspected_size)
+int         axl_stream_inspect (axlStream * stream, const char * chunk, int inspected_size)
 {
 	int iterator;
 
@@ -492,7 +502,7 @@ int         axl_stream_inspect (axlStream * stream, char * chunk, int inspected_
  * 
  * @return See \ref axl_stream_inspect.
  */
-int         axl_stream_peek            (axlStream * stream, char * chunk, int inspected_size)
+int         axl_stream_peek            (axlStream * stream, const char * chunk, int inspected_size)
 {
 	int iterator;
 
@@ -602,6 +612,74 @@ void axl_stream_accept (axlStream * stream)
 	if (stream->last_chunk != NULL)
 		axl_free (stream->last_chunk);
 	stream->last_chunk = NULL;
+
+	return;
+}
+
+/** 
+ * @brief Push new content at the begin of the stream.
+ * 
+ * @param stream The stream that will be updated with new content.
+ *
+ * @param content The content to be added.
+ *
+ * @param size The size of the content to be added.
+ */
+void axl_stream_push (axlStream * stream, const char * content, int size)
+{
+	axl_return_if_fail (stream && content);
+	
+	/* place the content at the begin of the stream */
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "calling to push the stream..");
+
+	/* check if the current stream buffer could hold the pushed
+	 * content plus the content that is already placed */
+	if (stream->stream_size < (stream->stream_size - stream->stream_index + size)) {
+		/* seems we can't hold the content at this moment, so, update the stream size */
+		stream->buffer_size = stream->stream_size - stream->stream_index + size;
+
+		/* alloc a new temporal buffer */
+		axl_free (stream->temp);
+		stream->temp = axl_new (char, stream->buffer_size + 1);
+		memcpy (stream->temp, content, size);
+		
+		/* displace memory already read to be at the begining
+		 * of the stream */
+		memcpy (stream->temp + size, stream->stream + stream->stream_index,
+			stream->stream_size - stream->stream_index);
+
+		/* now realloc the buffer */
+		axl_free (stream->stream);
+		stream->stream = axl_new (char, stream->buffer_size + 1);
+
+		/* now copy displaced content back to the stream */
+		memcpy (stream->stream, stream->temp, 
+			(stream->stream_size - stream->stream_index) + size);
+	} else {
+
+		/* copy the content */
+		memcpy (stream->temp, content, size);
+
+		/* displace memory already read to be at the begining
+		 * of the stream */
+		memcpy (stream->temp + size, stream->stream + stream->stream_index,
+			stream->stream_size - stream->stream_index);
+
+		/* now copy displaced content back to the stream */
+		memcpy (stream->stream, stream->temp, 
+			(stream->stream_size - stream->stream_index) + size);
+
+	} /* end if */
+
+	/* update the index to the positioned at the next byte
+	 * available on the buffer */
+	stream->stream_size  = (stream->stream_size - stream->stream_index) + size;
+
+	/* reset the index */
+	stream->stream_index = 0;
+
+	/* clean previous state */
+	axl_stream_accept (stream);
 
 	return;
 }
@@ -1506,6 +1584,9 @@ void axl_stream_free (axlStream * stream)
 	/* free lengths */
 	axl_free (stream->lengths);
 
+	/* free temporal buffer */
+	axl_free (stream->temp);
+
 	/* release memory allocated by the stream received. */
 	axl_free (stream);
 
@@ -1765,6 +1846,7 @@ void      axl_stream_trim            (char * chunk)
 void        axl_stream_trim_with_size  (char * chunk, int * trimmed)
 {
 	int    iterator;
+	int    iterator2;
 	int    end;
 	int    total;
 
@@ -1803,7 +1885,14 @@ void        axl_stream_trim_with_size  (char * chunk, int * trimmed)
 	total += iterator;
 	
 	/* copy the exact amount of non white spaces items */
-	memcpy (chunk, chunk + iterator, end - iterator + 1);
+	iterator2 = 0;
+	while (iterator2 < (end - iterator + 1)) {
+		/* copy the content */
+		chunk [iterator2] = chunk [iterator + iterator2];
+
+		/* update the iterator */
+		iterator2++;
+	}
 	chunk [ end - iterator + 1] = 0;
 
 	if (trimmed != NULL)
@@ -2078,7 +2167,7 @@ char    * axl_stream_strdup_printf_len (const char * chunk, int * chunk_size, ..
  * char ** result;
  *
  * // split the provided value using the ':', ';' and ',' as separators.
- * result = axl-stream_split (value, 3, ":", ";", ",");
+ * result = axl_stream_split (value, 3, ":", ";", ",");
  * \endcode
  *
  * The value returned must be deallocated using \ref axl_stream_freev.

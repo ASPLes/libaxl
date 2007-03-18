@@ -4867,6 +4867,64 @@ void                 axl_node_attr_cursor_free      (axlAttrCursor * cursor)
 	return;
 }
 
+
+/** 
+ * @internal Function that helps axl_node_attr_foreach to iterate all
+ * attributes.
+ */
+bool __axl_node_attr_foreach_aux (axlPointer key, axlPointer data, axlPointer user_data, axlPointer user_data2, axlPointer user_data3)
+{
+	return ((axlNodeAttrForeachFunc) user_data) (key, data, user_data2, user_data3);
+}
+
+/** 
+ * @brief Allows to provide a function which is called foreach
+ * attribute installed on the provided node.
+ *
+ * This function will allow you to operate on every attribute
+ * installed, doing an foreach operation. This is an alternative API
+ * to the \ref axlAttrCursor, which could be used to save allocations.
+ * 
+ * @param node The node for which the provided function will be called
+ * for each attribute found.
+ *
+ * @param func The foreach function to be called.
+ *
+ * @param data User defined data to be passed to the foreach function.
+ */
+void            axl_node_attr_foreach          (axlNode       * node, 
+						axlNodeAttrForeachFunc func, 
+						axlPointer      data,
+						axlPointer      data2)
+{
+	axlNodeAttr * attr;
+	axl_return_if_fail (node);
+	axl_return_if_fail (func);
+	
+	/* if no attributes no foreach operation */
+	if (node->attributes == NULL)
+		return;
+
+	/* store the attribute using the general case */
+	if (node->attr_num < 11) {
+		/* handled as a simple list */
+		attr = (axlNodeAttr *) node->attributes;
+		while (attr != NULL) {
+			/* call to notify each attribute */
+			if (func (attr->attribute, attr->value, data, data2))
+				return;
+
+			/* get the next */
+			attr = attr->next;
+		} /* end while */
+	} else {
+		/* handled as a hash */
+		axl_hash_foreach3 ((axlHash *) node->attributes, __axl_node_attr_foreach_aux, func, data, data2);
+	} /* end if */
+
+	return;
+}
+
 /**
  * @}
  */

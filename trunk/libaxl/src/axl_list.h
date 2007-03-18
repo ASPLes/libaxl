@@ -82,6 +82,8 @@ axlPointer axl_list_get_nth   (axlList * list, int position);
 
 axlPointer axl_list_lookup    (axlList * list, axlLookupFunc func, axlPointer data);
 
+bool       axl_list_find_string (axlPointer element, axlPointer data);
+
 int        axl_list_length (axlList * list);
 
 void       axl_list_free (axlList * list);

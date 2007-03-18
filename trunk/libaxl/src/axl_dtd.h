@@ -89,18 +89,30 @@ char               * axl_dtd_item_node_get_value (axlDtdElementListNode * node);
 AxlDtdTimes          axl_dtd_item_node_get_repeat (axlDtdElementListNode * node);
 
 bool                 axl_dtd_entity_exists    (axlDtd            * dtd, 
-					       char              * name,
+					       const char        * name,
 					       axlDtdEntityType    type);
 
 char               * axl_dtd_entity_value     (axlDtd            * dtd, 
-					       char              * name,
+					       const char        * name,
 					       axlDtdEntityType    type);
+
+axlDtdAttribute    * axl_dtd_get_attr         (axlDtd * dtd,
+					       const char * nodeName);
+
+int                  axl_dtd_get_attr_contraints (axlDtd * dtd,
+						  const char * nodeName);
 
 void                 axl_dtd_free             (axlDtd * dtd);
 
 void                 axl_dtd_element_free     (axlDtdElement * element);
 
 void                 axl_dtd_item_list_free   (axlDtdElementList * list);
+
+bool                 axl_dtd_check_entity_ref_and_expand  (axlDtdEntityResolver   resolver, 
+							   axlPointer             data,
+							   axlStream            * stream, 
+							   const           char * prefix,
+							   axlError            ** error);
 
 
 /* DON'T USE THIS FUNCTIONS, PROTOTYPES DECLARATIONS */
