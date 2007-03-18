@@ -1426,6 +1426,7 @@ bool __axl_dtd_parse_attlist (axlDtd * dtd, axlStream * stream, axlError ** erro
 	int                   matched_chunk = -1;
 	axlDtdAttribute     * attribute     = NULL;
 	axlDtdAttributeDecl * decl          = NULL;
+	char                * err_msg;
 
 	/* init the dtd attr list */
 	if (dtd->attributes == NULL)
@@ -1550,14 +1551,32 @@ bool __axl_dtd_parse_attlist (axlDtd * dtd, axlStream * stream, axlError ** erro
 			 axl_stream_get_following (stream, 30));
 
 		/* get default declaration value */
-		decl->defaults = ATT_IMPLIED;
 		if (axl_stream_inspect (stream, "#REQUIRED", 9) > 0) {
 			decl->defaults = ATT_REQUIRED;
 		} else if (axl_stream_inspect (stream, "#IMPLIED", 8) > 0) {
-			/* do nothing */
-		} else if (axl_stream_inspect (stream, "#FIXED", 6) > 0) {
-			decl->defaults = ATT_FIXED;
+			decl->defaults = ATT_IMPLIED;
+		} else {
+			decl->defaults = ATT_IMPLIED;
+			if (axl_stream_inspect (stream, "#FIXED", 6) > 0) {
+				decl->defaults = ATT_FIXED;
+
+				/* consume previous white spaces */
+				AXL_CONSUME_SPACES (stream);
+			}
+
+			/* check default value for this case */
+			if (! (axl_stream_peek (stream, "\"", 1) > 0 ||
+			       axl_stream_peek (stream, "'", 1) > 0)) {
+				err_msg = axl_strdup_printf ("Unable to find default attribute declaration (#REQUIRED, #IMPLIED, #FIXED)  for attribute %s, node <%s>",
+							     decl->name, attribute->name);
+				axl_error_new (-1, err_msg, stream, error);
+				axl_free (err_msg);
+				return false;
+			} /* end if */
 		} /* end if */
+
+		/* consume previous white spaces */
+		AXL_CONSUME_SPACES (stream);
 
 		/* nullify to check this value later */
 		string_aux = NULL;
