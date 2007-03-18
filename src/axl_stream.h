@@ -53,15 +53,17 @@ axlStream * axl_stream_new             (const char * stream_source,
 					int    fd_handler,
 					axlError ** error);
 
-int         axl_stream_inspect         (axlStream * stream, char * chunk, int inspected_size);
+int         axl_stream_inspect         (axlStream * stream, const char * chunk, int inspected_size);
 
-int         axl_stream_peek            (axlStream * stream, char * chunk, int inspected_size);
+int         axl_stream_peek            (axlStream * stream, const char * chunk, int inspected_size);
 
 int         axl_stream_inspect_several (axlStream * stream, int chunk_num, ...);
 
 void        axl_stream_accept          (axlStream * stream);
 
-void        axl_stream_move            (axlStream * stream, int count);
+void        axl_stream_move            (axlStream * stream, int index);
+
+void        axl_stream_push            (axlStream * stream, const char * content, int size);
 
 bool        axl_stream_fall_outside    (axlStream * stream, int inspected_size);
 

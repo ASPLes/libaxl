@@ -1191,6 +1191,41 @@ typedef bool (* axlStackForeach2) (axlPointer stack_data, axlPointer user_data, 
  */
 typedef bool (* axlStackForeach3) (axlPointer stack_data, axlPointer user_data, axlPointer user_data2, axlPointer user_data3);
 
+/** 
+ * @brief Foreach function used by \ref axl_node_attr_foreach function.
+ * 
+ * @param key The attribute name.
+ *
+ * @param value The attribute value.
+ *
+ * @param data User defined pointer provided at \ref
+ * axl_node_attr_foreach.
+ *
+ * @param data2 Second user defined data provided at \ref
+ * axl_node_attr_foreach.
+ *
+ * @return The foreach function can stop the process at a particular
+ * attribute by returning \ref true ("item found"). To iterate all
+ * attributes return \ref false.
+ */
+typedef bool (* axlNodeAttrForeachFunc) (const char * key, const char * value, axlPointer data, axlPointer data2);
+
+/** 
+ * @brief Entity resolver function used by the library to translate
+ * entity references into the replacement text. This is normally used
+ * by the library itself, not by the application programmer.
+ *
+ * This handler is currently used at \ref axl_dtd_check_entity_ref_and_expand
+ * 
+ * @param entityName The entity name that is being requested to be
+ * resolved.
+ * 
+ * @return The user defined data provided at \ref
+ * axl_dtd_check_entity_ref_and_expand, which is passed to the
+ * resolver function once it is executed.
+ */
+typedef const char * (* axlDtdEntityResolver) (const char * entityName, axlPointer data);
+
 /* @} */
 #endif
 

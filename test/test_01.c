@@ -1,6 +1,101 @@
 #include <axl.h>
 #include <axl_ns.h>
 
+/** 
+ * @brief Test DTD attribute declaration support <!ATTLIST >
+ * 
+ * @param error The optional axlError to be used to report errors.
+ * 
+ * @return true if the validity test is passed, false if not.
+ */
+bool test_30 (axlError ** error) {
+	
+	axlDtd          * dtd;
+	axlDtdAttribute * attr;
+	axlDoc          * doc;
+
+	dtd = axl_dtd_parse_from_file ("test_30.dtd", error);
+	if (dtd == NULL)
+		return false;
+
+	/* get the declarations found */
+	attr = axl_dtd_get_attr (dtd, "node");
+	if (attr == NULL) {
+		axl_error_new (-1, "expected to find attribute declaration, but not found", NULL, error);
+		return false;
+	} /* end if */
+
+	/* get the declarations found */
+	attr = axl_dtd_get_attr (dtd, "node1");
+	if (attr != NULL) {
+		axl_error_new (-1, "expected to NOT find attribute declaration, but not found", NULL, error);
+		return false;
+	} /* end if */
+
+	/* check the number of contraints */
+	if (axl_dtd_get_attr_contraints (dtd, "node") != 3) {
+		axl_error_new (-1, "expected to find 2 contraints for the <node>, but not found", NULL, error);
+		return false;
+	} /* end if */
+
+	doc = axl_doc_parse_from_file ("test_30.xml", error);
+	if (doc == NULL) {
+		axl_error_new (-1, "unable to parse file to check attribute validation", NULL, error);
+		return false;
+	}
+
+	/* validate */
+	if (! axl_dtd_validate (doc, dtd, error))
+		return false;
+
+	axl_doc_free (doc);
+
+	doc = axl_doc_parse_from_file ("test_30a.xml", error);
+	if (doc == NULL) {
+		axl_error_new (-1, "unable to parse file to check attribute validation", NULL, error);
+		return false;
+	}
+
+	/* validate */
+	if (axl_dtd_validate (doc, dtd, error)) {
+		axl_error_new (-1, "Expected to find non-proper validation for enum value (2), inside attlist declaration", NULL, error);
+		return false;
+	}
+	axl_error_free (*error);
+
+	axl_dtd_free (dtd);
+
+	dtd = axl_dtd_parse_from_file ("test_30b.dtd", error);
+	if (dtd == NULL)
+		return false;
+
+	
+	/* validate */
+	if (axl_dtd_validate (doc, dtd, error)) {
+		axl_error_new (-1, "Expected to  find non-proper validation for required value, inside attlist declaration", NULL, error);
+		return false;
+	}
+	axl_error_free (*error);
+	
+	axl_doc_free (doc);
+
+	doc = axl_doc_parse_from_file ("test_30b.xml", error);
+	if (doc == NULL) {
+		axl_error_new (-1, "unable to parse file to check attribute validation", NULL, error);
+		return false;
+	}
+
+	/* validate */
+	if (! axl_dtd_validate (doc, dtd, error)) {
+		axl_error_new (-1, "Expected to FIND proper validation for required value, inside attlist declaration", NULL, error);
+		return false;
+	}
+
+	axl_doc_free (doc);
+	axl_dtd_free (dtd);
+	return true;
+}
+
 #ifdef AXL_NS_SUPPORT
 
 #define HTML_NS "http://www.w3.org/1999/xhtml"
@@ -2821,6 +2916,31 @@ bool test_01a (axlError ** error)
 	}
 
 	/* free the stream */
+	axl_stream_free (stream);
+
+	/* parse the string */
+	stream = axl_stream_new ("customer", -1, NULL, -1, error);
+	if (stream == NULL) 
+		return false;
+
+	axl_stream_push (stream, "provider ", 9);
+	if (! (axl_stream_peek (stream, "provider", 8) > 0)) {
+		axl_error_new (-1, "failed to check expected input at the stream after push operation", NULL, error);
+		return false;
+	} /* end if */
+
+	if (axl_stream_get_size (stream) != 17) {
+		axl_error_new (-1, "Found unexpected stream buffer size, while expecting 17", NULL, error);
+		return false;
+	} /* end if */
+
+	axl_stream_inspect (stream, "pro", 3);
+
+	if (! (axl_stream_inspect (stream, "vider ", 6) > 0)) {
+		axl_error_new (-1, "Expected to find an string value.. ('vider ') not found", NULL, error);
+		return false;
+	} /* end if */
+
 	axl_stream_free (stream);
 
 	return true;
@@ -5870,8 +5990,6 @@ int main (int argc, char ** argv)
 		return -1;
 	}	
 
-
-
 	if (test_12 (&error)) 
 		printf ("Test 12: Complex DTD validation (IV) [   OK   ]\n");
 	else {
@@ -6045,7 +6163,17 @@ int main (int argc, char ** argv)
 		axl_error_free (error);
 		return -1;
 	}
+
 #endif /* end #ifdef AXL_NS_SUPPORT */	
+
+	if (test_30 (&error)) {
+		printf ("Test 30: DTD attribute validation support [   OK   ]\n");
+	}else {
+		printf ("Test 30: DTD attribute validation support [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}
 
 	/* cleanup axl library */
 	axl_end ();

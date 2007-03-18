@@ -1013,6 +1013,10 @@ axlPointer axl_list_get_nth   (axlList * list, int position)
  *	return false;
  * }
  * \endcode
+ *
+ * In the case you create a list to hold string values, you can use
+ * \ref axl_list_find_string as lookup function predefined to perform
+ * the search.
  * 
  * @param list The list where the lookup will be performed.
  *
@@ -1047,6 +1051,30 @@ axlPointer axl_list_lookup    (axlList * list, axlLookupFunc func, axlPointer da
 
 	/* return no node found */
 	return NULL;
+}
+
+/** 
+ * @brief Helper function that could be used at \ref axl_list_lookup if
+ * the list created only contains strings.
+ *
+ * Use this function as a parameter for the lookup function at \ref
+ * axl_list_lookup.
+ *
+ * @param element The element at the list, in this case, an string value.
+ *
+ * @param data The data provided at \ref axl_list_lookup, in this
+ * case, the value we are looking.
+ * 
+ * @return \ref true if the string was found, \ref false if not.
+ */
+bool       axl_list_find_string (axlPointer element, axlPointer data)
+{
+	/* if the string received is null, just return false */
+	if (data == NULL)
+		return false;
+
+	/* return the comparison status */
+	return axl_cmp ((char *) element, (char *) data);
 }
 
 /** 

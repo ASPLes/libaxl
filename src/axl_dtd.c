@@ -137,8 +137,6 @@ struct _axlDtdAttributeDecl {
 	 * values are defined.
 	 */
 	axlList                  * enumvalues;
-	
-	
 };
 
 struct _axlDtdAttribute {
@@ -1256,9 +1254,6 @@ bool     __axl_dtd_parse_element (axlDtd * dtd, axlStream * stream, axlError ** 
  */
 void axl_dtd_attribute_decl_free (axlDtdAttributeDecl * decl)
 {
-	/* check data before releasing */
-	axl_return_if_fail (decl);
-
 	/* free the rule name */
 	if (decl->name != NULL)
 		axl_free (decl->name);
@@ -1270,10 +1265,151 @@ void axl_dtd_attribute_decl_free (axlDtdAttributeDecl * decl)
 	/* free enum declaration list if defined */
 	if (decl->enumvalues != NULL)
 		axl_list_free (decl->enumvalues);
+
+	/* free the node itself */
+	axl_free (decl);
 	
 	/* nothing more to do */
 	return;
 }
+
+/** 
+ * @internal function to dealloc an single attribute set decleration.
+ * 
+ * @param attribute The reference to dealloc.
+ */
+void axl_dtd_attribute_free (axlDtdAttribute * attribute)
+{
+	/* free the attribute list, name and the node itself */
+	axl_free (attribute->name);
+	axl_list_free (attribute->list);
+	axl_free (attribute);
+
+	return;
+}
+
+bool __find_attr_decl (axlPointer _element, axlPointer data)
+{
+	axlDtdAttributeDecl * decl = _element;
+	char                * name = data;
+
+	/* check the name */
+	if (axl_cmp (decl->name, name))
+		return true;
+
+	/* it is not the element */
+	return false;
+}
+
+/** 
+ * @brief Allows to check if the stream contains a reference to a
+ * entity, calling the resolver to get the replacement text to be
+ * placed.
+ * 
+ * @param resolver The function to be called with the replacement
+ * text. This function must return the replacement text or NULL if it
+ * fails. Failing to return a reference resolution will make the
+ * entity reference to appear as is.
+ *
+ * @param resolver The entity reference resolver function to be called
+ * to solve references found.
+ *
+ * @param data User defined data provided to the function, passed
+ * directly to the resolver function once executed.
+ *
+ * @param stream The stream where the entity reference could appear.
+ *
+ * @param prefix The reference prefix to recognize. Values allowed
+ * are: % (DTD references) and & (general entity references).
+ *
+ * @return The function return \ref false if some error while
+ * resolving entity references was found. Otherwise the function
+ * return true.
+ */
+bool axl_dtd_check_entity_ref_and_expand (axlDtdEntityResolver   resolver, 
+					  axlPointer             data,
+					  axlStream            * stream, 
+					  const char           * prefix,
+					  axlError            ** error)
+					  
+{
+	char       * string_aux;
+	char       * new_value;
+	int          index;
+
+	/* check if we have an entity reference using the provided prefix */
+	index = axl_stream_get_index (stream);
+	if (! (axl_stream_inspect (stream, prefix, 1) > 0))
+		return true;
+
+	/* get the entity reference until the end */
+	string_aux = axl_stream_get_until (stream, NULL, NULL, true, 1, ";");
+	if (string_aux == NULL) {
+		axl_error_new (-1, "null value received while expecting to find the entity reference to resolve.", stream, error);
+		return false;
+	} /* end if */
+
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found entity reference: %s%s;...resolving", prefix, string_aux);
+
+	/* resolve the reference */
+	new_value = (char *) resolver (string_aux, data);
+	if (new_value == NULL) {
+		axl_stream_move (stream, index);
+		return true;
+	} /* end if */
+
+	/* accept content consumed */
+	axl_stream_accept (stream);
+
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "entity resolved to: %s", new_value);
+
+	/* place the replacement data at the start of the stream */
+	new_value = axl_strdup_printf ("%s ", new_value);
+	axl_stream_push (stream, new_value, strlen (new_value));
+	axl_free (new_value);
+	
+	return true;
+}
+
+/** 
+ * @internal Entity resolver used by __axl_dtd_parse_attlist.
+ */
+const char * __axl_dtd_entity_resolver (const char * entityName, axlPointer data)
+{
+	/* return the entity resolution */
+	return axl_dtd_entity_value ((axlDtd *) data, entityName, PARAMETER_ENTITY);
+} /* end if */
+
+axlList * __axl_dtd_parse_enumvalues (const char * _enum_values)
+{
+	char    ** result;
+	int        iterator;
+	axlList  * list;
+
+	result   = axl_stream_split (_enum_values, 1, "|");
+	iterator = 0;
+	list     = axl_list_new (axl_list_always_return_1, axl_free);
+
+	
+	while (result[iterator]) {
+		/* clean the enum value */
+		axl_stream_trim (result[iterator]);
+
+		/* add to the list */
+		axl_list_add (list, axl_strdup (result[iterator]));
+
+		/* update the iterator value */
+		iterator++;
+
+	} /* end while */
+	
+	/* free tokens */
+	axl_stream_freev (result);
+	
+	/* return the list */
+	return list;
+}
+
 
 /** 
  * @internal
@@ -1288,15 +1424,9 @@ bool __axl_dtd_parse_attlist (axlDtd * dtd, axlStream * stream, axlError ** erro
 	axlDtdAttribute     * attribute     = NULL;
 	axlDtdAttributeDecl * decl          = NULL;
 
-	/* consume previous white spaces */
-	AXL_CONSUME_SPACES (stream);
-
-	/* get for the first element declaration */
-	if (! (axl_stream_inspect (stream, "<!ATTLIST", 9) > 0)) {
-		axl_error_new (-1, "Expected to receive a <!ATTLIST, but it wasn't found", stream, error);
-		axl_stream_free (stream);
-		return false;
-	}
+	/* init the dtd attr list */
+	if (dtd->attributes == NULL)
+		dtd->attributes = axl_list_new (axl_list_always_return_1, (axlDestroyFunc) axl_dtd_attribute_free);
 
 	/* consume previous white spaces */
 	AXL_CONSUME_SPACES (stream);
@@ -1309,18 +1439,31 @@ bool __axl_dtd_parse_attlist (axlDtd * dtd, axlStream * stream, axlError ** erro
 		return false;
 	}
 
-	/* create the axlDtdAttribute holder */
-	attribute        = axl_new (axlDtdAttribute, 1);
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found dtd attr declaration for node: <%s>", string_aux);
 
-	/* record the node to which the list of rules applies */
-	axl_stream_nullify (stream, LAST_CHUNK);
-	attribute->name  = string_aux;
+	/* find the node that holds all attr declarations for the node found */
+	attribute         = axl_dtd_get_attr (dtd, string_aux);
 
-	/* init the attribute rule list */
-	attribute->list  = axl_list_new (axl_list_always_return_1, (axlDestroyFunc) axl_dtd_attribute_decl_free);
-	
+	/* check if found */
+	if (attribute == NULL) {
+		/* create the axlDtdAttribute holder */
+		attribute = axl_new (axlDtdAttribute, 1);
+
+		/* record the node to which the list of rules applies */
+		axl_stream_nullify (stream, LAST_CHUNK);
+		attribute->name   = string_aux;
+
+		/* init the attribute rule list */
+		attribute->list   = axl_list_new (axl_list_always_return_1, (axlDestroyFunc) axl_dtd_attribute_decl_free);
+
+		/* now configure this new attribute inside the dtd */
+		axl_list_add (dtd->attributes, attribute);
+	} /* end if */
+
 	/* now get the list of attributes */
 	while (1) {
+		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "finding next att declaration");
+
 		/* consume previous white spaces */
 		AXL_CONSUME_SPACES (stream);
 
@@ -1331,7 +1474,7 @@ bool __axl_dtd_parse_attlist (axlDtd * dtd, axlStream * stream, axlError ** erro
 		/* get the attribute name the rules applies */
 		string_aux = axl_stream_get_until (stream, NULL, &matched_chunk, false, 1, " ");
 		if (string_aux == NULL) {
-			axl_error_new (-1, "Expected to receive a DTD attribute name for <!ATTLIST declaration, but not found", stream, error);
+			axl_error_new (-1, "Expected to receive an attribute name for <!ATTLIST declaration, but not found", stream, error);
 			axl_stream_free (stream);
 			return false;
 		}
@@ -1341,51 +1484,113 @@ bool __axl_dtd_parse_attlist (axlDtd * dtd, axlStream * stream, axlError ** erro
 		decl       = axl_new (axlDtdAttributeDecl, 1);
 		decl->name = string_aux;
 
+		/* add the attribute constraint to the list */
+		axl_list_add (attribute->list, decl);
+
+		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "find constraint for attribute name=%s", decl->name);
+
 		/* consume previous white spaces */
 		AXL_CONSUME_SPACES (stream);
 
-		/* get the rule type */
+		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "checking constraint type..");
+
+		/* check for an entity reference and expand the stream
+		 * content with its resolution */
+		if (! axl_dtd_check_entity_ref_and_expand (__axl_dtd_entity_resolver, dtd, stream, "%", error))
+			return false;
+
+		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "about to check attr constraint type, stream status: '%s'",
+			 axl_stream_get_following (stream, 30));
+		
+		/* now check the contraint type */
 		if (axl_stream_inspect (stream, "NOTATION", 8) > 0) {
 			/* parse notation declaration */
 		}else if (axl_stream_inspect (stream, "(", 1) > 0) {
 			/* parse enum declaration */
-		}else {
-			/* tokenized and string type */
-			string_aux = axl_stream_get_until (stream, NULL, &matched_chunk, false, 1, " ");
-			axl_stream_nullify (stream, LAST_CHUNK);
+			string_aux = axl_stream_get_until (stream, NULL, &matched_chunk, true, 1, ")");
 			if (string_aux == NULL) {
-				axl_error_new (-1, "Expected to receive a DTD attribute name for <!ATTLIST declaration, but not found", stream, error);
+				axl_error_new (-1, "expected to find enum declaration but termination caracter ')' was not found", stream, error);
 				axl_stream_free (stream);
 				return false;
-			}
-
+			} /* end if */
+			decl->type       = ENUMERATION_TYPE;
+			decl->enumvalues = __axl_dtd_parse_enumvalues (string_aux);
+		}else {
 			/* set the attribute type */
-			if (axl_cmp (string_aux, "CDATA"))
+			if (axl_stream_inspect (stream, "CDATA", 5) > 0)
 				decl->type = CDATA_ATTRIBUTE;
-			if (axl_cmp (string_aux, "ID"))
+			else if (axl_stream_inspect (stream, "ID", 2) > 0)
 				decl->type = TOKENIZED_TYPE_ID;
-			if (axl_cmp (string_aux, "IDREF"))
+			else if (axl_stream_inspect (stream, "IDREF", 5) > 0)
 				decl->type = TOKENIZED_TYPE_IDREF;
-			if (axl_cmp (string_aux, "IDREFS"))
+			else if (axl_stream_inspect (stream, "IDREFS", 6) > 0)
 				decl->type = TOKENIZED_TYPE_IDREFS;
-			if (axl_cmp (string_aux, "ENTITY"))
+			else if (axl_stream_inspect (stream, "ENTITY", 6) > 0)
 				decl->type = TOKENIZED_TYPE_ENTITY;
-			if (axl_cmp (string_aux, "ENTITIES"))
+			else if (axl_stream_inspect (stream, "ENTITIES", 8) > 0)
 				decl->type = TOKENIZED_TYPE_ENTITIES;
-			if (axl_cmp (string_aux, "NMTOKEN"))
-				decl->type = TOKENIZED_TYPE_NMTOKEN;
-			if (axl_cmp (string_aux, "NMTOKENS"))
+			else if (axl_stream_inspect (stream, "NMTOKENS", 8) > 0)
 				decl->type = TOKENIZED_TYPE_NMTOKENS;
-			
-			/* free value */
-			axl_free (string_aux);
-			
+			else if (axl_stream_inspect (stream, "NMTOKEN", 7) > 0)
+				decl->type = TOKENIZED_TYPE_NMTOKEN;
+			else {
+				axl_error_new (-1, "Unrecognied attr type declaration found, check your <!ATTLIST declaration", stream, error);
+				axl_stream_free (stream);
+				return false;
+			} /* end if */
 		} /* end if */
-		
+
+		/* consume previous white spaces */
+		AXL_CONSUME_SPACES (stream);
+
+		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "checking default value declaration, stream status: '%s'",
+			 axl_stream_get_following (stream, 30));
+
+		/* get default declaration value */
+		decl->defaults = ATT_IMPLIED;
+		if (axl_stream_inspect (stream, "#REQUIRED", 9) > 0) {
+			decl->defaults = ATT_REQUIRED;
+		} else if (axl_stream_inspect (stream, "#IMPLIED", 8) > 0) {
+			/* do nothing */
+		} else if (axl_stream_inspect (stream, "#FIXED", 6) > 0) {
+			decl->defaults = ATT_FIXED;
+		} /* end if */
+
+		/* nullify to check this value later */
+		string_aux = NULL;
+		if (axl_stream_inspect (stream, "\"", 1) > 0) {
+			/* get until */
+			string_aux = axl_stream_get_until (stream, NULL, NULL, true, 1, "\"");
+		} else if (axl_stream_inspect (stream, "'", 1) > 0) {
+			/* get until */
+			string_aux = axl_stream_get_until (stream, NULL, NULL, true, 1, "\"");
+		} /* end if */
+
+		/* check if default value was found */
+		if (string_aux != NULL) {
+
+			/* found default value, check if we have an
+			 * enumeration type, enforcing that the value
+			 * defined to be inside the enumeration */
+			if (decl->type == ENUMERATION_TYPE) {
+				if (axl_list_lookup (decl->enumvalues, axl_list_find_string, string_aux) == NULL) {
+					axl_error_new (-1, 
+						       "Configured a default value for an attribute list which only accepts a set of enum values that do not containt it.",
+						       stream, error);
+					axl_stream_free (stream);
+					return false;
+				} /* end if */
+			} /* end if */
+
+			/* nullify value and make string_aux to be
+			 * owned by the axlDtdAttributeDecl
+			 * reference */
+			axl_stream_nullify (stream, LAST_CHUNK);
+			decl->default_value = string_aux;
+		} /* end if */
+
 	} /* end while */
-	
-	
-	
+       	
 	/* properly parsed */
 	return true;
 }
@@ -1466,8 +1671,8 @@ bool __axl_dtd_parse_entity (axlDtd * dtd, axlStream * stream, axlError ** error
 	/* create a new entity */
 	entity = axl_new (axlDtdEntity, 1);
 
-	/* link the element to the stream */
-	axl_stream_link (stream, entity, (axlDestroyFunc) axl_dtd_entity_free);
+	/* set the entity and return true */
+	axl_list_add (dtd->entities, entity);
 
 	/* check for parameter entity definition */
 	if (axl_stream_inspect (stream, "%", 1) > 0) {
@@ -1541,9 +1746,6 @@ bool __axl_dtd_parse_entity (axlDtd * dtd, axlStream * stream, axlError ** error
 		return false;
 	}
 
-	/* set the entity and return true */
-	axl_list_add (dtd->entities, entity);
-
 	return true;
 }
 
@@ -1587,15 +1789,9 @@ axlDtd * __axl_dtd_parse_common (const char * entity, int entity_size,
 		}
 
 		/* check for attribute list declarations */
-		if (axl_stream_peek (stream, "<!ATTLIST", 9) > 0) {
+		if (axl_stream_inspect (stream, "<!ATTLIST", 9) > 0) {
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found DTD attribute list declaration");
 
-			/* ignore anything until > */
-			axl_stream_get_until (stream, NULL, NULL, true, 1, ">");
-			
-			/* first entity support */
-			continue;
-			
 			/* parse it */
 			if (! __axl_dtd_parse_attlist (dtd, stream, error))
 				return false;
@@ -1628,9 +1824,9 @@ axlDtd * __axl_dtd_parse_common (const char * entity, int entity_size,
 
 	/* update current root reference, the DTD root for the DTD
 	 * document already parsed */
-	dtd->root = __axl_dtd_get_new_root (dtd);
-
-
+	if (dtd->elements != NULL) 
+		dtd->root = __axl_dtd_get_new_root (dtd);
+	
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "DTD load COMPLETE");
 
 	axl_stream_unlink (stream);
@@ -2392,6 +2588,134 @@ bool     __axl_dtd_validate_element_type_empty (axlDtdElement  * element,
 	return true;
 }
 
+bool __axl_dtd_attr_validate_foreach (const char * key, const char * value, axlPointer data, axlPointer data2)
+{
+	axlDtdAttribute     * attribute = data;
+	axlError           ** error     = data2;
+	axlDtdAttributeDecl * decl;
+	char                * err_msg;
+
+	/* get declaration associated */
+	decl = axl_list_lookup (attribute->list, __find_attr_decl, (axlPointer) key);
+	
+	if (decl == NULL) {
+		/* found an error */
+		err_msg = axl_strdup_printf ("Found an attribute (%s) which is not specified by the attribute declaration for <%s>",
+					     key, attribute->name);
+		axl_error_new (-1, err_msg, NULL, error);
+		
+		/* free the cursor and the error message */
+		axl_free (err_msg);
+
+		/* return true here because we want to stop the process */
+		return true;
+		
+	} /* end if */
+
+	/* if the declaration is found, now check its
+	 * contraints */
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "checking contraint for attribute: %s=%s", decl->name, value);
+	if (decl->type == CDATA_ATTRIBUTE) {
+		/* found free attribute declaration, go ahed */
+	} else if (decl->type == ENUMERATION_TYPE) {
+		/* found an enumeration type, check and return */
+		if (axl_list_lookup (decl->enumvalues, axl_list_find_string, (char *) value) == NULL) {
+			/* found an error */
+			err_msg = axl_strdup_printf ("Found an attribute (%s) with a value not allowed by the enum declaration (%s) for the node <%s>",
+						     key, value, attribute->name);
+			axl_error_new (-1, err_msg, NULL, error);
+			
+			/* free the cursor and the error message */
+			axl_free (err_msg);
+			return true;
+		}
+	} else {
+		/* not supported yet */
+	}
+
+	/* return false to continue with the process */
+	return false;
+}
+
+bool __axl_dtd_attr_validate_required (axlPointer element, axlPointer data)
+{
+	axlNode             * node = data;
+	axlDtdAttributeDecl * decl = element;
+
+	switch (decl->defaults) {
+	case ATT_REQUIRED:
+		/* attribute required */
+		return !HAS_ATTR (node, decl->name);
+	case ATT_FIXED:
+		return !HAS_ATTR_VALUE (node, decl->name, decl->default_value);
+	default:
+		break;
+	} /* end switch */
+
+	/* return false for this because it is not obligatory
+	 * to have the attribute defined. */
+	return false;
+}
+
+/** 
+ * @internal Functions which validates the attribute declaration for
+ * the node provided, using attribute declarations found.
+ * 
+ * @param node The node to check for its attributes.
+ *
+ * @param dtd The dtd used to validate the node provided.
+ *
+ * @param error A reference to the axlError where the textual
+ * diagnostic error will be reported.
+ * 
+ * @return true if the node is validated, false if not.
+ */
+bool axl_dtd_attr_validate (axlNode * node, axlDtd * dtd, axlError ** error)
+{
+	axlDtdAttribute     * attribute;
+	axlDtdAttributeDecl * decl;
+	char                * err_msg;
+	axlError            * _error = NULL;
+
+	/* find attribute contraints for the node */
+	attribute = axl_dtd_get_attr (dtd, axl_node_get_name (node));
+	if (attribute == NULL)
+		return true;
+
+	/* we have an especification, run it */
+
+	/* for each attribute found, check against the spec */
+	axl_node_attr_foreach (node, __axl_dtd_attr_validate_foreach, attribute, &_error);
+
+	/* check the error */
+	if (! axl_error_was_ok (_error)) {
+		/* reconfigure error returned */
+		if (error != NULL)
+			*error = _error;
+		return false;
+	} /* end if */
+		
+	
+	/* now, for each contraint, check that all required nodes
+	 * exists */
+	decl = axl_list_lookup (attribute->list, __axl_dtd_attr_validate_required, node);
+	if (decl != NULL) {
+		if (decl->defaults == ATT_FIXED)
+			err_msg = axl_strdup_printf ("attribute required '%s' (or its value), due to #FIXED declaration, not found for node <%s>", 
+						     decl->name, attribute->name);
+		else 
+			err_msg = axl_strdup_printf ("attribute required '%s', due to #REQUIRED declaration, not found for node <%s>", 
+						     decl->name, attribute->name);
+		axl_error_new (-1, err_msg, NULL, error);
+		axl_free (err_msg);
+		return false;
+	} /* end if */
+
+	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "attributes validated for node=<%s>", attribute->name);
+	
+	return true;
+}
+
 /** 
  * @brief Allows to validate the given XML document (\ref axlDoc)
  * against the given document type definition (DTD, \ref axlDtd).
@@ -2435,7 +2759,7 @@ bool           axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 	/* validate the very first root node */
 	parent  = axl_doc_get_root (doc);
 	element = axl_dtd_get_root (dtd);
-	if (! NODE_CMP_NAME (parent, axl_dtd_get_element_name (element))) {
+	if ((element != NULL) && ! NODE_CMP_NAME (parent, axl_dtd_get_element_name (element))) {
 
 		/* because a DTD document could have several top level
 		 * elements, ensure this is not the case */
@@ -2448,11 +2772,20 @@ bool           axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 		} /* end if */
 	} /* end if */
 
+	/* check if the node has DTD element declaration */
+	if (element == NULL) {
+		err_msg = axl_strdup_printf ("There is not DTD element declaration to validate the node <%s>", 
+					     axl_node_get_name (parent));
+		axl_error_new (-1, err_msg, NULL, error);
+		axl_free (err_msg);
+		return false;
+	} /* end if */
+
 	/* check empty content spec */
 	if (axl_dtd_get_element_type (element) == ELEMENT_TYPE_EMPTY) {
 		/* check if the document provided have only one node */
-		return axl_node_is_empty (parent) && !axl_node_have_childs (parent);
-	}
+		return axl_node_is_empty (parent) && !axl_node_have_childs (parent) && axl_dtd_attr_validate (parent, dtd, error);
+	} /* end if */
 
 	/* queue initial nodes to validate */
 	stack     = axl_stack_new (NULL);
@@ -2463,6 +2796,10 @@ bool           axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 	do {
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "doing a DTD iteration: <%s>...",
 			   axl_node_get_name (parent));
+
+		/* validate attributes */
+		if (! axl_dtd_attr_validate (parent, dtd, error))
+			return false;
 
 		/* reach this position, the <parent> reference contains
 		 * a reference to the parent node, which will be used
@@ -2649,6 +2986,76 @@ axlDtdElement      * axl_dtd_get_element      (axlDtd * dtd, const char * name)
 
 	/* perform the lookup */
 	return axl_list_lookup (dtd->elements, __find_dtd_element, (axlPointer) name);
+}
+
+/** 
+ * @internal function used by \ref axl_dtd_get_attr to perform node
+ * lookups.
+ */
+bool __find_dtd_attr (axlPointer _element, axlPointer data)
+{
+	axlDtdAttribute * attr = _element;
+	char            * name = data;
+
+	/* check the name */
+	if (axl_cmp (attr->name, name))
+		return true;
+
+	/* it is not the element */
+	return false;
+}
+
+/** 
+ * @brief Allows to get the set of attribute declerations for a
+ * particular node. 
+ *
+ * The \ref axlDtdAttribute declaration contains all constraints
+ * configured for attributes found for the particular xml node
+ * (identified by <b>name</b>).
+ * 
+ * @param dtd A reference to the DTD document.
+ *
+ * @param name The xml node that is requested to return all attribute
+ * declarations.
+ * 
+ * @return A reference to the \ref axlDtdAttribute or NULL if it
+ * fails.
+ */
+axlDtdAttribute    * axl_dtd_get_attr         (axlDtd * dtd,
+					       const char * nodeName)
+{
+	axl_return_val_if_fail (dtd, NULL);
+	axl_return_val_if_fail (nodeName, NULL);
+
+	/* perform the lookup */
+	return axl_list_lookup (dtd->attributes, __find_dtd_attr, (axlPointer) nodeName);
+}
+
+/** 
+ * @brief Allows to get the number of constraints that have been
+ * configured for the particular node.
+ * 
+ * @param dtd The reference to the DTD document.
+ *
+ * @param nodeName The name of the node that is being asked for its
+ * constraints.
+ * 
+ * @return 0 or the number of contraints. The function return -1 if
+ * any of the parameter received is null.
+ */
+int                  axl_dtd_get_attr_contraints (axlDtd * dtd,
+						  const char * nodeName)
+{
+	axlDtdAttribute * attr;
+
+	axl_return_val_if_fail (dtd, -1);
+	axl_return_val_if_fail (nodeName, -1);
+
+	/* get the attribute specification for the node */
+	attr = axl_dtd_get_attr (dtd, nodeName);
+
+	/* return the number of items */
+	return axl_list_length (attr->list);
 }
 
 /** 
@@ -2913,7 +3320,7 @@ AxlDtdTimes          axl_dtd_item_node_get_repeat (axlDtdElementListNode * node)
  * provided the name and the type.
  */
 axlDtdEntity * __axl_dtd_entity_lookup (axlDtd            * dtd, 
-					char              * name,
+					const char        * name,
 					axlDtdEntityType    type)
 {
 	axlDtdEntity  * entity;
@@ -2958,7 +3365,7 @@ axlDtdEntity * __axl_dtd_entity_lookup (axlDtd            * dtd,
  * provided. Othewise, false is returned.
  */
 bool                 axl_dtd_entity_exists    (axlDtd            * dtd, 
-					       char              * name,
+					       const char        * name,
 					       axlDtdEntityType    type)
 {
 	/* return if the entity exists */
@@ -2980,7 +3387,7 @@ bool                 axl_dtd_entity_exists    (axlDtd            * dtd,
  * value) it must not be deallocated.
  */
 char               * axl_dtd_entity_value     (axlDtd            * dtd, 
-					       char              * name,
+					       const char        * name,
 					       axlDtdEntityType    type)
 {
 	axlDtdEntity * entity;
@@ -3015,6 +3422,10 @@ void       axl_dtd_free  (axlDtd * dtd)
 	/* free entities */
 	if (dtd->entities)
 		axl_list_free (dtd->entities);
+
+	/* free attributes */
+	if (dtd->attributes)
+		axl_list_free (dtd->attributes);
 
 	/* free the node itself */
 	axl_free (dtd);

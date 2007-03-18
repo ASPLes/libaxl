@@ -190,6 +190,12 @@ const char *    axl_node_attr_cursor_get_value (axlAttrCursor * cursor);
 
 void            axl_node_attr_cursor_free      (axlAttrCursor * cursor);
 
+void            axl_node_attr_foreach          (axlNode       * node, 
+						axlNodeAttrForeachFunc func, 
+						axlPointer      data,
+						axlPointer      data2);
+	
+
 /**
  * @}
  */
