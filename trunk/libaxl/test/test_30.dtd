@@ -1,0 +1,8 @@
+<!ELEMENT node EMPTY>
+
+<!ATTLIST node value CDATA #IMPLIED>
+
+<!ATTLIST node value2 CDATA #IMPLIED>
+
+<!ATTLIST node enum (checked|default|fire) "default">
+
