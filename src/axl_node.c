@@ -4891,6 +4891,9 @@ bool __axl_node_attr_foreach_aux (axlPointer key, axlPointer data, axlPointer us
  * @param func The foreach function to be called.
  *
  * @param data User defined data to be passed to the foreach function.
+ *
+ * @param data2 Second user defined data to be passed to the foreach
+ * function.
  */
 void            axl_node_attr_foreach          (axlNode       * node, 
 						axlNodeAttrForeachFunc func, 
