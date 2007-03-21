@@ -137,6 +137,7 @@ struct _axlDtdAttributeDecl {
 	 * values are defined.
 	 */
 	axlList                  * enumvalues;
+
 };
 
 struct _axlDtdAttribute {
@@ -222,6 +223,13 @@ struct _axlDtd {
 	 * @brief The element root, for the given DTD declaration.
 	 */
 	axlDtdElement * root;
+
+	/** 
+	 * @brief Internal flag that allows to notify that the DTD
+	 * contains ID attribute declaration, making the DTD this
+	 * references. 
+	 */
+	bool            haveIdDecl;
 };
 
 /**
@@ -1349,6 +1357,7 @@ bool axl_dtd_check_entity_ref_and_expand (axlDtdEntityResolver   resolver,
 	string_aux = axl_stream_get_until (stream, NULL, NULL, true, 1, ";");
 	if (string_aux == NULL) {
 		axl_error_new (-1, "null value received while expecting to find the entity reference to resolve.", stream, error);
+		axl_stream_free (stream);
 		return false;
 	} /* end if */
 
@@ -1413,6 +1422,16 @@ axlList * __axl_dtd_parse_enumvalues (const char * _enum_values)
 	return list;
 }
 
+/** 
+ * @internal function used by \ref axl_dtd_attr_validation function to
+ * lookup ATTLIST contraints flaged as unique ID.
+ */
+bool __find_id_decl (axlPointer _element, axlPointer data)
+{
+	/* return the comparision */
+	return (((axlDtdAttributeDecl *) _element)->type == TOKENIZED_TYPE_ID);
+}
+
 
 /** 
  * @internal
@@ -1426,6 +1445,7 @@ bool __axl_dtd_parse_attlist (axlDtd * dtd, axlStream * stream, axlError ** erro
 	int                   matched_chunk = -1;
 	axlDtdAttribute     * attribute     = NULL;
 	axlDtdAttributeDecl * decl          = NULL;
+	axlDtdAttributeDecl * declAux       = NULL;
 	char                * err_msg;
 
 	/* init the dtd attr list */
@@ -1485,8 +1505,10 @@ bool __axl_dtd_parse_attlist (axlDtd * dtd, axlStream * stream, axlError ** erro
 
 		/* nully the string and store it new rule created */
 		axl_stream_nullify (stream, LAST_CHUNK);
-		decl       = axl_new (axlDtdAttributeDecl, 1);
-		decl->name = string_aux;
+
+		/* create a new attribute single constraint */
+		decl            = axl_new (axlDtdAttributeDecl, 1);
+		decl->name      = string_aux;
 
 		/* add the attribute constraint to the list */
 		axl_list_add (attribute->list, decl);
@@ -1523,9 +1545,15 @@ bool __axl_dtd_parse_attlist (axlDtd * dtd, axlStream * stream, axlError ** erro
 			/* set the attribute type */
 			if (axl_stream_inspect (stream, "CDATA", 5) > 0)
 				decl->type = CDATA_ATTRIBUTE;
-			else if (axl_stream_inspect (stream, "ID", 2) > 0)
-				decl->type = TOKENIZED_TYPE_ID;
-			else if (axl_stream_inspect (stream, "IDREF", 5) > 0)
+			else if (axl_stream_inspect (stream, "ID", 2) > 0) {
+				
+				/* notify the type found */
+				decl->type      = TOKENIZED_TYPE_ID;
+
+				/* flag the dtd to have a ID declaration */
+				dtd->haveIdDecl = true;
+				
+			} else if (axl_stream_inspect (stream, "IDREF", 5) > 0)
 				decl->type = TOKENIZED_TYPE_IDREF;
 			else if (axl_stream_inspect (stream, "IDREFS", 6) > 0)
 				decl->type = TOKENIZED_TYPE_IDREFS;
@@ -1570,6 +1598,34 @@ bool __axl_dtd_parse_attlist (axlDtd * dtd, axlStream * stream, axlError ** erro
 				err_msg = axl_strdup_printf ("Unable to find default attribute declaration (#REQUIRED, #IMPLIED, #FIXED)  for attribute %s, node <%s>",
 							     decl->name, attribute->name);
 				axl_error_new (-1, err_msg, stream, error);
+				axl_stream_free (stream);
+				axl_free (err_msg);
+				return false;
+			} /* end if */
+		} /* end if */
+
+		/* check constraint for ID types */
+		if (decl->type == TOKENIZED_TYPE_ID) {
+			/* check that the node doesn't have any unique
+			 * id declared */
+
+			/* check if the node have TOKENIZED_TYPE_ID */
+			declAux = axl_list_lookup (attribute->list, __find_id_decl, NULL);
+			if (declAux != NULL && !axl_cmp (declAux->name, decl->name)) {
+				err_msg = axl_strdup_printf ("Found ATTLIST declaration, with several ID declarations <ATTLIST %s %s..",
+							     attribute->name, decl->name);
+				axl_error_new (-1, err_msg, stream, error);
+				axl_stream_free (stream);
+				axl_free (err_msg);
+				return false;
+			} /* end if */
+			
+			/* check required and implied */
+			if (decl->defaults != ATT_REQUIRED && decl->defaults != ATT_IMPLIED) {
+				err_msg = axl_strdup_printf ("Found ATTLIST declaration, with ID, that don't have configured either #IMPLICIT or #REQUIRED for attribute %s, node <%s>",
+							     decl->name, attribute->name);
+				axl_error_new (-1, err_msg, stream, error);
+				axl_stream_free (stream);
 				axl_free (err_msg);
 				return false;
 			} /* end if */
@@ -2692,7 +2748,7 @@ bool __axl_dtd_attr_validate_required (axlPointer element, axlPointer data)
  * 
  * @return true if the node is validated, false if not.
  */
-bool axl_dtd_attr_validate (axlNode * node, axlDtd * dtd, axlError ** error)
+bool axl_dtd_attr_validate (axlNode * node, axlDtd * dtd, axlError ** error, axlHash * id_validation)
 {
 	axlDtdAttribute     * attribute;
 	axlDtdAttributeDecl * decl;
@@ -2733,6 +2789,37 @@ bool axl_dtd_attr_validate (axlNode * node, axlDtd * dtd, axlError ** error)
 		return false;
 	} /* end if */
 
+	/* check declarations */
+	if (dtd->haveIdDecl) {
+
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found DTD has ID unique attribute declaration..");
+		
+		/* check if the node have TOKENIZED_TYPE_ID */
+		decl = axl_list_lookup (attribute->list, __find_id_decl, NULL);
+		
+		/* if we have a tokenized */
+		if (decl != NULL) {
+
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found ID unique attribute declaration %s=\"%s\"..",
+				   decl->name, ATTR_VALUE (node, decl->name));
+
+			/* check if the attribute value for the decl that is
+			 * flagged as ID is already found at the
+			 * id_validation */
+			if (axl_hash_exists (id_validation, (axlPointer) ATTR_VALUE (node, decl->name))) {
+				err_msg = axl_strdup_printf ("DTD declared the attribute '%s' as unique (ID) for the node %s, but was found used several times",
+							     decl->name, attribute->name);
+				axl_error_new (-1, err_msg, NULL, error);
+				axl_free (err_msg);
+				return false;
+			} /* end if */
+			
+			/* seems the attribute was not used, nice!, store it */
+			axl_hash_insert (id_validation, (axlPointer) ATTR_VALUE (node, decl->name), (axlPointer) ATTR_VALUE (node, decl->name));
+		} /* end if */
+	} /* end if */
+
+
 	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "attributes validated for node=<%s>", attribute->name);
 	
 	return true;
@@ -2768,9 +2855,11 @@ bool           axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 {
 	axlNode            * parent;
 	axlStack           * stack;
+	axlHash            * id_validation = NULL;
 	axlDtdElement      * element;
 	bool                 top_level;
 	char               * err_msg;
+	bool                 result;
 	
 	/* perform some checkings */
 	axl_return_val_if_fail (doc, false);
@@ -2803,14 +2892,25 @@ bool           axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 		return false;
 	} /* end if */
 
+	/* check if the dtd contains a Id declaration */
+	if (dtd->haveIdDecl) {
+		/* seems the user have declarted ID attributes init the hash */
+		id_validation = axl_hash_new (axl_hash_string, axl_hash_equal_string);
+	} /* end if */
+
 	/* check empty content spec */
 	if (axl_dtd_get_element_type (element) == ELEMENT_TYPE_EMPTY) {
 		/* check if the document provided have only one node */
-		return axl_node_is_empty (parent) && !axl_node_have_childs (parent) && axl_dtd_attr_validate (parent, dtd, error);
+		result = axl_node_is_empty (parent) && !axl_node_have_childs (parent) && axl_dtd_attr_validate (parent, dtd, error, id_validation);
+
+		/* free and return */
+		axl_hash_free (id_validation);
+		return result;
 	} /* end if */
 
 	/* queue initial nodes to validate */
 	stack     = axl_stack_new (NULL);
+	
 
 	/* set that the only top level node is the first one */
 	top_level = true;
@@ -2820,8 +2920,15 @@ bool           axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 			   axl_node_get_name (parent));
 
 		/* validate attributes */
-		if (! axl_dtd_attr_validate (parent, dtd, error))
+		if (! axl_dtd_attr_validate (parent, dtd, error, id_validation)) {
+			/* free the stack */
+			axl_stack_free (stack);
+
+			/* free id_validation */
+			axl_hash_free (id_validation);
+
 			return false;
+		}
 
 		/* reach this position, the <parent> reference contains
 		 * a reference to the parent node, which will be used
@@ -2842,6 +2949,10 @@ bool           axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 			 * have more childs and only have content,
 			 * that is, it is not empty  */
 			if (!__axl_dtd_validate_element_type_pcdata (element, parent, stack, error)) {
+				/* free id_validation */
+				axl_hash_free (id_validation);
+
+				/* free the stack */
 				axl_stack_free (stack);
 				return false;
 			}
@@ -2851,6 +2962,10 @@ bool           axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "  find  CHILDREN dtd element");
 			/* ok, a parent node that have childs */
 			if (!__axl_dtd_validate_element_type_children (element, parent, top_level, error)) {
+				/* free id_validation */
+				axl_hash_free (id_validation);
+
+				/* free the stack */
 				axl_stack_free (stack);
 				return false;
 			}
@@ -2861,7 +2976,12 @@ bool           axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 			 * node being validated must also be the
 			 * same */
 			if (!__axl_dtd_validate_element_type_empty (element, parent, stack, error)) {
+				/* free id_validation */
+				axl_hash_free (id_validation);
+
+				/* free the stack */
 				axl_stack_free (stack);
+
 				return false;
 			}
 			break;
@@ -2921,6 +3041,10 @@ bool           axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 				axl_error_new (-1, err_msg, NULL, error);
 				axl_free (err_msg);
 
+				/* free id_validation */
+				axl_hash_free (id_validation);
+
+				/* free the stack */
 				axl_stack_free (stack);
 				return false;
 			} /* end if */
@@ -2935,6 +3059,8 @@ bool           axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 	/* deallocate stack used */
 	axl_stack_free (stack);
 
+	/* free id_validation */
+	axl_hash_free (id_validation);
 
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "DTD validation, ok");
 

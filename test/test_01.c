@@ -2,6 +2,50 @@
 #include <axl_ns.h>
 
 /** 
+ * @brief Test DTD attribute declaration support <!ATTLIST > using ID
+ * declarations.
+ * 
+ * @param error The optional axlError to be used to report errors.
+ * 
+ * @return true if the validity test is passed, false if not.
+ */
+bool test_31 (axlError ** error) {
+	
+	axlDtd          * dtd;
+	axlDoc          * doc;
+
+	dtd = axl_dtd_parse_from_file ("test_31.dtd", error);
+	if (dtd == NULL)
+		return false;
+
+	doc = axl_doc_parse_from_file ("test_31.xml", error);
+	if (doc == NULL)
+		return false;
+
+	/* validate */
+	if (! axl_dtd_validate (doc, dtd, error)) {
+		axl_error_new (-1, "Expected to find a validation error for the test (unique ID)", NULL, error);
+		return false;
+	}
+	
+	/* free dtd and doc */
+	axl_dtd_free (dtd);
+	axl_doc_free (doc);
+
+	dtd = axl_dtd_parse_from_file ("test_31a.dtd", error);
+	if (dtd != NULL) {
+		axl_error_new (-1, "Expected to find a error due to double declaration for an ID attribute, but DTD was loaded ok", NULL, error);
+		axl_dtd_free (dtd);
+		return false;
+	}
+	axl_error_free (*error);
+	*error = NULL;
+
+	return true;
+}
+
+
+/** 
  * @brief Test DTD attribute declaration support <!ATTLIST >
  * 
  * @param error The optional axlError to be used to report errors.
@@ -6174,6 +6218,17 @@ int main (int argc, char ** argv)
 		axl_error_free (error);
 		return -1;
 	}
+
+	if (test_31 (&error)) {
+		printf ("Test 31: DTD attribute validation (ID support) [   OK   ]\n");
+	}else {
+		printf ("Test 31: DTD attribute validation (ID support) [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}
+
+	
 
 	/* cleanup axl library */
 	axl_end ();

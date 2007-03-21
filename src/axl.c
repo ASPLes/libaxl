@@ -103,7 +103,9 @@
  * of detail while accessing to the data (comments, process
  * instructions, xml nodes, and content).
  * 
- *  - Full DTD validation, including <!ATTLIST>, <!ENTITY> and <!ELEMENT> elements.
+ * - Mostly completed DTD validation support, including <!ATTLIST>, <!ENTITY>
+ * and <!ELEMENT> elements. Remains to implement NOTATION declarations
+ * and full entity replacement.
  *
  *  - Two modes to inspect the xml documents at the same time,
  *  <b>MIXED API</b>: an API to traverse the document allowing access

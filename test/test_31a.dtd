@@ -1,0 +1,10 @@
+<!ELEMENT root (node+) >
+
+<!ELEMENT node EMPTY>
+
+<!ATTLIST node value ID #IMPLIED>
+
+<!ATTLIST node value2 ID #IMPLIED>
+
+<!ATTLIST node enum (checked|default|fire) "default">
+
