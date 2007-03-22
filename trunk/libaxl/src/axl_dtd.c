@@ -230,6 +230,12 @@ struct _axlDtd {
 	 * references. 
 	 */
 	bool            haveIdDecl;
+
+	/** 
+	 * @brief Flag that the dtd declaration have attributes which
+	 * are flaged as IDREF.
+	 */
+	bool            haveIdRefDecl;
 };
 
 /**
@@ -1430,7 +1436,8 @@ bool __find_id_decl (axlPointer _element, axlPointer data)
 {
 	/* return the comparision */
 	return (((axlDtdAttributeDecl *) _element)->type == TOKENIZED_TYPE_ID);
-}
+	
+} /* end __find_id_decl */
 
 
 /** 
@@ -1543,9 +1550,23 @@ bool __axl_dtd_parse_attlist (axlDtd * dtd, axlStream * stream, axlError ** erro
 			decl->enumvalues = __axl_dtd_parse_enumvalues (string_aux);
 		}else {
 			/* set the attribute type */
-			if (axl_stream_inspect (stream, "CDATA", 5) > 0)
+			if (axl_stream_inspect (stream, "CDATA", 5) > 0) {
 				decl->type = CDATA_ATTRIBUTE;
-			else if (axl_stream_inspect (stream, "ID", 2) > 0) {
+			} else if (axl_stream_inspect (stream, "IDREFS", 6) > 0) {
+				
+				/* flag the type */
+				decl->type = TOKENIZED_TYPE_IDREFS;
+
+				/* flag the dtd to have a IDREF declaration */
+				dtd->haveIdRefDecl = true;
+			} else if (axl_stream_inspect (stream, "IDREF", 5) > 0) {
+				/* notify type found */
+				decl->type = TOKENIZED_TYPE_IDREF;
+
+				/* flag the dtd to have a IDREF declaration */
+				dtd->haveIdRefDecl = true;
+				
+			} else if (axl_stream_inspect (stream, "ID", 2) > 0) {
 				
 				/* notify the type found */
 				decl->type      = TOKENIZED_TYPE_ID;
@@ -1553,11 +1574,7 @@ bool __axl_dtd_parse_attlist (axlDtd * dtd, axlStream * stream, axlError ** erro
 				/* flag the dtd to have a ID declaration */
 				dtd->haveIdDecl = true;
 				
-			} else if (axl_stream_inspect (stream, "IDREF", 5) > 0)
-				decl->type = TOKENIZED_TYPE_IDREF;
-			else if (axl_stream_inspect (stream, "IDREFS", 6) > 0)
-				decl->type = TOKENIZED_TYPE_IDREFS;
-			else if (axl_stream_inspect (stream, "ENTITY", 6) > 0)
+			} else if (axl_stream_inspect (stream, "ENTITY", 6) > 0)
 				decl->type = TOKENIZED_TYPE_ENTITY;
 			else if (axl_stream_inspect (stream, "ENTITIES", 8) > 0)
 				decl->type = TOKENIZED_TYPE_ENTITIES;
@@ -1853,14 +1870,14 @@ axlDtd * __axl_dtd_parse_common (const char * entity, int entity_size,
 	while (axl_stream_remains (stream)) {
 		/* get rid from comments found */
 		if (! axl_doc_consume_comments (NULL, stream, error))
-			return false;
+			return NULL;
 		
 		/* check for element declaration */
 		if (axl_stream_peek (stream, "<!ELEMENT", 9) > 0) {
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found DTD element declaration");
 			/* found element declaration */
 			if (! __axl_dtd_parse_element (dtd, stream, error))
-				return false;
+				return NULL;
 			
 			continue;
 
@@ -1872,7 +1889,7 @@ axlDtd * __axl_dtd_parse_common (const char * entity, int entity_size,
 
 			/* parse it */
 			if (! __axl_dtd_parse_attlist (dtd, stream, error))
-				return false;
+				return NULL;
 			
 			continue;
 		}
@@ -1883,7 +1900,7 @@ axlDtd * __axl_dtd_parse_common (const char * entity, int entity_size,
 
 			/* parse the entity definition */
 			if (! __axl_dtd_parse_entity (dtd, stream, error))
-				return false;
+				return NULL;
 
 			continue;
 		}
@@ -1904,6 +1921,14 @@ axlDtd * __axl_dtd_parse_common (const char * entity, int entity_size,
 	 * document already parsed */
 	if (dtd->elements != NULL) 
 		dtd->root = __axl_dtd_get_new_root (dtd);
+
+	/* check if the DTD has ID declarations if found IDREF
+	 * declarations */
+	if (! dtd->haveIdDecl && dtd->haveIdRefDecl) {
+		axl_error_new (-1, "DTD semantic error, found IDREF attribute declaration but no attribute ID declaration was found.", stream, error);
+		axl_stream_free (stream);
+		return NULL;
+	}
 	
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "DTD load COMPLETE");
 
@@ -2748,11 +2773,12 @@ bool __axl_dtd_attr_validate_required (axlPointer element, axlPointer data)
  * 
  * @return true if the node is validated, false if not.
  */
-bool axl_dtd_attr_validate (axlNode * node, axlDtd * dtd, axlError ** error, axlHash * id_validation)
+bool axl_dtd_attr_validate (axlNode * node, axlDtd * dtd, axlError ** error, axlHash * id_validation, axlList * idref_validation)
 {
 	axlDtdAttribute     * attribute;
 	axlDtdAttributeDecl * decl;
 	char                * err_msg;
+	int                   iterator;
 	axlError            * _error = NULL;
 
 	/* find attribute contraints for the node */
@@ -2819,9 +2845,76 @@ bool axl_dtd_attr_validate (axlNode * node, axlDtd * dtd, axlError ** error, axl
 		} /* end if */
 	} /* end if */
 
+	if (dtd->haveIdRefDecl) {
+		/* find the id ref declaration */
+		
+		iterator = 0;
+		while (iterator < axl_list_length (attribute->list)) {
+			
+			/* get the attribute declaration at the
+			 * particular position */
+			decl = axl_list_get_nth (attribute->list, iterator);
+			if (decl->type == TOKENIZED_TYPE_IDREF) {
+				/* found a reference, but do not check
+				 * it at this place becase the
+				 * reference could be placed at any
+				 * part in the document event after
+				 * the reference pointed is
+				 * defined. store and check later */
+				axl_list_add (idref_validation, (axlPointer) ATTR_VALUE (node, decl->name));
+			} /* end if */
+
+			/* get the next */
+			iterator++;
+			
+		} /* end if */
+		
+	} /* end if */
 
 	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "attributes validated for node=<%s>", attribute->name);
 	
+	return true;
+}
+
+/** 
+ * @internal Function used by axl_dtd_validate_references to ensure
+ * that all references found point to a valid reference defined.
+ */
+bool __axl_dtd_reference_check (axlPointer _element, axlPointer data)
+{
+	return ! axl_hash_exists ((axlHash *) data, _element);
+}
+
+/** 
+ * @internal Function that validates all references found (from IDREF
+ * attribute) to unique references (defined by ID attributes).
+ *
+ */
+bool axl_dtd_validate_references (axlHash * id_validation, axlList * idref_validation, axlError ** error)
+{
+	char * reference;
+	char * err_msg;
+	
+	/* if no empty at the valiadtion reference list, means not
+	 * reference was done, so there is no room for errors */
+	if (idref_validation == NULL) 
+		return true;
+
+	/* find first reference not found */
+	reference = axl_list_lookup (idref_validation, __axl_dtd_reference_check, id_validation);
+	
+	if (reference != NULL) {
+		/* found a reference not defined, report it to the
+		 * application level */
+		err_msg = axl_strdup_printf ("Found a reference defined ('%s') which is not found in any ID attribute in the document",
+					     reference);
+		axl_error_new (-1, err_msg, NULL, error);
+		axl_free (err_msg);
+
+		return false;
+	} /* end if */
+	
+	/* validation ok */
 	return true;
 }
 
@@ -2856,6 +2949,8 @@ bool           axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 	axlNode            * parent;
 	axlStack           * stack;
 	axlHash            * id_validation = NULL;
+	axlList            * idref_validation = NULL;
+	
 	axlDtdElement      * element;
 	bool                 top_level;
 	char               * err_msg;
@@ -2898,13 +2993,26 @@ bool           axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 		id_validation = axl_hash_new (axl_hash_string, axl_hash_equal_string);
 	} /* end if */
 
+	/* check if the dtd contains Id ref declarations */
+	if (dtd->haveIdRefDecl) {
+		/* create a list that could contain all references done */
+		idref_validation = axl_list_new (axl_list_always_return_1, NULL);
+	} /* end if */
+
 	/* check empty content spec */
 	if (axl_dtd_get_element_type (element) == ELEMENT_TYPE_EMPTY) {
 		/* check if the document provided have only one node */
-		result = axl_node_is_empty (parent) && !axl_node_have_childs (parent) && axl_dtd_attr_validate (parent, dtd, error, id_validation);
+		result = axl_node_is_empty (parent) && !axl_node_have_childs (parent) && axl_dtd_attr_validate (parent, dtd, error, id_validation, idref_validation);
 
+		/* check references */
+		if (result)
+			result = axl_dtd_validate_references (id_validation, idref_validation, error);
+		
 		/* free and return */
 		axl_hash_free (id_validation);
+
+		/* free the list */
+		axl_list_free (idref_validation);
 		return result;
 	} /* end if */
 
@@ -2920,13 +3028,15 @@ bool           axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 			   axl_node_get_name (parent));
 
 		/* validate attributes */
-		if (! axl_dtd_attr_validate (parent, dtd, error, id_validation)) {
+		if (! axl_dtd_attr_validate (parent, dtd, error, id_validation, idref_validation)) {
 			/* free the stack */
 			axl_stack_free (stack);
 
 			/* free id_validation */
 			axl_hash_free (id_validation);
 
+			/* free the list */
+			axl_list_free (idref_validation);
 			return false;
 		}
 
@@ -2954,6 +3064,9 @@ bool           axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 
 				/* free the stack */
 				axl_stack_free (stack);
+				
+				/* free the list */
+				axl_list_free (idref_validation);
 				return false;
 			}
 			break;
@@ -2967,6 +3080,10 @@ bool           axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 
 				/* free the stack */
 				axl_stack_free (stack);
+
+				/* free the list */
+				axl_list_free (idref_validation);
+				
 				return false;
 			}
 			break;
@@ -2981,6 +3098,9 @@ bool           axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 
 				/* free the stack */
 				axl_stack_free (stack);
+
+				/* free the list */
+				axl_list_free (idref_validation);
 
 				return false;
 			}
@@ -3044,6 +3164,9 @@ bool           axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 				/* free id_validation */
 				axl_hash_free (id_validation);
 
+				/* free the list */
+				axl_list_free (idref_validation);
+
 				/* free the stack */
 				axl_stack_free (stack);
 				return false;
@@ -3056,16 +3179,22 @@ bool           axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 		/* until the stack is empty */
 	}while (parent != NULL);
 
+	/* check references */
+	result = axl_dtd_validate_references (id_validation, idref_validation, error);
+
 	/* deallocate stack used */
 	axl_stack_free (stack);
 
 	/* free id_validation */
 	axl_hash_free (id_validation);
 
-	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "DTD validation, ok");
+	/* free the list */
+	axl_list_free (idref_validation);
+
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "DTD validation, %s", result ? "ok" : "failed");
 
 	/* the document is valid */
-	return true;
+	return result;
 }
 
 /** 
