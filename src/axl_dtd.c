@@ -2607,6 +2607,7 @@ bool     __axl_dtd_validate_element_type_children (axlDtdElement  * element,
 {
 	axlDtdElementList * itemList;
 	int                 child_pos = 0;
+	char              * err_msg;
 
 	/* get a reference to the item list */
 	itemList = axl_dtd_get_item_list (element);
@@ -2614,8 +2615,12 @@ bool     __axl_dtd_validate_element_type_children (axlDtdElement  * element,
 	/* check for xml nodes with fewer content than the initially
 	 * expected. */
 	if (axl_node_get_child_num (parent) < element->minimum_match) {
-		axl_error_new (-1, "Found that the parent node received doesn't contains enough xml nodes inside to get a proper validation. This means that the xml document have fewer content than the DTD spec.",
-			       NULL, error);
+		err_msg = axl_strdup_printf ("Found that the parent node (<%s>) received doesn't contains enough xml nodes inside to get a proper validation (childs found (%d) != childs that should be found (%d)). This means that the xml document have fewer content than the DTD spec.",
+					     axl_node_get_name (parent), 
+					     axl_node_get_child_num (parent), 
+					     element->minimum_match);
+		axl_error_new (-1, err_msg, NULL, error);
+		axl_free (err_msg);
 		return false;
 	}
 
