@@ -1,0 +1,14 @@
+<!ELEMENT root (node+, node-ref+) >
+
+<!ELEMENT node EMPTY>
+
+<!ATTLIST node value ID #IMPLIED>
+
+<!ATTLIST node value2 CDATA #IMPLIED>
+
+<!ATTLIST node enum (checked|default|fire) "default">
+
+<!ELEMENT node-ref EMPTY>
+
+<!ATTLIST node-ref value IDREF #IMPLIED>
+
