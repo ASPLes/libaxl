@@ -886,6 +886,45 @@ void       axl_list_unlink_first (axlList * list)
 	return;
 }
 
+/** 
+ * @brief Allows to remove the last element, calling to the destroy
+ * function if defined.
+ * 
+ * @param list The list where the last element will be removed.
+ */
+void       axl_list_remove_last (axlList * list)
+{
+	axl_return_if_fail (list);
+
+	/* do not perform any operation if no node is stored */
+	if (list->last_node == NULL)
+		return;
+
+	/* remove the selected node */
+	__axl_list_common_remove_selected_node (list, list->last_node, true);
+
+	return;
+}
+
+/** 
+ * @brief Allows to remove the last element from the list without
+ * calling to the destroy function, even with it is defined.
+ * 
+ * @param list The list where the last element will be removed.
+ */
+void       axl_list_unlink_last (axlList * list)
+{
+	axl_return_if_fail (list);
+
+	/* do not perform any operation if no node is stored */
+	if (list->last_node == NULL)
+		return;
+
+	/* remove the selected node */
+	__axl_list_common_remove_selected_node (list, list->last_node, false);
+
+	return;
+}
 
 /** 
  * @brief Allows to check if the given pointer is stored on the given
