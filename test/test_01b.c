@@ -6,7 +6,6 @@ int main (int argc, char ** argv)
 {
 	
 	xmlDocPtr     doc;
-	xmlNodePtr    cursor;
 
 	/* init libXml */
 	LIBXML_TEST_VERSION
