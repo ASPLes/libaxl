@@ -14,11 +14,14 @@ __axl_doc_parse_common
 __axl_doc_parse_node
 __axl_doc_parse_xml_header
 __axl_dtd_add_element
+__axl_dtd_attr_validate_foreach
+__axl_dtd_attr_validate_required
 __axl_dtd_create_and_queue
 __axl_dtd_element_content_particule_add
 __axl_dtd_element_spec_update_chunk_matched
 __axl_dtd_element_spec_update_chunk_matched_for_cp_separator
 __axl_dtd_entity_lookup
+__axl_dtd_entity_resolver
 __axl_dtd_get_is_parent
 __axl_dtd_get_new_root
 __axl_dtd_get_repetition_conf
@@ -28,10 +31,12 @@ __axl_dtd_parse_common
 __axl_dtd_parse_element
 __axl_dtd_parse_element_get_compulsory_num
 __axl_dtd_parse_entity
+__axl_dtd_parse_enumvalues
 __axl_dtd_queue_childs
 __axl_dtd_queue_items
 __axl_dtd_read_content_particule
 __axl_dtd_read_element_spec
+__axl_dtd_reference_check
 __axl_dtd_validate_choice
 __axl_dtd_validate_element_type_children
 __axl_dtd_validate_element_type_empty
@@ -49,6 +54,7 @@ __axl_list_common_remove_selected_node
 __axl_list_dispose_node
 __axl_list_get_next_node_available
 __axl_node_are_equal_attr
+__axl_node_attr_foreach_aux
 __axl_node_attr_list_is_equal
 __axl_node_content_copy_and_escape
 __axl_node_content_translate_defaults
@@ -102,13 +108,18 @@ axl_doc_parse_strings
 axl_doc_pop_current_parent
 axl_doc_set_child_current_parent
 axl_doc_set_root
+axl_dtd_attr_validate
 axl_dtd_attribute_decl_free
+axl_dtd_attribute_free
+axl_dtd_check_entity_ref_and_expand
 axl_dtd_element_free
 axl_dtd_element_is_toplevel
 axl_dtd_entity_exists
 axl_dtd_entity_free
 axl_dtd_entity_value
 axl_dtd_free
+axl_dtd_get_attr
+axl_dtd_get_attr_contraints
 axl_dtd_get_element
 axl_dtd_get_element_name
 axl_dtd_get_element_type
@@ -126,6 +137,7 @@ axl_dtd_item_node_get_value
 axl_dtd_parse
 axl_dtd_parse_from_file
 axl_dtd_validate
+axl_dtd_validate_references
 axl_end
 axl_error_free
 axl_error_get
@@ -218,6 +230,7 @@ axl_list_cursor_unlink
 axl_list_equal_string
 axl_list_exists
 axl_list_exists_at
+axl_list_find_string
 axl_list_free
 axl_list_get_first
 axl_list_get_last
@@ -230,8 +243,10 @@ axl_list_new
 axl_list_prepend
 axl_list_remove
 axl_list_remove_first
+axl_list_remove_last
 axl_list_unlink
 axl_list_unlink_first
+axl_list_unlink_last
 axl_log
 axl_log_color_is_enabled
 axl_log_is_enabled
@@ -255,6 +270,7 @@ axl_node_attr_cursor_has_item
 axl_node_attr_cursor_has_next
 axl_node_attr_cursor_new
 axl_node_attr_cursor_next
+axl_node_attr_foreach
 axl_node_content_copy_and_escape
 axl_node_copy
 axl_node_create
@@ -363,6 +379,7 @@ axl_stream_nullify
 axl_stream_peek
 axl_stream_prebuffer
 axl_stream_printf_len
+axl_stream_push
 axl_stream_remains
 axl_stream_set_buffer_alloc
 axl_stream_split
