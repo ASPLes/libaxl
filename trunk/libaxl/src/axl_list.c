@@ -949,6 +949,23 @@ bool          axl_list_exists (axlList * list, axlPointer pointer)
 }
 
 /** 
+ * @brief Allows to check if the provided list is empty (no element
+ * stored).
+ * 
+ * @param list The list to check for emptyness.
+ * 
+ * @return true if the list is empty, false if not. The function
+ * return false in the case a null reference is provided.
+ */
+bool       axl_list_is_empty  (axlList * list)
+{
+	axl_return_val_if_fail (list, false);
+
+	/* check if the first node is defined */
+	return (list->first_node == NULL);
+}
+
+/** 
  * @brief Allows to check if the given pointer is stored on the given position.
  *
  * @param list The list where the operation will be run.

@@ -74,6 +74,8 @@ bool       axl_list_exists (axlList * list, axlPointer pointer);
 
 bool       axl_list_exists_at (axlList * list, axlPointer pointer, int position);
 
+bool       axl_list_is_empty  (axlList * list);
+
 axlPointer axl_list_get_first (axlList * list);
 
 axlPointer axl_list_get_last  (axlList * list);

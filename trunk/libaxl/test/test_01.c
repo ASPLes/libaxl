@@ -3789,6 +3789,11 @@ bool test_01_01 ()
 			axl_list_length (list));
 		return false;
 	}
+
+	if (! axl_list_is_empty (list)) {
+		printf ("Expected to find empty list just after list created\n");
+		return false;
+	} /* end if */
 	
 	/* add data */
 	axl_list_add (list, "test 1");
@@ -3797,6 +3802,11 @@ bool test_01_01 ()
 			axl_list_length (list));
 		return false;
 	}
+
+	if (axl_list_is_empty (list)) {
+		printf ("Expected to find a non-empty list just after items added\n");
+		return false;
+	} /* end if */
 	
 	axl_list_add (list, "test 2");
 	if (axl_list_length (list) != 2) {

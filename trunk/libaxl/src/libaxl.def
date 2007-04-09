@@ -237,6 +237,7 @@ axl_list_get_last
 axl_list_get_nth
 axl_list_internal_get_nth
 axl_list_internal_lookup
+axl_list_is_empty
 axl_list_length
 axl_list_lookup
 axl_list_new
