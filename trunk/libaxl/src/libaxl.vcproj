@@ -57,6 +57,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				OutputFile="c:\af-arch-install\bin\$(ProjectName).dll"
 				ModuleDefinitionFile="$(ProjectDir)\..\src\libaxl.def"
 				GenerateDebugInformation="true"
 			/>
