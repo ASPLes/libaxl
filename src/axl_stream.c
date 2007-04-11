@@ -1982,6 +1982,8 @@ int axl_stream_vprintf_len (const char * format, va_list args)
 	return _vscprintf (format, args) + 1;
 #   else
 	char buffer[8192];
+	if (format == NULL)
+		return 0;
 	return _vsnprintf (buffer, 8191, format, args) + 1;
 #   endif
 #else
