@@ -1975,7 +1975,7 @@ char      * axl_stream_strdup_n (const char * chunk, int n)
  */
 int axl_stream_vprintf_len (const char * format, va_list args)
 {
-# if AXL_OS_WIN32 && ! defined (__GNUC__)
+# if defined (AXL_OS_WIN32) && ! defined (__GNUC__)
 #   if HAVE_VSCPRINTF
 	if (format == NULL)
 		return 0;
@@ -1987,6 +1987,9 @@ int axl_stream_vprintf_len (const char * format, va_list args)
 	return _vsnprintf (buffer, 8191, format, args) + 1;
 #   endif
 #else
+	/* gnu gcc case */
+	if (format == NULL)
+		return 0;
 	return vsnprintf (NULL, 0, format, args) + 1;
 
 #endif
