@@ -1,0 +1,55 @@
+
+       #####################################
+       ####     Change notification     ####
+       #####################################
+
+    Change Id: axl-annotate-01
+ Project name: Axl library
+  Included in: 0.4.3
+       Status: NOTIFY
+       Author: Francis Brosnan Blázquez
+
+Motivation
+~~~~~~~~~~
+
+A set of function exposed by the axl library API to annotate data to a
+particular node have a misspell error.
+
+Change Description
+~~~~~~~~~~~~~~~~~~
+
+The following functions, from previous stable release (0.4.2):
+
+  - axl_node_anotate_data
+  - axl_node_anotate_data_full
+  - axl_node_anotate_get
+  - axl_node_anotate_int
+  - axl_node_anotate_string
+  - axl_node_anotate_get_int
+  - axl_node_anotate_get_string
+  - axl_node_anotate_get_double
+
+Are updated to the to the same set of functions, but replaced
+"anotate" with "annotate". 
+
+It is also removed a set of macro definitions to support at the same
+type, during compilation, the same function written using "anotate"
+and "annotate".
+
+Solution to incompatibility
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Just replace all references found to "axl_node_anotate" with
+"axl_node_annotate".
+
+
+References
+~~~~~~~~~~
+[1] Axl library
+    http://xml.aspl.es
+
+[2] Axl library change notifications
+    http://xml.aspl.es/doc.html
+
+[3] Change notification definition
+    http://www.aspl.es/change/change-notification.txt
