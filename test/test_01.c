@@ -1232,7 +1232,7 @@ bool test_20 (axlError ** error)
 	axl_doc_free (doc2);
 
 	/* configure some anotation data */
-	axl_node_anotate_data (root, "key", "value");
+	axl_node_annotate_data (root, "key", "value");
 	
 	/* get child1 */
 	node = axl_node_get_first_child (root);
@@ -1241,51 +1241,51 @@ bool test_20 (axlError ** error)
 	node = axl_node_get_first_child (node);
 
 	/* anotate data */
-	axl_node_anotate_data (node, "key1", "value1");
+	axl_node_annotate_data (node, "key1", "value1");
 
 	/* perform searches */
-	data = axl_node_anotate_get (node, "key", false);
+	data = axl_node_annotate_get (node, "key", false);
 	if (data != NULL) {
 		axl_error_new (-1, "Expected to find nothing while looking for 'key'(1)", NULL, error);
 		return false;
 	}
 
-	data = axl_node_anotate_get (node, "key", true);
+	data = axl_node_annotate_get (node, "key", true);
 	if (data == NULL || !axl_cmp (data, "value")) {
 		axl_error_new (-1, "Expected to find data while looking for 'key' at parents (2)", NULL, error);
 		return false;
 	}
 
 	/* perform searches inside the node */
-	data = axl_node_anotate_get (node, "key1", false);
+	data = axl_node_annotate_get (node, "key1", false);
 	if (data == NULL || !axl_cmp (data, "value1")) {
 		axl_error_new (-1, "Expected to find nothing while looking for 'key1'(3)", NULL, error);
 		return false;
 	}
 
 	/* perform more anotation but with native data */
-	axl_node_anotate_int (root, "int-value", 14);
+	axl_node_annotate_int (root, "int-value", 14);
 	
-	if (axl_node_anotate_get_int (root, "int-value", false) != 14) {
+	if (axl_node_annotate_get_int (root, "int-value", false) != 14) {
 		axl_error_new (-1, "Expected to find an integer value (14), but it wasn't found", NULL, error);
 		return false;
 	}
 
-	axl_node_anotate_double (root, "double-value", 58.20);
+	axl_node_annotate_double (root, "double-value", 58.20);
 
-	if (axl_node_anotate_get_double (root, "double-value", false) != 58.20) {
+	if (axl_node_annotate_get_double (root, "double-value", false) != 58.20) {
 		axl_error_new (-1, "Expected to find an double value (58.20), but it wasn't found", NULL, error);
 		return false;
 	}
 
-	axl_node_anotate_string (root, "string-value", "this is a test string");
+	axl_node_annotate_string (root, "string-value", "this is a test string");
 
-	if (! axl_cmp (axl_node_anotate_get_string (root, "string-value", false), "this is a test string")) {
+	if (! axl_cmp (axl_node_annotate_get_string (root, "string-value", false), "this is a test string")) {
 		axl_error_new (-1, "Expected to find a string value (\"this is a test string\"), but it wasn't found", NULL, error);
 		return false;
 	}
 
-	if (axl_node_anotate_get_string (root, "string-not-found", false) != NULL) {
+	if (axl_node_annotate_get_string (root, "string-not-found", false) != NULL) {
 		axl_error_new (-1, "Expected to find empty value for an anotated element which isn't installed", NULL, error);
 		return false;
 	}

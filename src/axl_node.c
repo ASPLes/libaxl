@@ -1297,18 +1297,18 @@ void __init_node_annotation (axlNode * node)
  *
  * This function stores the given key using a hashing storage,
  * associating the data provided on the given node. You can also check
- * the \ref axl_node_anotate_data_full which performs the same task
+ * the \ref axl_node_annotate_data_full which performs the same task
  * but allowing to provide key and data destroy functions.
  *
  * Once data is stored, it could be inherited by child nodes because
- * the access to it is done using \ref axl_node_anotate_get. 
+ * the access to it is done using \ref axl_node_annotate_get. 
  *
  * Additionally, you can also perform annotation using native types:
  * int, string and double. Check the following functions to do so.
  *
- * - \ref axl_node_anotate_int
- * - \ref axl_node_anotate_double
- * - \ref axl_node_anotate_string
+ * - \ref axl_node_annotate_int
+ * - \ref axl_node_annotate_double
+ * - \ref axl_node_annotate_string
  *
  * @param node The node where the annotated data will be stored.
  *
@@ -1317,7 +1317,7 @@ void __init_node_annotation (axlNode * node)
  *
  * @param data The data to be stored associated to the key provided.
  */
-void      axl_node_anotate_data                 (axlNode     * node, 
+void      axl_node_annotate_data                 (axlNode     * node, 
 						 const char    * key,
 						 axlPointer    data)
 {
@@ -1337,8 +1337,8 @@ void      axl_node_anotate_data                 (axlNode     * node,
  * @brief Allows to store user defined data associated to the node
  * that is not visible from an XML perspective.
  *
- * See \ref axl_node_anotate_data for a long explanation. This
- * function performs the same task as \ref axl_node_anotate_data_full
+ * See \ref axl_node_annotate_data for a long explanation. This
+ * function performs the same task as \ref axl_node_annotate_data_full
  * but allowing to store a destroy key and a destroy data associated
  * to the annotated data to be stored.
  *
@@ -1355,7 +1355,7 @@ void      axl_node_anotate_data                 (axlNode     * node,
  * @param data_destroy The destroy function to be called to deallocate
  * the data provided.
  */
-void      axl_node_anotate_data_full            (axlNode       * node,
+void      axl_node_annotate_data_full            (axlNode       * node,
 						 const char    * key,
 						 axlDestroyFunc  key_destroy,
 						 axlPointer      data,
@@ -1390,7 +1390,7 @@ void      axl_node_anotate_data_full            (axlNode       * node,
  * @return The data associated to the key according to the lookup
  * configuration (lookup_in_parent and lookup_in_doc).
  */
-axlPointer axl_node_anotate_get                 (axlNode     * node,
+axlPointer axl_node_annotate_get                 (axlNode     * node,
 						 const char  * key,
 						 bool          lookup_in_parent)
 {
@@ -1501,20 +1501,20 @@ void __axl_annotate_data_free (AnnotateNodeData * data)
  * provide a simple way to store pointers associated to particular
  * nodes and retrieve them using:
  * 
- * - \ref axl_node_anotate_data_full
- * - \ref axl_node_anotate_data
- * - \ref axl_node_anotate_get
+ * - \ref axl_node_annotate_data_full
+ * - \ref axl_node_annotate_data
+ * - \ref axl_node_annotate_get
  *
  * However, additional functions are provided to store and retreive
  * easily integers, strings and double data annotated. See the
  * following:
  * 
- *  - \ref axl_node_anotate_int
- *  - \ref axl_node_anotate_string
- *  - \ref axl_node_anotate_double
+ *  - \ref axl_node_annotate_int
+ *  - \ref axl_node_annotate_string
+ *  - \ref axl_node_annotate_double
  *
  * If you use this function to store an integer data you must use \ref
- * axl_node_anotate_get_int to retreive data stored. You can't use \ref axl_node_anotate_get.
+ * axl_node_annotate_get_int to retreive data stored. You can't use \ref axl_node_annotate_get.
  * 
  * @param node The node where the annotation will be aplied.
  *
@@ -1523,7 +1523,7 @@ void __axl_annotate_data_free (AnnotateNodeData * data)
  * @param int_value An integer value that will be annotated to the node
  * received under the key provided.
  */
-void       axl_node_anotate_int                 (axlNode    * node,
+void       axl_node_annotate_int                 (axlNode    * node,
 						 const char * key,
 						 int          int_value)
 {
@@ -1539,7 +1539,7 @@ void       axl_node_anotate_int                 (axlNode    * node,
 	data->value.int_value = int_value;
 
 	/* annotate the value */
-	axl_node_anotate_data_full (node, key, NULL, data, (axlDestroyFunc) __axl_annotate_data_free);
+	axl_node_annotate_data_full (node, key, NULL, data, (axlDestroyFunc) __axl_annotate_data_free);
 	
 	return;
 }
@@ -1561,20 +1561,20 @@ void       axl_node_anotate_int                 (axlNode    * node,
  * provide a simple way to store pointers associated to particular
  * nodes and retrieve them using:
  * 
- * - \ref axl_node_anotate_data_full
- * - \ref axl_node_anotate_data
- * - \ref axl_node_anotate_get
+ * - \ref axl_node_annotate_data_full
+ * - \ref axl_node_annotate_data
+ * - \ref axl_node_annotate_get
  *
  * However, additional functions are provided to store and retreive
  * easily integers, strings and double data annotated. See the
  * following:
  * 
- *  - \ref axl_node_anotate_int
- *  - \ref axl_node_anotate_string
- *  - \ref axl_node_anotate_double
+ *  - \ref axl_node_annotate_int
+ *  - \ref axl_node_annotate_string
+ *  - \ref axl_node_annotate_double
  *
  * If you use this function to store a string data you must use \ref
- * axl_node_anotate_get_string to retreive data stored. You can't use \ref axl_node_anotate_get.
+ * axl_node_annotate_get_string to retreive data stored. You can't use \ref axl_node_annotate_get.
  *
  * @param node The node where the annotation will be aplied.
  *
@@ -1584,7 +1584,7 @@ void       axl_node_anotate_int                 (axlNode    * node,
  * node received under the key provided. This value will be copied and
  * released once the node is deallocated.
  */
-void       axl_node_anotate_string              (axlNode       * node,
+void       axl_node_annotate_string              (axlNode       * node,
 						 const char    * key,
 						 const char    * string_value)
 {
@@ -1601,7 +1601,7 @@ void       axl_node_anotate_string              (axlNode       * node,
 	data->value.string_value = axl_strdup (string_value);
 
 	/* annotate the value */
-	axl_node_anotate_data_full (node, key, NULL, data, (axlDestroyFunc) __axl_annotate_data_free);
+	axl_node_annotate_data_full (node, key, NULL, data, (axlDestroyFunc) __axl_annotate_data_free);
 	
 	return;
 }
@@ -1623,20 +1623,20 @@ void       axl_node_anotate_string              (axlNode       * node,
  * provide a simple way to store pointers associated to particular
  * nodes and retrieve them using:
  * 
- * - \ref axl_node_anotate_data_full
- * - \ref axl_node_anotate_data
- * - \ref axl_node_anotate_get
+ * - \ref axl_node_annotate_data_full
+ * - \ref axl_node_annotate_data
+ * - \ref axl_node_annotate_get
  *
  * However, additional functions are provided to store and retreive
  * easily integers, strings and double data annotated. See the
  * following:
  * 
- *  - \ref axl_node_anotate_int
- *  - \ref axl_node_anotate_string
- *  - \ref axl_node_anotate_double
+ *  - \ref axl_node_annotate_int
+ *  - \ref axl_node_annotate_string
+ *  - \ref axl_node_annotate_double
  *
  * If you use this function to store a double data you must use \ref
- * axl_node_anotate_get_double to retreive data stored. You can't use \ref axl_node_anotate_get.
+ * axl_node_annotate_get_double to retreive data stored. You can't use \ref axl_node_annotate_get.
  * 
  * @param node The node where the annotation will be aplied.
  *
@@ -1645,7 +1645,7 @@ void       axl_node_anotate_string              (axlNode       * node,
  * @param double_value A string value that will be annotated to the node
  * received under the key provided.
  */
-void       axl_node_anotate_double              (axlNode    * node,
+void       axl_node_annotate_double              (axlNode    * node,
 						 const char * key,
 						 double       double_value)
 {
@@ -1661,7 +1661,7 @@ void       axl_node_anotate_double              (axlNode    * node,
 	data->value.double_value = double_value;
 
 	/* annotate the value */
-	axl_node_anotate_data_full (node, key, NULL, data, (axlDestroyFunc) __axl_annotate_data_free);
+	axl_node_annotate_data_full (node, key, NULL, data, (axlDestroyFunc) __axl_annotate_data_free);
 	
 	return;
 }
@@ -1680,14 +1680,14 @@ void       axl_node_anotate_double              (axlNode    * node,
  * shared by child nodes.
  *
  * NOTE: To make this function work properly you must store double
- * values using \ref axl_node_anotate_int. Storing values using
+ * values using \ref axl_node_annotate_int. Storing values using
  * other functions will lead to unpredictable results.
  * 
  * @return The integer value stored using \ref
- * axl_node_anotate_int. If the key provided doesn't exists, the
+ * axl_node_annotate_int. If the key provided doesn't exists, the
  * function returns 0.
  */
-int        axl_node_anotate_get_int             (axlNode    * node,
+int        axl_node_annotate_get_int             (axlNode    * node,
 						 const char * key,
 						 bool         lookup_in_parent)
 {
@@ -1728,14 +1728,14 @@ int        axl_node_anotate_get_int             (axlNode    * node,
  * shared by child nodes.
  *
  * NOTE: To make this function work properly you must store double
- * values using \ref axl_node_anotate_string. Storing values using
+ * values using \ref axl_node_annotate_string. Storing values using
  * other functions will lead to unpredictable results.
  * 
  * @return The string value stored using \ref
- * axl_node_anotate_string. If the key provided doesn't exists, the
+ * axl_node_annotate_string. If the key provided doesn't exists, the
  * function returns NULL.
  */
-char *     axl_node_anotate_get_string          (axlNode    * node,
+char *     axl_node_annotate_get_string          (axlNode    * node,
 						 const char * key,
 						 bool         lookup_in_parent)
 {
@@ -1746,7 +1746,7 @@ char *     axl_node_anotate_get_string          (axlNode    * node,
 	axl_return_val_if_fail (key, NULL);
 
 	/* get the annotated data */
-	data = axl_node_anotate_get (node, key, lookup_in_parent);
+	data = axl_node_annotate_get (node, key, lookup_in_parent);
 
 	/* check for null value. */
 	if (data == NULL)
@@ -1776,14 +1776,14 @@ char *     axl_node_anotate_get_string          (axlNode    * node,
  * shared by child nodes.
  *
  * NOTE: To make this function work properly you must store double
- * values using \ref axl_node_anotate_double. Storing values using
+ * values using \ref axl_node_annotate_double. Storing values using
  * other functions will lead to unpredictable results.
  * 
  * @return The double value stored using \ref
- * axl_node_anotate_double. If the key provided doesn't exists, the
+ * axl_node_annotate_double. If the key provided doesn't exists, the
  * function returns 0.0.
  */
-double     axl_node_anotate_get_double          (axlNode    * node,
+double     axl_node_annotate_get_double          (axlNode    * node,
 						 const char * key,
 						 bool         lookup_in_parent)
 {
@@ -1794,7 +1794,7 @@ double     axl_node_anotate_get_double          (axlNode    * node,
 	axl_return_val_if_fail (key, 0.0);
 
 	/* get the annotated data */
-	data = axl_node_anotate_get (node, key, lookup_in_parent);
+	data = axl_node_annotate_get (node, key, lookup_in_parent);
 
 	/* check for null value. */
 	if (data == NULL)
