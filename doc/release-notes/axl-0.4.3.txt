@@ -1,0 +1,137 @@
+          ###################################
+          # Axl Library release note: 0.4.3 #
+          ###################################
+
+Advanced Software Production Line is proud to announce a new Axl
+Library release.
+
+Axl Library is an small and efficient XML toolkit, that will allow you
+to produce efficient and clear code that interfaces with XML data.
+
+The library was produced to support XML requirements needed by
+software developed by Advanced Software Production Line, S.L.
+
+At this moment the library is being used by Vortex Library,
+Af-Arch, Shaper and Fovap.
+
+Resources
+~~~~~~~~~
+
+   Axl Homepage
+   [ http://xml.aspl.es ]
+
+   Advanced Software Production Line, S.L.
+   [ http://www.aspl.es ]
+
+This release in short
+~~~~~~~~~~~~~~~~~~~~~
+  
+  Included complete support for <!ATTLIST declaration inside DTD
+  definitions, with support for CDATA, ID, IDREF, enum and default
+  values, and its configurations (#REQUIRED, #FIXED, #IMPLIED).
+
+  Updated axl node annotate API to fix its naming problem. See change
+  notification.
+
+  Fixed bugs and included new functions.
+
+Change notifications
+~~~~~~~~~~~~~~~~~~~~
+  [1] axl-annotate-01
+  http://www.aspl.es/axl/axl-annotate-01.txt
+
+Thanks to..
+~~~~~~~~~~~
+  Milton Yates (fixed wrong axl log header declaration and gentoo
+  package support).
+
+Changes from previous release 0.4.2
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+
+* [fix] Applied change notification: axl-annotate-01. Replaced all
+  reference to anotate with annotate. Updated libaxl base library, base
+  ns library and regression tests.
+
+* [fix] Added null reference format check to axl_stream_printf_len if
+  used gcc under windows (mingw).
+
+* [fix] Checking format reference received prior calling _vscprintf.
+
+* [new] Added a new function to check if a list is empty. Update
+  regression test to check new functionality. API added:
+
+   - axl_list_is_empty
+
+* [fix] Updating definition file.
+
+* [fix] Committing missing files for 32th regression test.
+
+* [fix] Fixed some warnings at the axl log module header (reported and
+  fixed Milton Yates).
+
+* [fix] Making axl dtd validation for fewer nodes found to be more
+  verbose.
+
+* [new] Finished support for IDREF at its associated initial tests to
+  ensure proper function.
+
+* [new] Finished initial implementation to support attributes with ID
+  attribute type configuration. Added a new test to check the
+  uniqueness support (test_31).
+
+* [fix] Committing missing files to run the latest test.
+
+* [fix] Fixing some documentation warnings and updating it to remove
+  reference to the pending support for <!ATTLIST which is now
+  implemented.
+
+* [new] Finished initial support for <!ATTLIST declaration, CDATA,
+  enum, default values and its configuration (#REQUIRED, #FIXED,
+  #IMPLIED). Added new tests to check the <!ATTLIST support provided.
+
+* [new] Added new function to perform foreach operations over
+  attributes installed on a particular node:
+
+   - axl_node_attr_foreach
+   - axlNodeAttrForeachFunc (handler)
+
+* [new] Added support to the axl stream module to allow push new
+  content to be provided to next calls to parse content. API added:
+
+   - axl_stream_push
+
+* [fix] Fixed valgrind warnings which at axl_stream_trim_with_size.
+
+* [new] Added new function to the axl list module to allow performing
+  strings lookups. API added:
+
+  - axl_list_find_string
+
+About Advanced Software Production Line, S.L.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Advanced Software Production Line is leading the Af-Arch project: a
+  complete framework to develop distributed application to manage
+  enterprise process.
+
+  Af-Arch project uses Axl library to support its XML requirements
+  while exchanging data between nodes.
+
+  Advanced Software Production Line also provides GNU/Linux support
+  and consulting services to enable organization to introduce
+  GNU/Linux inside its process, making other platforms to interact
+  with GNU/Linux.
+
+  Contact us, using English or Spanish, to get commercial support
+  and/or XML based development services.
+
+  You can reach us:
+
+       http://www.aspl.es - info@aspl.es
+
+  We hope Axl Library help you. Enjoy Axl Library!
+
+--
+Francis Brosnan Blázquez           - francis@aspl.es
+Advanced Software Production Line  - http://www.aspl.es
+19th apr 2007, Madrid (Spain)
