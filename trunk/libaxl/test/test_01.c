@@ -1832,10 +1832,13 @@ bool test_14 (axlError ** error)
  */
 bool test_13 (axlError ** error) 
 {
-	axlDoc * doc  = NULL;
-	axlDoc * doc2 = NULL;
-	char   * content;
-	int      size;
+	axlDoc  * doc  = NULL;
+	axlDoc  * doc2 = NULL;
+	axlDoc  * doc3 = NULL;
+	
+	axlNode * node = NULL;
+	char    * content;
+	int       size;
 	
 	doc = axl_doc_parse_from_file ("test13.xml", error);
 	if (doc == NULL)
@@ -1913,6 +1916,53 @@ bool test_13 (axlError ** error)
 	/* free both document references */
 	axl_doc_free (doc);
 	axl_doc_free (doc2);
+
+	/* reopen document to dump nodes */
+	doc = axl_doc_parse_from_file ("test_13c.xml", error);
+	if (doc == NULL)
+		return false;
+
+	/* get a reference to the first root child node: <test> */
+	node = axl_doc_get_root (doc);
+	node = axl_node_get_first_child (node);
+	if (! NODE_CMP_NAME (node, "test")) {
+		axl_error_new (-1, "Expected to find a child node called: <test>", NULL, error);
+		return false;
+	} /* end if */
+
+	/* dump the content */
+	if (! axl_node_dump (node, &content, &size)) {
+		axl_error_new (-1, "Expected to find a proper dump operation", NULL, error);
+		return false;
+	} /* end if */
+
+	/* parse the content dumped, to check it is really the result
+	 * expected */
+	doc2 = axl_doc_parse (content, size, NULL);
+	if (doc2 == NULL) {
+		axl_error_new (-1, "Expected to parse properly dumped content from a node, but a failure was found", NULL, error);
+		return false;
+	} /* end if */
+
+	doc3 = axl_doc_parse_from_file ("test_13d.xml", NULL);
+	if (doc3 == NULL) {
+		axl_error_new (-1, "Expected to parse properly a reference file but an error was found", NULL, error);
+		return false;
+	} /* end if */
+
+	/* check result */
+	if (! axl_doc_are_equal (doc2, doc3)) {
+		axl_error_new (-1, "Expected to find equal document to reference, at node dump operations, but not found", NULL, error);
+		return false;
+	} /* end if */
+
+	/* free the content */
+	axl_free (content);
+
+	/* free the document */
+	axl_doc_free (doc);
+	axl_doc_free (doc2);
+	axl_doc_free (doc3);
 	
 	return true;
 }
