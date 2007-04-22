@@ -3692,6 +3692,202 @@ void      axl_node_transfer_childs          (axlNode * old_parent,
 }
 
 /** 
+ * @internal Implementation for the public API provided to dump node content.
+ */
+bool __axl_node_dump_common (axlNode * node, char ** content, int * size, bool pretty_print, int level, int tabular)
+{
+	int    _size;
+	int    index;
+	char * result;
+
+	/* check refererences received */
+	axl_return_val_if_fail (node, false);
+	axl_return_val_if_fail (content, false);
+
+	/* get dump size */
+	_size = axl_node_get_flat_size (node, pretty_print, level, tabular);
+
+	/* dump the content */
+	result = axl_new (char, _size + 1);
+	index  = axl_node_dump_at (node, result, 0, pretty_print, level, tabular);
+
+	/* check result */
+	if (index != _size) {
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "failed to dump xml node, size dump operation mismatch: %d != %d", 
+			   index, _size);
+		/* free allocated result */
+		axl_free (result);
+
+		/* nullify content */
+		if (size)
+			*size = -1;
+		*content      = NULL;
+		
+		return false;
+	} /* end if */
+
+	/* fill the size */
+	if (size)
+		*size = _size;
+	*content      = result;
+
+	/* return content */
+	return true;
+}
+
+/** 
+ * @brief Allows to dump the xml content taking as starting point the
+ * xml node provided. 
+ * 
+ * @param node The \ref axlNode to dump.
+ *
+ * @param content The reference where the result will be returned.
+ *
+ * @param size The reference where the document content size will be
+ * returned. 
+ *
+ * @return The function returns \ref true if the dump operation was
+ * performed. Otherwise \ref false is returned.
+ */
+bool      axl_node_dump                    (axlNode  * node, 
+					    char    ** content, 
+					    int      * size)
+{
+	/* use common implementation for all functions */
+	return __axl_node_dump_common (node, content, size, false, 0, 0);
+}
+
+/** 
+ * @brief Allows to perform a pretty print operation using as
+ * reference (starting point) the node provided.
+ * 
+ * @param node The node to be used as reference for the dump operation.
+ * 
+ * @param content A reference to a user defined pointer where the
+ * content will be placed. Not optional parameter.
+ *
+ * @param size A reference to a user defined pointer where the content
+ * size will be placed. Optional parameter.
+ * 
+ * @param tabular How many spaces to be placed at each level.
+ * 
+ * @return true if the dump operation was properly done, otherwise
+ * false is returned.
+ */
+bool      axl_node_dump_pretty             (axlNode  * node,
+					    char    ** content,
+					    int      * size,
+					    int        tabular)
+{
+	/* use common implementation for all functions */
+	return __axl_node_dump_common (node, content, size, true, 0, tabular);
+}
+
+/** 
+ * @brief Allows to dump the xml document using as reference the node
+ * provided, at the file path provided.
+ * 
+ * @param node The document node reference to use to build the
+ * content.
+ *
+ * @param file_path File path where place the result.
+ * 
+ * @return \ref true if the dump operation was done, otherwise \ref false is
+ * returned.
+ */
+bool      axl_node_dump_to_file            (axlNode  * node,
+					    char     * file_path)
+{
+	char * content;
+	int    size;
+	FILE * fd;
+	int    written;
+
+	/* use common implementation for all functions */
+	if (!  __axl_node_dump_common (node, &content, &size, true, 0, 0))
+		return false;
+
+	/* open the file and check */
+	if ((fd = fopen (file_path, "w")) == NULL) {
+		/* failed to open the file to dump the content */
+		axl_free (content);
+
+		return false;
+	}
+
+	/* dump the content */
+	written = fwrite (content, 1, size, fd);
+
+	/* free the content */
+	axl_free (content);
+
+	/* close file */
+	fclose (fd);
+
+	/* return if we have failed to dump all the content to the
+	 * file or not. */
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "returning that the dump was: %s (written:%d == size:%d)", 
+		   (written == size) ? "OK" : "FAILED", 
+		   written, size);
+		   
+	return (written == size);
+		
+}
+
+/** 
+ * @brief Allows to pretty print dump the xml document using as
+ * reference the node provided, at the file path provided.
+ * 
+ * @param node The document node reference to use to build the
+ * content.
+ *
+ * @param file_path File path where place the result.
+ *
+ * @param tabular How many spaces to be placed at each level.
+ * 
+ * @return \ref true if the dump operation was done, otherwise \ref false is
+ * returned.
+ */
+bool      axl_node_dump_pretty_to_file     (axlNode  * node,
+					    char     * file_path,
+					    int        tabular)
+{
+	char * content;
+	int    size;
+	FILE * fd;
+	int    written;
+
+	/* use common implementation for all functions */
+	if (!  __axl_node_dump_common (node, &content, &size, true, 0, tabular))
+		return false;
+
+	/* open the file and check */
+	if ((fd = fopen (file_path, "w")) == NULL) {
+		/* failed to open the file to dump the content */
+		axl_free (content);
+
+		return false;
+	}
+
+	/* dump the content */
+	written = fwrite (content, 1, size, fd);
+
+	/* free the content */
+	axl_free (content);
+
+	/* close file */
+	fclose (fd);
+
+	/* return if we have failed to dump all the content to the
+	 * file or not. */
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "returning that the dump was: %s (written:%d == size:%d)", 
+		   (written == size) ? "OK" : "FAILED", 
+		   written, size);
+		   
+	return (written == size);
+}
+
+/** 
  * @brief Allows to get a list which contains \ref axlPI nodes,
  * representing all process instruction that the \ref axlNode (xml
  * document node) has.

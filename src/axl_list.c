@@ -1279,6 +1279,11 @@ void            axl_list_cursor_first    (axlListCursor * cursor)
 {
 	axl_return_if_fail (cursor);
 
+	if (cursor->list->length == 0) {
+		cursor->current = NULL;
+		return;
+	} /* end if */
+
 	/* set the first node */
 	cursor->current = cursor->list->first_node;
 

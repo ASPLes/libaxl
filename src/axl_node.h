@@ -380,6 +380,22 @@ axlList * axl_node_get_pi_target_list       (axlNode * node);
 void      axl_node_transfer_childs          (axlNode * old_parent, 
 					     axlNode * new_parent);
 
+bool      axl_node_dump                    (axlNode  * node, 
+					    char    ** content, 
+					    int      * size);
+
+bool      axl_node_dump_pretty             (axlNode  * node,
+					    char    ** content,
+					    int      * size,
+					    int        tabular);
+
+bool      axl_node_dump_to_file            (axlNode  * node,
+					    char     * file_path);
+
+bool      axl_node_dump_pretty_to_file     (axlNode  * node,
+					    char     * file_path,
+					    int        tabular);
+
 int       axl_node_get_flat_size            (axlNode * node,
 					     bool      pretty_print,
 					     int       level,
