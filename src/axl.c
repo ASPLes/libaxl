@@ -526,10 +526,22 @@
  *
  * \section dumping_functions Producing xml documents from memory
  *
- * Axl Library comes with two functions to perform dump operations: 
+ * Axl Library comes with several functions to perform xml memory dump
+ * operations, allowing to translate a xml representation (\ref axlDoc
+ * or \ref axlNode) into a string:
  *
- *  - \ref axl_doc_dump
- *  - \ref axl_doc_dump_pretty
+ * - \ref axl_doc_dump
+ * - \ref axl_doc_dump_pretty
+ * - \ref axl_doc_dump_to_file
+ * - \ref axl_doc_dump_pretty_to_file
+ *
+ * In the case you want to produce xml content taking as reference a
+ * particular node use:
+ *  
+ * - \ref axl_node_dump
+ * - \ref axl_node_dump_pretty
+ * - \ref axl_node_dump_to_file
+ * - \ref axl_node_dump_pretty_to_file
  *
  * \section validation Validating XML documents
  *
