@@ -2,6 +2,53 @@
 #include <axl_ns.h>
 
 /** 
+ * @brief Checks a recursive root node configuration.
+ * 
+ * @param error The optional axlError to be used to report erros.
+ * 
+ * @return true if the validity test is passed, otherwise false is
+ * returned.
+ */
+bool test_33 (axlError ** error)
+{
+	axlDoc          * doc;
+	axlNode         * node;
+	axlNode         * temp;
+	int               iterator;
+
+	/* create an empty document */
+	doc       = axl_doc_create (NULL, NULL, true);
+	
+	/* set the root node */
+	node      = axl_node_create ("test");
+	axl_doc_set_root (doc, node);
+
+	/* create a root node */
+	iterator = 0;
+	while (iterator < 2) {
+		/* get current root */
+		temp = axl_doc_get_root (doc);
+
+		/* create a new root */
+		node = axl_node_create ("test");
+		
+		/* configure the new root */
+		axl_doc_set_root (doc, node);
+
+		/* configure the child */
+		axl_node_set_child (node, temp);
+		
+		/* next iterator */
+		iterator++;
+	}
+
+	/* free */
+	axl_doc_free (doc);
+
+	return true;
+}
+
+/** 
  * @brief Test DTD attribute declaration support <!ATTLIST > using IDREF
  * declarations.
  * 
@@ -905,6 +952,58 @@ bool test_22 (axlError ** error)
 	} /* end if */
 
 	axl_node_attr_cursor_free (cursor);
+
+	/* remove attributes */
+	if (axl_node_num_attributes (node) != 11) {
+		axl_error_new (-1, "Expected to find 11 attributes", NULL, error);
+		return false;
+	}
+	axl_node_remove_attribute (node, "attribute1");
+
+	if (axl_node_num_attributes (node) != 10) {
+		axl_error_new (-1, "Expected to find 10 attributes", NULL, error);
+		return false;
+	}
+	
+	if (axl_node_has_attribute (node, "attribute1")) {
+		axl_error_new (-1, "Found that attribute1 should not appear, but it was found", NULL, error);
+		return false;
+	} /* end if */
+
+	node = axl_node_create ("test");
+	axl_node_set_attribute (node, "test", "test");
+	
+	if (axl_node_num_attributes (node) != 1) {
+		axl_error_new (-1, "Expected to find 1 attributes", NULL, error);
+		return false;
+	}
+
+	axl_node_remove_attribute (node, "test");
+
+	if (axl_node_num_attributes (node) != 0) {
+		axl_error_new (-1, "Expected to find 1 attributes", NULL, error);
+		return false;
+	}
+
+	axl_node_set_attribute (node, "test1", "test");
+	axl_node_set_attribute (node, "test2", "test");
+	axl_node_set_attribute (node, "test3", "test");
+
+	if (axl_node_num_attributes (node) != 3) {
+		axl_error_new (-1, "Expected to find 3 attributes", NULL, error);
+		return false;
+	}
+
+	axl_node_remove_attribute (node, "test1");
+	axl_node_remove_attribute (node, "test2");
+	axl_node_remove_attribute (node, "test3");
+
+	if (axl_node_num_attributes (node) != 0) {
+		axl_error_new (-1, "Expected to find 0 attributes", NULL, error);
+		return false;
+	}
+
+	axl_node_free (node);
 	
 	/* free document */
 	axl_doc_free (doc);
@@ -6326,6 +6425,15 @@ int main (int argc, char ** argv)
 		printf ("Test 32: DTD attribute validation (IDREF support) [   OK   ]\n");
 	}else {
 		printf ("Test 32: DTD attribute validation (IDREF support) [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}
+	
+	if (test_33 (&error)) {
+		printf ("Test 33: Recursive root node replace [   OK   ]\n");
+	}else {
+		printf ("Test 33: Recursive root node replace [ FAILED ]\n  (CODE: %d) %s\n",
 			axl_error_get_code (error), axl_error_get (error));
 		axl_error_free (error);
 		return -1;

@@ -97,6 +97,12 @@ void      axl_node_set_attribute_from_factory  (axlFactory * factory,
 bool      axl_node_has_attribute            (axlNode    * node, 
 					     const char * attribute);
 
+void      axl_node_remove_attribute         (axlNode    * node,
+					     const char * attribute);
+
+int       axl_node_num_attributes           (axlNode    * node);
+					     
+
 /** 
  * @brief Macro definition, which works as an alias for \ref
  * axl_node_get_attribute_value.
