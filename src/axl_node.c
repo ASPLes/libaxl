@@ -782,7 +782,6 @@ void      axl_node_set_doc                  (axlNode * node, axlDoc * doc)
 	item = node->holder;
 
 	if (item == NULL) {
-		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "node received doesn't have a holder reference, creating");
 
 		/* create an empty reference */
 		item         = axl_item_factory_get (axl_doc_get_item_factory (doc)); 
@@ -790,6 +789,8 @@ void      axl_node_set_doc                  (axlNode * node, axlDoc * doc)
 		item->data   = node;
 		node->holder = item;
 		
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "node received doesn't have a holder reference, creating ref=0x%x, node=0x%x, type=%d",
+			   item, node, item->type);
 	} /* end if */
 
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "setting doc to the item node");
@@ -1066,6 +1067,109 @@ bool          axl_node_has_attribute      (axlNode * node, const char * attribut
 
 	/* hashed configuration */
 	return axl_hash_exists ((axlHash *) node->attributes, (axlPointer) attribute);
+}
+
+/** 
+ * @brief Allows to remove the attribute provided, from the node
+ * provided.
+ * 
+ * @param node The node that will be updated by removing the attribute
+ * provided.
+ *
+ * @param attribute The attribute to locate and remove.
+ */
+void      axl_node_remove_attribute         (axlNode    * node,
+					     const char * attribute)
+{
+	axlNodeAttr * attr;
+	axlNodeAttr * previous;
+
+	axl_return_if_fail (node);
+	axl_return_if_fail (attribute);
+
+	/* check for empty hash */
+	if (node->attributes == NULL)
+		return;
+
+	if (node->attr_num <= 10) {
+		/* linked configuration */
+		attr     = (axlNodeAttr *) node->attributes;
+		previous = NULL;
+		while (attr != NULL) {
+			/* check that the attribute is equal */
+			if (axl_cmp (attr->attribute, attribute)) {
+				/* attribute found */
+				if (previous == NULL)
+					node->attributes = (axlPointer) attr->next;
+				else
+					previous->next = attr->next;
+
+				/* do not decrease attribute number
+				 * since it is used to know the kind
+				 * of store used. */
+
+				/* now dealloc the attribute */
+				if (! attr->from_factory) {
+					axl_free (attr->attribute);
+					axl_free (attr->value);
+					axl_free (attr);
+				} /* end if */
+				
+				return;
+			}
+
+			/* get the next attribute */
+			previous = attr;
+			attr     = attr->next;
+		} /* end while */
+
+		/* attribute not found */
+		return;
+	} /* end if */
+
+	/* hashed configuration */
+	axl_hash_remove ((axlHash *) node->attributes, (axlPointer) attribute);
+
+	/* do not decrease attribute number
+	 * since it is used to know the kind
+	 * of store used. */
+	
+	return;
+}
+
+/** 
+ * @brief Allows to get the number of attributes installed on the
+ * provided node.
+ * 
+ * @param node The node that is requested to return the number of
+ * attributes installed.
+ * 
+ * @return Attributes installed, or -1 if it fails.
+ */
+int       axl_node_num_attributes           (axlNode    * node)
+{
+	int           result = 0;
+	axlNodeAttr * attr;
+
+	axl_return_val_if_fail (node, -1);
+
+	if (node->attr_num <= 10) {
+		/* linked configuration */
+		attr     = (axlNodeAttr *) node->attributes;
+		while (attr != NULL) {
+			/* update sum */
+			result++;
+
+			/* get the next attribute */
+			attr     = attr->next;
+		} /* end while */
+
+		/* attribute not found */
+		return result;
+	} /* end if */
+
+	/* hashed configuration */
+	return axl_hash_items ((axlHash *) node->attributes);
 }
 
 /** 
@@ -4728,9 +4832,17 @@ void __axl_node_free_internal (axlNode * node, bool also_childs)
 	} /* end if */
 
 	/* free the item itself */
-	if (node->holder) {
-		if ((node->holder->type & ITEM_FROM_FACTORY) == 0)
+	if (node->holder != NULL) {
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, 
+			   "item holder found to be defined, referenc=0x%x",
+			   node->holder);
+		if ((node->holder->type & ITEM_FROM_FACTORY) == 0) {
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, 
+				   "item holder found to be not from a factory, dealloc reference=0x%x, node=0x%x, type=%d",
+				   node->holder, node, node->holder->type);
 			axl_free (node->holder);
+			node->holder = NULL;
+		}
 	}
 
 	/* do not free the node itself */
@@ -5570,6 +5682,12 @@ axlItem *  __axl_item_common_configure (axlNode * parent, AxlItemType type, axlP
 
 		/* get a reference to the holder */
 		item = node->holder;
+
+		/* check if the current item was allocated from a
+		 * factory to ensure we don't loose that
+		 * information */
+		if ((item != NULL) && (item->type & ITEM_FROM_FACTORY)) 
+			type = type | ITEM_FROM_FACTORY;
 	}
 
 	/* create an item to hold the child, configuring the node, the
@@ -5588,7 +5706,6 @@ axlItem *  __axl_item_common_configure (axlNode * parent, AxlItemType type, axlP
 	if (item->type & ITEM_NODE) {
 		/* now configure the item that will hold the new child */
 		node->holder  = item;
-		
 	} /* end if */	
 	
 	/* return item created */
