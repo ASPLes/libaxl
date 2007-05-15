@@ -1,0 +1,94 @@
+          ###################################
+          #    Axl Library release note:    #
+          #      "25th floor release"       # 
+          #              0.4.4              #
+          ###################################
+
+Advanced Software Production Line is proud to announce a new Axl
+Library release.
+
+Axl Library is an small and efficient XML toolkit, that will allow you
+to produce efficient and clear code that interfaces with XML data.
+
+The library was produced to support XML requirements needed by
+software developed by Advanced Software Production Line, S.L.
+
+At this moment the library is being used by Vortex Library,
+Af-Arch, Shaper and Fovap.
+
+Resources
+~~~~~~~~~
+
+   Axl Homepage
+   [ http://xml.aspl.es ]
+
+   Advanced Software Production Line, S.L.
+   [ http://www.aspl.es ]
+
+This release in short
+~~~~~~~~~~~~~~~~~~~~~
+  Added xml content dump function using a node as a reference and
+  starting point for the operation. Updated the axl node API to get
+  the number of attributes found, and to remove a particular one.
+  
+  Fixed recursive top root node configuration bug, caused to loose
+  some memory allocation flags. 
+ 
+Change notifications
+~~~~~~~~~~~~~~~~~~~~
+  None.
+
+Changes from previous release 0.4.3
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+
+* [fix] fixed recursive top root node configuration bug, caused to
+  loose some memory allocation flags. Added regression tests to check
+  this.
+
+* [new] Updated the axl node api to include a function to remove a
+  particular attribute given a node, and to get the number of
+  attributes installed.  API added:
+
+   - axl_node_remove_attribute
+   - axl_node_num_attributes
+
+* [fix] Updating documentation to explain new dump API that allows
+  creating xml content taking as a reference a particular node.
+
+* [new] Updated axl node API to include dump functions. Updated
+  regression test to check new functions added:
+
+   - axl_node_dump
+   - axl_node_dump_pretty
+   - axl_node_dump_to_file
+   - axl_node_dump_pretty_to_file
+
+
+About Advanced Software Production Line, S.L.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Advanced Software Production Line is leading the Af-Arch project: a
+  complete framework to develop distributed application to manage
+  enterprise process.
+
+  Af-Arch project uses Axl library to support its XML requirements
+  while exchanging data between nodes.
+
+  Advanced Software Production Line also provides GNU/Linux support
+  and consulting services to enable organization to introduce
+  GNU/Linux inside its process, making other platforms to interact
+  with GNU/Linux.
+
+  Contact us, using English or Spanish, to get commercial support
+  and/or XML based development services.
+
+  You can reach us:
+
+       http://www.aspl.es - info@aspl.es
+
+  We hope Axl Library help you. Enjoy Axl Library!
+
+--
+Francis Brosnan Blázquez           - francis@aspl.es
+Advanced Software Production Line  - http://www.aspl.es
+15th may 2007, Madrid (Spain)
