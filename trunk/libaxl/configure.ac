@@ -105,7 +105,7 @@ AC_CONFIG_COMMANDS([axl_config.h],
  *
  * @return A \ref axlPointer reference.
  */
-#define INT_TO_PTR(integer)   ((axlPointer) ${pti_cast} integer)
+#define INT_TO_PTR(integer)   ((axlPointer) ${pti_cast} (integer))
 
 /** 
  * @brief Allows to convert a pointer reference (\ref axlPointer),
@@ -118,7 +118,7 @@ AC_CONFIG_COMMANDS([axl_config.h],
  * 
  * @return A int value.
  */
-#define PTR_TO_INT(ptr) ((int) ${pti_cast} ptr)
+#define PTR_TO_INT(ptr) ((int) ${pti_cast} (ptr))
 
 /**
  * @brief Allows to get current platform configuration. This is used
