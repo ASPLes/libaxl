@@ -1721,6 +1721,35 @@ bool        axl_stream_cmp             (const char * chunk1, const char * chunk2
 }
 
 /** 
+ * @brief Provides the same function like \ref axl_stream_cmp but
+ * ignoring the case of the characters (case insensitive manner).
+ * 
+ * @param chunk1 The string to be compared.
+ *
+ * @param chunk2 The second string to be compared.
+ *
+ * @param size The amount of bytes to be compared for the two incoming
+ * values.
+ * 
+ * @return true if both string are equal, false if not. If
+ * some value provided is NULL or the size to compare is not greater
+ * than 0 the function will return false directly.
+ */
+bool        axl_stream_casecmp           (const char * chunk1, const char * chunk2, int size)
+{
+	/* perform some environmental condition checking */
+	if (chunk1 == NULL)
+		return false;
+	if (chunk2 == NULL)
+		return false;
+	if (size < 0)
+		return false;
+
+	/* returh if both strings are equal. */
+	return strncasecmp (chunk1, chunk2, size) == 0;
+}
+
+/** 
  * @internal
  *
  * @brief Allows to check if the provided stream could support
