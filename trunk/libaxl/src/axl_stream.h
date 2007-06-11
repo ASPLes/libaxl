@@ -165,6 +165,8 @@ void        axl_stream_trim_with_size    (char * chunk, int * trimmed);
 
 bool        axl_stream_cmp               (const char * chunk1, const char * chunk2, int size);
 
+bool        axl_stream_casecmp           (const char * chunk1, const char * chunk2, int size);
+
 char      * axl_stream_strdup            (const char * chunk);
 
 char      * axl_stream_strdup_n          (const char * chunk, int n);
