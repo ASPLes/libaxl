@@ -9,6 +9,51 @@
  * @return true if the validity test is passed, otherwise false is
  * returned.
  */
+bool test_34 (axlError ** error)
+{
+	char  * string = axl_strdup (" ");
+
+	axl_stream_trim (string);
+	if (strlen (string) != 0) {
+		axl_error_new (-1, "Expected to find empty string after trim operation, but not found", NULL, error);
+		return false;
+	}
+
+	axl_free (string);
+
+	/* more length */
+	string = axl_strdup ("       ");
+
+	axl_stream_trim (string);
+	if (strlen (string) != 0) {
+		axl_error_new (-1, "Expected to find empty string after trim operation, but not found", NULL, error);
+		return false;
+	}
+
+	axl_free (string);
+
+	/* more length with one byte */
+	string = axl_strdup ("  a     ");
+
+	axl_stream_trim (string);
+	if (strlen (string) != 1) {
+		axl_error_new (-1, "Expected to find one byte length string after trim operation, but not found", NULL, error);
+		return false;
+	}
+
+	axl_free (string);
+
+	return true;
+}
+
+/** 
+ * @brief Checks a recursive root node configuration.
+ * 
+ * @param error The optional axlError to be used to report erros.
+ * 
+ * @return true if the validity test is passed, otherwise false is
+ * returned.
+ */
 bool test_33 (axlError ** error)
 {
 	axlDoc          * doc;
@@ -6434,6 +6479,15 @@ int main (int argc, char ** argv)
 		printf ("Test 33: Recursive root node replace [   OK   ]\n");
 	}else {
 		printf ("Test 33: Recursive root node replace [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}
+
+	if (test_34 (&error)) {
+		printf ("Test 34: axl trim bug (19/06/2007) [   OK   ]\n");
+	}else {
+		printf ("Test 34: axl trim bug (19/06/2007) [ FAILED ]\n  (CODE: %d) %s\n",
 			axl_error_get_code (error), axl_error_get (error));
 		axl_error_free (error);
 		return -1;

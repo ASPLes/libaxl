@@ -1888,7 +1888,9 @@ void        axl_stream_trim_with_size  (char * chunk, int * trimmed)
 			*trimmed = 0;
 		return;
 	}
-	
+
+	/* check the amount of white spaces to remove from the
+	 * begin */
 	iterator = 0;
 	while (chunk[iterator] != 0) {
 		
@@ -1900,6 +1902,15 @@ void        axl_stream_trim_with_size  (char * chunk, int * trimmed)
 		/* update the iterator */
 		iterator++;
 	}
+
+	/* check for the really basic case where an empty string is found */
+	if (iterator == strlen (chunk)) {
+		/* an empty string, trim it all */
+		chunk [0] = 0;
+		if (trimmed)
+			*trimmed = iterator;
+		return;
+	} /* end if */
 
 	/* now get the position for the last valid character in the
 	 * chunk */
