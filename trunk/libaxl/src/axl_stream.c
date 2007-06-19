@@ -1881,6 +1881,13 @@ void        axl_stream_trim_with_size  (char * chunk, int * trimmed)
 
 	/* perform some environment check */
 	axl_return_if_fail (chunk);
+
+	/* check empty string received */
+	if (strlen (chunk) == 0) {
+		if (trimmed)
+			*trimmed = 0;
+		return;
+	}
 	
 	iterator = 0;
 	while (chunk[iterator] != 0) {
