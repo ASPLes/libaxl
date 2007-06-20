@@ -4833,9 +4833,6 @@ void __axl_node_free_internal (axlNode * node, bool also_childs)
 
 	/* free the item itself */
 	if (node->holder != NULL) {
-		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, 
-			   "item holder found to be defined, referenc=0x%x",
-			   node->holder);
 		if ((node->holder->type & ITEM_FROM_FACTORY) == 0) {
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, 
 				   "item holder found to be not from a factory, dealloc reference=0x%x, node=0x%x, type=%d",

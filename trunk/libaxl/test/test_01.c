@@ -2,7 +2,30 @@
 #include <axl_ns.h>
 
 /** 
- * @brief Checks a recursive root node configuration.
+ * @brief Checks a bug while opening a document.
+ * 
+ * @param error The optional axlError to be used to report erros.
+ * 
+ * @return true if the validity test is passed, otherwise false is
+ * returned.
+ */
+bool test_35 (axlError ** error)
+{
+	/* parse the document */
+	axlDoc * doc = axl_doc_parse_from_file ("test_35.xml", error);
+
+	if (doc == NULL)
+		return false;
+
+	/* free the document */
+	axl_doc_free (doc);
+
+	return true;
+	
+}
+
+/** 
+ * @brief Checks a bug while triming strings.
  * 
  * @param error The optional axlError to be used to report erros.
  * 
@@ -6488,6 +6511,15 @@ int main (int argc, char ** argv)
 		printf ("Test 34: axl trim bug (19/06/2007) [   OK   ]\n");
 	}else {
 		printf ("Test 34: axl trim bug (19/06/2007) [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}
+
+	if (test_35 (&error)) {
+		printf ("Test 35: axl_doc_parse_from_file bug (20/06/2007) [   OK   ]\n");
+	}else {
+		printf ("Test 35: axl_doc_parse_frmo_file bug (20/06/2007) [ FAILED ]\n  (CODE: %d) %s\n",
 			axl_error_get_code (error), axl_error_get (error));
 		axl_error_free (error);
 		return -1;
