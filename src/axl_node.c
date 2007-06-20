@@ -526,6 +526,119 @@ axlNode * axl_node_create (const char * name)
 	return node;
 }
 
+/** 
+ * @brief This function allows to create a xml node from the provided
+ * xml content.
+ *
+ * This function is useful if it is required to create a node with a
+ * particular complex content, without going into the detail of
+ * creating all childs, attributes and content.
+ *
+ * Here is an example:
+ * \code
+ * axlError * error = NULL;
+ * axlNode  * node  = NULL;
+ * 
+ * // parse document 
+ * root = axl_node_parse_strings (error, 
+ *                                "<child>",
+ *                                "  <widget class=\"GtkLabel\" id=\"label4\">",
+ *                                "    <property name=\"visible\">True</property>",
+ *                                "    <property name=\"label\" translatable=\"yes\">&lt;b&gt;1. Seleccione el sistema:&lt;/b&gt;</property>",
+ *                                "    <property name=\"use_underline\">False</property>",
+ *                                "    <property name=\"use_markup\">True</property>",
+ *                                "    <property name=\"justify\">GTK_JUSTIFY_LEFT</property>",
+ *                                "    <property name=\"wrap\">False</property>",
+ *                                "    <property name=\"selectable\">False</property>",
+ *                                "    <property name=\"xalign\">0</property>",
+ *                                "    <property name=\"yalign\">0.5</property>",
+ *                                "    <property name=\"xpad\">0</property>",
+ *                                "    <property name=\"ypad\">0</property>",
+ *                                "    <property name=\"ellipsize\">PANGO_ELLIPSIZE_NONE</property>",
+ *                                "    <property name=\"width_chars\">-1</property>",
+ *                                "    <property name=\"single_line_mode\">False</property>",
+ *                                "    <property name=\"angle\">0</property>",
+ *                                "  </widget>",
+ *                                "  <packing>",
+ *                                "     <property name=\"padding\">0</property>",
+ *                                "     <property name=\"expand\">False</property>",
+ *                                "     <property name=\"fill\">False</property>",
+ *                                "  </packing>",
+ *                                "</child>",
+ *                                NULL);
+ * if (root == NULL) {
+ *	printf ("Error: unable to parse content, error: %s\n", axl_error_get (error));
+ *              axl_error_free (error);
+ *	return;
+ * }
+ *
+ * // once finished, free the node 
+ * axl_node_free (root);
+ * \endcode
+ * 
+ * @param error Optional error reference to report parsing error problems that can be found.
+ * 
+ * The function receives a set of strings, separate by comma, ended by
+ * NULL.
+ * 
+ * @return A newly allocated reference to the \ref axlNode or NULL if
+ * it fails. In such case, the error variable is filled with the error
+ * found.
+ */
+axlNode * axl_node_parse_strings      (axlError ** error, ...)
+{
+	axlDoc   * doc;
+	axlNode  * root;
+	va_list    args;
+	char     * string     = NULL;
+	char     * stream     = NULL;
+	char     * stream_aux = NULL;
+	
+	/* check incoming data */
+	axl_return_val_if_fail (error, NULL);
+	
+	/* open the stdargs */
+	va_start (args, error);
+	
+	while ((string = va_arg (args, char *)) != NULL) {
+		stream_aux = stream;
+		stream = axl_stream_concat (stream, string);
+		if (stream_aux != NULL) {
+			axl_free (stream_aux);
+			stream_aux = NULL;
+		}
+	}
+
+	/* close the stdargs */
+	va_end (args);
+
+	/* check that we have received, at least, an string
+	 * parseable */
+	if (stream == NULL)
+		return NULL;
+
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "string to parse: %s", stream);
+
+	/* parse the string */
+	doc = axl_doc_parse (stream, -1, error);
+	if (doc == NULL)
+		return NULL;
+
+	/* free the stream */
+	axl_free (stream);
+
+	/* deattach the root node */
+	root = axl_doc_get_root (doc);
+	axl_node_deattach (root);
+
+	/* do not free the document, rather, store it to be
+	 * deallocated by the node just after it is deallocated. */
+	axl_node_annotate_data_full (root, "__root_document", NULL, doc, (axlDestroyFunc) axl_doc_free);
+
+	/* return the node created */
+	return root;
+}
+
 
 /** 
  * @brief Creates a new \ref axlNode but using the memory passed in by
@@ -3136,6 +3249,14 @@ void      axl_node_remove             (axlNode * node,
 
 	/* get a reference to the item element */
 	item = node->holder;
+
+	/* check if the node is the root node of its document */
+	if (item != NULL && item->doc != NULL) {
+		if (axl_doc_get_root (item->doc) == node) {
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "attempting to dettach the root node from the document, nullify");
+			axl_doc_set_root (item->doc, NULL);
+		} /* end if */
+	} /* end if */
 	
 	if (axl_item_get_parent (item) != NULL) {
 
@@ -4807,9 +4928,6 @@ void __axl_node_free_internal (axlNode * node, bool also_childs)
 			axl_hash_free ((axlHash *) node->attributes);
 	}
 
-	/* free annotation */
-	axl_hash_free (node->annotate_data);
-
 	/* release memory hold by childs */
 	if (node->first != NULL && also_childs) {
 		/* get the first item */
@@ -4855,7 +4973,11 @@ void __axl_node_free_internal (axlNode * node, bool also_childs)
  */
 void axl_node_free (axlNode * node) 
 {
+	axlHash * hash;
 	axl_return_if_fail (node);
+	
+	/* get a reference to the hash */
+	hash = node->annotate_data;
 
 	/* free internal content */
 	__axl_node_free_internal (node, true);
@@ -4863,7 +4985,13 @@ void axl_node_free (axlNode * node)
 	/* free attributes */
 	if (! (node->conf & NODE_FROM_FACTORY))
 		axl_free (node);
-	
+
+	/* annotate data deallocation must be done here because it is
+	 * used by the application user and the library to store
+	 * reference that could be pointing to internal structures
+	 * deallocated by the __axl_node_free_internal */
+	axl_hash_free (hash);
+
 	/* the node to release */
 	return;
 }
@@ -4878,14 +5006,24 @@ void axl_node_free (axlNode * node)
  */
 void      axl_node_free_full       (axlNode * node, bool also_childs)
 {
+	axlHash * hash;
 	axl_return_if_fail (node);
 	
+	/* get a reference to the hash */
+	hash = node->annotate_data;
+
 	/* free node */
 	__axl_node_free_internal (node, false);
 
 	/* free the node itself */
 	if (!(node->conf & NODE_FROM_FACTORY))
 		axl_free (node);
+
+	/* annotate data deallocation must be done here because it is
+	 * used by the application user and the library to store
+	 * reference that could be pointing to internal structures
+	 * deallocated by the __axl_node_free_internal */
+	axl_hash_free (hash);
 
 	return;
 }

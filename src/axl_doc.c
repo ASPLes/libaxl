@@ -2232,15 +2232,19 @@ bool     axl_doc_get_standalone (axlDoc * doc)
  * configured.
  *
  * @param root The \ref axlNode used to configure the new document
- * root.
+ * root. The reference received can be null. In this case, it is
+ * considered that the root node is being unset.
  */
 void    axl_doc_set_root (axlDoc * doc, axlNode * root)
 {
 	axl_return_if_fail (doc);
-	axl_return_if_fail (root);
 
 	/* set the new root */
 	doc->rootNode = root;
+
+	/* if the reference received is null, just return */
+	if (root == NULL)
+		return;
 
 	/* set a refeference to the document root */
 	axl_node_set_doc (root, doc);
