@@ -2,6 +2,71 @@
 #include <axl_ns.h>
 
 /** 
+ * @brief Check if it is possible to dettach the root node.
+ * 
+ * @param error The optional axlError to be used to report erros.
+ * 
+ * @return true if the validity test is passed, otherwise false is
+ * returned.
+ */
+bool test_36 (axlError ** error)
+{
+	/* parse the document */
+	axlDoc  * doc = axl_doc_parse_from_file ("test_35.xml", error);
+	axlNode * root;
+
+	/* check returned document */
+	if (doc == NULL)
+		return false;
+
+	/* now get the root node and detach it */
+	root = axl_doc_get_root (doc);
+	axl_node_deattach (root);
+
+	/* free the node */
+	axl_node_free (root);
+	
+	/* free the document */
+	axl_doc_free (doc);
+
+	root = axl_node_parse_strings (error, 
+				       "<child>",
+				       "  <widget class=\"GtkLabel\" id=\"label4\">",
+				       "    <property name=\"visible\">True</property>",
+				       "    <property name=\"label\" translatable=\"yes\">&lt;b&gt;1. Seleccione el sistema:&lt;/b&gt;</property>",
+				       "    <property name=\"use_underline\">False</property>",
+				       "    <property name=\"use_markup\">True</property>",
+				       "    <property name=\"justify\">GTK_JUSTIFY_LEFT</property>",
+				       "    <property name=\"wrap\">False</property>",
+				       "    <property name=\"selectable\">False</property>",
+				       "    <property name=\"xalign\">0</property>",
+				       "    <property name=\"yalign\">0.5</property>",
+				       "    <property name=\"xpad\">0</property>",
+				       "    <property name=\"ypad\">0</property>",
+				       "    <property name=\"ellipsize\">PANGO_ELLIPSIZE_NONE</property>",
+				       "    <property name=\"width_chars\">-1</property>",
+				       "    <property name=\"single_line_mode\">False</property>",
+				       "    <property name=\"angle\">0</property>",
+				       "  </widget>",
+				       "  <packing>",
+				       "     <property name=\"padding\">0</property>",
+				       "     <property name=\"expand\">False</property>",
+				       "     <property name=\"fill\">False</property>",
+				       "  </packing>",
+				       "</child>",
+				       NULL);
+	if (root == NULL) {
+		printf ("Error: unable to parse content..\n");
+		return false;
+	}
+
+	axl_node_free (root);
+
+	return true;
+
+}
+
+/** 
  * @brief Checks a bug while opening a document.
  * 
  * @param error The optional axlError to be used to report erros.
@@ -6519,7 +6584,16 @@ int main (int argc, char ** argv)
 	if (test_35 (&error)) {
 		printf ("Test 35: axl_doc_parse_from_file bug (20/06/2007) [   OK   ]\n");
 	}else {
-		printf ("Test 35: axl_doc_parse_frmo_file bug (20/06/2007) [ FAILED ]\n  (CODE: %d) %s\n",
+		printf ("Test 35: axl_doc_parse_from_file bug (20/06/2007) [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}
+
+	if (test_36 (&error)) {
+		printf ("Test 36: deattach root node [   OK   ]\n");
+	}else {
+		printf ("Test 36: deattach root node [ FAILED ]\n  (CODE: %d) %s\n",
 			axl_error_get_code (error), axl_error_get (error));
 		axl_error_free (error);
 		return -1;

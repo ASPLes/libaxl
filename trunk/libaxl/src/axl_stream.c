@@ -1721,7 +1721,7 @@ bool        axl_stream_cmp             (const char * chunk1, const char * chunk2
 }
 
 /** 
- * @brief Provides the same function like \ref axl_stream_cmp but
+ * @brief Provides the same function like axl_stream_cmp but
  * ignoring the case of the characters (case insensitive manner).
  * 
  * @param chunk1 The string to be compared.
