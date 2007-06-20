@@ -487,6 +487,7 @@ char * __axl_doc_alloc (int size, axlDoc * doc)
 bool __axl_doc_parse_xml_header (axlStream * stream, axlDoc * doc, axlError ** error)
 {
 	char      * string_aux;
+	int         size;
 
 	/* check if the user is defining the header many times */
 	if (doc->headerProcess) {
@@ -585,6 +586,18 @@ bool __axl_doc_parse_xml_header (axlStream * stream, axlDoc * doc, axlError ** e
 			axl_stream_free (stream);
 			return false;
 		}
+
+		/* consume a possible comment */
+		if (! axl_doc_consume_comments (doc, stream, error))
+			return false;
+	}
+
+	/* now process the document type declaration */
+	if (axl_stream_inspect (stream, "<!DOCTYPE", 9) > 0) {
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found doc type declaration..");
+		/* found document type declaration, just skip it for
+		 * now */
+		axl_stream_get_until_ref (stream, NULL, NULL, true, &size, 1, ">");
 
 		/* consume a possible comment */
 		if (! axl_doc_consume_comments (doc, stream, error))
