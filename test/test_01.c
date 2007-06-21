@@ -62,6 +62,16 @@ bool test_36 (axlError ** error)
 
 	axl_node_free (root);
 
+	/* create the node using the parse api */
+	root = axl_node_parse (error, "<child><widget class=\"GtkLabel\" id=\"label4\"/></child>");
+	if (root == NULL) {
+		printf ("Error: unable to parse content..\n");
+		return false;
+	}
+
+	axl_node_free (root);
+	
+
 	return true;
 
 }
@@ -6148,7 +6158,7 @@ int main (int argc, char ** argv)
 		printf ("Unable to initialize Axl library\n");
 		return -1;
 	}
-
+	
 	/* DATA STRUCTURE TESTS */
 	if (test_01_01 ()) {
 		printf ("Test 01-01: LibAxl list implementation [   OK   ]\n");

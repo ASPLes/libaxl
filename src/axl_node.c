@@ -639,6 +639,69 @@ axlNode * axl_node_parse_strings      (axlError ** error, ...)
 	return root;
 }
 
+/** 
+ * @brief Allows to create a complete node configuring not only the
+ * node but its content, using a printf-like format.
+ *
+ * This handy function, like \ref axl_node_parse_strings, allows to
+ * create complex xml structures providing the inline content.
+ *
+ * Here is an example:
+ * \code
+ * axlNode * node = axl_node_parse (NULL, "<content attr='value' attr2='value'>This is content</content>");
+ * \endcode
+ *
+ * The previous call will create a node called <b>content</b> with the
+ * provided attributes and content, in one step.
+ *
+ * The node returned can be integrated into a xml document using usual
+ * API, for example: \ref axl_node_set_child or \ref axl_doc_set_root.
+ * 
+ * @param error The optional error reference holding the returned
+ * result.
+ *
+ * @param content The content to be used to create the node.
+ * 
+ * @return A reference to a newly allocated \ref axlNode or NULL if it
+ * fails. The \ref axlError is filled with the error found if provided
+ * by the caller.
+ */
+axlNode * axl_node_parse                    (axlError ** error, const char * content, ...)
+{
+	char    * _content;
+	va_list   args;
+	axlDoc  * doc;
+	axlNode * root;
+
+	/* open the stdargs */
+	va_start (args, content);
+	
+	/* create the content */
+	_content = axl_strdup_printfv (content, args);
+
+	/* close the stdargs */
+	va_end (args);
+
+	/* parse the string */
+	doc = axl_doc_parse (_content, -1, error);
+	if (doc == NULL)
+		return NULL;
+
+	/* free the content */
+	axl_free (_content);
+
+	/* deattach the root node */
+	root = axl_doc_get_root (doc);
+	axl_node_deattach (root);
+
+	/* do not free the document, rather, store it to be
+	 * deallocated by the node just after it is deallocated. */
+	axl_node_annotate_data_full (root, "__root_document", NULL, doc, (axlDestroyFunc) axl_doc_free);
+
+	/* return the node created */
+	return root;
+}
+
 
 /** 
  * @brief Creates a new \ref axlNode but using the memory passed in by

@@ -53,6 +53,8 @@ axlNode * axl_node_create_ref               (char * name);
 
 axlNode * axl_node_parse_strings            (axlError ** error, ...);
 
+axlNode * axl_node_parse                    (axlError ** error, const char * content, ...);
+
 void      axl_node_set_name                 (axlNode * node, 
 					     const char * name);
 
