@@ -621,8 +621,11 @@ axlNode * axl_node_parse_strings      (axlError ** error, ...)
 
 	/* parse the string */
 	doc = axl_doc_parse (stream, -1, error);
-	if (doc == NULL)
+	if (doc == NULL) {
+		/* free document */
+		axl_free (stream);
 		return NULL;
+	}
 
 	/* free the stream */
 	axl_free (stream);
@@ -682,10 +685,18 @@ axlNode * axl_node_parse                    (axlError ** error, const char * con
 	/* close the stdargs */
 	va_end (args);
 
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "parsing document:\n %s", _content);
+
 	/* parse the string */
 	doc = axl_doc_parse (_content, -1, error);
-	if (doc == NULL)
+	if (doc == NULL) {
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "failed to parse document:\n %s", _content);
+
+		/* free document */
+		axl_free (_content);
+
 		return NULL;
+	}
 
 	/* free the content */
 	axl_free (_content);
@@ -2103,9 +2114,16 @@ double     axl_node_annotate_get_double          (axlNode    * node,
  * @brief Allows to configure the given node to be empty.
  *
  * A \ref axlNode is empty when it is known that the node doesn't have
- * any content inside it as a child element. If the node as content,
+ * any content inside it as a child element. If the node has content,
  * and the value provided to this function is \ref true, the function
  * will deallocate the content inside.
+ *
+ * You can use this function to clear all the node content (\ref
+ * ITEM_CONTENT and \ref ITEM_CDATA) found inside the node, as follows:
+ * \code
+ * // clear all content inside 
+ * axl_node_set_is_empty (node, true);
+ * \endcode
  *
  * @param node The node to configure as empty.
  *
@@ -2116,15 +2134,24 @@ void      axl_node_set_is_empty (axlNode * node, bool     empty)
 {
 	axlItem * child;
 	axlItem * aux;
+	int       removed = 0;
+	int       count   = 0;
 
 	axl_return_if_fail (node);
 
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "received set to empty node=<%s> is_empty=\"%s\"",
 		   node->name, empty ? "true" : "false");
 
+	/* do no perform any operation if false is received */
+	if (! empty)
+		return;
+
 	/* get the first child and eliminate all content */
 	child = node->first;
 	while (child != NULL) {
+
+		/* count each item found */
+		count++;
 
 		/* get a reference to the next */
 		aux = child->next;
@@ -2134,8 +2161,13 @@ void      axl_node_set_is_empty (axlNode * node, bool     empty)
 		if (axl_item_get_type (child) == ITEM_CONTENT || 
 		    axl_item_get_type (child) == ITEM_CDATA) {
 
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found item content and item CDATA..");
+
 			/* remove the node */
 			axl_item_remove (child, true);
+
+			/* count each item removed */
+			removed++;
 			
 		} /* end if */
 
@@ -2143,6 +2175,13 @@ void      axl_node_set_is_empty (axlNode * node, bool     empty)
 		child = aux;
 		
 	} /* end while */
+
+	/* now check if items removed are equal to items counted */
+	if (removed == count) {
+		/* then clear node references */
+		node->first = NULL;
+		node->last  = NULL;
+	}
 	
 	return;
 }
@@ -3773,8 +3812,6 @@ bool          axl_node_are_equal          (axlNode * node, axlNode * node2)
 			return false;
 		}
 
-		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "both nodes have attributes and the same amount");
-		
 		/* now both hashes */
 		result = true;
 		if (node->attr_num <= 10) {

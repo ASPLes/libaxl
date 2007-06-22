@@ -9,6 +9,45 @@
  * @return true if the validity test is passed, otherwise false is
  * returned.
  */
+bool test_37 (axlError ** error)
+{
+	
+	axlDoc  * doc;
+	axlDoc  * doc2;
+	axlNode * root;
+
+	/* parse file */
+	doc  = axl_doc_parse ("<child> This is content, more content </child>", -1, error);
+	if (doc == NULL)
+		return false;
+
+	doc2 = axl_doc_parse ("<child />", -1, error);
+	if (doc2 == NULL)
+		return false;
+
+	/* clear content */
+	root = axl_doc_get_root (doc);
+	axl_node_set_is_empty (root, true);
+
+	if (! axl_doc_are_equal (doc, doc2)) {
+		axl_error_new (-1, "Expected equal documents, not found", NULL, error);
+		return false;
+	}
+
+	axl_doc_free (doc);
+	axl_doc_free (doc2);
+
+	return true;
+}
+
+/** 
+ * @brief Check if it is possible to dettach the root node.
+ * 
+ * @param error The optional axlError to be used to report erros.
+ * 
+ * @return true if the validity test is passed, otherwise false is
+ * returned.
+ */
 bool test_36 (axlError ** error)
 {
 	/* parse the document */
@@ -6158,7 +6197,7 @@ int main (int argc, char ** argv)
 		printf ("Unable to initialize Axl library\n");
 		return -1;
 	}
-	
+
 	/* DATA STRUCTURE TESTS */
 	if (test_01_01 ()) {
 		printf ("Test 01-01: LibAxl list implementation [   OK   ]\n");
@@ -6609,7 +6648,16 @@ int main (int argc, char ** argv)
 		return -1;
 	}
 
-	
+	if (test_37 (&error)) {
+		printf ("Test 37: clearing xml node content [   OK   ]\n");
+	}else {
+		printf ("Test 37: clearing xml node content [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}
+
+
 
 	/* cleanup axl library */
 	axl_end ();
