@@ -1777,15 +1777,10 @@ bool __axl_doc_are_equal (axlNode * node, axlNode * node2, bool trimmed)
 	if (! axl_node_are_equal (node, node2))
 		return false;
 
-	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "<%s>=<%s>", 
-		   axl_node_get_name (node), axl_node_get_name (node2));
-
 	/* iterate over all childs inside the node */
 	iterator = 0;
 	length   = axl_node_get_child_num (node);
 	length2  = axl_node_get_child_num (node2);
-	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "checking node childs: (%d == %d)?", 
-		   length, length2);
 
 	if (length != length2) {
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "child number differs, documents aren't equal");
