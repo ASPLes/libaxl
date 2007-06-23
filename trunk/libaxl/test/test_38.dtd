@@ -1,0 +1,32 @@
+<!-- DTD definition file for camuc-report tool -->
+<!ELEMENT camuc-report (report+)>
+<!ATTLIST camuc-report common-name CDATA #REQUIRED>
+
+<!ELEMENT report (group+)>
+<!ATTLIST report name          CDATA   #REQUIRED
+                 image         CDATA   #REQUIRED
+                 label         CDATA   #REQUIRED
+                 shaper-report CDATA   #REQUIRED>
+
+<!ELEMENT group (select | list-select)+>
+
+<!ELEMENT select EMPTY>
+<!ATTLIST select module            CDATA #REQUIRED
+                 show              CDATA #REQUIRED
+                 as                ID    #REQUIRED
+		 label             CDATA #REQUIRED
+		 input             IDREF #IMPLIED
+		 selection         (list | search | custom) #REQUIRED
+		 selection-list    CDATA #IMPLIED
+		 selection-clear   CDATA #IMPLIED
+		 selection-additem CDATA #IMPLIED>
+
+<!ELEMENT list-select EMPTY>
+<!ATTLIST list-select 
+                 input             CDATA #REQUIRED
+                 module            CDATA #REQUIRED
+                 service           CDATA #REQUIRED
+                 select-all-label  CDATA #REQUIRED
+                 as                ID    #REQUIRED>
+		
+                 
