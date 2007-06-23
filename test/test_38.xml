@@ -1,0 +1,38 @@
+<?xml version='1.0' encoding='iso-8859-15' ?>
+<camuc-report common-name="report">
+  <!-- the following as a report declaration, a window that is showed
+       to gather data and call to the appropiate report -->
+  <report name="password-report"
+	  image="system-password-16x16.png" 
+	  label="&lt;b>&lt;small>Informe de contraseñas&lt;/small>&lt;/b>"
+	  shaper-report="password-report-shaper.xml">
+
+    <group label="&lt;b>1. Seleccione el cliente del informe&lt;/b>">
+
+      <select module="customer" 
+	      show="name" 
+	      as="customer_id"
+	      label="Seleccione el cliente de la máquina que se hará el informe." 
+	      selection="search" />
+    </group>
+    
+
+    <group label="&lt;b>2. Seleccione la máquina&lt;/b>">
+
+      <select module="machine" 
+	      show="name" 
+	      as="machine_id"
+	      label="Seleccionar sistema sobre el cual se realizará el informe." 
+	      input="customer_id"
+	      selection="list" />
+    </group>
+    
+    <group label="&lt;b>3. Seleccione las cuentas a mostrar&lt;/b>">
+      <list-select input="machine_id" 
+		   module="account" 
+		   service="machine_list" 
+		   select-all-label="&lt;small&gt;Incluir todas las cuentas del sistema seleccionado.&lt;/small&gt;"
+		   as="selected_accounts" />
+    </group>
+  </report>
+</camuc-report>

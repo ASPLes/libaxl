@@ -2,6 +2,40 @@
 #include <axl_ns.h>
 
 /** 
+ * @brief Check DTD validation error found.
+ * 
+ * @param error The optional axlError to be used to report erros.
+ * 
+ * @return true if the validity test is passed, otherwise false is
+ * returned.
+ */
+bool test_38 (axlError ** error)
+{
+	axlDtd          * dtd;
+	axlDoc          * doc;
+
+	dtd = axl_dtd_parse_from_file ("test_38.dtd", error);
+	if (dtd == NULL)
+		return false;
+
+	doc = axl_doc_parse_from_file ("test_38.xml", error);
+	if (doc == NULL)
+		return false;
+
+	/* validate */
+	if (! axl_dtd_validate (doc, dtd, error)) {
+		axl_error_new (-1, "Expected to find proper a validation for the test (IDREF references)", NULL, error);
+		return false;
+	}
+	
+	/* free dtd and doc */
+	axl_dtd_free (dtd);
+	axl_doc_free (doc);
+
+	return true;
+}
+
+/** 
  * @brief Check if it is possible to dettach the root node.
  * 
  * @param error The optional axlError to be used to report erros.
@@ -6652,6 +6686,15 @@ int main (int argc, char ** argv)
 		printf ("Test 37: clearing xml node content [   OK   ]\n");
 	}else {
 		printf ("Test 37: clearing xml node content [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}
+
+	if (test_38 (&error)) {
+		printf ("Test 38: IDREF dtd error found (23/06/2007) [   OK   ]\n");
+	}else {
+		printf ("Test 38: IDREF dtd error found (23/06/2007) [ FAILED ]\n  (CODE: %d) %s\n",
 			axl_error_get_code (error), axl_error_get (error));
 		axl_error_free (error);
 		return -1;

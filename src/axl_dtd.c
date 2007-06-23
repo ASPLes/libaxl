@@ -2866,7 +2866,11 @@ bool axl_dtd_attr_validate (axlNode * node, axlDtd * dtd, axlError ** error, axl
 				 * part in the document event after
 				 * the reference pointed is
 				 * defined. store and check later */
-				axl_list_add (idref_validation, (axlPointer) ATTR_VALUE (node, decl->name));
+				if (ATTR_VALUE (node, decl->name)) {
+					/* store the id ref reference
+					 * if defined */
+					axl_list_add (idref_validation, (axlPointer) ATTR_VALUE (node, decl->name));
+				}
 			} /* end if */
 
 			/* get the next */
@@ -2887,6 +2891,10 @@ bool axl_dtd_attr_validate (axlNode * node, axlDtd * dtd, axlError ** error, axl
  */
 bool __axl_dtd_reference_check (axlPointer _element, axlPointer data)
 {
+	const char * value = _element;
+
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "checking id ref: %s", value);
+
 	return ! axl_hash_exists ((axlHash *) data, _element);
 }
 
@@ -2904,6 +2912,8 @@ bool axl_dtd_validate_references (axlHash * id_validation, axlList * idref_valid
 	 * reference was done, so there is no room for errors */
 	if (idref_validation == NULL) 
 		return true;
+	
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "id_validation reference: 0x%x", id_validation);
 
 	/* find first reference not found */
 	reference = axl_list_lookup (idref_validation, __axl_dtd_reference_check, id_validation);
