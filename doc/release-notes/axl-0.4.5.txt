@@ -1,0 +1,113 @@
+          ###################################
+          #     Axl Library release note:   #
+          #       "3576h to go release"     # 
+          #              0.4.5              #
+          ###################################
+
+Advanced Software Production Line is proud to announce a new Axl
+Library release.
+
+Axl Library is an small and efficient XML toolkit, that will allow you
+to produce efficient and clear code that interfaces with XML data.
+
+The library was produced to support XML requirements needed by
+software developed by Advanced Software Production Line, S.L.
+
+At this moment the library is being used by Vortex Library,
+Af-Arch, Shaper and Fovap.
+
+Resources
+~~~~~~~~~
+
+   Axl Homepage
+   [ http://xml.aspl.es ]
+
+   Advanced Software Production Line, S.L.
+   [ http://www.aspl.es ]
+
+This release in short
+~~~~~~~~~~~~~~~~~~~~~
+  Fixed several bugs, updated regression test to check them, and added
+  two new functions that allows to create a xml node having a complex
+  structure, providing the xml content that must have.
+ 
+Change notifications
+~~~~~~~~~~~~~~~~~~~~
+  None.
+
+Changes from previous release 0.4.4
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+
+* [fix] Updated configure.ac file to include some parenthesis at
+  INT_TO_PTR and PTR_TO_INT definitions.
+
+* [new] Added a new function to perform case sensitive string
+  comparison. API added:
+
+   - axl_stream_casecmp
+
+* [fix] Fixed bug inside axl_stream_trim and axl_stream_trim_with_size
+  which was causing to read outside memory boundary with 0 length
+  strings.
+
+* [fix] Fixed another bug inside axl_stream_trim* functions which was
+  causing to not properly handle the basic case where an empty content
+  string is receive (a string that is totally trimed). Added
+  regression test to check the bug.
+
+* [fix] Fixed wrong <!DOCTYPE handling at the header. Added a
+  regression test to check this bug in future releases.
+
+* [new] Added a new function that allows to create a node from a
+  complex content provided as argument. The function reads xml input
+  and provides a reference to a axlNode. Added regression test to
+  check the function.  API added:
+
+   - axl_node_parse_strings
+
+* [fix] Updated the library to nullify the axl root node at the axlDoc
+  if the node is removed from the document. Added a regression test to
+  check this.
+
+* [new] Added a new function to create xml node content providing the
+  xml inline content in a prinf-like format. Included regression test
+  to check the function added. API added:
+
+   - axl_node_parse
+
+* [fix] Fixed a bug inside axl_node_set_is_empty function which wasn't
+  clearing the node content if there were only one item to
+  clear. Added regression test to check this in future releases.
+
+* [fix] Fixed bug inside DTD validation engine, while handling nodes
+  that have an #IMPLIED IDREF attribute not defined. Added regression
+  test to check this in future releases.
+
+About Advanced Software Production Line, S.L.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Advanced Software Production Line is leading the Af-Arch project: a
+  complete framework to develop distributed application to manage
+  enterprise process.
+
+  Af-Arch project uses Axl library to support its XML requirements
+  while exchanging data between nodes.
+
+  Advanced Software Production Line also provides GNU/Linux support
+  and consulting services to enable organization to introduce
+  GNU/Linux inside its process, making other platforms to interact
+  with GNU/Linux.
+
+  Contact us, using English or Spanish, to get commercial support
+  and/or XML based development services.
+
+  You can reach us:
+
+       http://www.aspl.es - info@aspl.es
+
+  We hope Axl Library help you. Enjoy Axl Library!
+
+--
+Francis Brosnan Blázquez           - francis@aspl.es
+Advanced Software Production Line  - http://www.aspl.es
+25th jun 2007, Madrid (Spain)
