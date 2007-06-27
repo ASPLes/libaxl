@@ -1159,7 +1159,9 @@ void      axl_list_free (axlList * list)
 	axlListNode * node2;
 	int           iterator;
 
-	axl_return_if_fail (list);
+	/* if a null reference is received do not oper */
+	if (list == NULL)
+		return;
 
 	node     = list->first_node;
 	while (node != NULL) {
