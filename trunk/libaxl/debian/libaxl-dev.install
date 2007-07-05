@@ -1,0 +1,16 @@
+usr/include/axl/axl.h
+usr/include/axl/axl_config.h
+usr/include/axl/axl_decl.h
+usr/include/axl/axl_node.h
+usr/include/axl/axl_doc.h
+usr/include/axl/axl_error.h
+usr/include/axl/axl_stream.h
+usr/include/axl/axl_log.h
+usr/include/axl/axl_list.h
+usr/include/axl/axl_stack.h
+usr/include/axl/axl_dtd.h
+usr/include/axl/axl_hash.h
+usr/include/axl/axl_factory.h
+usr/lib/pkgconfig/axl.pc
+
+
