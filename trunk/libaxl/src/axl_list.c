@@ -202,6 +202,9 @@ axlListNode * __axl_list_get_next_node_available (axlList * list)
  * \code
  * axlList * list = axl_list_new (axl_list_equal_string, axl_free);
  * \endcode
+ *
+ * For a list that will holds integer values you can use: \ref
+ * axl_list_equal_int. 
  * 
  * Previous list will cause all strings inside to be deallocated once
  * called to \ref axl_list_free. If you don't like this, do not
@@ -347,6 +350,45 @@ int      axl_list_equal_string (axlPointer a, axlPointer b)
 
 
 	if (axl_stream_cmp (a, b, length))
+		return 0;
+	return 1;
+}
+
+/** 
+ * @brief Equal function that is preprated to receive to integers and
+ * return if they are equal.
+ *
+ * It is assumed that integers are stored in the list using the
+ * following:
+ * \code
+ * axl_list_add (list, INT_TO_PTR (integer));
+ * \endcode
+ *
+ * You can use this function to create an \ref axlList that stores
+ * integer values as follows:
+ * \code
+ * list = axl_list_new (axl_list_equal_int, NULL);
+ * \endcode
+ *
+ * The list created with this function will order data from litter to
+ * greater values.
+ * 
+ * 
+ * @param a A reference to the first integer.
+ * @param b A reference to the second integer.
+ * 
+ * @return 0 if values received are equal, and 1 if b is greater than
+ * b. Otherwise -1 is returned.
+ */
+int        axl_list_equal_int    (axlPointer a, axlPointer b)
+{
+	if (a == NULL)
+		return 1;
+	if (b == NULL)
+		return 1;
+
+	if (PTR_TO_INT (a) == PTR_TO_INT (b))
+
 		return 0;
 	return 1;
 }

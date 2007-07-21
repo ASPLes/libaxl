@@ -4297,6 +4297,59 @@ bool test_01_01 ()
 
 	/* free the list */
 	axl_list_free (list);
+
+	/* create an integer list */
+	list = axl_list_new (axl_list_equal_int, NULL);
+	axl_list_add (list, INT_TO_PTR (1));
+	axl_list_add (list, INT_TO_PTR (3));
+	axl_list_add (list, INT_TO_PTR (3900));
+	axl_list_add (list, INT_TO_PTR (20230));
+
+	if (axl_list_length (list) != 4) {
+		printf ("Expected to find 4 items inside an integer list");
+		return false;
+	}
+
+	/* remove one item */
+	axl_list_remove (list, INT_TO_PTR (1));
+
+	if (axl_list_length (list) != 3) {
+		printf ("Expected to find 3 items inside an integer list");
+		return false;
+	}
+
+	/* remove one item */
+	axl_list_remove (list, INT_TO_PTR (1));
+
+	if (axl_list_length (list) != 3) {
+		printf ("Expected to find 3 items inside an integer list");
+		return false;
+	}
+
+	/* remove one item */
+	axl_list_remove (list, INT_TO_PTR (3));
+
+	if (axl_list_length (list) != 2) {
+		printf ("Expected to find 2 items inside an integer list");
+		return false;
+	}
+
+	/* remove one item */
+	axl_list_remove (list, INT_TO_PTR (3900));
+
+	if (axl_list_length (list) != 1) {
+		printf ("Expected to find 1 items inside an integer list");
+		return false;
+	}
+
+	/* remove one item */
+	axl_list_remove (list, INT_TO_PTR (20230));
+
+	if (axl_list_length (list) != 0) {
+		printf ("Expected to find 0 items inside an integer list");
+		return false;
+	}
+	axl_list_free (list);
 	
 	return true;
 }
@@ -6214,6 +6267,29 @@ bool test_02_05 ()
 
 	/* free the hash */
 	axl_hash_free (hash);
+
+	/* now check the cursor with only one item */
+	hash = axl_hash_new (axl_hash_string, axl_hash_equal_string);
+	axl_hash_insert (hash, "12:BB:DD:8A:1D:E5:64:0C:7E:F5:EB:B3:21:C7:67:7E", "test");
+	cursor = axl_hash_cursor_new (hash);
+
+	iterator = 0;
+	while (axl_hash_cursor_has_item (cursor) && iterator < 10) {
+		
+		axl_hash_cursor_get_value (cursor);
+		
+		/* get next cursor */
+		axl_hash_cursor_next (cursor);
+		iterator++;
+	}
+
+	if (iterator != 1) {
+		printf ("Expected to find only one iteration inside the hash but the limit was found\n");
+		return false;
+	}
+
+	axl_hash_free (hash);
+	axl_hash_cursor_free (cursor);
 
 	/* test ok */
 	return true;

@@ -139,7 +139,6 @@ void axl_error_new (int code, char * error_code, axlStream * stream, axlError **
 {
 	axlError * error;
 	char     * following;
-	int        length;
 
 	/* get a reference to the error to be created */
 	if (_error == NULL)
@@ -150,16 +149,8 @@ void axl_error_new (int code, char * error_code, axlStream * stream, axlError **
 	error->code       = code;
 	error->defined    = -346715;
 	if (stream == NULL) {
-		/* get error code length */
-		length       = strlen (error_code);
-		
 		/* allocate enough memory */
-		error->error = axl_new (char, 17 + length);
-
-		/* copy */
-		memcpy (error->error, "Error found: ", 13);
-		memcpy (error->error + 13, error_code, length);
-		memcpy (error->error + 13 + length, "\n", 2);
+		error->error = axl_strdup (error_code);
 	} else {
 		/* get the following */
 		following    = axl_stream_get_following (stream, 10);

@@ -46,6 +46,8 @@ axlList  * axl_list_new    (axlEqualFunc are_equal, axlDestroyFunc destroy_data)
 
 int        axl_list_equal_string (axlPointer a, axlPointer b);
 
+int        axl_list_equal_int    (axlPointer a, axlPointer b);
+
 int        axl_list_always_return_1 (axlPointer a, axlPointer b);
 
 axlList  * axl_list_copy   (axlList * list, axlDuplicateFunc func);
