@@ -1204,7 +1204,7 @@ void __axl_hash_cursor_init (axlHashCursor * cursor, bool first)
 		/* configure first */
 		cursor->index = 0;
 
-		/* foreach element inside the has, check the first value */
+		/* foreach element inside the hash, check the first value */
 		while (cursor->index < cursor->hash->hash_size) {
 			/* check the table at the current position */
 			node = cursor->hash->table[cursor->index];
@@ -1371,6 +1371,8 @@ void            axl_hash_cursor_next     (axlHashCursor * cursor)
 {
 	axl_return_if_fail (cursor);
 
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "getting next element at the cursor");
+
 	/* check if the current node is null and do nothing if nothing
 	 * is found */
 	if (cursor->node == NULL) {
@@ -1390,8 +1392,18 @@ void            axl_hash_cursor_next     (axlHashCursor * cursor)
 	/* node not found, go next position */
 	cursor->index++;
 
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "updating and checking next index: %d (hash: %d)....", 
+		   cursor->index, cursor->hash->hash_size);
+
+	/* check if we have reached the phisical limit of the hash */
+	if (cursor->index >= cursor->hash->hash_size) {
+		cursor->node = NULL;
+		return;
+	}
+
 	/* seems next is null, see in other positions  */
 	while (cursor->index < cursor->hash->hash_size) {
+
 		/* check the table at the current position */
 		cursor->node = cursor->hash->table[cursor->index];
 		if (cursor->node != NULL) {

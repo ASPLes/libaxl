@@ -742,7 +742,8 @@ void        axl_stream_move            (axlStream * stream, int index)
  *
  * @param chunk_matched An optional pointer to an integer to notify
  * the chunk matched by the function. Chunk matching notification
- * starts from 0 up to number of chunks to match - 1.
+ * starts from 0 up to number of chunks to match - 1. If the end of
+ * the stream is reached, -2 is returned.
  * 
  * @param accept_terminator While calling to this function, the
  * terminator detected to stop the operation could also be accepted by
@@ -1965,7 +1966,9 @@ char      * axl_stream_strdup          (const char * chunk)
 	char * result;
 	int    length;
 
-	axl_return_val_if_fail (chunk, NULL);
+	/* return NULL reference if a NULL reference is received */
+	if (chunk == NULL)
+		return NULL;
 
 	length = strlen (chunk);
 	result = axl_new (char, length + 1);

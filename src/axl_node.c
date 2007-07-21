@@ -2918,8 +2918,6 @@ void      axl_node_set_cdata_content  (axlNode * node,
 				       char * content,
 				       int content_size)
 {
-	char * cdata;
-
 	axl_return_if_fail (node);
 	axl_return_if_fail (content);
 
@@ -2927,21 +2925,9 @@ void      axl_node_set_cdata_content  (axlNode * node,
 	if (content_size == -1)
 		content_size = strlen (content);
 
-	/* allocate enough memory to hold <![CDATA[ and ]]> plus the
-	 * content provided. */
-	cdata = axl_new (char, 13 + content_size); 
-
-	/* copy the content */
-	memcpy (cdata, "<![CDATA[", 9);
-	memcpy (cdata + 9, content, content_size);
-	memcpy (cdata + 9 + content_size, "]]>", 3);
-	
-	/* calculate the new content size */
-	if (content_size > 0)
-		content_size = content_size + 12;
-	
 	/* call to set node content */	
-	axl_node_set_content_ref (node, cdata, content_size);
+	content = axl_strdup (content);
+	__axl_node_set_content_common_ref (NULL, node, content, content_size, false, true);
 
 	return;
 }
