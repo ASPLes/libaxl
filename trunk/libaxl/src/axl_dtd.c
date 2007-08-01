@@ -2891,7 +2891,9 @@ bool axl_dtd_attr_validate (axlNode * node, axlDtd * dtd, axlError ** error, axl
  */
 bool __axl_dtd_reference_check (axlPointer _element, axlPointer data)
 {
+#if defined(SHOW_DEBUG_LOG)
 	const char * value = _element;
+#endif
 
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "checking id ref: %s", value);
 
