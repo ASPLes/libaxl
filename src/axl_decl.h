@@ -42,7 +42,7 @@
 #include <axl_config.h>
 
 /* include this at this place to load GNU extensions */
-#ifdef __GNUC__
+#if defined(__GNUC__)
 #  ifndef _GNU_SOURCE
 #  define _GNU_SOURCE
 #  endif
@@ -60,7 +60,12 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
-#include <unistd.h>
+
+/* only include unistd.h if unix platform is found or gnu gcc compiler
+ * is found */
+#if defined(__GNUC__) || defined(AXL_OS_UNIX)
+# include <unistd.h>
+#endif
 
 #include <sys/types.h>
 #include <sys/stat.h>
