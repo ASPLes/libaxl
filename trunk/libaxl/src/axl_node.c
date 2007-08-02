@@ -2826,7 +2826,13 @@ void __axl_node_set_content_common_ref (axlFactory * factory,
 		}
 	} else {
 		/* store it */
-		axl_item_set_child (node, ITEM_CONTENT, itemContent);
+		if (cdata) {
+			/* store as cdata */
+			axl_item_set_child (node, ITEM_CDATA, itemContent);
+		} else {
+			/* store as parsed xml content */
+			axl_item_set_child (node, ITEM_CONTENT, itemContent);
+		}
 	} /* end if */
 
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "setting xml node (name: %s) content (size: %d) %s",
