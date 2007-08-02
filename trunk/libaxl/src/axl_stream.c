@@ -1747,7 +1747,11 @@ bool        axl_stream_casecmp           (const char * chunk1, const char * chun
 		return false;
 
 	/* returh if both strings are equal. */
+#if defined(AXL_OS_WIN32)
+	return _strnicmp (chunk1, chunk2, size) == 0;
+#else
 	return strncasecmp (chunk1, chunk2, size) == 0;
+#endif
 }
 
 /** 
