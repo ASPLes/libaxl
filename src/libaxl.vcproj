@@ -40,6 +40,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="C:\msys\1.0\include;..\src"
+				PreprocessorDefinitions="HAVE_VSCPRINTF"
 				ExceptionHandling="0"
 				RuntimeLibrary="2"
 				Detect64BitPortabilityProblems="false"
@@ -57,7 +58,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="c:\af-arch-install\bin\$(ProjectName).dll"
+				OutputFile="..\test\$(ProjectName).dll"
 				ModuleDefinitionFile="$(ProjectDir)\..\src\libaxl.def"
 				GenerateDebugInformation="true"
 			/>

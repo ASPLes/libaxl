@@ -57,8 +57,17 @@ bool     debug_enabled = false;
  */
 bool      axl_log_is_enabled () 
 {
+#if defined(AXL_OS_WIN32)
+	int requiredSize;
+#endif
+
 	if (not_executed) {
+#if defined(AXL_OS_WIN32)
+		getenv_s( &requiredSize, NULL, 0, "AXL_DEBUG");
+		debug_enabled = (requiredSize > 0);
+#elif
 		debug_enabled = (getenv ("AXL_DEBUG") != NULL);
+#endif
 		not_executed  = false;
 	}
 
@@ -74,9 +83,15 @@ bool      axl_log_is_enabled ()
  */
 bool    axl_log_color_is_enabled ()
 {
-	if (getenv ("AXL_DEBUG_COLOR") != NULL)
-		return true;
-	return false;
+#if defined(AXL_OS_WIN32)
+	int requiredSize;
+
+	/* get the required size to store the variable */
+	getenv_s( &requiredSize, NULL, 0, "AXL_DEBUG_COLOR");
+	return (requiredSize > 0);
+#else
+	return (getenv ("AXL_DEBUG_COLOR") != NULL)
+#endif
 }
 
 /** 

@@ -64,7 +64,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="kernel32.lib $(NoInherit)"
-				OutputFile="c:\af-arch-install\bin\$(ProjectName).exe"
+				OutputFile="$(ProjectName).exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="&quot;C:\msys\1.0\home\acinom\af-arch\trunk\libaxl\LibAxl&quot;"
 				GenerateDebugInformation="true"

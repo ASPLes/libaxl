@@ -4125,7 +4125,11 @@ bool      axl_node_dump_to_file            (axlNode  * node,
 		return false;
 
 	/* open the file and check */
+#if defined(AXL_OS_WIN32)
+	if (fopen_s (&fd, file_path, "w") != 0) {
+#else
 	if ((fd = fopen (file_path, "w")) == NULL) {
+#endif
 		/* failed to open the file to dump the content */
 		axl_free (content);
 
@@ -4179,7 +4183,11 @@ bool      axl_node_dump_pretty_to_file     (axlNode  * node,
 		return false;
 
 	/* open the file and check */
+#if defined(AXL_OS_WIN32)
+	if (fopen_s (&fd, file_path, "w") != 0) {
+#else
 	if ((fd = fopen (file_path, "w")) == NULL) {
+#endif
 		/* failed to open the file to dump the content */
 		axl_free (content);
 
