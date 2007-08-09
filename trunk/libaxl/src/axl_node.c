@@ -4125,7 +4125,7 @@ bool      axl_node_dump_to_file            (axlNode  * node,
 		return false;
 
 	/* open the file and check */
-#if defined(AXL_OS_WIN32)
+#if defined(AXL_OS_WIN32) && ! defined(__GNUC__)
 	if (fopen_s (&fd, file_path, "w") != 0) {
 #else
 	if ((fd = fopen (file_path, "w")) == NULL) {
@@ -4183,7 +4183,7 @@ bool      axl_node_dump_pretty_to_file     (axlNode  * node,
 		return false;
 
 	/* open the file and check */
-#if defined(AXL_OS_WIN32)
+#if defined(AXL_OS_WIN32) && ! defined(__GNUC__)
 	if (fopen_s (&fd, file_path, "w") != 0) {
 #else
 	if ((fd = fopen (file_path, "w")) == NULL) {

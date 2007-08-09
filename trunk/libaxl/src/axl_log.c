@@ -57,12 +57,12 @@ bool     debug_enabled = false;
  */
 bool      axl_log_is_enabled () 
 {
-#if defined(AXL_OS_WIN32)
+#if defined(AXL_OS_WIN32) && ! defined(__GNUC__)
 	int requiredSize;
 #endif
 
 	if (not_executed) {
-#if defined(AXL_OS_WIN32)
+#if defined(AXL_OS_WIN32) && ! defined(__GNUC__)
 		getenv_s( &requiredSize, NULL, 0, "AXL_DEBUG");
 		debug_enabled = (requiredSize > 0);
 #else
@@ -83,8 +83,7 @@ bool      axl_log_is_enabled ()
  */
 bool    axl_log_color_is_enabled ()
 {
-
-#if defined(AXL_OS_WIN32)
+#if defined(AXL_OS_WIN32) && ! defined(__GNUC__)
 	int requiredSize;
 
 	/* get the required size to store the variable */

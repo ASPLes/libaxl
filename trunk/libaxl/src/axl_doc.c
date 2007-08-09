@@ -1435,7 +1435,7 @@ bool      axl_doc_dump_to_file             (axlDoc  * doc,
 	}
 
 	/* open the file and check */
-#if defined(AXL_OS_WIN32)
+#if defined(AXL_OS_WIN32) && ! defined(__GNUC__)
 	if (fopen_s (&fd, file_path, "w") != 0) {
 #else
 	if ((fd = fopen (file_path, "w")) == NULL) {
@@ -1509,7 +1509,7 @@ bool      axl_doc_dump_pretty_to_file      (axlDoc  * doc,
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "document dumped, now transfer that content to a file");
 
 	/* open the file and check */
-#if defined(AXL_OS_WIN32)
+#if defined(AXL_OS_WIN32) && ! defined(__GNUC__)
 	if (fopen_s (&fd, file_path, "w") != 0) {
 #else
 	if ((fd = fopen (file_path, "w")) == NULL) {
