@@ -52,7 +52,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="c:\af-arch-install\bin\$(ProjectName).dll"
+				OutputFile="..\test\$(ProjectName).dll"
 				ModuleDefinitionFile="$(InputDir)\..\ns\libaxl-ns.def"
 			/>
 			<Tool
