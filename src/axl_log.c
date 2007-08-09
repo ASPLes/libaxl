@@ -65,7 +65,7 @@ bool      axl_log_is_enabled ()
 #if defined(AXL_OS_WIN32)
 		getenv_s( &requiredSize, NULL, 0, "AXL_DEBUG");
 		debug_enabled = (requiredSize > 0);
-#elif
+#else
 		debug_enabled = (getenv ("AXL_DEBUG") != NULL);
 #endif
 		not_executed  = false;
@@ -83,6 +83,7 @@ bool      axl_log_is_enabled ()
  */
 bool    axl_log_color_is_enabled ()
 {
+
 #if defined(AXL_OS_WIN32)
 	int requiredSize;
 
@@ -90,7 +91,7 @@ bool    axl_log_color_is_enabled ()
 	getenv_s( &requiredSize, NULL, 0, "AXL_DEBUG_COLOR");
 	return (requiredSize > 0);
 #else
-	return (getenv ("AXL_DEBUG_COLOR") != NULL)
+	return (getenv ("AXL_DEBUG_COLOR") != NULL);
 #endif
 }
 
