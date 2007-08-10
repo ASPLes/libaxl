@@ -738,8 +738,8 @@
  * \endcode
  *
  * According to our results, the library including the log to console
- * information is about <b>265K</b>. Without log to console information the
- * library takes about <b>200K</b>.
+ * information is about <b>366K</b>. Without log to console information the
+ * library takes about <b>288K</b>.
  *
  * </li> 
  * 
@@ -751,7 +751,9 @@
  * make install-strip
  * \endcode
  *
- * According to our results, the library without log to console and debugging information takes about <b>89K</b>.
+ * According to our results, the library without log to console and
+ * debugging information takes about <b>100K</b>.
+ *
  * </li>
  * </ul>
  *
