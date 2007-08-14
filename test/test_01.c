@@ -4146,7 +4146,6 @@ bool test_01d (axlError ** error)
 bool test_01_01 () 
 {
 	axlList * list;
-	int       iterator;
 
 	/* create the list */
 	list = axl_list_new (axl_list_equal_string, NULL);
@@ -4404,12 +4403,6 @@ bool test_01_01 ()
 		return false;
 	}
 
-	iterator = 0;
-	while (iterator < axl_list_length (list)) {
-		printf ("Item found: %d\n", PTR_TO_INT (axl_list_get_nth (list, iterator)));
-		iterator++;
-	} /* end while */
-
 	/* remove */
 	axl_list_remove (list, INT_TO_PTR(8));
 	
@@ -4420,7 +4413,55 @@ bool test_01_01 ()
 	
 	/* free the list */
 	axl_list_free (list);
+
+	list = axl_list_new (axl_list_equal_int, NULL);
+
+	axl_list_append (list, INT_TO_PTR (8));
+	axl_list_append (list, INT_TO_PTR (10));
+	axl_list_append (list, INT_TO_PTR (11));
+	axl_list_append (list, INT_TO_PTR (9));
 	
+	if (axl_list_length (list) != 4) {
+		printf ("Expected to find 4 element, but found: %d\n", axl_list_length (list));
+		return false;
+	}
+
+	axl_list_remove (list, INT_TO_PTR(10));
+
+	if (axl_list_length (list) != 3) {
+		printf ("Expected to find 3 element, but found: %d\n", axl_list_length (list));
+		return false;
+	}
+
+	/* free the list */
+	axl_list_free (list);
+
+	list = axl_list_new (axl_list_equal_int, NULL);
+
+	axl_list_append (list, INT_TO_PTR (9));
+	axl_list_append (list, INT_TO_PTR (8));
+	axl_list_append (list, INT_TO_PTR (10));
+	axl_list_append (list, INT_TO_PTR (11));
+	
+	if (axl_list_length (list) != 4) {
+		printf ("Expected to find 4 element, but found: %d\n", axl_list_length (list));
+		return false;
+	}
+
+	/* remove */
+	axl_list_remove (list, INT_TO_PTR(8));
+
+	/* remove */
+	axl_list_remove (list, INT_TO_PTR(10));
+
+	if (axl_list_length (list) != 2) {
+		printf ("Expected to find 2 element, but found: %d\n", axl_list_length (list));
+		return false;
+	}
+	
+	/* free the list */
+	axl_list_free (list);
+
 	return true;
 }
 
