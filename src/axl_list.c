@@ -382,15 +382,13 @@ int      axl_list_equal_string (axlPointer a, axlPointer b)
  */
 int        axl_list_equal_int    (axlPointer a, axlPointer b)
 {
-	if (a == NULL)
-		return 1;
-	if (b == NULL)
-		return 1;
-
+	/* especial case where a 0 is stored */
 	if (PTR_TO_INT (a) == PTR_TO_INT (b))
-
 		return 0;
-	return 1;
+	else if (PTR_TO_INT (a) < PTR_TO_INT (b))
+		return -1;
+	else
+		return 1;
 }
 
 /** 
@@ -837,8 +835,11 @@ void     axl_list_common_remove (axlList * list, axlPointer pointer, bool alsoRe
 
 	/* complex case */
 	node  = axl_list_internal_lookup (list, pointer);
-	if (node == NULL)
+	if (node == NULL) {
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "unable to find item by pointer (0x%x)",
+			   pointer);
 		return;
+	}
 
 	/* remove the selected node */
 	__axl_list_common_remove_selected_node (list, node, alsoRemove);
@@ -864,6 +865,9 @@ void     axl_list_common_remove (axlList * list, axlPointer pointer, bool alsoRe
  */
 void      axl_list_remove (axlList * list, axlPointer pointer)
 {
+
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "attempting to remove pointer: 0x%x", pointer);
+
 	/* perform a complete removing */
 	axl_list_common_remove (list, pointer, true);
 

@@ -4350,6 +4350,47 @@ bool test_01_01 ()
 		return false;
 	}
 	axl_list_free (list);
+
+	/* create an integer list */
+	list = axl_list_new (axl_list_equal_int, NULL);
+
+	/* add items */
+	axl_list_add (list, INT_TO_PTR (8));
+	axl_list_add (list, INT_TO_PTR (10));
+	axl_list_add (list, INT_TO_PTR (11));
+	axl_list_add (list, INT_TO_PTR (12));
+	axl_list_add (list, INT_TO_PTR (102));
+	axl_list_add (list, INT_TO_PTR (1123));
+	axl_list_add (list, INT_TO_PTR (412));
+	axl_list_add (list, INT_TO_PTR (122));
+	axl_list_add (list, INT_TO_PTR (148));
+	axl_list_add (list, INT_TO_PTR (670));
+	axl_list_add (list, INT_TO_PTR (2));
+	
+	if (axl_list_length (list) != 11) {
+		printf ("Expected to find 11 element, but found: %d\n", axl_list_length (list));
+		return false;
+	}
+
+	/* remove the third element */
+	axl_list_remove (list, INT_TO_PTR (11));
+	
+	if (axl_list_length (list) != 10) {
+		printf ("Expected to find 10 element, but found: %d\n", axl_list_length (list));
+		return false;
+	}
+
+	/* remove the third element */
+	axl_list_remove (list, INT_TO_PTR (122));
+	
+	if (axl_list_length (list) != 9) {
+		printf ("Expected to find 9 element, but found: %d\n", axl_list_length (list));
+		return false;
+	}
+
+	/* free the list */
+	axl_list_free (list);
+	
 	
 	return true;
 }
