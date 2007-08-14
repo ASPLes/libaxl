@@ -673,6 +673,41 @@ void       axl_list_append  (axlList * list, axlPointer pointer)
 }
 
 /** 
+ * @internal Internal list lookup using a linear search, checking all
+ * items inside the list withtout taking into considerations hints
+ * provided by equal function.
+ * 
+ * @param list The list where the linear search will be performed.
+ * @param pointer The pointer that is being looked up.
+ * 
+ * @return A reference to the internal axl list node containing the
+ * pointer.
+ */
+axlListNode * axl_list_internal_linear_lookup (axlList    * list, 
+					       axlPointer    pointer)
+{
+	axlListNode * node;
+
+	axl_return_val_if_fail (list, NULL);
+	axl_return_val_if_fail (pointer, NULL);
+
+	/* complex case */
+	node  = list->first_node;
+
+	/* lookup */
+	while (node != NULL) {
+		if (list->are_equal (node->data, pointer) == 0)
+			return node;
+
+		/* the node should be after this one */
+		node = node->next;
+		
+	} /* end while */
+
+	return NULL;
+}
+
+/** 
  * @internal
  * @brief Internal lookup function to locate the axlListNode that contains the pointer.
  *
@@ -834,7 +869,7 @@ void     axl_list_common_remove (axlList * list, axlPointer pointer, bool alsoRe
 	axl_return_if_fail (pointer);
 
 	/* complex case */
-	node  = axl_list_internal_lookup (list, pointer);
+	node  = axl_list_internal_linear_lookup (list, pointer);
 	if (node == NULL) {
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "unable to find item by pointer (0x%x)",
 			   pointer);
