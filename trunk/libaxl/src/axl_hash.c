@@ -548,23 +548,13 @@ void       axl_hash_insert_full (axlHash        * hash,
 	return;
 }
 
-/** 
- * @brief Allows to remove the selected pair key/value on the provided
- * hash table.
- * 
- * The function will remevo the item but it will not resize the table
- * due to it. The function will call to the key destroy and data
- * destroy function if they were defined at the insertion time (\ref
- * axl_hash_insert_full).
- *
- * 
- * @param hash The hash table where the removal operation will be
- * performed.
- *
- * @param key The key to lookup to be removed. 
+/**
+ * @internal Function that supports axl_hash_remove and
+ * axl_hash_delete.
  */
-void            axl_hash_remove       (axlHash    * hash,
-				       axlPointer   key)
+void            __axl_hash_remove_common       (axlHash    * hash,
+						axlPointer   key,
+						bool         remove)
 {
 	axlHashNode * node;
 	axlHashNode * aux;
@@ -592,11 +582,11 @@ void            axl_hash_remove       (axlHash    * hash,
 
 	remove_element:
 		/* key destruction is defined */
-		if (node->key_destroy != NULL)
+		if (node->key_destroy != NULL && remove)
 			node->key_destroy (node->key);
 		
 		/* if data destruction is defined */
-		if (node->data_destroy != NULL)
+		if (node->data_destroy != NULL && remove)
 			node->data_destroy (node->data);
 
 		/* decreases elements found */
@@ -630,6 +620,54 @@ void            axl_hash_remove       (axlHash    * hash,
 	}  /* end */
 	
 	/* no item was found on the hash */
+	return;
+}
+
+/** 
+ * @brief Allows to remove the selected pair key/value on the provided
+ * hash table.
+ * 
+ * The function will remevo the item but it will not resize the table
+ * due to it. The function will call to the key destroy and data
+ * destroy function if they were defined at the insertion time (\ref
+ * axl_hash_insert_full).
+ *
+ * 
+ * @param hash The hash table where the removal operation will be
+ * performed.
+ *
+ * @param key The key to lookup to be removed. 
+ */
+void            axl_hash_remove       (axlHash    * hash,
+				       axlPointer   key)
+{
+	/* call common implementation deleting data with destroy
+	 * functions defined */
+	__axl_hash_remove_common (hash, key, true);
+	return;
+}
+
+/** 
+ * @brief Allows to remove the selected pair key/value on the provided
+ * hash table, without calling to destroy functions.
+ * 
+ * The function will remove the item but it will not resize the table
+ * due to it. The function will NOT call to the key destroy and data
+ * destroy function if they were defined at the insertion time (\ref
+ * axl_hash_insert_full).
+ *
+ * 
+ * @param hash The hash table where the removal operation will be
+ * performed.
+ *
+ * @param key The key to lookup to be removed. 
+ */
+void            axl_hash_delete       (axlHash    * hash,
+				       axlPointer   key)
+{
+	/* call common implementation, without calling destroy
+	 * functions defined */
+	__axl_hash_remove_common (hash, key, false);
 	return;
 }
 
