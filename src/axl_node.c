@@ -4394,7 +4394,7 @@ int       axl_node_get_flat_size            (axlNode * node, bool pretty_print, 
 				result += (level * tabular * 2) + 2; 
 			else
 				result += (level * tabular) + 1; 
-#ifdef __AXL_WIN32__
+#ifdef __AXL_OS_WIN32__
 			if (have_childs)
 				result += 2;
 			else
@@ -4411,7 +4411,7 @@ int       axl_node_get_flat_size            (axlNode * node, bool pretty_print, 
 				/* one tabular plus one carry return
 				 * \r\n on windows and \n on unix */
 				result += (level * tabular) + 1;
-#ifdef __AXL_WIN32__
+#ifdef __AXL_OS_WIN32__
 				result += 1;
 #endif
 			}
@@ -4453,7 +4453,7 @@ int       axl_node_get_flat_size            (axlNode * node, bool pretty_print, 
 			if (pretty_print) {
 				/* tabular indent + \n */
 				result += ((level + 1) * tabular) + 1;
-#ifdef __AXL_WIN32__
+#ifdef __AXL_OS_WIN32__
 				/* \r\n */
 				result += 1;
 #endif
@@ -4685,7 +4685,7 @@ int __axl_node_dump_items (axlItem * item, char * content, int level, bool prett
 			desp += 4;
 
 			if (pretty_print) {
-#ifdef __AXL_WIN32__
+#ifdef __AXL_OS_WIN32__
 				memcpy (content + desp, "\r\n", 2);
 				desp += 2;
 #else
@@ -4784,7 +4784,7 @@ int       axl_node_dump_at                  (axlNode * node,
 
 			/* write traling node information */
 			if (pretty_print) {
-#ifdef __AXL_WIN32__
+#ifdef __AXL_OS_WIN32__
 				memcpy (content + desp, "\r\n", 2);
 				desp += 2;
 #else
@@ -4821,7 +4821,7 @@ int       axl_node_dump_at                  (axlNode * node,
 		
 		/* write traling node information */
 		if (pretty_print) {
-#ifdef __AXL_WIN32__
+#ifdef __AXL_OS_WIN32__
 			memcpy (content + desp, "\r\n", 2);
 			desp += 2;
 #else
@@ -4859,7 +4859,7 @@ int       axl_node_dump_at                  (axlNode * node,
 
 	/* write traling node information */
 	if (pretty_print) {
-#ifdef __AXL_WIN32__
+#ifdef __AXL_OS_WIN32__
 		memcpy (content + desp, "\r\n", 2);
 		desp += 2;
 #else
