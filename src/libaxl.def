@@ -47,6 +47,7 @@ __axl_hash_copy_foreach
 __axl_hash_cursor_init
 __axl_hash_foreach
 __axl_hash_internal_lookup
+__axl_hash_remove_common
 __axl_item_common_configure
 __axl_list_allocate_nodes
 __axl_list_always_true
@@ -161,6 +162,7 @@ axl_hash_cursor_last
 axl_hash_cursor_new
 axl_hash_cursor_next
 axl_hash_cursor_remove
+axl_hash_delete
 axl_hash_equal_int
 axl_hash_equal_string
 axl_hash_exists
@@ -238,6 +240,7 @@ axl_list_get_first
 axl_list_get_last
 axl_list_get_nth
 axl_list_internal_get_nth
+axl_list_internal_linear_lookup
 axl_list_internal_lookup
 axl_list_is_empty
 axl_list_length
