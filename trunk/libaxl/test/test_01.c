@@ -4934,6 +4934,27 @@ bool test_01_03 ()
 	/* release the memory */
 	axl_free (string);
 	
+	/* case cmp comparisions */
+	if (! axl_stream_casecmp ("Content-Type: ", "Content-Type: ", 14)) {
+		printf ("Expected to find equal comparision for case insensitive check..\n");
+		return false;
+	}
+	
+	if (! axl_stream_casecmp ("CONTENT-Type: ", "Content-Type: ", 14)) {
+		printf ("Expected to find equal comparision for case insensitive check..\n");
+		return false;
+	}
+
+	if (! axl_stream_casecmp ("CONTENT-Type: ", "Content-TYPE: ", 14)) {
+		printf ("Expected to find equal comparision for case insensitive check..\n");
+		return false;
+	}
+
+	if (! axl_stream_casecmp ("CoNtENT-type: ", "Content-TYPE: ", 14)) {
+		printf ("Expected to find equal comparision for case insensitive check..\n");
+		return false;
+	}
+
 	return true;
 }
 
