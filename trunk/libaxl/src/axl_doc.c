@@ -1224,7 +1224,7 @@ int __axl_doc_get_flat_size_common (axlDoc * doc, bool pretty_print, int tabular
 	result = 22;
 
 	if (pretty_print)
-#ifdef __AXL_WIN32__
+#ifdef __AXL_OS_WIN32__
 		result += 2;
 #else
 	        result += 1;
@@ -1312,7 +1312,7 @@ bool __axl_doc_dump_common (axlDoc * doc, char ** content, int * size, bool pret
 	index += 2;
 
 	if (pretty_print) {
-#ifdef __AXL_WIN32__
+#ifdef __AXL_OS_WIN32__
 		memcpy (result + index, "\r\n", 2);
 		index += 2;
 #else
