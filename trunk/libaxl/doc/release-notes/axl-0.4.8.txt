@@ -1,0 +1,88 @@
+          #####################################
+          #            Axl Library:           #
+          # "Fly with the black swan release" # 
+          #               0.4.8               #
+          #####################################
+
+Advanced Software Production Line is proud to announce a new Axl
+Library release.
+
+Axl Library is an small and efficient XML toolkit, that will allow you
+to produce efficient and clear code that interfaces with XML data.
+
+The library was produced to support XML requirements needed by
+software developed by Advanced Software Production Line, S.L.
+
+At this moment the library is being used by Vortex Library, Af-Arch,
+Shaper and Fovap.
+
+Resources
+~~~~~~~~~
+
+   Axl Homepage
+   [ http://xml.aspl.es ]
+
+   Advanced Software Production Line, S.L.
+   [ http://www.aspl.es ]
+
+This release in short
+~~~~~~~~~~~~~~~~~~~~~
+  Bug fixes and regression test updates.
+
+Change notifications
+~~~~~~~~~~~~~~~~~~~~
+  None.
+
+Changes from previous release 0.4.7
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+
+* [fix] Fixed bug inside axl_list_equal_int which was causing to not
+  properly handle integer lists. Updated regression test to check this
+  in future releases.
+
+* [fix] Fixed axl_list_remove to use an internal linear search to
+  ensure it doesn't skip any element to be removed due to axlListEqual
+  hints.  Updated regression test to check this.
+
+* [fix] More regression tests on axl list storing integers..
+
+* [fix] Updated axl hash API to include a function that allows to
+  remove items from a hash without calling to destroy functions
+  associated.
+
+* [fix] Updated regression test to check axl_stream_casecmp function.
+
+* [fix] Fixed wrong declarations using __AXL_WIN32__ where the proper
+  value is __AXL_OS_WIN32__.
+
+* [fix] Committing updates to the libaxl.def file.
+
+
+About Advanced Software Production Line, S.L.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Advanced Software Production Line is leading the Af-Arch project: a
+  complete framework to develop distributed application to manage
+  enterprise process.
+
+  Af-Arch project uses Axl library to support its XML requirements
+  while exchanging data between nodes.
+
+  Advanced Software Production Line also provides GNU/Linux support
+  and consulting services to enable organization to introduce
+  GNU/Linux inside its process, making other platforms to interact
+  with GNU/Linux.
+
+  Contact us, using English or Spanish, to get commercial support
+  and/or XML based development services.
+
+  You can reach us:
+
+       http://www.aspl.es - info@aspl.es
+
+  We hope Axl Library help you. Enjoy Axl Library!
+
+--
+Francis Brosnan Blázquez           - francis@aspl.es
+Advanced Software Production Line  - http://www.aspl.es
+28th ago 2007, Madrid (Spain)
