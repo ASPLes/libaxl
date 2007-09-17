@@ -4146,6 +4146,7 @@ bool test_01d (axlError ** error)
 bool test_01_01 () 
 {
 	axlList * list;
+	int       value;
 
 	/* create the list */
 	list = axl_list_new (axl_list_equal_string, NULL);
@@ -4461,6 +4462,35 @@ bool test_01_01 ()
 	
 	/* free the list */
 	axl_list_free (list);
+
+
+	/* create a list and check remove first/get first */
+	list = axl_list_new (axl_list_equal_int, NULL);
+	axl_list_add (list, INT_TO_PTR(1));
+	axl_list_add (list, INT_TO_PTR(2));
+	axl_list_add (list, INT_TO_PTR(3));
+	axl_list_add (list, INT_TO_PTR(4));
+	axl_list_add (list, INT_TO_PTR(5));
+	axl_list_add (list, INT_TO_PTR(6));
+	axl_list_add (list, INT_TO_PTR(7));
+	axl_list_add (list, INT_TO_PTR(8));
+	axl_list_add (list, INT_TO_PTR(9));
+	axl_list_add (list, INT_TO_PTR(10));
+	while (axl_list_length (list) > 0) {
+		
+		/* get the integer value */
+		value = PTR_TO_INT (axl_list_get_first (list));
+		
+		/* remove */
+		axl_list_unlink_first (list);
+	}
+	if (axl_list_length (list) != 0) {
+		printf ("Expected to find 0 length list..\n");
+		return false;
+	}
+
+	axl_list_free (list);
+
 
 	return true;
 }
