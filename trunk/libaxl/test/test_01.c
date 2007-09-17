@@ -4491,6 +4491,10 @@ bool test_01_01 ()
 
 	axl_list_free (list);
 
+	/* create an empty list and destroy */
+	list = axl_list_new (axl_list_equal_int, NULL);
+	axl_list_free (list);
+
 
 	return true;
 }
