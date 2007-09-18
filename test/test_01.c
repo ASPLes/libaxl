@@ -4989,6 +4989,69 @@ bool test_01_03 ()
 		return false;
 	}
 
+	/* check axl_casecmp */
+	if (! axl_casecmp ("Content-Type: ", "Content-Type: ")) {
+		printf ("Expected to find equal comparision for case insensitive check..\n");
+		return false;
+	}
+	
+	if (! axl_casecmp ("CONTENT-Type: ", "Content-Type: ")) {
+		printf ("Expected to find equal comparision for case insensitive check..\n");
+		return false;
+	}
+
+	if (! axl_casecmp ("CONTENT-Type: ", "Content-TYPE: ")) {
+		printf ("Expected to find equal comparision for case insensitive check..\n");
+		return false;
+	}
+
+	if (! axl_casecmp ("CoNtENT-type: ", "Content-TYPE: ")) {
+		printf ("Expected to find equal comparision for case insensitive check..\n");
+		return false;
+	}
+
+	/* check with additional content not scanned */
+	if (! axl_stream_casecmp ("Content-Type: ", "Content-Type: asdf", 14)) {
+		printf ("Expected to find equal comparision for case insensitive check..\n");
+		return false;
+	}
+	
+	if (! axl_stream_casecmp ("CONTENT-Type: ", "Content-Type: asdf", 14)) {
+		printf ("Expected to find equal comparision for case insensitive check..\n");
+		return false;
+	}
+
+	if (! axl_stream_casecmp ("CONTENT-Type: ", "Content-TYPE: qwer12343", 14)) {
+		printf ("Expected to find equal comparision for case insensitive check..\n");
+		return false;
+	}
+
+	if (! axl_stream_casecmp ("CoNtENT-type: ", "Content-TYPE: 23141234", 14)) {
+		printf ("Expected to find equal comparision for case insensitive check..\n");
+		return false;
+	}
+
+	/* check axl_casecmp */
+	if (axl_casecmp ("Content-Type: ", "Content-Type: 12321")) {
+		printf ("Expected to not find equal comparision for case insensitive check..\n");
+		return false;
+	}
+	
+	if (axl_casecmp ("CONTENT-Type: ", "Content-Type: awdf21")) {
+		printf ("Expected to not find equal comparision for case insensitive check..\n");
+		return false;
+	}
+
+	if (axl_casecmp ("CONTENT-Type: ", "Content-TYPE: adsfasdf")) {
+		printf ("Expected to not find equal comparision for case insensitive check..\n");
+		return false;
+	}
+
+	if (axl_casecmp ("CoNtENT-type: ", "Content-TYPE: asdf21")) {
+		printf ("Expected to not find equal comparision for case insensitive check..\n");
+		return false;
+	}
+
 	return true;
 }
 

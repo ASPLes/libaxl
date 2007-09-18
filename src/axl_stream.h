@@ -202,6 +202,8 @@ char      * axl_stream_to_lower_copy   (const char  * chunk);
 
 bool        axl_cmp (const char * string, const char * string2);
 
+bool        axl_casecmp (const char * string, const char * string2);
+
 bool        axl_memcmp (const char * string, const char * string2, int size);
 
 char      * axl_strdup (const char * string);
