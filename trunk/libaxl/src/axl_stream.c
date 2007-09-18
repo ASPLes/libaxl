@@ -2654,6 +2654,25 @@ bool axl_cmp (const char * string, const char * string2)
 	return true;
 }
 
+bool        axl_casecmp (const char * string, const char * string2)
+{
+	int length;
+
+	if (string == NULL)
+		return false;
+	if (string2 == NULL)
+		return false;
+
+	/* get length associated to first string */
+	length = strlen (string);
+	if (length != strlen (string2))
+		return false;
+	
+	/* now check both lengths */
+	return axl_stream_casecmp (string, string2, length);
+	
+}
+
 
 /** 
  * @brief Allows to check if both strings provided are equal on its
