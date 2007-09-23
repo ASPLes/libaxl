@@ -2366,6 +2366,91 @@ char     ** axl_stream_split           (const char * chunk, int separator_num, .
 }
 
 /** 
+ * @brief Allows to implement the oposite operation of \ref
+ * axl_stream_split, by joing all strings provided inside the array
+ * (strings), using as separator the value provided.
+ * 
+ * @param strings The set of strings to be joined.
+ *
+ * @param separator The separator to be used to join all strings
+ * provided.
+ *
+ * 
+ * @return A newly allocated reference, that must be release using
+ * \ref axl_free.
+ */
+char      * axl_stream_join            (char      ** strings, 
+					const char * separator)
+{
+	int    length;
+	int    sep_length;
+	int    iterator;
+	char * result;
+	bool   next_sep;
+
+	axl_return_val_if_fail (strings && strings[0], NULL);
+	axl_return_val_if_fail (separator, NULL);
+
+	/* get the amount of data to be allocated */
+	length   = 0;
+	iterator = 0;
+
+	/* for each value to be joined */
+	while (strings [iterator]) {
+		/* count the number of bytes for each string */
+		length += strlen (strings[iterator]);
+
+		/* next iterator */
+		iterator++;
+	} /* end while */
+
+	/* check for the basic case */
+	if (iterator == 1) {
+		/* only one piece is contained in the set of strings
+		 * provided, so nothing can be joined */
+		return axl_strdup (strings[0]);
+	}
+	
+	/* add to the length the number of separatos to be added
+	 * (wihtout 1) and add a traling byte to terminate the
+	 * string */
+	sep_length = strlen (separator);
+	length    += (sep_length * (iterator - 1)) + 1;
+	result     = axl_new (char, length);
+
+	iterator   = 0;
+	next_sep   = false;
+	length     = 0;
+
+	while (strings [iterator]) {
+
+		/* copy the content */
+		if (next_sep) {
+			memcpy (result + length, separator, sep_length);
+
+			/* update the length */
+			length += sep_length;
+		} else {
+			memcpy (result + length, strings[iterator], strlen (strings[iterator]));
+
+			/* update the length */
+			length += strlen (strings[iterator]);
+		} /* end if */
+
+		/* check if next is separator */
+		next_sep = ! next_sep;
+
+		/* update the iterator only if next value to be
+		 * handled is a separator */
+		if (next_sep) 
+			iterator++;
+	} /* end while */
+
+	/* return string created */
+	return result;
+}
+
+/** 
  * @brief Allows to concatenate the two given strings into a single
  * one.
  *
