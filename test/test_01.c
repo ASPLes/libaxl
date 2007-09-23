@@ -4621,6 +4621,7 @@ bool test_01_03 ()
 {
 	char  * string;
 	char ** result;
+	char  * join;
 	int     res;
 	int     trimmed;
 
@@ -4711,6 +4712,49 @@ bool test_01_03 ()
 	}
 
 	/* release memory used */
+	axl_stream_freev (result);
+
+
+	/* now check the join string support */
+	result = axl_stream_split ("some test AND some test AND some test", 1, "AND");
+	
+	/* now join the data */
+	join   = axl_stream_join (result, "AND");
+	
+	if (! axl_cmp (join, "some test AND some test AND some test")) {
+		printf ("Join operation failed, expected different values '%s' != '%s'",
+			join, "some test AND some test AND some test");
+		return false;
+	}
+	axl_free (join);
+	axl_stream_freev (result);
+
+	/* now check the join string support */
+	result = axl_stream_split ("some test", 1, "AND");
+	
+	/* now join the data */
+	join   = axl_stream_join (result, "AND");
+	
+	if (! axl_cmp (join, "some test")) {
+		printf ("Join operation failed, expected different values '%s' != '%s'",
+			join, "some test");
+		return false;
+	}
+	axl_free (join);
+	axl_stream_freev (result);
+
+	/* now check the join string support */
+	result = axl_stream_split ("some test AND some test AND some test AND", 1, "AND");
+	
+	/* now join the data */
+	join   = axl_stream_join (result, "AND");
+	
+	if (! axl_cmp (join, "some test AND some test AND some test AND")) {
+		printf ("Join operation failed, expected different values '%s' != '%s'",
+			join, "some test AND some test AND some test AND");
+		return false;
+	}
+	axl_free (join);
 	axl_stream_freev (result);
 
 	string = axl_strdup ("AxBcA");

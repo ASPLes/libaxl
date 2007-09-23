@@ -186,6 +186,8 @@ char      * axl_stream_strdup_printf_len (const char * chunk,
 
 char     ** axl_stream_split           (const char * chunk, int separator_num, ...);
 
+char      * axl_stream_join            (char ** strings, const char * separator);
+
 char      * axl_stream_concat          (const char * chunk1, const char * chunk2);
 
 int         axl_stream_strv_num        (char ** chunks);
