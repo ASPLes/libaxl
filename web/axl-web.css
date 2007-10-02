@@ -222,3 +222,10 @@ ul.list {
 .application-data .references ul { 
   list-style: none;
  }
+
+.sponsored-adds { 
+  text-align: center;
+  padding: 3px;
+  border-bottom: 1px dotted #000090;
+}
+
