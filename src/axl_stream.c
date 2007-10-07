@@ -2366,6 +2366,54 @@ char     ** axl_stream_split           (const char * chunk, int separator_num, .
 }
 
 /** 
+ * @brief Allows to clean an split created by \ref axl_stream_split by
+ * removing all items found to be empty strings.
+ * 
+ * @param split The split to be updated by removing all empty string
+ * items.
+ */
+void        axl_stream_clean_split     (char ** split)
+{
+	int iterator;
+	int iterator2;
+	int iterator3;
+
+	/* check input */
+	axl_return_if_fail (split);
+
+	/* remove empty strings */
+	iterator = 0;
+	while (split[iterator]) {
+		if (strlen (split[iterator]) == 0) {
+
+			/* clear position joint */
+			axl_free (split[iterator]);
+			split[iterator] = NULL;
+
+			/* move strings */
+			iterator3 = 0;
+			iterator2 = iterator + 1;
+			while (split[iterator2 + iterator3]) {
+				/* move reference */
+				split[iterator + iterator3]  = split[iterator2 + iterator3];
+				
+				/* nullify */
+				split[iterator2 + iterator3] = NULL;
+				
+				/* next position */
+				iterator3++;
+			} /* end while */
+			continue;
+		} /* end if */
+
+		/* next iterator */
+		iterator++;
+	} /* end while */
+
+	return;
+}
+
+/** 
  * @brief Allows to implement the oposite operation of \ref
  * axl_stream_split, by joing all strings provided inside the array
  * (strings), using as separator the value provided.
