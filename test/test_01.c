@@ -5241,8 +5241,9 @@ void test_02_02_check_key (axlHash * hash, char * key)
  */
 bool test_02_02 () 
 {
-	axlHash * hash;
-	int       iterator;
+	axlHash     * hash;
+	int           iterator;
+	const char  * value;
 
 	/* create the hash */
 	hash = axl_hash_new (axl_hash_string, axl_hash_equal_string);
@@ -6185,6 +6186,28 @@ bool test_02_02 ()
 	}
 
 	/* destroy the hash */
+	axl_hash_free (hash);
+
+	/* check integer hash */
+	hash = axl_hash_new (axl_hash_int, axl_hash_equal_int);
+	axl_hash_insert (hash, INT_TO_PTR (-1), "menos uno");
+	axl_hash_insert (hash, INT_TO_PTR (8), "ocho");
+	
+	/* check values stored */
+	value = (const char *) axl_hash_get (hash, INT_TO_PTR (-1));
+	if (! axl_cmp (value, "menos uno")) {
+		printf ("Expected to find %s but found %s\n", "menos uno", value);
+		return false;
+	}
+
+	/* check values stored */
+	value = (const char *) axl_hash_get (hash, INT_TO_PTR (8));
+	if (! axl_cmp (value, "ocho")) {
+		printf ("Expected to find %s but found %s\n", "ocho", value);
+		return false;
+	}
+
+	/* free hash */
 	axl_hash_free (hash);
 
 	/* terminated test */
