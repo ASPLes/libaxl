@@ -1260,6 +1260,12 @@ bool __axl_doc_dump_common (axlDoc * doc, char ** content, int * size, bool pret
 	char * result;
 	int    index;
 
+	/* nullify before returning */
+	if (content)
+		*content = NULL;
+	if (size)
+		*size = 0;
+
 	/* perform some envrironmental checks */
 	axl_return_val_if_fail (doc, false);
 	axl_return_val_if_fail (content, false);
