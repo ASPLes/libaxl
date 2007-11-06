@@ -6327,6 +6327,71 @@ bool test_02_03 ()
 	return true;
 }
 
+bool test_02_03a ()
+{
+	axlHash * hash;
+
+	hash = axl_hash_new (axl_hash_int, axl_hash_equal_int);
+
+	axl_hash_insert (hash, INT_TO_PTR (10), INT_TO_PTR (10));
+
+	axl_hash_insert (hash, INT_TO_PTR (1032), INT_TO_PTR (1032));
+
+	axl_hash_insert (hash, INT_TO_PTR (1048), INT_TO_PTR (1048));
+
+	axl_hash_insert (hash, INT_TO_PTR (10320), INT_TO_PTR (10320));
+
+	/* remove */
+	if (axl_hash_remove (hash, INT_TO_PTR (10321))) {
+		printf ("ERROR: expected to not find a true result from removing an item that do not exists..");
+		return false;
+	}
+
+	if (! axl_hash_remove (hash, INT_TO_PTR (10320))) {
+		printf ("ERROR: expected to find a true result from removing an item that do not exists..");
+		return false;
+	}
+
+	if (axl_hash_remove (hash, INT_TO_PTR (10320))) {
+		printf ("ERROR: expected to NOT find a true result from removing an item that do not exists..");
+		return false;
+	}
+
+	if (! axl_hash_remove (hash, INT_TO_PTR (1048))) {
+		printf ("ERROR: expected to find a true result from removing an item that do not exists..");
+		return false;
+	}
+
+	if (axl_hash_remove (hash, INT_TO_PTR (1048))) {
+		printf ("ERROR: expected to NOT find a true result from removing an item that do not exists..");
+		return false;
+	}
+
+	if (! axl_hash_remove (hash, INT_TO_PTR (1032))) {
+		printf ("ERROR: expected to find a true result from removing an item that do not exists..");
+		return false;
+	}
+
+	if (axl_hash_remove (hash, INT_TO_PTR (1032))) {
+		printf ("ERROR: expected to NOT find a true result from removing an item that do not exists..");
+		return false;
+	}
+
+	if (! axl_hash_remove (hash, INT_TO_PTR (10))) {
+		printf ("ERROR: expected to find a true result from removing an item that do not exists..");
+		return false;
+	}
+
+	if (axl_hash_remove (hash, INT_TO_PTR (10))) {
+		printf ("ERROR: expected to NOT find a true result from removing an item that do not exists..");
+		return false;
+	}
+
+	axl_hash_free (hash);
+
+	return true;
+}
+
 void show_item_test_02_04 (axlPointer key, axlPointer data)
 {
 	__axl_log ("hash-test", AXL_LEVEL_DEBUG, "  %s -> %s", (char *) key, (char *) data);
@@ -6659,6 +6724,13 @@ int main (int argc, char ** argv)
 		printf ("Test 02-03: LibAxl hash implementation (replace) [   OK   ]\n");
 	}else {
 		printf ("Test 02-03: LibAxl hash implementation (replace) [ FAILED ]\n");
+		return -1;
+	}
+
+	if (test_02_03a ()) {
+		printf ("Test 02-03-a: LibAxl hash remove notification [   OK   ]\n");
+	}else {
+		printf ("Test 02-03-a: LibAxl hash remove notification [ FAILED ]\n");
 		return -1;
 	}
 
