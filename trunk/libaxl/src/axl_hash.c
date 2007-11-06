@@ -551,8 +551,11 @@ void       axl_hash_insert_full (axlHash        * hash,
 /**
  * @internal Function that supports axl_hash_remove and
  * axl_hash_delete.
+ *
+ * The function returns true if an item was removed due to the call
+ * done.
  */
-void            __axl_hash_remove_common       (axlHash    * hash,
+bool            __axl_hash_remove_common       (axlHash    * hash,
 						axlPointer   key,
 						bool         remove)
 {
@@ -564,7 +567,7 @@ void            __axl_hash_remove_common       (axlHash    * hash,
 	
 	/* do not perform any operation if the hash is empty */
 	if (hash->hash_size == 0)
-		return;
+		return false;
 	
 	/* get the node at the provided position */
 	pos  = (hash->hash (key)) % hash->hash_size;
@@ -572,7 +575,7 @@ void            __axl_hash_remove_common       (axlHash    * hash,
 
 	/* node not found */
 	if (node == NULL)
-		return;
+		return false;
 
 	/* check for equal keys */
 	if (hash->equal (node->key, key) == 0) {
@@ -597,7 +600,7 @@ void            __axl_hash_remove_common       (axlHash    * hash,
 
 		/* element destroyed, nothing more to do around
 		 * here */
-		return;
+		return true;
 	}
 
 	/* seems we have more nodes */
@@ -620,7 +623,7 @@ void            __axl_hash_remove_common       (axlHash    * hash,
 	}  /* end */
 	
 	/* no item was found on the hash */
-	return;
+	return false;
 }
 
 /** 
@@ -637,14 +640,17 @@ void            __axl_hash_remove_common       (axlHash    * hash,
  * performed.
  *
  * @param key The key to lookup to be removed. 
+ *
+ * @return The function returns true if the item was removed,
+ * otherwise false is returned. If the function returns true, it means
+ * the object was stored in the hash before calling to remove it.
  */
-void            axl_hash_remove       (axlHash    * hash,
+bool            axl_hash_remove       (axlHash    * hash,
 				       axlPointer   key)
 {
 	/* call common implementation deleting data with destroy
 	 * functions defined */
-	__axl_hash_remove_common (hash, key, true);
-	return;
+	return __axl_hash_remove_common (hash, key, true);
 }
 
 /** 
@@ -661,14 +667,18 @@ void            axl_hash_remove       (axlHash    * hash,
  * performed.
  *
  * @param key The key to lookup to be removed. 
+ *
+ * @return The function returns true if the item was removed
+ * (deallocation functions aren't called), otherwise false is
+ * returned. If the function returns true, it means the object was
+ * stored in the hash before calling to remove.
  */
-void            axl_hash_delete       (axlHash    * hash,
+bool            axl_hash_delete       (axlHash    * hash,
 				       axlPointer   key)
 {
 	/* call common implementation, without calling destroy
 	 * functions defined */
-	__axl_hash_remove_common (hash, key, false);
-	return;
+	return __axl_hash_remove_common (hash, key, false);
 }
 
 /** 

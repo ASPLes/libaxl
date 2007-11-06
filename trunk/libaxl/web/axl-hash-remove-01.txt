@@ -1,0 +1,49 @@
+
+       #####################################
+       ####     Change notification     ####
+       #####################################
+
+    Change Id: axl-hash-remove-01
+ Project name: Axl library
+  Included in: 0.5.0
+       Status: NOTIFY
+       Author: Francis Brosnan Blázquez
+
+Motivation
+~~~~~~~~~~
+
+A minimal change to the axl hash remove API is required to get a
+notification if the item requested to be removed, was found in the
+hash during the operation.
+
+Change Description
+~~~~~~~~~~~~~~~~~~
+
+The following function will now return (bool). They was previously
+returning (void):
+
+  - axl_hash_remove
+  - axl_hash_delete
+
+
+Solution to incompatibility
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+There is no especial expected action to be taken. If the developer
+requires to know if the item was removed, update the code as
+appropriate.
+
+Some compilers might complain due to not using the data returned by
+the function.
+
+
+References
+~~~~~~~~~~
+[1] Axl library
+    http://xml.aspl.es
+
+[2] Axl library change notifications
+    http://xml.aspl.es/doc.html
+
+[3] Change notification definition
+    http://www.aspl.es/change/change-notification.txt
