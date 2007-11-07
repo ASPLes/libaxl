@@ -563,7 +563,7 @@ bool            __axl_hash_remove_common       (axlHash    * hash,
 	axlHashNode * aux;
 	int           pos;
 
-	axl_return_if_fail (hash);
+	axl_return_val_if_fail (hash, false);
 	
 	/* do not perform any operation if the hash is empty */
 	if (hash->hash_size == 0)
