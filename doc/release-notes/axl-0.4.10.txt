@@ -1,0 +1,78 @@
+          ####################################
+          #           Axl Library:           #
+          #     "Man in the box release"     # 
+          #              0.4.10              #
+          ####################################
+
+Advanced Software Production Line is proud to announce a new Axl
+Library release.
+
+Axl Library is an small and efficient XML toolkit, that will allow you
+to produce efficient and clear code that interfaces with XML data.
+
+The library was produced to support XML requirements needed by
+software developed by Advanced Software Production Line, S.L.
+
+At this moment the library is being used by Vortex Library, Af-Arch,
+Shaper and Fovap.
+
+Resources
+~~~~~~~~~
+
+   Axl Homepage
+   [ http://xml.aspl.es ]
+
+   Advanced Software Production Line, S.L.
+   [ http://www.aspl.es ]
+
+This release in short
+~~~~~~~~~~~~~~~~~~~~~
+  Minor fix release. Updated axl hash remove to report status.
+
+Change notifications
+~~~~~~~~~~~~~~~~~~~~
+  [1] axl-hash-remove-01
+  http://lists.aspl.es/pipermail/axl/2007-November/000042.html
+
+Changes from previous release 0.4.9
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+
+* [fix] Fixed warning at common axl hash implementation.
+
+* [fix] Applied change notification to update axl hash remove API to
+  report if the item was removed.
+
+* [fix] Making common internal implementation for dump operations to
+  nullify references received before operating.
+
+* [fix] Updated regression test to check hashes using integer values
+  and negative ones.
+
+About Advanced Software Production Line, S.L.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Advanced Software Production Line is leading the Af-Arch project: a
+  complete framework to develop distributed application to manage
+  enterprise process.
+
+  Af-Arch project uses Axl library to support its XML requirements
+  while exchanging data between nodes.
+
+  Advanced Software Production Line also provides GNU/Linux support
+  and consulting services to enable organization to introduce
+  GNU/Linux inside its process, making other platforms to interact
+  with GNU/Linux.
+
+  Contact us, using English or Spanish, to get commercial support
+  and/or XML based development services.
+
+  You can reach us:
+
+       http://www.aspl.es - info@aspl.es
+
+  We hope Axl Library help you. Enjoy Axl Library!
+
+--
+Francis Brosnan Blázquez           - francis@aspl.es
+Advanced Software Production Line  - http://www.aspl.es
+7th nov 2007, Madrid (Spain)
