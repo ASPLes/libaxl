@@ -1549,7 +1549,7 @@ void            axl_list_cursor_remove       (axlListCursor * cursor)
 	cursor->current = (node->next != NULL) ? node->next : node->previous;
 
 	/* call to remove */
-	__axl_list_common_remove_selected_node (cursor->list, node, false);
+	__axl_list_common_remove_selected_node (cursor->list, node, true);
 
 	return;
 }
