@@ -244,6 +244,11 @@ char      * axl_strdup (const char * string);
  */
 #define     axl_split  axl_stream_split
 
+/**
+ * @brief Alias definition for the \ref axl_stream_freev.
+ */
+#define     axl_freev  axl_stream_freev
+
 /* @} */
 
 END_C_DECLS
