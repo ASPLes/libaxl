@@ -2239,6 +2239,8 @@ char    * axl_stream_strdup_printf_len (const char * chunk, int * chunk_size, ..
  * @return A newly allocated string, that must be deallocated by using
  * \ref axl_stream_freev. The function will return a NULL if the chunk
  * or the separators provided are NULL.
+ *
+ * NOTE: See also \ref axl_split.
  */
 char     ** axl_stream_split           (const char * chunk, int separator_num, ...)
 {
@@ -2371,6 +2373,7 @@ char     ** axl_stream_split           (const char * chunk, int separator_num, .
  * 
  * @param split The split to be updated by removing all empty string
  * items.
+ *
  */
 void        axl_stream_clean_split     (char ** split)
 {
@@ -2426,6 +2429,8 @@ void        axl_stream_clean_split     (char ** split)
  * 
  * @return A newly allocated reference, that must be release using
  * \ref axl_free.
+ *
+ * NOTE: See also \ref axl_join.
  */
 char      * axl_stream_join            (char      ** strings, 
 					const char * separator)
@@ -2525,6 +2530,8 @@ char      * axl_stream_join            (char      ** strings,
  * @return A newly allocated string, containing both strings, or NULL
  * if fails. The only way for this function to fail is to provide two
  * NULL references as incoming strings.
+ *
+ * NOTE: See also \ref axl_concat.
  */
 char      * axl_stream_concat          (const char * chunk1, const char * chunk2)
 {

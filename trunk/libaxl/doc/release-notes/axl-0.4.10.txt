@@ -20,7 +20,7 @@ Resources
 ~~~~~~~~~
 
    Axl Homepage
-   [ http://xml.aspl.es ]
+   [ http://www.aspl.es/xml ]
 
    Advanced Software Production Line, S.L.
    [ http://www.aspl.es ]

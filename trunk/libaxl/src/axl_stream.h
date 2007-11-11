@@ -229,6 +229,21 @@ char      * axl_strdup (const char * string);
  */
 #define axl_strdup_printfv axl_stream_strdup_printfv
 
+/**
+ * @brief Alias definition for the \ref axl_stream_concat.
+ */
+#define     axl_concat axl_stream_concat
+
+/**
+ * @brief Alias definition for the \ref axl_stream_join.
+ */
+#define     axl_join   axl_stream_join
+
+/**
+ * @brief Alias definition for the \ref axl_stream_split.
+ */
+#define     axl_split  axl_stream_split
+
 /* @} */
 
 END_C_DECLS
