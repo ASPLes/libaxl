@@ -77,6 +77,7 @@ __axl_node_set_content_common_ref
 __axl_stack_foreach_common
 __axl_stream_common_to
 __axl_stream_get_untilv_wide
+axl_casecmp
 axl_cmp
 axl_doc_add_pi_target
 axl_doc_are_equal
@@ -368,6 +369,7 @@ axl_strdup
 axl_stream_accept
 axl_stream_casecmp
 axl_stream_check
+axl_stream_clean_split
 axl_stream_cmp
 axl_stream_concat
 axl_stream_consume_white_spaces
@@ -387,6 +389,7 @@ axl_stream_get_untilv
 axl_stream_inspect
 axl_stream_inspect_several
 axl_stream_is_white_space
+axl_stream_join
 axl_stream_link
 axl_stream_move
 axl_stream_new

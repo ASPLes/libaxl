@@ -1,4 +1,4 @@
-EXTRA_DIST = Makefile.win axl_config_win32.h libaxl.vcproj
+EXTRA_DIST = Makefile.win axl_config_win32.h libaxl.vcproj libaxl.def
 
 if ENABLE_AXL_LOG
 LOG = -DSHOW_DEBUG_LOG
