@@ -4138,6 +4138,34 @@ bool test_01d (axlError ** error)
 }
 
 /** 
+ * @brief Check parsing document with huge node content.
+ * 
+ * @return false if the function fails to parse the
+ * document. true if the test was properly executed.
+ */
+bool test_01e (axlError ** error)  
+{
+	axlDoc         * doc;
+	axlNode        * node;
+	const char     * content;
+	int              size;
+	
+	/* parse document */
+	doc = axl_doc_parse_from_file ("test_01e.xml", error);
+	if (doc == NULL) 
+		return false;
+	
+	/* get root node */
+	node    = axl_doc_get_root (doc);
+	content = axl_node_get_content (node, &size);
+	
+	/* free document */
+	axl_doc_free (doc);
+
+	return true;
+} 
+
+/** 
  * @brief Test current libaxl list implementation.
  * 
  * 
@@ -6794,6 +6822,15 @@ int main (int argc, char ** argv)
 		return -1;
 	}	
 
+	if (test_01e (&error)) {
+		printf ("Test 01-e: Basic XML parsing, large content  [   OK   ]\n");
+	} else {
+		printf ("Test 01-e: Basic XML parsing, large content  [ FAILED ]\n   (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	} /* end if */
+
 	if (test_02 (&error))
 		printf ("Test 02: basic xml error detection [   OK   ]\n");
 	else {
@@ -7143,8 +7180,6 @@ int main (int argc, char ** argv)
 		axl_error_free (error);
 		return -1;
 	}
-
-
 
 	/* cleanup axl library */
 	axl_end ();

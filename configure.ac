@@ -62,6 +62,17 @@ AM_CONDITIONAL(ENABLE_AXL_NS, test "x$enable_axl_ns" = "xyes")
 AC_ARG_ENABLE(axl-log, [  --enable-axl-log     Enable building Axl with debug log support [default=yes]], enable_axl_log="$enableval", enable_axl_log=yes)
 AM_CONDITIONAL(ENABLE_AXL_LOG, test "x$enable_axl_log" = "xyes")
 
+dnl check to build axl knife tool 
+AC_ARG_ENABLE(axl-knife, [  --enable-axl-knife     Enable building Axl Knife tool [default=yes]], enable_axl_knife="$enableval", enable_axl_knife=yes)
+AM_CONDITIONAL(ENABLE_AXL_KNIFE, test "x$enable_axl_knife" = "xyes")
+
+if test x$enable_axl_knife = xyes ; then
+   dnl if axl-knife build is required, check for exarg support
+   PKG_CHECK_MODULES(EXARG, exarg)
+   AC_SUBST(EXARG_CFLAGS)
+   AC_SUBST(EXARG_LIBS)
+fi
+
 # The following command also comes to produce the axl_config.h file
 # required by the tool. If you update this, remember to update the
 # af-arch main configure.ac
@@ -195,6 +206,7 @@ ns/Makefile
 doc/Makefile
 doc/axl-doc.doxygen
 test/Makefile
+knife/Makefile
 axl.pc
 axl-ns.pc])
 
@@ -206,6 +218,8 @@ echo
 echo "   Build Axl Namespace support:  [$enable_axl_ns]"
 echo
 echo "   Build Axl Library tests:      [$enable_axl_test]"
+echo
+echo "   Build Axl Knife:              [$enable_axl_knife]"
 echo
 echo "   Build Axl Library debug log:  [$enable_axl_log]"
 echo

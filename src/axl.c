@@ -1,4 +1,4 @@
-/**
+/*
  *  @internal
  * 
  *  LibAxl:  Another XML library 
@@ -35,7 +35,7 @@
  *         Spain
  *
  *      Email address:
- *         info@aspl.es - http://fact.aspl.es
+ *         info@aspl.es - http://www.aspl.es/xml
  */
 #include <axl.h>
 

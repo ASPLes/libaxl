@@ -1,4 +1,4 @@
-/**
+/*
  *  LibAxl:  Another XML library 
  *  Copyright (C) 2006 Advanced Software Production Line, S.L.
  *
@@ -33,7 +33,7 @@
  *         Spain
  *
  *      Email address:
- *         info@aspl.es - http://fact.aspl.es
+ *         info@aspl.es - http://www.aspl.es/xml
  */
 #ifndef __AXL_LOG_H__
 #define __AXL_LOG_H__
@@ -50,6 +50,10 @@ BEGIN_C_DECLS
 bool     axl_log_is_enabled ();
 
 bool     axl_log_color_is_enabled ();
+
+void     axl_log_enable (bool value);
+
+void     axl_log_color_enable (bool value);
 
 
 #if defined(SHOW_DEBUG_LOG)

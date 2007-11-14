@@ -33,7 +33,7 @@
  *         Spain
  *
  *      Email address:
- *         info@aspl.es - http://fact.aspl.es
+ *         info@aspl.es - http://www.aspl.es/xml
  */
 #ifndef __AXL_HASH_H__
 #define __AXL_HASH_H__

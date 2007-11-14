@@ -1,4 +1,4 @@
-/**
+/*
  *  LibAxl:  Another XML library 
  *  Copyright (C) 2006 Advanced Software Production Line, S.L.
  *
@@ -33,7 +33,7 @@
  *         Spain
  *
  *      Email address:
- *         info@aspl.es - http://fact.aspl.es
+ *         info@aspl.es - http://www.aspl.es/xml
  */
 #include <axl_log.h>
 
@@ -46,8 +46,13 @@
  * @{
  */
 
+/* console log */
 bool     not_executed  = true;
 bool     debug_enabled = false;
+
+/* colored log */
+bool     not_executed_color  = true;
+bool     debug_color_enabled = false;
 
 /** 
  * @brief Allows to check if the log reporting inside the system is
@@ -85,13 +90,50 @@ bool    axl_log_color_is_enabled ()
 {
 #if defined(AXL_OS_WIN32) && ! defined(__GNUC__)
 	int requiredSize;
-
-	/* get the required size to store the variable */
-	getenv_s( &requiredSize, NULL, 0, "AXL_DEBUG_COLOR");
-	return (requiredSize > 0);
-#else
-	return (getenv ("AXL_DEBUG_COLOR") != NULL);
 #endif
+
+	if (not_executed_color) {
+#if defined(AXL_OS_WIN32) && ! defined(__GNUC__)
+		getenv_s( &requiredSize, NULL, 0, "AXL_DEBUG_COLOR");
+		debug_color_enabled = (requiredSize > 0);
+#else
+		debug_color_enabled = (getenv ("AXL_DEBUG_COLOR") != NULL);
+#endif
+		not_executed_color  = false;
+	}
+
+	/* return current value */
+	return debug_color_enabled;
+}
+
+/** 
+ * @brief Allows to control how to activate the log reporting to the
+ * console from the axl core library.
+ * 
+ * @param value true to enable log to console, otherwise false is
+ * returned.
+ */
+void     axl_log_enable (bool value)
+{
+	/* activate debuging according to the variable */
+	not_executed  = false;
+	debug_enabled = value;
+	return;
+}
+
+/** 
+ * @brief Allows to control how to activate the colog log reporting to
+ * the console from the axl core library.
+ * 
+ * @param value true to enable log to console, otherwise false is
+ * returned.
+ */
+void     axl_log_color_enable (bool value)
+{
+	/* activate color debuging according to the variable */
+	not_executed_color  = false;
+	debug_color_enabled = value;
+	return;
 }
 
 /** 
