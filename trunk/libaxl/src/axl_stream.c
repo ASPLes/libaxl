@@ -33,7 +33,7 @@
  *         Spain
  *
  *      Email address:
- *         info@aspl.es - http://fact.aspl.es
+ *         info@aspl.es - http://www.aspl.es/xml
  */
 
 #include <axl.h>
@@ -233,21 +233,49 @@ bool axl_stream_prebuffer (axlStream * stream)
 		 * available on the buffer */
 		stream->stream_size  = (stream->stream_size - stream->stream_index);
 	}else {
-		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "   nothing to prebuffer on the tail");
-		stream->stream_size  = 0;
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "   nothing to prebuffer on the head (stream-index=%d, stream-size=%d)",
+			   stream->stream_index, stream->stream_size);
+
+		/* check here if the buffer is full of content and a call to
+		 * prebuffer was done */
+		if (stream->stream_size == stream->buffer_size && stream->stream_index == 0) {
+			/* looks like the caller is prebuffering
+			 * having all buffers full of content .. */
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, 
+				   "   requested to prebuffer with buffers full of content (stream-index=%d, stream-size=%d, stream-buffer-size=%d)",
+				   stream->stream_index, stream->stream_size, stream->buffer_size);
+			/* duplicate the buffer size */
+			stream->buffer_size += (stream->buffer_size);
+			stream->stream       = realloc (stream->stream, stream->buffer_size + 1);
+
+			if (stream->stream == NULL) {
+				__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, 
+				   "   failed to update buffer sizes (realloc operation failed)",
+				   stream->stream_index, stream->stream_size, stream->buffer_size);
+				close (stream->fd);
+				stream->fd = -1;
+				return false;
+			} /* end if */
+			
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, 
+				   "   buffer updated (stream-index=%d, stream-size=%d, stream-buffer-size=%d)",
+				   stream->stream_index, stream->stream_size, stream->buffer_size);
+		} else {
+			stream->stream_size  = 0;
+		}
 	}
 
 	/* reset current index */
 	stream->stream_index = 0;
 
-	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "   reading on buffer index: %d, size: %d",
-		   stream->stream_index, stream->stream_size);
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "   reading on buffer index: %d, size: %d (starting from: %d, length: %d)",
+		   stream->stream_index, stream->stream_size, stream->stream_size, stream->buffer_size - stream->stream_size);
 
 	/* read current content */
 	bytes_read = read (stream->fd, stream->stream + stream->stream_size,
 			   stream->buffer_size - stream->stream_size);
 
-	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "   bytes read from the file: %d", bytes_read);
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "   bytes read from the file, size %d", bytes_read);
 
 	/* check for end of file reached */
 	if (bytes_read == 0) {
@@ -264,8 +292,8 @@ bool axl_stream_prebuffer (axlStream * stream)
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "   (before read) current buffer size: %d",
 		   stream->stream_size);
 
-	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "   prebuffered data: stream size: %d",
-		   stream->stream_size);
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "   prebuffered data: stream size: %d, new content: %s",
+		   bytes_read, stream->stream + stream->stream_index);
 
 	return true;
 }
@@ -1013,7 +1041,7 @@ char * __axl_stream_get_untilv_wide (axlStream * stream, va_list args)
 
 	int          iterator    = 0;
 	int          index       = 0;
-	int          _index;
+	int          _index      = 0;
 	int          length      = 0;
 	int          max_length  = 0;
 	bool         matched;
@@ -1073,7 +1101,7 @@ char * __axl_stream_get_untilv_wide (axlStream * stream, va_list args)
 			
 			/* check if the index is falling out side the buffer boundaries */
 			if (remains < 0) {
-				
+
 				if (! axl_stream_prebuffer (stream)) {
 					__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "failed while prebuffer");
 					return NULL;
@@ -1082,8 +1110,8 @@ char * __axl_stream_get_untilv_wide (axlStream * stream, va_list args)
 				/* update remains value but this time removing
 				 * one unit (the unit to be consumed at the
 				 * next sentence) */
-				remains = stream->stream_size - stream->stream_index - 1;
-				
+				remains = stream->stream_size - index - 1;
+
 				/* work around: because the index is updated
 				 * at the end of the loop, it is required to
 				 * decrease the index in one unit in the case
@@ -1121,7 +1149,7 @@ char * __axl_stream_get_untilv_wide (axlStream * stream, va_list args)
 		_index   = stream->stream_index + index;
 		matched  = false;
 		iterator = 0;
-		
+
 		/* before iterating, check if we have to match the
 		 * empty string */
 		if (match_empty) {
@@ -1173,7 +1201,7 @@ char * __axl_stream_get_untilv_wide (axlStream * stream, va_list args)
 				iterator ++;
 			}
 		} /* end while */
-				
+
 		/* check that the function have found a chunk */
 		if (matched) {
 			/* check for matching a more specific

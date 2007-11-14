@@ -255,7 +255,9 @@ axl_list_unlink
 axl_list_unlink_first
 axl_list_unlink_last
 axl_log
+axl_log_color_enable
 axl_log_color_is_enabled
+axl_log_enable
 axl_log_is_enabled
 axl_memcmp
 axl_node_add_pi_target
