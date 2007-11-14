@@ -1108,7 +1108,11 @@ axlDoc * __axl_doc_parse_common (const char * entity, int entity_size,
 			   axl_stack_size (doc->parentNode));
 
 		axl_error_new (-1, "XML document is not balanced, still remains xml nodes", stream, error);
+
+		/* parse complete */
+		axl_stream_unlink (stream);
 		axl_stream_free (stream);
+
 		return NULL;
 	}
 

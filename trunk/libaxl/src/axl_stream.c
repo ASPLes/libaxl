@@ -247,6 +247,7 @@ bool axl_stream_prebuffer (axlStream * stream)
 			/* duplicate the buffer size */
 			stream->buffer_size += (stream->buffer_size);
 			stream->stream       = realloc (stream->stream, stream->buffer_size + 1);
+			stream->temp         = realloc (stream->temp,   stream->buffer_size + 1);
 
 			if (stream->stream == NULL) {
 				__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, 
