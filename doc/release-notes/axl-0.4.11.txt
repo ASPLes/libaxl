@@ -1,0 +1,107 @@
+          ####################################
+          #            Axl Library:          #
+          #         " Naíta release "        # 
+          #              0.4.11              #
+          ####################################
+
+Advanced Software Production Line is proud to announce a new Axl
+Library release.
+
+Axl Library is an small and efficient XML toolkit, that will allow you
+to produce efficient and clear code that interfaces with XML data.
+
+The library was produced to support XML requirements needed by
+software developed by Advanced Software Production Line, S.L.
+
+At this moment the library is being used by Vortex Library, Af-Arch,
+Turbulence, Shaper and Fovap.
+
+Resources
+~~~~~~~~~
+
+   Axl Homepage
+   [ http://www.aspl.es/xml ]
+
+   Advanced Software Production Line, S.L.
+   [ http://www.aspl.es ]
+
+This release in short
+~~~~~~~~~~~~~~~~~~~~~
+  Fixed a bug in the axl stream module which was causing to not
+  properly read documents with really large content node. Added
+  initial implementation for axl-knife, a command line tool built on
+  top of Axl. Fixed memory leak in axl list cursor and added some
+  convenience macros.
+
+Thanks to..
+~~~~~~~~~~~
+  Qball Cow (reported large node content problem) and Chris Yourch
+  (reported missing libaxl.def into tgz)
+
+Change notifications
+~~~~~~~~~~~~~~~~~~~~
+  None.
+
+Changes from previous release 0.4.10
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+
+* [fix] Committing empty Makefile.win for axl-knife tool.
+
+* [fix] Fixed temporal buffer used by the axl stream, which is not
+  resized once the main buffer is resized.
+
+* [fix] Fixed bug which was causing to not open large content inside
+  nodes (limited to 8192 bytes). Updated prebuffering code to allow
+  growing as required by the document, reusing the largest
+  buffer. Reported by Qball Cow.
+
+* [fix] Fixed documentation problem associated to doxygen.
+
+* [new] Added initial implementation for axl-knife tool. It will
+  implement several command line features to manage xml documents.
+
+* [fix] Making Makefile.am file to include libaxl.def file while doing
+  make dist. Reported Chris Yourch.
+
+* [fix] Added axl_freev macro, alising axl_stream_freev.
+
+* [fix] Added some macro definitions to easily access to some string
+  functions. Updated doxygen documentation. API added:
+
+   - axl_concat
+   - axl_split
+   - axl_join
+
+* [fix] Fixed bug inside axl_list_cursor_remove which was causing to
+  leak the application because the reference was never removed
+  (destroy functions called).
+
+
+About Advanced Software Production Line, S.L.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Advanced Software Production Line is leading the Af-Arch project: a
+  complete framework to develop distributed application to manage
+  enterprise process.
+
+  Af-Arch project uses Axl library to support its XML requirements
+  while exchanging data between nodes.
+
+  Advanced Software Production Line also provides GNU/Linux support
+  and consulting services to enable organization to introduce
+  GNU/Linux inside its process, making other platforms to interact
+  with GNU/Linux.
+
+  Contact us, using English or Spanish, to get commercial support
+  and/or XML based development services.
+
+  You can reach us:
+
+       http://www.aspl.es - info@aspl.es
+
+  We hope Axl Library help you. Enjoy Axl Library!
+
+--
+Francis Brosnan Blázquez           - francis@aspl.es
+Advanced Software Production Line  - http://www.aspl.es
+20th nov 2007, Madrid (Spain)

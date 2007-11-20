@@ -1,4 +1,4 @@
-EXTRA_DIST      = $(wildcard *.c) $(wildcard *.dtd) $(wildcard *.xml) $(wildcard *.xdl) Makefile.win 
+EXTRA_DIST      = $(wildcard *.c) $(wildcard *.h) Makefile.win 
 
 if ENABLE_AXL_LOG
 LOG = -DSHOW_DEBUG_LOG
