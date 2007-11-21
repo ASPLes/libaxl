@@ -226,12 +226,12 @@ void      axl_node_annotate_data_full            (axlNode       * node,
 						 axlDestroyFunc  data_destroy);
 
 axlPointer axl_node_annotate_get                 (axlNode       * node,
-						 const char    * key,
-						 bool            lookup_in_parent);
+						  const char    * key,
+						  bool            lookup_in_parent);
 
 void       axl_node_annotate_int                 (axlNode * node,
-						 const char    * key,
-						 int             int_value);
+						  const char    * key,
+						  int             int_value);
 
 void       axl_node_annotate_string              (axlNode * node,
 						 const char    * key,
