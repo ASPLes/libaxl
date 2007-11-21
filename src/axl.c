@@ -835,6 +835,17 @@
  * work on Microsoft Windows, GNU/Linux, *-BSD, GNU/Linux under
  * Amd64/Itanium and MacOS/X platforms. 
  *
+ * The library package is composed by the following items:
+ * 
+ * - libaxl: base library implementing all XML functions. It has no
+ * external dependencies.
+ *
+ * - libaxl-sn: optional library, built on top of libaxl, which
+ * provides Namespaces support. It depends on libaxl.
+ *
+ * - axl-knife: command line tool, built on top of libaxl and
+ * libaxl-ns. It depends on the base library and the namespace library.
+ *
  * Here are a set of instructions to get the library compiled for your
  * platform:
  *

@@ -66,13 +66,6 @@ dnl check to build axl knife tool
 AC_ARG_ENABLE(axl-knife, [  --enable-axl-knife     Enable building Axl Knife tool [default=yes]], enable_axl_knife="$enableval", enable_axl_knife=yes)
 AM_CONDITIONAL(ENABLE_AXL_KNIFE, test "x$enable_axl_knife" = "xyes")
 
-if test x$enable_axl_knife = xyes ; then
-   dnl if axl-knife build is required, check for exarg support
-   PKG_CHECK_MODULES(EXARG, exarg)
-   AC_SUBST(EXARG_CFLAGS)
-   AC_SUBST(EXARG_LIBS)
-fi
-
 # The following command also comes to produce the axl_config.h file
 # required by the tool. If you update this, remember to update the
 # af-arch main configure.ac
