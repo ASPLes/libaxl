@@ -233,12 +233,13 @@ bool axl_stream_prebuffer (axlStream * stream)
 		 * available on the buffer */
 		stream->stream_size  = (stream->stream_size - stream->stream_index);
 	}else {
-		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "   nothing to prebuffer on the head (stream-index=%d, stream-size=%d)",
-			   stream->stream_index, stream->stream_size);
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "   nothing to prebuffer on the head (stream->size=%d, stream-index=%d, buffer-size=%d)",
+			   stream->stream_size, stream->stream_index, stream->buffer_size);
 
 		/* check here if the buffer is full of content and a call to
 		 * prebuffer was done */
-		if (stream->stream_size == stream->buffer_size && stream->stream_index == 0) {
+		if ((stream->stream_size == stream->buffer_size) && 
+		    (stream->stream_index == 0)) {
 			/* looks like the caller is prebuffering
 			 * having all buffers full of content .. */
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, 
@@ -262,7 +263,13 @@ bool axl_stream_prebuffer (axlStream * stream)
 				   "   buffer updated (stream-index=%d, stream-size=%d, stream-buffer-size=%d)",
 				   stream->stream_index, stream->stream_size, stream->buffer_size);
 		} else {
-			stream->stream_size  = 0;
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG,
+				   "   clearing stream-size=%d, having stream-index=%d and stream-buffer-size=%d",
+				   stream->stream_size, stream->stream_index, stream->buffer_size);
+
+			/* reset if the stream size is just the content consumed */
+			if (stream->stream_size == stream->stream_index)
+				stream->stream_size  = 0; 
 		}
 	}
 
