@@ -71,29 +71,29 @@ void axl_knife_msg (const char * file, int line, const char * format, ...)
 	if (console_debug3) {
 #if defined(AXL_OS_UNIX)	
 		if (console_color_debug) {
-			CONSOLE (stdout, "(proc:%d) [\e[1;32mmsg\e[0m] (%s:%d) ", axl_knife_pid, file, line);
+			CONSOLE (stderr, "(proc:%d) [\e[1;32mmsg\e[0m] (%s:%d) ", axl_knife_pid, file, line);
 		} else
 #endif
-			CONSOLE (stdout, "(proc:%d) [msg] (%s:%d) ", axl_knife_pid, file, line);
+			CONSOLE (stderr, "(proc:%d) [msg] (%s:%d) ", axl_knife_pid, file, line);
 	} else {
 #if defined(AXL_OS_UNIX)	
 		if (console_color_debug) {
-			CONSOLE (stdout, "\e[1;32mI: \e[0m");
+			CONSOLE (stderr, "\e[1;32mI: \e[0m");
 		} else
 #endif
-			CONSOLE (stdout, "I: ");
+			CONSOLE (stderr, "I: ");
 	} /* end if */
 	
 	va_start (args, format);
 	
 	/* report to console */
-	CONSOLEV (stdout, format, args);
+	CONSOLEV (stderr, format, args);
 
 	va_end (args);
 
-	CONSOLE (stdout, "\n");
+	CONSOLE (stderr, "\n");
 	
-	fflush (stdout);
+	fflush (stderr);
 	
 	return;
 }
@@ -109,29 +109,29 @@ void  axl_knife_access   (const char * file, int line, const char * format, ...)
 	if (console_debug3) {
 #if defined(AXL_OS_UNIX)	
 		if (console_color_debug) {
-			CONSOLE (stdout, "(proc:%d) [\e[1;32mmsg\e[0m] (%s:%d) ", axl_knife_pid, file, line);
+			CONSOLE (stderr, "(proc:%d) [\e[1;32mmsg\e[0m] (%s:%d) ", axl_knife_pid, file, line);
 		} else
 #endif
-			CONSOLE (stdout, "(proc:%d) [msg] (%s:%d) ", axl_knife_pid, file, line);
+			CONSOLE (stderr, "(proc:%d) [msg] (%s:%d) ", axl_knife_pid, file, line);
 	} else {
 #if defined(AXL_OS_UNIX)	
 		if (console_color_debug) {
-			CONSOLE (stdout, "\e[1;32mI: \e[0m");
+			CONSOLE (stderr, "\e[1;32mI: \e[0m");
 		} else
 #endif
-			CONSOLE (stdout, "I: ");
+			CONSOLE (stderr, "I: ");
 	} /* end if */
 	
 	va_start (args, format);
 	
 	/* report to console */
-	CONSOLEV (stdout, format, args);
+	CONSOLEV (stderr, format, args);
 
 	va_end (args);
 
-	CONSOLE (stdout, "\n");
+	CONSOLE (stderr, "\n");
 	
-	fflush (stdout);
+	fflush (stderr);
 	
 	return;
 }
@@ -151,29 +151,29 @@ void axl_knife_msg2 (const char * file, int line, const char * format, ...)
 	if (console_debug3) {
 #if defined(AXL_OS_UNIX)	
 		if (exarg_is_defined ("color-debug")) {
-			CONSOLE (stdout, "(proc:%d) [\e[1;32mmsg\e[0m] (%s:%d) ", axl_knife_pid, file, line);
+			CONSOLE (stderr, "(proc:%d) [\e[1;32mmsg\e[0m] (%s:%d) ", axl_knife_pid, file, line);
 		} else
 #endif
-			CONSOLE (stdout, "(proc:%d) [msg] (%s:%d) ", axl_knife_pid, file, line);
+			CONSOLE (stderr, "(proc:%d) [msg] (%s:%d) ", axl_knife_pid, file, line);
 	} else {
 #if defined(AXL_OS_UNIX)	
 		if (console_color_debug) {
-			CONSOLE (stdout, "\e[1;32mI: \e[0m");
+			CONSOLE (stderr, "\e[1;32mI: \e[0m");
 		} else
 #endif
-			CONSOLE (stdout, "I: ");
+			CONSOLE (stderr, "I: ");
 	} /* end if */
 	
 	va_start (args, format);
 	
 	/* report to console */
-	CONSOLEV (stdout, format, args);
+	CONSOLEV (stderr, format, args);
 
 	va_end (args);
 
-	CONSOLE (stdout, "\n");
+	CONSOLE (stderr, "\n");
 	
-	fflush (stdout);
+	fflush (stderr);
 	
 	return;
 }
@@ -189,28 +189,28 @@ void axl_knife_wrn (const char * file, int line, const char * format, ...)
 	if (console_debug3) {
 #if defined(AXL_OS_UNIX)	
 		if (exarg_is_defined ("color-debug")) {
-			CONSOLE (stdout, "(proc:%d) [\e[1;33m!!!\e[0m] (%s:%d) ", axl_knife_pid, file, line);
+			CONSOLE (stderr, "(proc:%d) [\e[1;33m!!!\e[0m] (%s:%d) ", axl_knife_pid, file, line);
 		} else
 #endif
-			CONSOLE (stdout, "(proc:%d) [!!!] (%s:%d) ", axl_knife_pid, file, line);
+			CONSOLE (stderr, "(proc:%d) [!!!] (%s:%d) ", axl_knife_pid, file, line);
 	} else {
 #if defined(AXL_OS_UNIX)	
 		if (console_color_debug) {
-			CONSOLE (stdout, "\e[1;33m!: \e[0m");
+			CONSOLE (stderr, "\e[1;33m!: \e[0m");
 		} else
 #endif
-			CONSOLE (stdout, "!: ");
+			CONSOLE (stderr, "!: ");
 	} /* end if */
 	
 	va_start (args, format);
 
-	CONSOLEV (stdout, format, args);
+	CONSOLEV (stderr, format, args);
 
 	va_end (args);
 
-	CONSOLE (stdout, "\n");
+	CONSOLE (stderr, "\n");
 	
-	fflush (stdout);
+	fflush (stderr);
 	
 	return;
 }
@@ -255,6 +255,153 @@ void axl_knife_error (const char * file, int line, const char * format, ...)
 	return;
 }
 
+void axl_knife_introduce_indentation (int level)
+{
+	int iterator;
+
+	iterator = 0;
+	while (iterator < level) {
+		printf ("   ");
+		iterator++;
+	} /* end while */
+
+	return;
+}
+
+bool axl_knife_htmlize_iterator_node (axlNode * node, int level)
+{
+	
+	axlItem       * item;
+	int             size;
+	char          * content;
+	axlAttrCursor * cursor;
+	int             iterator;
+	
+	/* introduce indentation level */
+	axl_knife_introduce_indentation (level);
+
+	/* print document node */
+	if (axl_node_has_attributes (node)) {
+		printf ("&lt;<span class=\"node\">%s</span> ",
+			axl_node_get_name (node));
+
+		/* get the first cursor */
+		cursor   = axl_node_attr_cursor_new (node);
+
+		if (axl_node_num_attributes (node)  < 3) {
+			while (axl_node_attr_cursor_has_item (cursor)) {
+				
+				/* print values */
+				printf ("%s=<span class=\"attrvalue\">\"%s\"</span> ",
+					axl_node_attr_cursor_get_key (cursor),
+					axl_node_attr_cursor_get_value (cursor));
+				
+				/* get the next cursor */
+				axl_node_attr_cursor_next (cursor);
+			} /* end while */
+		} else {
+			while (axl_node_attr_cursor_has_item (cursor)) {
+
+				/* print values */
+				printf ("%s=<span class=\"attrvalue\">\"%s\"</span> ",
+					axl_node_attr_cursor_get_key (cursor),
+					axl_node_attr_cursor_get_value (cursor));
+
+				/* get the next cursor */
+				axl_node_attr_cursor_next (cursor);
+
+				/* before getting the next */
+				if (axl_node_attr_cursor_has_item (cursor)) {
+					printf ("\n");
+
+					/* introduce indentation level */
+					axl_knife_introduce_indentation (level );
+
+					iterator = 0;
+					while (iterator < (strlen (axl_node_get_name (node)) + 2)) {
+						printf (" ");
+						iterator++;
+					} /* while */
+				} /* end if */
+
+			} /* end while */
+		}
+			
+		printf ("/>\n");
+		
+		/* free cursor */
+		axl_node_attr_cursor_free (cursor);
+		
+	} else {
+		printf ("&lt;<span class=\"node\">%s</span>>\n",
+			axl_node_get_name (node));
+	}
+
+	/* call to produce internal content representation */
+	item = axl_item_get_first_child (node);
+	while (item != NULL) {
+		/* according to the type do */
+		switch (axl_item_get_type (item)) {
+		case ITEM_NODE:
+			/* found node, call to represent this node */
+			axl_knife_htmlize_iterator_node (axl_item_get_data (item), level + 1);
+			break;
+		case ITEM_CONTENT_FROM_FACTORY:
+		case ITEM_CONTENT:
+			size    = 0;
+			content = axl_item_get_content (item, &size);
+			if (size == 0 || content [size - 1] == '\n')
+				printf ("%s", axl_item_get_content (item, NULL));
+			else
+				printf ("%s\n", axl_item_get_content (item, NULL));
+			break;
+		case ITEM_PI:
+			break;
+		case ITEM_FROM_FACTORY:
+			/* never reached */
+			break;
+		case ITEM_COMMENT:
+			/* introduce indentation level */
+			axl_knife_introduce_indentation (level + 1);
+			printf ("<span class=\"comment\">&lt;!-- %s --></span>\n",
+			       axl_item_get_content (item, NULL));
+			break;
+		case ITEM_REF:
+			break;
+		case ITEM_CDATA:
+			break;
+		} /* end switch */
+
+		/* next item */
+		item = axl_item_get_next (item);
+	}
+
+
+	if (axl_node_have_childs (node)) {
+		/* introduce indentation level */
+		axl_knife_introduce_indentation (level);
+		
+		printf ("&lt;/<span class=\"node\">%s</span>>\n",
+			axl_node_get_name (node));
+	} /* end if */
+
+	/* don't stop iteration */
+	return true;
+}
+
+bool axl_knife_htmlize (axlDoc * doc)
+{
+	/* currently we only support stderr so reached this place
+	 * means it is already checked */
+
+	/* call to iterate */
+	printf ("<pre>\n");
+	axl_knife_htmlize_iterator_node (axl_doc_get_root (doc), 1);
+	printf ("</pre>\n");
+
+	return true;
+}
+
 int main (int argc, char ** argv)
 {
 
@@ -281,12 +428,22 @@ int main (int argc, char ** argv)
 	exarg_install_arg ("input", "i", EXARG_STRING, 
 			   "Allows to configure the input document to process.");
 
+	exarg_install_arg ("stdout", "o", EXARG_NONE,
+			   "If the tool must produce an output, its send to the standard console output");
+
+	exarg_install_arg ("htmlize", "e", EXARG_NONE,
+			   "Takes an input xml document and produces an transformation preparing the document to be included into an html web page");
+	
 	/* log options */
 	exarg_install_arg ("enable-log", "l", EXARG_NONE,
 			   "Allows to activate the console log debug.");
 
 	exarg_install_arg ("enable-log-color", "c", EXARG_NONE,
 			   "Activates the console logs and uses some ansi characters to colorify the log output. If this option is activated, it is implicitly activated the --enable-log");
+
+	/* add dependecies */
+	exarg_add_dependency ("htmlize", "input");
+	exarg_add_dependency ("htmlize", "stdout");
 
 	/* call to parse arguments */
 	exarg_parse (argc, argv);
@@ -321,6 +478,13 @@ int main (int argc, char ** argv)
 		} /* end if */
 		msg ("document loaded properly: %s", exarg_get_string ("input"));
 	} /* end if */
+
+	
+	/* check process options */
+	if (exarg_is_defined ("htmlize")) {
+		/* call to htmlize the content received */
+		axl_knife_htmlize (doc);
+	}
 
 
  finish:
