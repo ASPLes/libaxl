@@ -77,6 +77,7 @@ __axl_node_set_content_common_ref
 __axl_stack_foreach_common
 __axl_stream_common_to
 __axl_stream_get_untilv_wide
+axl_calloc
 axl_casecmp
 axl_cmp
 axl_doc_add_pi_target
@@ -358,6 +359,7 @@ axl_pi_free
 axl_pi_get_content
 axl_pi_get_name
 axl_pi_get_size
+axl_realloc
 axl_stack_foreach
 axl_stack_foreach3
 axl_stack_free

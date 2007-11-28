@@ -767,7 +767,29 @@ typedef enum {
 AxlDebugLevel;
 
 /** 
- * @brief Support macro to allocate memory using the calloc function,
+ * @brief Calloc helper for axl library.
+ *
+ * @param count How many items to allocate.
+ * @param size Size of one item.
+ * 
+ * @return A newly allocated pointer.
+ * @see axl_free
+ */
+axlPointer  axl_calloc(size_t count, size_t size);
+
+/** 
+ * @brief Realloc helper for axl library.
+ *
+ * @param ref the reference to reallocate.
+ * @param size Size of the new reference.
+ * 
+ * @return A newly allocated pointer.
+ * @see axl_free
+ */
+axlPointer  axl_realloc(axlPointer ref, size_t size);
+
+/** 
+ * @brief Support macro to allocate memory using axl_calloc function,
  * making a casting and using the sizeof keyword.
  *
  * @param type The type to allocate
@@ -775,7 +797,7 @@ AxlDebugLevel;
  * 
  * @return A newly allocated pointer.
  */
-#define axl_new(type, count) (type *) calloc (count, sizeof (type))
+#define axl_new(type, count) (type *) axl_calloc (count, sizeof (type))
 
 /** 
  * @brief Free the provided pointer that was allocated using \ref

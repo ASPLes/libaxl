@@ -38,6 +38,38 @@
 #include <axl_decl.h>
 #define LOG_DOMAIN "axl-decl"
 
+/** 
+ * \addtogroup axl_decl_module
+ * @{
+ */
+
+/** 
+ * @brief Calloc helper for axl library.
+ *
+ * @param count How many items to allocate.
+ * @param size Size of one item.
+ * 
+ * @return A newly allocated pointer.
+ * @see axl_free
+ */
+axlPointer axl_calloc(size_t count, size_t size)
+{
+   return calloc (count, size);
+}
+
+/** 
+ * @brief Realloc helper for axl library.
+ *
+ * @param ref the reference to reallocate.
+ * @param size Size of the new reference.
+ * 
+ * @return A newly allocated pointer.
+ * @see axl_free
+ */
+axlPointer axl_realloc(axlPointer ref, size_t size)
+{
+   return realloc (ref, size);
+}
 
 /** 
  * @brief Allows to deallocate memory referenced by <i>ref</i> but
@@ -51,3 +83,6 @@ void axl_free (axlPointer ref)
 	return;
 }
 
+/**
+ * @}
+ */
