@@ -71,7 +71,7 @@ axlFactory * axl_factory_create (int size_of_type)
 	result->step      = 256 / size_of_type;
 
 	result->block        = axl_new (axlItemBlock, 1);
-	result->block->items = calloc (result->step, size_of_type);
+	result->block->items = axl_calloc (result->step, size_of_type);
 
 	return result;
 
@@ -102,7 +102,7 @@ axlPointer   axl_factory_get (axlFactory * factory)
 			factory->step = 2048 / factory->type_size;
 
 		block          = axl_new (axlItemBlock, 1);
-		block->items   = calloc (factory->step, factory->type_size);
+		block->items   = axl_calloc (factory->step, factory->type_size);
 		factory->count = 1;
 
 		block->next    = factory->block;
