@@ -766,26 +766,8 @@ typedef enum {
 	AXL_LEVEL_CRITICAL}  
 AxlDebugLevel;
 
-/** 
- * @brief Calloc helper for axl library.
- *
- * @param count How many items to allocate.
- * @param size Size of one item.
- * 
- * @return A newly allocated pointer.
- * @see axl_free
- */
 axlPointer  axl_calloc(size_t count, size_t size);
 
-/** 
- * @brief Realloc helper for axl library.
- *
- * @param ref the reference to reallocate.
- * @param size Size of the new reference.
- * 
- * @return A newly allocated pointer.
- * @see axl_free
- */
 axlPointer  axl_realloc(axlPointer ref, size_t size);
 
 /** 
@@ -799,13 +781,9 @@ axlPointer  axl_realloc(axlPointer ref, size_t size);
  */
 #define axl_new(type, count) (type *) axl_calloc (count, sizeof (type))
 
-/** 
- * @brief Free the provided pointer that was allocated using \ref
- * axl_new.
- * 
- * @param ref The reference to deallocate.
- */
 void    axl_free(axlPointer ref);
+
+
 
 /** 
  * @brief Allows to check a condition and return if it is not meet.
