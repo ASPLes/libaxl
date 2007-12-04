@@ -4166,6 +4166,73 @@ bool test_01e (axlError ** error)
 } 
 
 /** 
+ * @brief Check parsing document xml:space attribute.
+ * 
+ * @return false if the function fails to parse the document. true if
+ * the test was properly executed.
+ */
+bool test_01f (axlError ** error)  
+{
+	axlDoc         * doc;
+	axlNode        * node;
+	const char     * content;
+	int              size;
+	
+	/* parse document */
+	doc = axl_doc_parse_from_file ("test_01f.xml", error);
+	if (doc == NULL) 
+		return false;
+	
+	/* get root node */
+	node    = axl_doc_get_root (doc);
+	content = axl_node_get_content (node, &size);
+
+	if (! axl_cmp (content, "     ")) {
+		printf ("found content '%s' but expected '%s'...\n", content, "     ");
+		axl_error_new (-1, "Expected to find content not found", NULL, error);
+		axl_free (doc);
+		return false;
+	}
+	
+	/* free document */
+	axl_doc_free (doc);
+
+	/* parse document */
+	doc = axl_doc_parse_from_file ("test_01f2.xml", error);
+	if (doc == NULL) 
+		return false;
+	
+	/* get node <content/id> */
+	node    = axl_doc_get_root (doc);
+	node    = axl_node_get_child_called (node, "id");
+	content = axl_node_get_content (node, &size);
+
+	if (! axl_cmp (content, "   ")) {
+		printf ("found content '%s' but expected '%s'...\n", content, "   ");
+		axl_error_new (-1, "Expected to find content not found", NULL, error);
+		axl_free (doc);
+		return false;
+	}
+
+	/* get node <content/id2> */
+	node    = axl_doc_get_root (doc);
+	node    = axl_node_get_child_called (node, "id2");
+	content = axl_node_get_content (node, &size);
+
+	if (! axl_cmp (content, "")) {
+		printf ("found content '%s' but expected '%s'...\n", content, "");
+		axl_error_new (-1, "Expected to find content not found", NULL, error);
+		axl_free (doc);
+		return false;
+	}
+	
+	/* free document */
+	axl_doc_free (doc);
+
+	return true;
+} 
+
+/** 
  * @brief Test current libaxl list implementation.
  * 
  * 
@@ -6685,6 +6752,127 @@ bool test_02_05 ()
 }
 
 /** 
+ * @brief Allows to check current binary stack used by the library.
+ * 
+ * 
+ * @return true if tests are ok.
+ */
+bool test_02_06 ()
+{
+	bool             value;
+	axlBinaryStack * bstack;
+	int              iterator;
+
+	/* create a bstack */
+	bstack = axl_binary_stack_new ();
+
+	/* push 10 true values */
+	axl_binary_stack_push (bstack, true);
+	axl_binary_stack_push (bstack, true);
+	axl_binary_stack_push (bstack, true);
+	axl_binary_stack_push (bstack, true);
+	axl_binary_stack_push (bstack, true);
+
+	axl_binary_stack_push (bstack, true);
+	axl_binary_stack_push (bstack, true);
+	axl_binary_stack_push (bstack, true);
+	axl_binary_stack_push (bstack, true);
+	axl_binary_stack_push (bstack, true);
+
+	/* check count */
+	if (axl_binary_stack_size (bstack) != 10) {
+		printf ("Expected to find %d items but found: %d", 
+			10, axl_binary_stack_size (bstack));
+		return false;
+	} /* end if */
+
+	/* push values */
+
+	axl_binary_stack_push (bstack, false);
+	axl_binary_stack_push (bstack, true);
+	axl_binary_stack_push (bstack, true);
+
+	axl_binary_stack_push (bstack, true);
+	axl_binary_stack_push (bstack, false);
+	axl_binary_stack_push (bstack, false);
+
+	/* check count */
+	if (axl_binary_stack_size (bstack) != 16) {
+		printf ("Expected to find %d items but found: %d\n", 
+			16, axl_binary_stack_size (bstack));
+		return false;
+	} /* end if */
+
+	/* pop data */
+	value = axl_binary_stack_pop (bstack);
+	if (value != false) {
+		printf ("Expected to find %d, but found %d (1)\n", false, value);
+		return false;
+	}
+
+	value = axl_binary_stack_pop (bstack);
+	if (value != false) {
+		printf ("Expected to find %d, but found %d (2)\n", false, value);
+		return false;
+	}
+
+	value = axl_binary_stack_pop (bstack);
+	if (value != true) {
+		printf ("Expected to find %d, but found %d (3)\n", true, value);
+		return false;
+	}
+
+	value = axl_binary_stack_pop (bstack);
+	if (value != true) {
+		printf ("Expected to find %d, but found %d (4)\n", true, value);
+		return false;
+	}
+
+	value = axl_binary_stack_pop (bstack);
+	if (value != true) {
+		printf ("Expected to find %d, but found %d (5)\n", true, value);
+		return false;
+	}
+
+	value = axl_binary_stack_pop (bstack);
+	if (value != false) {
+		printf ("Expected to find %d, but found %d (6)\n", false, value);
+		return false;
+	}
+
+	/* check count */
+	if (axl_binary_stack_size (bstack) != 10) {
+		printf ("Expected to find %d items but found: %d\n", 
+			10, axl_binary_stack_size (bstack));
+		return false;
+	} /* end if */
+
+	iterator = 0;
+	while (iterator < 10) {
+		/* get the value */
+		value    = axl_binary_stack_pop (bstack);
+		if (value != true) {
+			printf ("Expected to find %d, but found %d (3)\n", true, value);
+			return false;
+		}  /* end if */
+
+		iterator++;
+	} /* end while */
+
+	/* check count */
+	if (axl_binary_stack_size (bstack) != 0) {
+		printf ("Expected to find %d items but found: %d\n", 
+			0, axl_binary_stack_size (bstack));
+		return false;
+	} /* end if */
+
+	/* free binary stack */
+	axl_binary_stack_free (bstack);
+
+	return true;
+}
+
+/** 
  * Test01: Initial xml header checking.
  */
 int main (int argc, char ** argv)
@@ -6770,12 +6958,20 @@ int main (int argc, char ** argv)
 	}
 
 	if (test_02_05 ()) {
-		printf ("Test 02-04: LibAxl hash cursor [   OK   ]\n");
+		printf ("Test 02-05: LibAxl hash cursor [   OK   ]\n");
 	}else {
-		printf ("Test 02-04: LibAxl hash cursor [ FAILED ]\n");
+		printf ("Test 02-05: LibAxl hash cursor [ FAILED ]\n");
 		return -1;
 	}
-	
+
+	/* binary stack checks */
+	if (test_02_06 ()) {
+		printf ("Test 02-06: LibAxl binary stack [   OK   ]\n");
+	}else {
+		printf ("Test 02-06: LibAxl binary stack [ FAILED ]\n");
+		return -1;
+	}
+
 	/* LIBRARY TESTS */
 	if (test_01 (&error))
 		printf ("Test 01: basic xml parsing [   OK   ]\n");
@@ -6826,6 +7022,15 @@ int main (int argc, char ** argv)
 		printf ("Test 01-e: Basic XML parsing, large content  [   OK   ]\n");
 	} else {
 		printf ("Test 01-e: Basic XML parsing, large content  [ FAILED ]\n   (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	} /* end if */
+
+	if (test_01f (&error)) {
+		printf ("Test 01-f: Basic XML parsing, white space node content  [   OK   ]\n");
+	} else {
+		printf ("Test 01-f: Basic XML parsing, white space node content  [ FAILED ]\n   (CODE: %d) %s\n",
 			axl_error_get_code (error), axl_error_get (error));
 		axl_error_free (error);
 		return -1;

@@ -688,6 +688,16 @@ typedef struct _axlListCursor axlListCursor;
 typedef struct _axlStack axlStack;
 
 /** 
+ * @brief Compact binary state representation stack.
+ *
+ * This data structure allows to store binary/boolean values in an
+ * efficient way.
+ *
+ * See \ref axl_binary_stack_new for more information.
+ */
+typedef struct _axlBinaryStack axlBinaryStack;
+
+/** 
  * @brief \ref axlHash definition, a hash table to store key indexed
  * values.
  * See \ref axl_hash_new for more information about using this type.

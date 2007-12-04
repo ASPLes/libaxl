@@ -340,6 +340,12 @@ struct _axlDoc {
 	axlStack  * parentNode;
 
 	/** 
+	 * @internal Binary stack to hold the xml:space preserve
+	 * status on each level (associated to the current node).
+	 */
+	axlBinaryStack * xmlPreserve;
+
+	/** 
 	 * @internal
 	 * 
 	 * @brief Internal list to hold all PI targets readed.
@@ -417,6 +423,7 @@ axlDoc * __axl_doc_new (bool create_parent_stack)
 	/* default container lists */
 	result->parentNode   = axl_stack_new (NULL);
 	result->piTargets    = axl_list_new (axl_list_always_return_1, (axlDestroyFunc) axl_pi_free);
+	result->xmlPreserve  = axl_binary_stack_new ();
 
 	/* create factories */
 	result->item_factory    = axl_item_factory_create ();
@@ -647,7 +654,11 @@ bool __axl_doc_parse_xml_header (axlStream * stream, axlDoc * doc, axlError ** e
  * false if not. If the function find something wrong the document
  * is unrefered.
  */
-bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_node, bool * is_empty, axlError ** error)
+bool __axl_doc_parse_node (axlStream   * stream, 
+			   axlDoc      * doc, 
+			   axlNode    ** calling_node, 
+			   bool        * is_empty, 
+			   axlError   ** error)
 {
 	char    * string_aux;
 	char    * string_aux2;
@@ -745,6 +756,7 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 	}
 
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "node found: [%s]", string_aux);
+
 
 	/* now, until the node ends, we have to find the node
 	 * attributes or the node defintion end */
@@ -855,6 +867,40 @@ bool __axl_doc_parse_node (axlStream * stream, axlDoc * doc, axlNode ** calling_
 			
 			/* set a new attribute for the given node */
 			axl_node_set_attribute_from_factory (doc->attr_factory, node, string_aux, string_aux2);
+
+			/* check xml:space configuration and update binary stack */
+			if (axl_cmp (string_aux, "xml:space")) {
+				if (axl_cmp (string_aux2, "preserve")) {
+					__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found xml:space=preseve, notifying..");
+
+					/* 1: xml:space=preserve (found)
+					 * make current node and all its childs to preserve (by
+					 * default) all white spaces found */
+					axl_binary_stack_push (doc->xmlPreserve, true);
+
+				} else if (axl_cmp (string_aux2, "default")) {
+					__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found xml:space=default, notifying..");
+
+					/* 2: xml:space=default  (found)
+					 * make current node and all its childs to not
+					 * preserve white spaces (by default) */
+					axl_binary_stack_push (doc->xmlPreserve, false);
+				} else {
+					/* parse error */
+					axl_error_new (-2, "xml:space attribute found with other value than 'preserve' or 'default', this is not allowed.", stream, error);
+					axl_stream_free (stream);
+					return false;
+
+				} /* end if */
+			} else {
+				/* 3: xml:space (not found) 
+				 * make the current node to inherint
+				 * default from parent */
+				if (axl_binary_stack_is_empty (doc->xmlPreserve))
+					axl_binary_stack_push (doc->xmlPreserve, false);
+				else
+					axl_binary_stack_push_the_same (doc->xmlPreserve);
+			} /* end if */
 
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "attribute installed..");
 
@@ -970,7 +1016,7 @@ axlDoc * __axl_doc_parse_common (const char * entity, int entity_size,
 	 * because still no parent is found. */
 	if (!__axl_doc_parse_node (stream, doc, &node, &is_empty, error))
 		return NULL;
-	
+
 	/* if the node returned is not empty */
 	if (! is_empty) {
 
@@ -985,8 +1031,11 @@ axlDoc * __axl_doc_parse_common (const char * entity, int entity_size,
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "current index: %d (global: %d)", index,
 				   axl_stream_get_global_index (stream));
 
-			/* get rid from spaces */
-			AXL_CONSUME_SPACES(stream);
+			/* get rid from spaces according to the
+			 * xml:space configuration */
+			if (! axl_binary_stack_peek (doc->xmlPreserve)) {
+				AXL_CONSUME_SPACES(stream);
+			} /* end if */
 
 			/* consume a possible comment and process instructions */
 			if (axl_stream_peek (stream, "<?", 2) > 0 || axl_stream_peek (stream, "<!--", 4) > 0) {
@@ -1014,6 +1063,9 @@ axlDoc * __axl_doc_parse_common (const char * entity, int entity_size,
 
 				/* get the new parent */
 				node = axl_stack_peek (doc->parentNode);
+
+				/* restore previous xml:space value */
+				axl_binary_stack_pop (doc->xmlPreserve);
 
 				__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "node properly closed, current parent node stack size: %d, parent=<%s>",
 					   axl_stack_size (doc->parentNode), (node != NULL) ? axl_node_get_name (node) : "--no parent--");
@@ -1102,7 +1154,7 @@ axlDoc * __axl_doc_parse_common (const char * entity, int entity_size,
 
 	/* pop axl parent */
 	if (! axl_stack_is_empty (doc->parentNode)) {
-
+		
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, 
 			   "current parent stack size shows that not all opened nodes were closed. This means that the XML document is not properly balanced (stack size: %d)",
 			   axl_stack_size (doc->parentNode));
@@ -2963,6 +3015,10 @@ void     axl_doc_free         (axlDoc * doc)
 	/* free node hierarchy */
 	if (doc->parentNode != NULL)
 		axl_stack_free (doc->parentNode);
+
+	/* free xml:space hierarchy */
+	if (doc->xmlPreserve != NULL)
+		axl_binary_stack_free (doc->xmlPreserve);
 
 	/* free item factory */
 	if (doc->item_factory != NULL)
