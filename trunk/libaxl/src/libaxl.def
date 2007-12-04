@@ -77,6 +77,14 @@ __axl_node_set_content_common_ref
 __axl_stack_foreach_common
 __axl_stream_common_to
 __axl_stream_get_untilv_wide
+axl_binary_stack_free
+axl_binary_stack_is_empty
+axl_binary_stack_new
+axl_binary_stack_peek
+axl_binary_stack_pop
+axl_binary_stack_push
+axl_binary_stack_push_the_same
+axl_binary_stack_size
 axl_calloc
 axl_casecmp
 axl_cmp
