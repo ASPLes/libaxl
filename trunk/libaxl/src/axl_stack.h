@@ -76,7 +76,7 @@ void       axl_stack_free (axlStack * stack);
 
 axlBinaryStack * axl_binary_stack_new ();
 
-void             axl_binary_stack_push (axlBinaryStack * bstack, bool status);
+void             axl_binary_stack_push          (axlBinaryStack * bstack, bool status);
 
 void             axl_binary_stack_push_the_same (axlBinaryStack * bstack);
 
