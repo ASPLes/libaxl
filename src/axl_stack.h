@@ -74,6 +74,22 @@ bool       axl_stack_is_empty (axlStack * stack);
 
 void       axl_stack_free (axlStack * stack);
 
+axlBinaryStack * axl_binary_stack_new ();
+
+void             axl_binary_stack_push (axlBinaryStack * bstack, bool status);
+
+void             axl_binary_stack_push_the_same (axlBinaryStack * bstack);
+
+bool             axl_binary_stack_pop  (axlBinaryStack * bstack);
+
+bool             axl_binary_stack_peek (axlBinaryStack * bstack);
+
+bool             axl_binary_stack_is_empty (axlBinaryStack * bstack);
+
+int              axl_binary_stack_size     (axlBinaryStack * bstack);
+
+void             axl_binary_stack_free (axlBinaryStack * bstack);
+
 /* @} */
 
 END_C_DECLS

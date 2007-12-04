@@ -817,6 +817,7 @@
  * - \ref axl_list_module
  * - \ref axl_list_cursor_module
  * - \ref axl_stack_module
+ * - \ref axl_binary_stack_module
  * - \ref axl_hash_module
  * - \ref axl_hash_cursor_module
  * - \ref axl_string_module 
