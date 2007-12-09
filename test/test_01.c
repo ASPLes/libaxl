@@ -4595,7 +4595,20 @@ bool test_01_01 ()
 		printf ("Expected to find 1 length length..\n");
 		return false;
 	}
-	axl_list_remove (list, INT_TO_PTR (1));
+
+	axl_list_add (list, INT_TO_PTR (2));
+	if (axl_list_length (list) != 2) {
+		printf ("Expected to find 2 length length..\n");
+		return false;
+	}
+
+	axl_list_unlink (list, INT_TO_PTR (1));
+	if (axl_list_length (list) != 1) {
+		printf ("Expected to find 1 length length..\n");
+		return false;
+	}
+
+	axl_list_unlink (list, INT_TO_PTR (2));
 	if (axl_list_length (list) != 0) {
 		printf ("Expected to find 0 length length..\n");
 		return false;
