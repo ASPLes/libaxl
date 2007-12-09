@@ -4588,6 +4588,19 @@ bool test_01_01 ()
 
 	/* create an empty list and destroy */
 	list = axl_list_new (axl_list_equal_int, NULL);
+
+	/* add one item */
+	axl_list_add (list, INT_TO_PTR (1));
+	if (axl_list_length (list) != 1) {
+		printf ("Expected to find 1 length length..\n");
+		return false;
+	}
+	axl_list_remove (list, INT_TO_PTR (1));
+	if (axl_list_length (list) != 0) {
+		printf ("Expected to find 0 length length..\n");
+		return false;
+	}
+
 	axl_list_free (list);
 
 
