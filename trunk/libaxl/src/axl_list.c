@@ -429,6 +429,11 @@ int        axl_list_always_return_1 (axlPointer a, axlPointer b)
  *
  * @param pointer The pointer to store.
  *
+ * NOTE: The function uses the equal function defined at \ref
+ * axl_list_new. If the function shows that the item to be added is
+ * already added (because the equal function returns 0, then the item
+ * won't be added.
+ *
  */
 void      axl_list_add    (axlList * list, axlPointer pointer)
 {
