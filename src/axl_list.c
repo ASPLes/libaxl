@@ -405,6 +405,13 @@ int        axl_list_equal_int    (axlPointer a, axlPointer b)
  * @param b Second item.
  * 
  * @return The function always return 1.
+ *
+ * NOTE: If you use this function and your intention is to remove
+ * items (without calling to axl_list_free) you must use \ref
+ * axl_list_remove_ptr or \ref axl_list_unlink_ptr since \ref
+ * axl_list_remove and \ref axl_list_unlink relays on the equal
+ * function to find and remove the item. Because this function never
+ * return 0, the item is never removed.
  */
 int        axl_list_always_return_1 (axlPointer a, axlPointer b)
 {
