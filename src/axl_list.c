@@ -674,8 +674,8 @@ void       axl_list_append  (axlList * list, axlPointer pointer)
 
 /** 
  * @internal Internal list lookup using a linear search, checking all
- * items inside the list withtout taking into considerations hints
- * provided by equal function.
+ * items inside the list taking into considerations hints provided by
+ * equal function.
  * 
  * @param list The list where the linear search will be performed.
  * @param pointer The pointer that is being looked up.
@@ -705,6 +705,38 @@ axlListNode * axl_list_internal_linear_lookup (axlList    * list,
 	} /* end while */
 
 	return NULL;
+}
+
+/** 
+ * @internal Internal list lookup using a linear search, checking all
+ * items inside the list withtout taking into considerations hints
+ * provided by equal function (search by pointer).
+ * 
+ * @param list The list where the linear search will be performed.
+ * @param pointer The pointer that is being looked up.
+ * 
+ * @return A reference to the internal axl list node containing the
+ * pointer.
+ */
+axlListNode * axl_list_internal_linear_lookup_ptr (axlList    * list, 
+						   axlPointer    pointer)
+{
+	axlListNode * node;
+
+	axl_return_val_if_fail (list, NULL);
+	axl_return_val_if_fail (pointer, NULL);
+
+	/* complex case */
+	node  = list->first_node;
+
+	/* lookup */
+	while (node && node->data != pointer) {
+		/* the node should be after this one */
+		node = node->next;
+	} /* end while */
+
+	/* return current result */
+	return node;
 }
 
 /** 
@@ -860,8 +892,10 @@ void __axl_list_common_remove_selected_node (axlList * list, axlListNode * node,
  * @param pointer The pointer to remove
  *
  * @param alsoRemove Also call to destroy function.
+ *
+ * @param byPtr Makes the linear search to be done by pointer.
  */
-void     axl_list_common_remove (axlList * list, axlPointer pointer, bool alsoRemove)
+void     axl_list_common_remove (axlList * list, axlPointer pointer, bool alsoRemove, bool byPtr)
 {
 	axlListNode * node;
 
@@ -869,7 +903,10 @@ void     axl_list_common_remove (axlList * list, axlPointer pointer, bool alsoRe
 	axl_return_if_fail (pointer);
 
 	/* complex case */
-	node  = axl_list_internal_linear_lookup (list, pointer);
+	if (byPtr)
+		node = axl_list_internal_linear_lookup_ptr (list, pointer);
+	else
+		node  = axl_list_internal_linear_lookup (list, pointer);
 	if (node == NULL) {
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "unable to find item by pointer (0x%x)",
 			   pointer);
@@ -897,16 +934,45 @@ void     axl_list_common_remove (axlList * list, axlPointer pointer, bool alsoRe
  *
  * @param list The list where the removal operation will be performed.
  * @param pointer The pointer where the 
+ *
+ * NOTE: The function uses the current equal function configured. A
+ * not properly configured equal function will make this function to
+ * not remove the item selected. If you are trying to remove by
+ * pointer, you can use \ref axl_list_remove_ptr.
  */
 void      axl_list_remove (axlList * list, axlPointer pointer)
 {
 
-	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "attempting to remove pointer: 0x%x", pointer);
-
 	/* perform a complete removing */
-	axl_list_common_remove (list, pointer, true);
+	axl_list_common_remove (list, pointer, 
+				/* alsoRemove */
+				true, 
+				/* byPtr */ 
+				false);
 
 	return;
+}
+
+/** 
+ * @brief Allows to remove the provided pointer from the list (calling
+ * to the destroy function defined).
+ *
+ * Unlike \ref axl_list_remove, which removes the element selected by
+ * using the equal function configured at \ref axl_list_new, this
+ * function allows to perform a remove operation by pointer.
+ * 
+ * @param list The list on which the operation is performed.
+ *
+ * @param pointer The pointer to remove from the list.
+ */
+void axl_list_remove_ptr (axlList * list, axlPointer pointer)
+{
+	/* perform a complete removing */
+	axl_list_common_remove (list, pointer, 
+				/* alsoRemove */
+				true, 
+				/* byPtr */ 
+				true);
 }
 
 /** 
@@ -920,8 +986,37 @@ void      axl_list_remove (axlList * list, axlPointer pointer)
 void       axl_list_unlink (axlList * list, axlPointer pointer)
 {
 	/* perform a complete removing */
-	axl_list_common_remove (list, pointer, false);
+	axl_list_common_remove (list, pointer, 
+				/* alsoRemove */
+				false, 
+				/* byPtr */ 
+				false);
 
+	return;
+}
+
+/** 
+ * @brief Allows to remove the provided item from the axl list
+ * withtout using the equal function provided (remove by pointer) and
+ * without calling to the associated destroy function.
+ * 
+ * @param list The list where the operation will be implemented.
+ *
+ * @param pointer the pointer to remove from the list without calling
+ * to the destroy function.
+ */
+void axl_list_unlink_ptr (axlList * list, axlPointer pointer)
+{
+
+	/* perform an unlink operation, without using equal
+	 * function */
+	/* perform a complete removing */
+	axl_list_common_remove (list, pointer, 
+				/* alsoRemove */
+				false, 
+				/* byPtr */ 
+				true);
+	
 	return;
 }
 

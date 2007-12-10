@@ -60,9 +60,13 @@ void       axl_list_prepend (axlList * list, axlPointer pointer);
 
 void       axl_list_append  (axlList * list, axlPointer pointer);
 
-void       axl_list_remove (axlList * list, axlPointer pointer);
+void       axl_list_remove     (axlList * list, axlPointer pointer);
+
+void       axl_list_remove_ptr (axlList * list, axlPointer pointer);
 
 void       axl_list_unlink (axlList * list, axlPointer pointer);
+
+void       axl_list_unlink_ptr (axlList * list, axlPointer pointer);
 
 void       axl_list_remove_first (axlList * list);
 
