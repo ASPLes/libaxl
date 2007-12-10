@@ -4243,6 +4243,11 @@ bool test_01_01 ()
 	axlList * list;
 	int       value;
 
+	axlPointer ptr1;
+	axlPointer ptr2;
+	axlPointer ptr3;
+	axlPointer ptr4;
+
 	/* create the list */
 	list = axl_list_new (axl_list_equal_string, NULL);
 	if (axl_list_length (list) != 0) {
@@ -4616,13 +4621,56 @@ bool test_01_01 ()
 
 	axl_list_free (list);
 
+	/* remove by pointer */
+	list = axl_list_new (axl_list_always_return_1, axl_free);
+
+	/* add items */
+	ptr1 = axl_new (char, 4);
+	ptr2 = axl_new (char, 4);
+	ptr3 = axl_new (char, 4);
+	ptr4 = axl_new (char, 4);
+
+	/* store items */
+	axl_list_add (list, ptr1);
+	axl_list_add (list, ptr2);
+	axl_list_add (list, ptr3);
+	axl_list_add (list, ptr4);
+
+	/* check lengths */
+	if (axl_list_length (list) != 4) {
+		printf ("Expected to find a 4 item list...but found: %d..\n",
+			axl_list_length (list));
+		return false;
+	}
+
+	/* remove items */
+	axl_list_remove_ptr (list, ptr1);
+
+	if (axl_list_length (list) != 3) {
+		printf ("Expected to find a 3 item list...but found: %d..\n",
+			axl_list_length (list));
+		return false;
+	}
+
+	/* remove items */
+	axl_list_remove_ptr (list, ptr2);
+	axl_list_remove_ptr (list, ptr3);
+	axl_list_remove_ptr (list, ptr4);
+
+	if (axl_list_length (list) != 0) {
+		printf ("Expected to find a 0 item list...but found: %d..\n",
+			axl_list_length (list));
+		return false;
+	}
+
+	axl_list_free (list);
 
 	return true;
 }
 
 bool test_01_02_foreach (axlPointer stack_data, 
-		      axlPointer user_data, 
-		      axlPointer user_data2)
+			 axlPointer user_data, 
+			 axlPointer user_data2)
 {
 	int * iterator = user_data;
 
