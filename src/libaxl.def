@@ -251,6 +251,7 @@ axl_list_get_last
 axl_list_get_nth
 axl_list_internal_get_nth
 axl_list_internal_linear_lookup
+axl_list_internal_linear_lookup_ptr
 axl_list_internal_lookup
 axl_list_is_empty
 axl_list_length
@@ -260,9 +261,11 @@ axl_list_prepend
 axl_list_remove
 axl_list_remove_first
 axl_list_remove_last
+axl_list_remove_ptr
 axl_list_unlink
 axl_list_unlink_first
 axl_list_unlink_last
+axl_list_unlink_ptr
 axl_log
 axl_log_color_enable
 axl_log_color_is_enabled
@@ -413,6 +416,7 @@ axl_stream_push
 axl_stream_remains
 axl_stream_set_buffer_alloc
 axl_stream_split
+axl_stream_step
 axl_stream_strdup
 axl_stream_strdup_n
 axl_stream_strdup_printf

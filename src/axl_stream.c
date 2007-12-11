@@ -739,6 +739,24 @@ void        axl_stream_move            (axlStream * stream, int index)
 }
 
 /** 
+ * @brief Makes the current index to be moved the amount of bytes
+ * signaled by the parameter bytes.
+ * 
+ * @param stream The stream to update.
+ * @param bytes The number of bytes to move the index. 
+ */
+void        axl_stream_step            (axlStream * stream, int bytes)
+{
+	axl_return_if_fail (stream);
+	axl_return_if_fail (bytes >= 0);
+
+	axl_stream_accept (stream);
+	stream->stream_index += bytes;
+
+	return;
+}
+
+/** 
  * @brief Returns the next chunk available on the stream.
  *
  * This function allows to get next available chunk, validating it
@@ -796,7 +814,7 @@ void        axl_stream_move            (axlStream * stream, int index)
 char      * axl_stream_get_until       (axlStream * stream, 
 					char      * valid_chars, 
 					int       * chunk_matched,
-					bool    accept_terminator,
+					bool        accept_terminator,
 					int         chunk_num, ...)
 {
 	char * result;
@@ -831,12 +849,44 @@ char      * axl_stream_get_until       (axlStream * stream,
  * accepted or not.
  *
  * @param result_size The variable where the result size will be
- * returned.
+ * returned. This variable is not optional. It must be configured to
+ * hold the size of the content returned. If you provided a NULL
+ * reference to this value then the function will fail. 
  *
  * @param chunk_num The number of chunks to match.
  * 
  * @return A reference to the internal stream copy. The reference
  * returned must not be deallocated.
+ *
+ * NOTE: This function have a particular function that could produce
+ * not desired results. Because the stream returns a reference to the
+ * current allocated stream, if nullifies the last position (\\0) to
+ * avoid memory problems with printf APIs and any other code that
+ * relay on the fact that C strings are NULL terminated. If the
+ * content immediately following to the string returned is meaningful,
+ * then you can't use this function. Example:
+ * 
+ * \code
+ *   stream: CONTENTCONTENT2
+ *           ^
+ *           |
+ *           +--- stream index
+ *   
+ *   calling to axl_stream_get_until_ref (stream, NULL, NULL, false,
+ *                                        &size, 1, "CONTENT");
+ * 
+ *   while cause stream: CONTENT\0ONTENT2
+ *                               ^
+ *                               |
+ *                               +--- stream index
+ * 
+ *   and the function returning "CONTENT". See the fact that the
+ *   next "C" from the word CONTENT2 is nullified.
+ *
+ * \endcode
+ *
+ * An indication that this function is not what you want is that you
+ * are not accepting the terminator (accept_terminator=false).
  */
 char      * axl_stream_get_until_ref   (axlStream * stream, 
 					char      * valid_chars, 
@@ -847,6 +897,8 @@ char      * axl_stream_get_until_ref   (axlStream * stream,
 {
 	char * result;
 	va_list args;
+
+	axl_return_val_if_fail (result_size, NULL);
 	
 	/* open the standard argument */
 	va_start (args, chunk_num);
@@ -1087,6 +1139,9 @@ char * __axl_stream_get_untilv_wide (axlStream * stream, va_list args)
 		if (stream->lengths [iterator] > max_length)
 			max_length = stream->lengths [iterator];
 
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found matching chunk: '%s' length: %d", 
+			   stream->chunks[iterator], stream->lengths [iterator]);
+
 		/* update index */
 		iterator ++;
 	}
@@ -1094,7 +1149,8 @@ char * __axl_stream_get_untilv_wide (axlStream * stream, va_list args)
 	/* calculate how many bytes ara available */
 	remains = stream->stream_size - stream->stream_index;
 
-	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "remaining data to be inspected: %d bytes", remains);
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "remaining data to be inspected: %d bytes (stream->stream-size=%d, stream->stream-index=%d)",
+		   remains, stream->stream_size, stream->stream_index);
 
 	/* now we have chunks to lookup, stream until get the stream
 	 * limited by the chunks received. */
@@ -1187,7 +1243,7 @@ char * __axl_stream_get_untilv_wide (axlStream * stream, va_list args)
 			/* check the length returned */
 			matched = false;
 			if (length > 0 && ((_index + length) <= stream->stream_size)) {
-
+				
 				/* try to figure out if the next
 				 * string match */
 				if ((stream->chunks [iterator][0] == 
@@ -1236,8 +1292,10 @@ char * __axl_stream_get_untilv_wide (axlStream * stream, va_list args)
 			
 			/* result is found from last stream
 			 * index read up to index */
-			if (stream->last_chunk != NULL)
+			if (stream->last_chunk != NULL) {
 				axl_free (stream->last_chunk);
+				stream->last_chunk = NULL;
+			}
 			
 			/* get a copy to the chunk to be returned */
 			if (! stream->result_size) {
@@ -1249,10 +1307,12 @@ char * __axl_stream_get_untilv_wide (axlStream * stream, va_list args)
 			}else {
 				/* *result_size = index;*/
 				stream->result_size = index;
-				string       = stream->stream + stream->stream_index;
+				string              = stream->stream + stream->stream_index;
 				
 				/* set a termination mark */
-				string [ index ] = 0;
+				string [ index  ] = 0;
+				__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG,
+					   "Nullify internally index=%d to avoid printf problems", index);
 			}
 			
 			/* in the case a memory chunk is being read */

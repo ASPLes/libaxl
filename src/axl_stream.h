@@ -63,6 +63,8 @@ void        axl_stream_accept          (axlStream * stream);
 
 void        axl_stream_move            (axlStream * stream, int index);
 
+void        axl_stream_step            (axlStream * stream, int bytes);
+
 void        axl_stream_push            (axlStream * stream, const char * content, int size);
 
 bool        axl_stream_fall_outside    (axlStream * stream, int inspected_size);
