@@ -1,0 +1,146 @@
+          ####################################
+          #            Axl Library:          #
+          #            Fine for me           # 
+          #              0.4.13              #
+          ####################################
+
+Advanced Software Production Line is proud to announce a new Axl
+Library release.
+
+Axl Library is an small and efficient XML toolkit, that will allow you
+to produce efficient and clear code that interfaces with XML data.
+
+The library was produced to support XML requirements needed by
+software developed by Advanced Software Production Line, S.L.
+
+At this moment the library is being used by Vortex Library, Af-Arch,
+Turbulence, Shaper and Fovap.
+
+Resources
+~~~~~~~~~
+
+   Axl Homepage
+   [ http://www.aspl.es/xml ]
+
+   Advanced Software Production Line, S.L.
+   [ http://www.aspl.es ]
+
+This release in short
+~~~~~~~~~~~~~~~~~~~~~
+
+  Fixed prebuffering code exposed at the windows platform. Updated
+  allocation API to ensure they aren't mixed. Properly implemented
+  xml:space support, featuring a binary stack data structure which
+  allows to implement the xml:space inheritance across child nodes in
+  an efficient way. Updated axl list API to allow developers to remove
+  by pointers. Other minor bugs fixed, included in the regression
+  test and updated documentation.
+
+Thanks to..
+~~~~~~~~~~~
+
+  Benoit Amiaux (provided really useful comments and patches to fix
+  issues found). Kostis Mentzelos (reported the xml:space problem).
+
+Change notifications
+~~~~~~~~~~~~~~~~~~~~
+  None. 
+
+Changes from previous release 0.4.12
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* [fix] Fixed bug inside axl stream prebuffering code, exposed while
+  running regression tests inside the windows platform.
+
+* [new] Added initial implementation to --htmlize inside the axl-knife
+  which allows to prepare a xml document to be displayed as html using
+  simple css.
+
+* [new] Committing changes proposed by Benoit Amiaux to make axl_new
+  and the realloc functions to be internally implemented as a function
+  call opening the possibility to provide application defined
+  allocation functions. API added:
+
+   - axl_calloc
+   - axl_realloc
+
+* [fix] fixed documentation (wrong placed).
+
+* [fix] Fixed wrong implementation for handling xml:space. Updated
+  regression test to check fixes introduced for future releases
+  (Reported by Kostis Mentzelos)
+
+* [new] Introduced a new data structure to implement the proper
+  xml:space handling, called Binary Stack, which allows to store
+  boolean/binary states in an fast and memory efficient manner.
+  Updated regression test to check its function. API added:
+
+   - axl_binary_stack_new
+   - axl_binary_stack_push
+   - axl_binary_stack_push_the_same
+   - axl_binary_stack_pop
+   - axl_binary_stack_peek
+   - axl_binary_stack_is_empty
+   - axl_binary_stack_size
+   - axl_binary_stack_free
+
+* [fix] Updated regression test (axl list add/remove).
+
+* [fix] More updates to the regression test.
+
+* [new] Updated axl list API to include two new functions that allows
+  to remove by pointer from a particular list (without using the equal
+  function). Internal module problem reported by Benoit Amiaux. API
+  added:
+
+   - axl_list_remove_ptr
+   - axl_list_unlink_ptr
+
+* [fix] Updated documentation about axl_list_always_return_1 to warn
+  that this function could cause problems while removing items. It is
+  provided some information for its alternatives (axl_list_remove_ptr
+  and axl_list_unlink_ptr).
+
+* [fix] Updated axl_list_add to include a note about its relation with
+  the equal function configured.
+
+* [fix] Fixed missing nullification at the axl_stream_get_untilv_wide
+  causing segfault on the next function call.
+
+* [fix] Updated axl_stream_get_until_ref documentation to explain its
+  nullification behavior and how its interacts with next calls. Added
+  a check to enforce the stream size variable is provided.
+
+* [new] Updated axl stream API to include a function that allows to
+  move the current index. API added:
+
+   - axl_stream_step
+
+About Advanced Software Production Line, S.L.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Advanced Software Production Line is leading the Af-Arch project: a
+  complete framework to develop distributed application to manage
+  enterprise process.
+
+  Af-Arch project uses Axl library to support its XML requirements
+  while exchanging data between nodes.
+
+  Advanced Software Production Line also provides GNU/Linux support
+  and consulting services to enable organization to introduce
+  GNU/Linux inside its process, making other platforms to interact
+  with GNU/Linux.
+
+  Contact us, using English or Spanish, to get commercial support
+  and/or XML based development services.
+
+  You can reach us:
+
+       http://www.aspl.es - info@aspl.es
+
+  We hope Axl Library help you. Enjoy Axl Library!
+
+--
+Francis Brosnan Blázquez           - francis@aspl.es
+Advanced Software Production Line  - http://www.aspl.es
+12th dec 2007, Madrid (Spain)
