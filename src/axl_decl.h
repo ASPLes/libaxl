@@ -645,7 +645,7 @@ typedef int aboolean;
  * Internal definition to retain compatibility with programs that
  * define the bool value but the compiler doesn't provide it.
  */
-#ifndef __cplusplus
+#if !defined(__cplusplus) && !defined(__bool_true_false_are_defined)
 typedef int bool;
 
 /** 
