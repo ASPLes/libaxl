@@ -7,8 +7,9 @@
 Advanced Software Production Line is proud to announce a new Axl
 Library release.
 
-Axl Library is an small and efficient XML toolkit, that will allow you
-to produce efficient and clear code that interfaces with XML data.
+Axl Library is an small and efficient XML toolkit, written in ANSI C,
+and released under the LGPL, that will allow you to produce efficient
+and clear code that interfaces with XML data.
 
 The library was produced to support XML requirements needed by
 software developed by Advanced Software Production Line, S.L.
