@@ -49,10 +49,14 @@
 #  define __AXL_PRETTY_FUNCTION__ __PRETTY_FUNCTION__
 #  define __AXL_LINE__            __LINE__
 #  define __AXL_FILE__            __FILE__
+#elif defined(_MSC_VER)
+#  define __AXL_PRETTY_FUNCTION__ __FUNCDNAME__
+#  define __AXL_LINE__            __LINE__
+#  define __AXL_FILE__            __FILE__
 #else
-/* non gnu compiler */
+/* unknown compiler */
 #define __AXL_PRETTY_FUNCTION__ ""
-#define __AXL_LINE__            ""
+#define __AXL_LINE__            0
 #define __AXL_FILE__            ""
 #endif
 
