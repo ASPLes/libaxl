@@ -60,7 +60,9 @@ void     axl_log_color_enable (bool value);
 #if defined(SHOW_DEBUG_LOG)
 # define __axl_log axl_log
 #else
-# if defined(AXL_OS_WIN32) && ! defined (__GNUC__)
+# if defined(AXL_OS_WIN32) && !( defined (__GNUC__) || _MSC_VER >= 1400)
+/* default case where '...' is not supported but log is still
+ * disabled */
 #   define __axl_log axl_log 
 # else
 #   define __axl_log(domain, level, message, ...) /* nothing */
