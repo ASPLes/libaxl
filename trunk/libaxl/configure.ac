@@ -207,20 +207,14 @@ echo "------------------------------------------"
 echo "--       LibAXL LIBRARY SETTINGS        --"
 echo "------------------------------------------"
 echo "   Installation prefix:          [$prefix]"
-echo
 echo "   Build Axl Namespace support:  [$enable_axl_ns]"
-echo
 echo "   Build Axl Library tests:      [$enable_axl_test]"
-echo
 echo "   Build Axl Knife:              [$enable_axl_knife]"
-echo
 echo "   Build Axl Library debug log:  [$enable_axl_log]"
-echo
 if test x$DOXYGEN = xyes ; then
    echo "   Build Axl Library doc:        enabled"
 else	    
    echo "   Build Axl Library doc:        disabled"
-   echo  
    echo "     NOTE: To enable Axl documentation you will"
    echo "     have to install doxygen tool. Then run again"
    echo "     configure process."
