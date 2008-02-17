@@ -143,7 +143,6 @@ axlPointer      axl_hash_cursor_get_value    (axlHashCursor * cursor);
 axlHash       * axl_hash_cursor_hash         (axlHashCursor * cursor);
 
 void            axl_hash_cursor_free         (axlHashCursor * cursor);
-			   
 
 END_C_DECLS
 
