@@ -701,6 +701,10 @@ axlPointer axl_hash_get         (axlHash * hash,
 
 	axl_return_val_if_fail (hash, NULL);
 
+	/* check for empty hash to return NULL directly */
+	if (hash->items == 0)
+		return NULL; 
+
 	/* lookup using internal function */
 	node =  __axl_hash_internal_lookup (hash, key);
 
