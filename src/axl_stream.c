@@ -694,6 +694,10 @@ void axl_stream_push (axlStream * stream, const char * content, int size)
 			(stream->stream_size - stream->stream_index) + size);
 	} else {
 
+		/* check for the temporal buffer to be created */
+		if (stream->temp == NULL)
+			stream->temp = axl_new (char, stream->buffer_size + 1);
+
 		/* copy the content */
 		memcpy (stream->temp, content, size);
 
