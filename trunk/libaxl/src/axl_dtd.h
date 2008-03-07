@@ -59,6 +59,9 @@ bool                 axl_dtd_validate         (axlDoc * doc,
 					       axlDtd * dtd,
 					       axlError ** error);
 
+bool                 axl_dtd_are_equal        (axlDtd * dtd,
+					       axlDtd * dtd2);
+
 axlDtdElement      * axl_dtd_get_root         (axlDtd * dtd); 
 
 axlDtdElement      * axl_dtd_get_element      (axlDtd * dtd, 
