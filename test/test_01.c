@@ -1,6 +1,46 @@
 #include <axl.h>
 #include <axl_ns.h>
 
+
+/* include inline dtd definition */
+#include <channel.dtd.h>
+
+/** 
+ * @brief Check DTD validation error found.
+ * 
+ * @param error The optional axlError to be used to report erros.
+ * 
+ * @return true if the validity test is passed, otherwise false is
+ * returned.
+ */
+bool test_39 (axlError ** error)
+{
+	axlDtd          * dtd;
+	axlDtd          * dtd2;
+
+	dtd = axl_dtd_parse (CHANNEL_DTD, -1, error);
+	if (dtd == NULL) {
+		return false;
+	}
+
+	dtd2 = axl_dtd_parse_from_file ("channel.dtd", error);
+	if (dtd2 == NULL)
+		return false;
+	
+	/* check if both dtds are equal */
+	if (! axl_dtd_are_equal (dtd, dtd2)) {
+		axl_error_new (-1, "Expected to find equal dtd definitions, but axl_dtd_are_equal failed", NULL, error);
+		return false;
+	}
+
+	/* free dtd and doc */
+	axl_dtd_free (dtd);
+	axl_dtd_free (dtd2);
+
+	return true;
+}
+
+
 /** 
  * @brief Check DTD validation error found.
  * 
@@ -7459,6 +7499,17 @@ int main (int argc, char ** argv)
 		axl_error_free (error);
 		return -1;
 	}
+
+	if (test_39 (&error)) {
+		printf ("Test 39: Inline dtd support [   OK   ]\n");
+	}else {
+		printf ("Test 39: Inline dtd support [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}
+
+
 
 	/* cleanup axl library */
 	axl_end ();

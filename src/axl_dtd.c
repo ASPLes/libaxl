@@ -3216,6 +3216,214 @@ bool           axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 }
 
 /** 
+ * @brief Allows to check if the provided two references represents
+ * DTD documents with the same rules. 
+ * 
+ * @param dtd First reference to compare.
+ * @param dtd2 Second reference to compare.
+ *
+ * @return true if both references represent the same document. If
+ * some of the references received are NULL the function returns
+ * false.
+ *
+ * NOTE: The function does not have the ability to perform a smart
+ * equal operation like detecting DTD that are semantically
+ * equivalent. It only checks internal structure. 
+ */
+bool                 axl_dtd_are_equal        (axlDtd * dtd,
+					       axlDtd * dtd2)
+{
+	int iterator;
+	int iterator2;
+	int iterator3;
+	axlDtdEntity          * entity,      * entity2;
+	axlDtdElement         * element,     * element2;
+	axlDtdElementListNode * node,        * node2;
+	axlDtdAttribute       * attribute,   * attribute2;
+	axlDtdAttributeDecl   * attr_decl,   * attr_decl2;
+
+	/* check references received */
+	if (dtd == NULL)
+		return false;
+	if (dtd2 == NULL)
+		return false;
+
+	/* check each rule inside both documents */
+	if (axl_list_length (dtd->entities) != axl_list_length (dtd2->entities))
+		return false;
+	if (axl_list_length (dtd->elements) != axl_list_length (dtd2->elements))
+		return false;
+	if (axl_list_length (dtd->attributes) != axl_list_length (dtd2->attributes))
+		return false;
+	if (dtd->haveIdRefDecl != dtd2->haveIdRefDecl)
+		return false;
+	if (dtd->haveIdDecl != dtd2->haveIdDecl)
+		return false;
+
+	/* now check inner elements (ENTITIES) */
+	iterator = 0;
+	while (iterator < axl_list_length (dtd->entities)) {
+		/* get referneces */
+		entity  = axl_list_get_nth (dtd->entities, iterator);
+		entity2 = axl_list_get_nth (dtd2->entities, iterator);
+
+		/* check types */
+		if (entity->type != entity2->type)
+			return false;
+
+		/* check names */
+		if (! axl_cmp (entity->name, entity2->name)) 
+			return false;
+
+		/* check content */
+		if (! axl_cmp (entity->content, entity2->content))
+			return false;
+
+		/* check external data */
+		if (entity->data == NULL && entity2->data != NULL)
+			return false;
+		if (entity->data != NULL && entity2->data == NULL)
+			return false;
+		if (entity->data != NULL && entity2->data != NULL) {
+			if (! axl_cmp (entity->data->system_literal, entity2->data->system_literal))
+				return false;
+			if (! axl_cmp (entity->data->public_literal, entity2->data->public_literal))
+				return false;
+			if (! axl_cmp (entity->data->ndata, entity2->data->ndata))
+				return false;
+		} /* end if */
+
+		/* next iterator */
+		iterator++;
+	} /* end while */
+
+	/* now check inner elements (ELEMENTS) */
+	iterator = 0;
+	while (iterator < axl_list_length (dtd->elements)) {
+		/* get referneces */
+		element  = axl_list_get_nth (dtd->elements, iterator);
+		element2 = axl_list_get_nth (dtd2->elements, iterator);
+
+		/* check types */
+		if (element->type != element2->type)
+			return false;
+
+		/* minimum match */
+		if (element->minimum_match != element2->minimum_match)
+			return false;
+
+		/* check names */
+		if (! axl_cmp (element->name, element2->name)) 
+			return false;
+
+		/* check element list */
+		if (element->list == NULL && element2->list != NULL)
+			return false;
+		if (element->list != NULL && element2->list == NULL)
+			return false;
+		if (element->list != NULL && element2->list != NULL) {
+
+			/* check internal values */
+			if (element->list->type != element2->list->type)
+				return false;
+			if (element->list->times != element2->list->times)
+				return false;
+
+			iterator2 = 0;
+			while (iterator2 < axl_list_length (element->list->itemList)) {
+				
+				/* get references */
+				node  = axl_list_get_nth (element->list->itemList, iterator2);
+				node2 = axl_list_get_nth (element2->list->itemList, iterator2);
+
+				if (node->type != node->type)
+					return false;
+				if (node->times != node2->times)
+					return false;
+				
+				/* next value */
+				iterator2++;
+
+			} /* end while */
+			
+		} /* end if */
+
+		/* next iterator */
+		iterator++;
+	} /* end while */
+
+	/* now check inner elements (ATTRIBUTES) */
+	iterator = 0;
+	while (iterator < axl_list_length (dtd->attributes)) {
+		/* get referneces */
+		attribute  = axl_list_get_nth (dtd->attributes, iterator);
+		attribute2 = axl_list_get_nth (dtd2->attributes, iterator);
+
+		/* check names */
+		if (! axl_cmp (attribute->name, attribute2->name)) 
+			return false;
+
+		/* check values */
+		if (attribute->list == NULL && attribute2->list != NULL)
+			return false;
+		if (attribute->list != NULL && attribute2->list == NULL)
+			return false;
+		if (attribute->list != NULL && attribute2->list != NULL) {
+
+			/* check list length */
+			if (axl_list_length (attribute->list) != axl_list_length (attribute2->list))
+				return false;
+
+			/* check internal values */
+			iterator2 = 0;
+			while (iterator2 < axl_list_length (attribute->list)) {
+				
+				/* get references */
+				attr_decl   = axl_list_get_nth (attribute->list,  iterator2);
+				attr_decl2  = axl_list_get_nth (attribute2->list, iterator2);
+
+				if (attr_decl->type != attr_decl2->type)
+					return false;
+				if (attr_decl->defaults != attr_decl2->defaults)
+					return false;
+				if (! axl_cmp (attr_decl->name, attr_decl2->name))
+					return false;
+				
+				if (attr_decl->enumvalues == NULL && attr_decl2->enumvalues != NULL)
+					return false;
+				if (attr_decl->enumvalues != NULL && attr_decl2->enumvalues == NULL)
+					return false;
+				if (attr_decl->enumvalues != NULL && attr_decl2->enumvalues != NULL) {
+					if (axl_list_length (attr_decl->enumvalues) != axl_list_length (attr_decl2->enumvalues))
+						return false;
+					iterator3 = 0;
+					while (iterator3 < axl_list_length (attr_decl->enumvalues)) {
+						/* check values */
+						if (! axl_cmp (axl_list_get_nth (attr_decl->enumvalues, iterator3),
+							       axl_list_get_nth (attr_decl2->enumvalues, iterator3)))
+							return false;
+
+						/* next value */
+						iterator3++;
+					} /* end while */
+				} /* end if */
+				
+				/* next value */
+				iterator2++;
+
+			} /* end while */
+			
+		} /* end if */
+
+		/* next iterator */
+		iterator++;
+	} /* end while */
+
+	return true;
+	
+}
+
+/** 
  * @brief Allows to get the root node for the provided DTD.
  *
  * Every DTD have a root node defined, which is the root node accepted
