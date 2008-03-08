@@ -1659,7 +1659,7 @@ bool __axl_dtd_parse_attlist (axlDtd * dtd, axlStream * stream, axlError ** erro
 			string_aux = axl_stream_get_until (stream, NULL, NULL, true, 1, "\"");
 		} else if (axl_stream_inspect (stream, "'", 1) > 0) {
 			/* get until */
-			string_aux = axl_stream_get_until (stream, NULL, NULL, true, 1, "\"");
+			string_aux = axl_stream_get_until (stream, NULL, NULL, true, 1, "\'");
 		} /* end if */
 
 		/* check if default value was found */

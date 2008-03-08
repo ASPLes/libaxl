@@ -4,6 +4,9 @@
 
 /* include inline dtd definition */
 #include <channel.dtd.h>
+#include <fact.dtd.h>
+#include <xml-rpc.dtd.h>
+#include <tls.dtd.h>
 
 /** 
  * @brief Check DTD validation error found.
@@ -18,12 +21,73 @@ bool test_39 (axlError ** error)
 	axlDtd          * dtd;
 	axlDtd          * dtd2;
 
+	/* check channel.dtd */
 	dtd = axl_dtd_parse (CHANNEL_DTD, -1, error);
 	if (dtd == NULL) {
 		return false;
 	}
 
 	dtd2 = axl_dtd_parse_from_file ("channel.dtd", error);
+	if (dtd2 == NULL)
+		return false;
+	
+	/* check if both dtds are equal */
+	if (! axl_dtd_are_equal (dtd, dtd2)) {
+		axl_error_new (-1, "Expected to find equal dtd definitions, but axl_dtd_are_equal failed", NULL, error);
+		return false;
+	}
+
+	/* free dtd and doc */
+	axl_dtd_free (dtd);
+	axl_dtd_free (dtd2);
+
+	/* check channel.dtd */
+	dtd = axl_dtd_parse (FACT_DTD, -1, error);
+	if (dtd == NULL) {
+		return false;
+	}
+
+	dtd2 = axl_dtd_parse_from_file ("fact.dtd", error);
+	if (dtd2 == NULL)
+		return false;
+	
+	/* check if both dtds are equal */
+	if (! axl_dtd_are_equal (dtd, dtd2)) {
+		axl_error_new (-1, "Expected to find equal dtd definitions, but axl_dtd_are_equal failed", NULL, error);
+		return false;
+	}
+
+	/* free dtd and doc */
+	axl_dtd_free (dtd);
+	axl_dtd_free (dtd2);
+
+	/* check channel.dtd */
+	dtd = axl_dtd_parse (XML_RPC_DTD, -1, error);
+	if (dtd == NULL) {
+		return false;
+	}
+
+	dtd2 = axl_dtd_parse_from_file ("xml-rpc.dtd", error);
+	if (dtd2 == NULL)
+		return false;
+	
+	/* check if both dtds are equal */
+	if (! axl_dtd_are_equal (dtd, dtd2)) {
+		axl_error_new (-1, "Expected to find equal dtd definitions, but axl_dtd_are_equal failed", NULL, error);
+		return false;
+	}
+
+	/* free dtd and doc */
+	axl_dtd_free (dtd);
+	axl_dtd_free (dtd2);
+
+	/* check channel.dtd */
+	dtd = axl_dtd_parse (TLS_DTD, -1, error);
+	if (dtd == NULL) {
+		return false;
+	}
+
+	dtd2 = axl_dtd_parse_from_file ("tls.dtd", error);
 	if (dtd2 == NULL)
 		return false;
 	

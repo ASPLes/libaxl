@@ -12,7 +12,7 @@ endif
 INCLUDES = -I../src/ -I../ns -Wall $(LOG) $(NS)
 
 # replace with bin_PROGRAMS to check performance
-bin_PROGRAMS = test_01 test_01a test_02a test_03a
+bin_PROGRAMS = refresh test_01 test_01a test_02a test_03a
 
 test_01_SOURCES = test_01.c
 test_01_LDADD   = ../src/libaxl.la $(NS_LIB)
@@ -25,6 +25,12 @@ test_02a_LDADD   = ../src/libaxl.la
 
 test_03a_SOURCES = test_03a.c
 test_03a_LDADD   = ../src/libaxl.la
+
+refresh:
+	../knife/axl-knife --input fact.dtd --dtd-to-c > fact.dtd.h
+	../knife/axl-knife --input channel.dtd --dtd-to-c > channel.dtd.h
+	../knife/axl-knife --input xml-rpc.dtd --dtd-to-c > xml-rpc.dtd.h
+	../knife/axl-knife --input tls.dtd --dtd-to-c > tls.dtd.h
 
 leak-check:
 	libtool --mode=execute valgrind --leak-check=yes ./test_01

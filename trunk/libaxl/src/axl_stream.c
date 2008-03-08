@@ -732,6 +732,9 @@ void axl_stream_push (axlStream * stream, const char * content, int size)
  * @param stream The stream where the operation will be performed.
  *
  * @param index Count to move internal stream index.
+ *
+ * NOTE: the function reset current internal state (by doing an
+ * implicit call to \ref axl_stream_accept).
  */
 void        axl_stream_move            (axlStream * stream, int index)
 {
@@ -1172,7 +1175,15 @@ char * __axl_stream_get_untilv_wide (axlStream * stream, va_list args)
 			if (remains < 0) {
 
 				if (! axl_stream_prebuffer (stream)) {
-					__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "failed while prebuffer");
+					/* check if a call to zero was found */
+					if (stream->zero) {
+						/* flag that chunk matched
+						 * will be -2 */
+						stream->chunk_matched = -2;
+						goto matched_return_result;
+					} /* end if */
+					__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "failed while prebuffer (stream->type = %d)", stream->type);
+
 					return NULL;
 				}
 				
