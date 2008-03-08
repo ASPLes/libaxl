@@ -15,12 +15,12 @@
 <!ATTLIST start
           number      %CHAN;             #REQUIRED
           serverName  CDATA              #IMPLIED>
-
+ 
 <!ELEMENT profile     (#PCDATA)>
 <!ATTLIST profile
-          uri         %URI;              #REQUIRED
-          encoding    (none|base64)      "none">
-
+	  uri         %URI;              #REQUIRED
+	  encoding    (none|base64)      "none">
+ 
 <!ELEMENT close       (#PCDATA)>
 <!ATTLIST close
           number      %CHAN;             "0"
