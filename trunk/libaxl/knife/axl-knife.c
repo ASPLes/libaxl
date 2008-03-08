@@ -22,8 +22,8 @@
  *      Postal address:
  *         Advanced Software Production Line, S.L.
  *         Edificio Alius A, Oficina 102,
- *         C/ Antonio Suarez NÂº 10,
- *         AlcalÃ¡ de Henares 28802 Madrid
+ *         C/ Antonio Suarez Nº 10,
+ *         Alcalá de Henares 28802 Madrid
  *         Spain
  *
  *      Email address:
@@ -60,6 +60,64 @@ int         axl_knife_pid          = -1;
  * or not.
  */
 #define CONSOLEV if (console_enabled) vfprintf
+
+/** 
+ * @brief Allows to get the file part from the provided path.
+ * 
+ * @param path The path that is provided to return the file part.
+ * 
+ * @return A reference newly allocated to the file, or an empty string
+ * that is also required to deallocate.
+ */
+char  * axl_knife_file_name           (const char * path)
+{
+	int    iterator;
+	axl_return_val_if_fail (path, NULL);
+
+	/* start with string length */
+	iterator = strlen (path) - 1;
+
+	/* lookup for the back-slash */
+	while ((iterator >= 0) && (path [iterator] != '/'))
+		iterator--;
+
+	/* check if the file provided doesn't have any file part */
+	if (iterator == -1) {
+		/* return the an empty file part */
+		return axl_strdup (path);
+	}
+
+	/* copy the base dir found */
+	return axl_strdup (path + iterator + 1);
+}
+
+/** 
+ * @brief Cleans the string provided removing all values found "-" and
+ * ".", replacing them with "_".
+ * 
+ * @param path The path that must be cleaned.
+ * 
+ */
+void axl_knife_clean_name           (char * path)
+{
+	int    iterator;
+	
+	/* lookup for the back-slash */
+	iterator = 0;
+	while (path [iterator]) {
+		/* change values found */
+		if (path [iterator] == '.')
+			path [iterator] = '_';
+		if (path [iterator] == '-')
+			path [iterator] = '_';
+
+		/* next position */
+		iterator++;
+	} /* end while */
+
+	return;
+}
+
 
 /** 
  * @internal function that actually handles the console msg.
@@ -403,6 +461,101 @@ bool axl_knife_htmlize (axlDoc * doc)
 	return true;
 }
 
+bool axl_knife_dtd_to_c ()
+{
+	
+	/* check the document received is a DTD */
+	axlError   * err = NULL;
+	axlDtd     * dtd = axl_dtd_parse_from_file (exarg_get_string ("input"), &err);
+	axlStream  * stream;
+	char       * file;
+	int          line_length;
+	int          max;
+	int          chunk_matched;
+	char       * ref;
+	char       * format;
+	int          iterator;
+
+	if (dtd == NULL) {
+		error ("unable to translate document into C, found invalid DTD: %s",
+		       axl_error_get (err));
+		axl_error_free (err);
+		return false;
+	} /* end if */
+	
+	/* free dtd document */
+	axl_dtd_free (dtd);
+
+	/* open the stream */
+	stream = axl_stream_new (NULL, -1, exarg_get_string ("input"), -1, &err);
+	
+	/* try to get the maximum lenght */
+	line_length = 0;
+	do {
+		/* get next */
+		ref = axl_stream_get_until_zero (stream, NULL, &chunk_matched, true, 1, "\n", NULL);
+
+		/* get lenght and update */
+		max = ref ? strlen (ref) : 0;
+		if (max > line_length)
+			line_length = max;
+
+	} while (chunk_matched != -2);
+
+	/* close the stream */
+	axl_stream_free (stream);
+	stream = axl_stream_new (NULL, -1, exarg_get_string ("input"), -1, &err);
+	
+	/* build format for each line */
+	format = axl_strdup_printf ("%%-%ds  \\\n", line_length + 1);
+
+	file   = axl_knife_file_name (exarg_get_string ("input"));
+	
+	printf ("/**\n");
+	printf (" * C inline representation for DTD %s, created by axl-knife\n", file);
+	printf (" */\n");
+
+	axl_knife_clean_name (file);
+	axl_stream_to_upper (file);
+	
+	printf ("#ifndef __%s_H__\n", file);
+	printf ("#define __%s_H__\n", file);
+	printf ("#define %s \"\\n\\\n", file);
+	do {
+		/* get next */
+		ref      = axl_stream_get_until_zero (stream, NULL, &chunk_matched, true, 1, "\n", NULL);
+		if (ref != NULL) {
+			iterator = 0;
+			while (iterator < strlen (ref)) {
+				/* update blank */
+				if (ref[iterator] == '\t')
+					ref[iterator] = ' ';
+				if (ref[iterator] == '\"')
+					ref[iterator] = '\'';
+
+				/* next iterator */
+				iterator++;
+			} /* end while */
+		} /* end if */
+
+		/* get lenght and update */
+		printf (format, ref);
+
+	} while (chunk_matched != -2);
+
+
+
+	printf ("\\n\"\n");
+
+	printf ("#endif\n");
+	
+	axl_stream_free (stream);
+	axl_free (file);
+	axl_free (format);
+
+	return true;
+}
+
 int main (int argc, char ** argv)
 {
 
@@ -429,8 +582,6 @@ int main (int argc, char ** argv)
 	exarg_install_arg ("input", "i", EXARG_STRING, 
 			   "Allows to configure the input document to process.");
 
-	exarg_install_arg ("stdout", "o", EXARG_NONE,
-			   "If the tool must produce an output, its send to the standard console output");
 
 	exarg_install_arg ("htmlize", "e", EXARG_NONE,
 			   "Takes an input xml document and produces an transformation preparing the document to be included into an html web page");
@@ -441,11 +592,18 @@ int main (int argc, char ** argv)
 
 	exarg_install_arg ("enable-log-color", "c", EXARG_NONE,
 			   "Activates the console logs and uses some ansi characters to colorify the log output. If this option is activated, it is implicitly activated the --enable-log");
+	
+	/* dtd-to-c options */
+	exarg_install_arg ("dtd-to-c", NULL, EXARG_NONE,
+			   "Creates a C header definition representing the DTD provided, suitable to be opened by libaxl");
 
 	/* add dependecies */
 	exarg_add_dependency ("htmlize", "input");
-	exarg_add_dependency ("htmlize", "stdout");
-
+	exarg_add_dependency ("dtd-to-c", "input");
+	
+	/* exclusion */
+	exarg_add_exclusion ("htmlize", "dtd-to-c");
+	
 	/* call to parse arguments */
 	exarg_parse (argc, argv);
 
@@ -457,8 +615,15 @@ int main (int argc, char ** argv)
 		return printf ("%s\n", VERSION);
 	}
 
+	/* check parameters defined */
+	if (! exarg_is_defined ("htmlize") &&
+	    ! exarg_is_defined ("dtd-to-c")) {
+		msg ("no action was defined..");
+		goto finish;
+	}
+		
+
 	/* parse log options */
-	msg ("Log to console activated: %d", exarg_is_defined ("enable-log"));
 	axl_log_enable (exarg_is_defined ("enable-log"));
 
 	/* check color to activate both logs */
@@ -468,7 +633,10 @@ int main (int argc, char ** argv)
 	}
 
 	/* check to load a document */
-	if (exarg_is_defined ("input")) {
+	if (exarg_is_defined ("dtd-to-c")) {
+		/* do not open any document, as it is opened by an axl
+		 * stream directly */
+	} else if (exarg_is_defined ("input")) {
 		/* parse document from file */
 		doc = axl_doc_parse_from_file (exarg_get_string ("input"), &err);
 		if (doc == NULL) {
@@ -485,7 +653,12 @@ int main (int argc, char ** argv)
 	if (exarg_is_defined ("htmlize")) {
 		/* call to htmlize the content received */
 		axl_knife_htmlize (doc);
-	}
+	} else if (exarg_is_defined ("dtd-to-c")) {
+
+		/* call to produce a C representation from the DTD
+		 * provided */
+		axl_knife_dtd_to_c ();
+	} /* end if */
 
 
  finish:
