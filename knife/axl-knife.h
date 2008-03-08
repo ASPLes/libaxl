@@ -99,4 +99,7 @@ void  axl_knife_wrn   (const char * file, int line, const char * format, ...);
 #define wrn(m,...)    do{axl_knife_wrn (__AXL_FILE__, __AXL_LINE__, m, ##__VA_ARGS__);}while(0)
 #endif
 
+/* support funcions */
+char  * axl_knife_file_name           (const char * path);
+
 #endif
