@@ -825,3 +825,52 @@ bool   axl_knife_file_test (const char * path, FileTest test)
 	return result;
 }
 
+/** 
+ * \page axl_knife_manual axl-knife: command line tool built on top of Axl.
+ *
+ * \section intro Introduction
+ *
+ * <b>axl-knife</b> is a command line tool that includes xml related
+ * features and the intention is to concentrate into the tool,
+ * features to make Axl Library available to the command line.
+ *
+ * This manual includes information about operations that support the
+ * tool and how to activate them:
+ *
+ *  \ref axl_knife_dtd_to_c
+ *  \ref axl_knife_htmlize
+ * 
+ * \section axl_knife_dtd_to_c Building a C inline representation from a DTD file
+ *
+ * This feature allows to create a C header file representing a
+ * particular DTD file, so it can be used and parsed as it were a file
+ * by included into the source.
+ * 
+ * The main advantage from this approach is that the application or
+ * library using Axl Library services do not have to bundle DTD files
+ * into its installers. Those files are already included into the
+ * source. In many cases, those DTD files are than less than 1K.
+ * 
+ * To create a C DTD representation use:
+ * \code
+ * >> axl-knife --input DTD-FILE.dtd --dtd-to-c --output DTD-FILE.dtd.h --ifnewer
+ * \endcode
+ *
+ * The argument <b>--ifnewer</b> allows to signal the tool to not
+ * produce any output if the input file is not found to be newer. 
+ *
+ * Now use \ref axl_dtd_parse to open a reference to the DTD.
+ *
+ * \section axl_knife_htmlize Prepare xml content to be included into xml
+ *
+ * In the case you require to include xml content into a web page, you
+ * can use <b>--htmlize</b> option to prepare the content, adding CSS
+ * style classes to configure how your xml document will look.
+ *
+ * Use the following to produce xml content ready to be included into html:
+ *
+ * \code
+ * >> axl-knife --input xml-file.xml --htmlize
+ * \endcode
+ *
+ */

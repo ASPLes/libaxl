@@ -128,6 +128,7 @@
  * - \ref axl_install
  * - \ref axl_manual
  * - \ref axl_api
+ * - \ref axl_knife_manual
  * 
  * \section contact_us Contact us
  * 
@@ -735,7 +736,7 @@
  * using <b>--axl-log-disable</b> as follow:
  *
  * \code
- * ./configure --axl-log-disable
+ * >> ./configure --axl-log-disable
  * \endcode
  *
  * According to our results, the library including the log to console
@@ -749,7 +750,7 @@
  * production environments doing the following once finished compilation process:
  *
  * \code
- * make install-strip
+ * >> make install-strip
  * \endcode
  *
  * According to our results, the library without log to console and
@@ -861,11 +862,11 @@
  * package. Here are the steps:
  *
  * \code
- *  bash: ~$ tar xzvf axl-0.2.1.b1984.g1985.tar.gz
- *  bash: ~$ cd axl-0.2.1.b1984.g1985/
- *  bash: ~/axl-0.2.1.b1984.g1985 $ ./configure
- *  bash: ~/axl-0.2.1.b1984.g1985 $ make
- *  bash: ~/axl-0.2.1.b1984.g1985 $ make install
+ *  >> tar xzvf axl-0.2.1.b1984.g1985.tar.gz
+ *  >> cd axl-0.2.1.b1984.g1985/
+ *  >> ./configure
+ *  >> make
+ *  >> make install
  * \endcode
  * 
  *
@@ -886,12 +887,12 @@
  * To check current support for your Axl Library you can execute:
  * 
  * \code
- *  bash: ~$ pkg-config --libs --cflags axl
+ *  >> pkg-config --libs --cflags axl
  * \endcode
  *
  * In the case you want give support for XML Namespaces, you must use:
  * \code
- *  bash: ~$ pkg-config --libs --cflags axl-ns
+ *  >> pkg-config --libs --cflags axl-ns
  * \endcode
  *
  * To include support into your autotool checks (configure.ac/in
