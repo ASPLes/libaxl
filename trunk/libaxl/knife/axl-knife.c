@@ -31,6 +31,12 @@
  */
 /* main include */
 #include <axl-knife.h>
+#include <errno.h>
+
+/* internal errno redefinition */
+#if defined(AXL_OS_WIN32)
+#define errno WSAGetLastError()
+#endif
 
 #define HELP_HEADER "Axl Knife: Console Tool on top of Axl Library\n\
 Copyright (C) 2007  Advanced Software Production Line, S.L.\n\n"
@@ -327,7 +333,7 @@ void axl_knife_introduce_indentation (int level)
 	return;
 }
 
-bool axl_knife_htmlize_iterator_node (axlNode * node, int level)
+bool axl_knife_htmlize_iterator_node (FILE * fstream, axlNode * node, int level)
 {
 	
 	axlItem       * item;
@@ -341,8 +347,8 @@ bool axl_knife_htmlize_iterator_node (axlNode * node, int level)
 
 	/* print document node */
 	if (axl_node_has_attributes (node)) {
-		printf ("&lt;<span class=\"node\">%s</span> ",
-			axl_node_get_name (node));
+		fprintf (fstream, "&lt;<span class=\"node\">%s</span> ",
+			 axl_node_get_name (node));
 
 		/* get the first cursor */
 		cursor   = axl_node_attr_cursor_new (node);
@@ -351,9 +357,9 @@ bool axl_knife_htmlize_iterator_node (axlNode * node, int level)
 			while (axl_node_attr_cursor_has_item (cursor)) {
 				
 				/* print values */
-				printf ("%s=<span class=\"attrvalue\">\"%s\"</span> ",
-					axl_node_attr_cursor_get_key (cursor),
-					axl_node_attr_cursor_get_value (cursor));
+				fprintf (fstream, "%s=<span class=\"attrvalue\">\"%s\"</span> ",
+					 axl_node_attr_cursor_get_key (cursor),
+					 axl_node_attr_cursor_get_value (cursor));
 				
 				/* get the next cursor */
 				axl_node_attr_cursor_next (cursor);
@@ -362,23 +368,23 @@ bool axl_knife_htmlize_iterator_node (axlNode * node, int level)
 			while (axl_node_attr_cursor_has_item (cursor)) {
 
 				/* print values */
-				printf ("%s=<span class=\"attrvalue\">\"%s\"</span> ",
-					axl_node_attr_cursor_get_key (cursor),
-					axl_node_attr_cursor_get_value (cursor));
+				fprintf (fstream, "%s=<span class=\"attrvalue\">\"%s\"</span> ",
+					 axl_node_attr_cursor_get_key (cursor),
+					 axl_node_attr_cursor_get_value (cursor));
 
 				/* get the next cursor */
 				axl_node_attr_cursor_next (cursor);
 
 				/* before getting the next */
 				if (axl_node_attr_cursor_has_item (cursor)) {
-					printf ("\n");
+					fprintf (fstream, "\n");
 
 					/* introduce indentation level */
 					axl_knife_introduce_indentation (level );
 
 					iterator = 0;
 					while (iterator < (strlen (axl_node_get_name (node)) + 2)) {
-						printf (" ");
+						fprintf (fstream, " ");
 						iterator++;
 					} /* while */
 				} /* end if */
@@ -386,14 +392,14 @@ bool axl_knife_htmlize_iterator_node (axlNode * node, int level)
 			} /* end while */
 		}
 			
-		printf ("/>\n");
+		fprintf (fstream, "/>\n");
 		
 		/* free cursor */
 		axl_node_attr_cursor_free (cursor);
 		
 	} else {
-		printf ("&lt;<span class=\"node\">%s</span>>\n",
-			axl_node_get_name (node));
+		fprintf (fstream, "&lt;<span class=\"node\">%s</span>>\n",
+			 axl_node_get_name (node));
 	}
 
 	/* call to produce internal content representation */
@@ -403,16 +409,16 @@ bool axl_knife_htmlize_iterator_node (axlNode * node, int level)
 		switch (axl_item_get_type (item)) {
 		case ITEM_NODE:
 			/* found node, call to represent this node */
-			axl_knife_htmlize_iterator_node (axl_item_get_data (item), level + 1);
+			axl_knife_htmlize_iterator_node (fstream, axl_item_get_data (item), level + 1);
 			break;
 		case ITEM_CONTENT_FROM_FACTORY:
 		case ITEM_CONTENT:
 			size    = 0;
 			content = axl_item_get_content (item, &size);
 			if (size == 0 || content [size - 1] == '\n')
-				printf ("%s", axl_item_get_content (item, NULL));
+				fprintf (fstream, "%s", axl_item_get_content (item, NULL));
 			else
-				printf ("%s\n", axl_item_get_content (item, NULL));
+				fprintf (fstream, "%s\n", axl_item_get_content (item, NULL));
 			break;
 		case ITEM_PI:
 			break;
@@ -422,8 +428,8 @@ bool axl_knife_htmlize_iterator_node (axlNode * node, int level)
 		case ITEM_COMMENT:
 			/* introduce indentation level */
 			axl_knife_introduce_indentation (level + 1);
-			printf ("<span class=\"comment\">&lt;!-- %s --></span>\n",
-			       axl_item_get_content (item, NULL));
+			fprintf (fstream, "<span class=\"comment\">&lt;!-- %s --></span>\n",
+				 axl_item_get_content (item, NULL));
 			break;
 		case ITEM_REF:
 			break;
@@ -440,8 +446,8 @@ bool axl_knife_htmlize_iterator_node (axlNode * node, int level)
 		/* introduce indentation level */
 		axl_knife_introduce_indentation (level);
 		
-		printf ("&lt;/<span class=\"node\">%s</span>>\n",
-			axl_node_get_name (node));
+		fprintf (fstream, "&lt;/<span class=\"node\">%s</span>>\n",
+			 axl_node_get_name (node));
 	} /* end if */
 
 	/* don't stop iteration */
@@ -450,13 +456,26 @@ bool axl_knife_htmlize_iterator_node (axlNode * node, int level)
 
 bool axl_knife_htmlize (axlDoc * doc)
 {
+	FILE       * fstream = stdout;
+
 	/* currently we only support stderr so reached this place
 	 * means it is already checked */
 
+	/* check output argument */
+	if (exarg_is_defined ("output")) {
+		/* abrimos el fichero de salida */
+		fstream = fopen (exarg_get_string ("output"), "w");
+		if (fstream == NULL) {
+			error ("unable to open output document: %s, errno=%d:%s", exarg_get_string ("output"),
+			       errno, strerror (errno));
+			return false;
+		} /* end if */
+	} /* end if */
+
 	/* call to iterate */
-	printf ("<pre>\n");
-	axl_knife_htmlize_iterator_node (axl_doc_get_root (doc), 1);
-	printf ("</pre>\n");
+	fprintf (fstream, "<pre>\n");
+	axl_knife_htmlize_iterator_node (fstream, axl_doc_get_root (doc), 1);
+	fprintf (fstream, "</pre>\n");
 
 	return true;
 }
@@ -475,6 +494,7 @@ bool axl_knife_dtd_to_c ()
 	char       * ref;
 	char       * format;
 	int          iterator;
+	FILE       * fstream = stdout;
 
 	if (dtd == NULL) {
 		error ("unable to translate document into C, found invalid DTD: %s",
@@ -488,6 +508,17 @@ bool axl_knife_dtd_to_c ()
 
 	/* open the stream */
 	stream = axl_stream_new (NULL, -1, exarg_get_string ("input"), -1, &err);
+
+	/* check output argument */
+	if (exarg_is_defined ("output")) {
+		/* abrimos el fichero de salida */
+		fstream = fopen (exarg_get_string ("output"), "w");
+		if (fstream == NULL) {
+			error ("unable to open output document: %s, errno=%d:%s", exarg_get_string ("output"),
+			       errno, strerror (errno));
+			return false;
+		} /* end if */
+	} /* end if */
 	
 	/* try to get the maximum lenght */
 	line_length = 0;
@@ -510,17 +541,19 @@ bool axl_knife_dtd_to_c ()
 	format = axl_strdup_printf ("%%-%ds  \\\n", line_length + 1);
 
 	file   = axl_knife_file_name (exarg_get_string ("input"));
+
 	
-	printf ("/**\n");
-	printf (" * C inline representation for DTD %s, created by axl-knife\n", file);
-	printf (" */\n");
+	
+	fprintf (fstream, "/**\n");
+	fprintf (fstream, " * C inline representation for DTD %s, created by axl-knife\n", file);
+	fprintf (fstream, " */\n");
 
 	axl_knife_clean_name (file);
 	axl_stream_to_upper (file);
 	
-	printf ("#ifndef __%s_H__\n", file);
-	printf ("#define __%s_H__\n", file);
-	printf ("#define %s \"\\n\\\n", file);
+	fprintf (fstream, "#ifndef __%s_H__\n", file);
+	fprintf (fstream, "#define __%s_H__\n", file);
+	fprintf (fstream, "#define %s \"\\n\\\n", file);
 	do {
 		/* get next */
 		ref      = axl_stream_get_until_zero (stream, NULL, &chunk_matched, true, 1, "\n", NULL);
@@ -539,22 +572,51 @@ bool axl_knife_dtd_to_c ()
 		} /* end if */
 
 		/* get lenght and update */
-		printf (format, ref);
+		fprintf (fstream, format, ref);
 
 	} while (chunk_matched != -2);
 
 
 
-	printf ("\\n\"\n");
+	fprintf (fstream, "\\n\"\n");
 
-	printf ("#endif\n");
+	fprintf (fstream, "#endif\n");
 	
 	axl_stream_free (stream);
 	axl_free (file);
 	axl_free (format);
 
+	/* check output argument */
+	if (exarg_is_defined ("output"))
+		fclose (fstream);
+
 	return true;
 }
+
+/** 
+ * @brief Allows to check if the provided file (basefile) is newer
+ * than the file (compare).
+ * 
+ * @param basefile The base file to check.
+ * @param compare The compare file to check
+ * 
+ * @return true if the modification time is newer than compare,
+ * otherwise false is returned.
+ */
+bool axl_knife_check_if_newer (const char * basefile, const char * compare)
+{
+	struct stat stat1, stat2;
+	
+	/* get stats from both files */
+	if (stat (basefile, &stat1) != 0)
+		return false;
+	if (stat (compare, &stat2) != 0)
+		return false;
+
+	/* return value comparation */
+	return stat1.st_mtime > stat2.st_mtime;
+}
+
 
 int main (int argc, char ** argv)
 {
@@ -578,10 +640,14 @@ int main (int argc, char ** argv)
 	exarg_install_arg ("version", "v", EXARG_NONE, 
 			   "Shows current axl-knife version.");
 
-	/* init exarg library */
+	/* file options */
 	exarg_install_arg ("input", "i", EXARG_STRING, 
 			   "Allows to configure the input document to process.");
-
+	exarg_install_arg ("output", "o", EXARG_STRING,
+			   "Allows to configure the output file to be used. This is optional. If the knife command produces an output, it is by default sent to the stdout.");
+	exarg_install_arg ("ifnewer", "n", EXARG_NONE,
+			   "In process involving generating output from an input file, this option allows to stop the process and return success code (0) if the output file is found to be newer than input file. ");
+			   
 
 	exarg_install_arg ("htmlize", "e", EXARG_NONE,
 			   "Takes an input xml document and produces an transformation preparing the document to be included into an html web page");
@@ -601,6 +667,9 @@ int main (int argc, char ** argv)
 	exarg_add_dependency ("htmlize", "input");
 	exarg_add_dependency ("dtd-to-c", "input");
 	
+	exarg_add_dependency ("ifnewer", "input");
+	exarg_add_dependency ("ifnewer", "output");
+	
 	/* exclusion */
 	exarg_add_exclusion ("htmlize", "dtd-to-c");
 	
@@ -614,6 +683,17 @@ int main (int argc, char ** argv)
 	if (exarg_is_defined ("version")) {
 		return printf ("%s\n", VERSION);
 	}
+
+	/* check ifnewer option */
+	if (exarg_is_defined ("ifnewer")) {
+		/* check that both files exists */
+		if (axl_knife_file_test (exarg_get_string ("input"), FILE_EXISTS) &&
+		    axl_knife_file_test (exarg_get_string ("output"), FILE_EXISTS)) {
+			if (! axl_knife_check_if_newer (exarg_get_string ("input"), exarg_get_string ("output"))) {
+				goto finish;
+			} /* end if */
+		} /* end if */
+	} /* end if */
 
 	/* check parameters defined */
 	if (! exarg_is_defined ("htmlize") &&
@@ -673,3 +753,75 @@ int main (int argc, char ** argv)
 
 	return 0;
 }
+
+/** 
+ * @brief Allows to perform a set of test for the provided path.
+ * 
+ * @param path The path that will be checked.
+ *
+ * @param test The set of test to be performed. Separate each test
+ * with "|" to perform several test at the same time.
+ * 
+ * @return true if all test returns true. Otherwise false is returned.
+ */
+bool   axl_knife_file_test (const char * path, FileTest test)
+{
+	bool result = false;
+	struct stat file_info;
+
+	/* perform common checks */
+	axl_return_val_if_fail (path, false);
+
+	/* call to get status */
+	result = (stat (path, &file_info) == 0);
+	if (! result) {
+		/* check that it is requesting for not file exists */
+		if (errno == ENOENT && (test & FILE_EXISTS) == FILE_EXISTS)
+			return false;
+
+		error ("filed to check test on %s, stat call has failed (result=%d, error=%s)", path, result, strerror (errno));
+		return false;
+	} /* end if */
+
+	/* check for file exists */
+	if ((test & FILE_EXISTS) == FILE_EXISTS) {
+		/* check result */
+		if (result == false)
+			return false;
+		
+		/* reached this point the file exists */
+		result = true;
+	}
+
+	/* check if the file is a link */
+	if ((test & FILE_IS_LINK) == FILE_IS_LINK) {
+		if (! S_ISLNK (file_info.st_mode))
+			return false;
+
+		/* reached this point the file is link */
+		result = true;
+	}
+
+	/* check if the file is a regular */
+	if ((test & FILE_IS_REGULAR) == FILE_IS_REGULAR) {
+		if (! S_ISREG (file_info.st_mode))
+			return false;
+
+		/* reached this point the file is link */
+		result = true;
+	}
+
+	/* check if the file is a directory */
+	if ((test & FILE_IS_DIR) == FILE_IS_DIR) {
+		if (! S_ISDIR (file_info.st_mode)) {
+			return false;
+		}
+
+		/* reached this point the file is link */
+		result = true;
+	}
+
+	/* return current result */
+	return result;
+}
+
