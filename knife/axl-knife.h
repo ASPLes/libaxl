@@ -102,4 +102,30 @@ void  axl_knife_wrn   (const char * file, int line, const char * format, ...);
 /* support funcions */
 char  * axl_knife_file_name           (const char * path);
 
+/** 
+ * @brief Available tests to be performed while using \ref
+ * axl_knife_file_test
+ */
+typedef enum {
+	/** 
+	 * @brief Check if the path exist.
+	 */
+	FILE_EXISTS     = 1 << 0,
+	/** 
+	 * @brief Check if the path provided is a symlink.
+	 */
+	FILE_IS_LINK    = 1 << 1,
+	/** 
+	 * @brief Check if the path provided is a directory.
+	 */
+	FILE_IS_DIR     = 1 << 2,
+	/** 
+	 * @brief Check if the path provided is a regular file.
+	 */
+	FILE_IS_REGULAR = 1 << 3,
+} FileTest;
+
+
+bool axl_knife_file_test   (const char * path,   FileTest test);
+
 #endif

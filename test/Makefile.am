@@ -26,11 +26,11 @@ test_02a_LDADD   = ../src/libaxl.la
 test_03a_SOURCES = test_03a.c
 test_03a_LDADD   = ../src/libaxl.la
 
-refresh:
-	../knife/axl-knife --input fact.dtd --dtd-to-c > fact.dtd.h
-	../knife/axl-knife --input channel.dtd --dtd-to-c > channel.dtd.h
-	../knife/axl-knife --input xml-rpc.dtd --dtd-to-c > xml-rpc.dtd.h
-	../knife/axl-knife --input tls.dtd --dtd-to-c > tls.dtd.h
+refresh: 
+	../knife/axl-knife --input fact.dtd --dtd-to-c --output fact.dtd.h --ifnewer
+	../knife/axl-knife --input channel.dtd --dtd-to-c --output channel.dtd.h  --ifnewer
+	../knife/axl-knife --input xml-rpc.dtd --dtd-to-c --output xml-rpc.dtd.h  --ifnewer
+	../knife/axl-knife --input tls.dtd --dtd-to-c --output tls.dtd.h  --ifnewer
 
 leak-check:
 	libtool --mode=execute valgrind --leak-check=yes ./test_01
