@@ -1,0 +1,5 @@
+<?xml version='1.0' encoding='iso-8859-15' ?>
+<camuc-report common-name="report">
+  <!-- the following as a report declaration, a window that is showed
+       to gather data and call to the appropiate report -->
+</camuc-report>
