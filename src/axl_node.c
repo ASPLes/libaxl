@@ -4450,7 +4450,16 @@ int       axl_node_get_flat_size            (axlNode * node, bool pretty_print, 
 		case ITEM_COMMENT:
 			/* content + '<!-- ' + ' -->' */
 			content = (axlNodeContent *) item->data;
-			result += content->content_size + 9;
+
+			/* check if the content has already defined white spaces */
+			if (content->content[0] == ' ' && content->content[content->content_size - 1] == ' ')
+				result += content->content_size + 7;
+			else if (content->content[0] != ' ' && content->content[content->content_size - 1] == ' ')
+				result += content->content_size + 8;
+			else if (content->content[0] == ' ' && content->content[content->content_size - 1] != ' ')
+				result += content->content_size + 8;
+			else
+				result += content->content_size + 9;
 			if (pretty_print) {
 				/* tabular indent + \n */
 				result += ((level + 1) * tabular) + 1;
@@ -4671,19 +4680,34 @@ int __axl_node_dump_items (axlItem * item, char * content, int level, bool prett
 				desp += __axl_node_dump_at_write_indent (content + desp, tabular, level + 1);
 			}
 
-			/* content + '<!-- ' + ' -->' */
-			memcpy (content + desp, "<!-- ", 5);
-			desp += 5;
-			
 			/* get a reference to the content */
 			nodeContent = (axlNodeContent *)item->data;
+
+			/* add an space if the content is found to not
+			 * have one */
+			if (nodeContent->content [0] == ' ') {
+				memcpy (content + desp, "<!--", 4);
+				desp += 4;
+			} else {
+				memcpy (content + desp, "<!-- ", 5);
+				desp += 5;
+			}
+			
+
 			
 			/* write content */
 			memcpy (content + desp, nodeContent->content, nodeContent->content_size);
 			desp += nodeContent->content_size;
 			
-			memcpy (content + desp, " -->", 4);
-			desp += 4;
+			/* add an space if the content is found to not
+			 * have one */
+			if (nodeContent->content [nodeContent->content_size - 1] == ' ') {
+				memcpy (content + desp, "-->", 3);
+				desp += 3;
+			} else {
+				memcpy (content + desp, " -->", 4);
+				desp += 4;
+			} /* end if */
 
 			if (pretty_print) {
 #ifdef __AXL_OS_WIN32__
