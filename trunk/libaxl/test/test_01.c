@@ -1,8 +1,74 @@
+/**
+ *  LibAxl:  Another XML library (regression test)
+ *  Copyright (C) 2006 Advanced Software Production Line, S.L.
+ */
 #include <axl.h>
 #include <axl_ns.h>
 
+/** 
+ * @brief Avoid including recursively white spaces content into dumped
+ * documents.
+ * 
+ * @param error The optional axlError to be used to report erros.
+ * 
+ * @return true tests are ok, otherwise false is returned.
+ */
+bool test_40 (axlError ** error)
+{
+	axlDoc  * doc = axl_doc_parse_from_file ("test_40.xml", error);
+	axlDoc  * doc2;
+	axlNode * node;
+	axlItem * item;
+	char    * content;
+	char    * content2;
 
-/* include inline dtd definition */
+	if (doc == NULL)
+		return false;
+	
+	/* now dump the document */
+	if (! axl_doc_dump_pretty_to_file (doc, "test_40.xml.test", 8))
+		return false;
+
+	/* now parse dumped document */
+	doc2 = axl_doc_parse_from_file ("test_40.xml.test", error);
+	if (doc2 == NULL)
+		return false;
+
+	/* check comment content */
+	node     = axl_doc_get_root (doc2);
+	
+	item     = axl_item_get_first_child (node);
+	
+	content  = axl_item_get_content (item, NULL);
+	if (content == NULL) {
+		axl_error_new (-1, "Expected to find content defined for first axl item found inside test_40.xml", NULL, error);
+		return false;
+	}
+
+	node     = axl_doc_get_root (doc);
+	item     = axl_item_get_first_child (node);
+	content2 = axl_item_get_content (item, NULL);
+	if (content2 == NULL) {
+		axl_error_new (-1, "Expected to find content defined for first axl item found inside test_40.xml.test", NULL, error);
+		return false;
+	}
+
+
+	/* check content */
+	if (! axl_cmp (content, content2)) {
+		printf ("Failed, expected equal content, but found differences: (%d)'%s' != (%d)'%s'\n",
+			strlen (content), content, strlen (content2), content2);
+		axl_error_new (-1, "Failed, expected equal content, but found differences", NULL, error);
+		return false;
+	}
+
+	axl_doc_free (doc);
+	axl_doc_free (doc2);
+
+	return true;
+}
+
+/* include inline dtd definition (test_39) */
 #include <channel.dtd.h>
 #include <fact.dtd.h>
 #include <xml-rpc.dtd.h>
@@ -7573,7 +7639,14 @@ int main (int argc, char ** argv)
 		return -1;
 	}
 
-
+	if (test_40 (&error)) {
+		printf ("Test 40: Avoid recursive content inclusion into coments  [   OK   ]\n");
+	}else {
+		printf ("Test 40: Avoid recursive content inclusion into coments  [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}
 
 	/* cleanup axl library */
 	axl_end ();

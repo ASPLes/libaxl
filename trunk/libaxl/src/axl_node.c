@@ -4378,7 +4378,7 @@ int       axl_node_get_flat_size            (axlNode * node, bool pretty_print, 
 
 	/* get values */
 	is_empty    = axl_node_is_empty (node);
-	have_childs = axl_node_have_childs (node);
+	have_childs = axl_node_have_childs (node) || (node->first != NULL);
 
 	if (have_childs || (!have_childs && !is_empty)) {
 		/* the node is emtpy because it has no content but it has
@@ -4790,7 +4790,7 @@ int       axl_node_dump_at                  (axlNode * node,
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "the node <%s> is empty", 
 			   axl_node_get_name (node));
 
-		if (! axl_node_have_childs (node)) {
+		if (! axl_node_have_childs (node) && node->first == NULL) {
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "dumping an empty node without childs=<%s>",
 				   axl_node_get_name (node));
 			
@@ -4842,7 +4842,7 @@ int       axl_node_dump_at                  (axlNode * node,
 	desp += 1;
 
 	/* if the node have childs */
-	if (axl_node_have_childs (node)) {
+	if (axl_node_have_childs (node) || node->first != NULL) {
 		
 		/* write traling node information */
 		if (pretty_print) {
