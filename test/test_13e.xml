@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='iso-8859-15' standalone='yes' ?>
+<common-unit-translate>
+    <!-- Translations for the module and its attributes -->
+    <translate module='issued_invoice' as='Facturas emitidas' norma='no'>
+        <translate attr='All Columns' as='Todas las columnas' norma='no' />
+        <translate attr='invoice_number' as='Número' norma='no' />
+        <translate attr='date' as='Fecha' norma='no' />
+        <translate attr='amount' as='Importe' norma='no' />
+        <translate attr='year' as='Año' norma='no' />
+        <translate attr='tax' as='IVA' norma='no' />
+        <translate attr='amount_with_tax' as='Total' norma='no' />
+        <translate attr='cur_state' as='Estado' norma='no' />
+    </translate>
+    <!-- Translations for enum declarations -->
+    <translate enum='IssuedInvoiceState' as='Estado factura' norma='no'>
+        <translate value='Valid' as='Valida' norma='no' />
+        <translate value='Cancelled' as='Anulada' norma='no' />
+        <translate value='NegativeInvoice' as='Negativa' norma='no' />
+    </translate>
+</common-unit-translate>
