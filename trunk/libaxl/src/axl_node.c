@@ -3479,6 +3479,38 @@ bool          axl_node_have_childs        (axlNode * node)
 }
 
 /** 
+ * @internal Function that allows to check if the provided node have
+ * childs, including in the list, nodes, comments, 
+ * 
+ * @param node 
+ * 
+ * @return 
+ */
+bool          axl_node_have_childs_aux        (axlNode * node)
+{
+	axlItem * item;
+
+	axl_return_val_if_fail (node, false);
+
+	item = node->first;
+	while (item != NULL) {
+		/* check item type */
+		if (axl_item_get_type (item) == ITEM_NODE || 
+		    axl_item_get_type (item) == ITEM_PI || 
+		    axl_item_get_type (item) == ITEM_COMMENT)
+			return true;
+
+		/* go to the next */
+		item = item->next;
+
+	} /* end while */
+
+	/* return false because no item was found with ITEM_NODE
+	 * type */
+	return false;
+}
+
+/** 
  * @brief Allows to get a particular child node for the given node (\ref axlNode).
  *
  * <i><b>NOTE:</b> This function isn't XML Namespace aware. You must use \ref axl_ns_node_get_child_called instead. See \ref axl_ns_doc_validate. </i>
@@ -4378,7 +4410,7 @@ int       axl_node_get_flat_size            (axlNode * node, bool pretty_print, 
 
 	/* get values */
 	is_empty    = axl_node_is_empty (node);
-	have_childs = axl_node_have_childs (node) || (node->first != NULL);
+	have_childs = axl_node_have_childs_aux (node);
 
 	if (have_childs || (!have_childs && !is_empty)) {
 		/* the node is emtpy because it has no content but it has
@@ -4774,11 +4806,15 @@ int       axl_node_dump_at                  (axlNode * node,
 					     int       tabular)
 {
 	axlItem        * item;
+	bool             have_childs;
 
 	axl_return_val_if_fail (node, -1);
 
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "dumping node=<%s> at %d", 
 		   axl_node_get_name (node), desp);
+
+	/* get current have childs status */
+	have_childs = axl_node_have_childs_aux (node);
 
 	/* check for pretty print and tabular */
 	if (pretty_print) {
@@ -4790,7 +4826,7 @@ int       axl_node_dump_at                  (axlNode * node,
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "the node <%s> is empty", 
 			   axl_node_get_name (node));
 
-		if (! axl_node_have_childs (node) && node->first == NULL) {
+		if (! have_childs) {
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "dumping an empty node without childs=<%s>",
 				   axl_node_get_name (node));
 			
@@ -4842,7 +4878,7 @@ int       axl_node_dump_at                  (axlNode * node,
 	desp += 1;
 
 	/* if the node have childs */
-	if (axl_node_have_childs (node) || node->first != NULL) {
+	if (have_childs) {
 		
 		/* write traling node information */
 		if (pretty_print) {

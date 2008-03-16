@@ -2309,7 +2309,7 @@ bool test_14 (axlError ** error)
 }
 
 /** 
- * @brief A more complex DTD parsing example
+ * @brief Memory dump operation checks.
  * 
  * @param error The optional axlError to be used to report errors.
  * 
@@ -2448,6 +2448,80 @@ bool test_13 (axlError ** error)
 	axl_doc_free (doc);
 	axl_doc_free (doc2);
 	axl_doc_free (doc3);
+
+	/* load test_13e.xml document */
+	doc = axl_doc_parse_from_file ("test_13e.xml", NULL);
+	if (doc == NULL) {
+		axl_error_new (-1, "Expected to find parseable document, but an error was found..", NULL, error);
+		return false;
+	}
+
+	/* now dump the document */
+	if (!axl_doc_dump_pretty_to_file (doc, "test_13e.xml.test", 4)) {
+		axl_error_new (-1, "Expected to perform a proper dump operation but an error was found..", NULL, error);
+		return false;
+	}
+
+	/* now open the content produced and check both results */
+	doc2 = axl_doc_parse_from_file ("test_13e.xml.test", NULL);
+	if (doc2 == NULL) {
+		axl_error_new (-1, "Failed to open document that was expected to be opened", NULL, error);
+		return false;
+	} /* end if */
+	
+	/* check both document */
+	if (! axl_doc_are_equal (doc, doc2)) {
+		axl_error_new (-1, "Expected to find equal documents before dump operation, but it wasn't found", NULL, error);
+		return false;
+	}
+
+	/* free both documents */
+	axl_doc_free (doc2);
+	axl_doc_free (doc);
+
+	/* load test_13e.xml document */
+	doc = axl_doc_parse_from_file ("test_13f.xml", NULL);
+	if (doc == NULL) {
+		axl_error_new (-1, "Expected to find parseable document, but an error was found..", NULL, error);
+		return false;
+	}
+
+	/* dump to memory */
+	if (! axl_doc_dump_pretty (doc, &content, &size, 4)) {
+		axl_error_new (-1, "Expected to find proper dump operation not found", NULL, error);
+		return false;
+	} /* end if */
+
+	/* now check content dumped against the predefined value */
+	if (size != 1266 || ! axl_cmp (content, "<?xml version='1.0' encoding='iso-8859-15' standalone='yes' ?>\n\
+<common-unit-translate>\n\
+    <!-- Translations for the module and its attributes -->\n\
+    <translate module='issued_invoice' as='Facturas emitidas' norma='no'>\n\
+        <translate attr='All Columns' as='Todas las columnas' norma='no'>Value1</translate>\n\
+        <translate attr='invoice_number' as='Número' norma='no'>Value1</translate>\n\
+        <translate attr='date' as='Fecha' norma='no'>Value1</translate>\n\
+        <translate attr='amount' as='Importe' norma='no'>Value1</translate>\n\
+        <translate attr='year' as='Año' norma='no'>Value1</translate>\n\
+        <translate attr='tax' as='IVA' norma='no'>Value1</translate>\n\
+        <translate attr='amount_with_tax' as='Total' norma='no'>Value1</translate>\n\
+        <translate attr='cur_state' as='Estado' norma='no'>Value1</translate>\n\
+    </translate>\n\
+    <!-- Translations for enum declarations -->\n\
+    <translate enum='IssuedInvoiceState' as='Estado factura' norma='no'>\n\
+        <translate value='Valid' as='Valida' norma='no'>Value1</translate>\n\
+        <translate value='Cancelled' as='Anulada' norma='no'>Value1</translate>\n\
+        <translate value='NegativeInvoice' as='Negativa' norma='no'>Value1</translate>\n\
+    </translate>\n\
+</common-unit-translate>\n")) {
+		axl_error_new (-1, "Failed to check dump content, expected different values", NULL, error);
+		return false;
+	} /* end if */
+
+	axl_free (content);
+
+	/* free document */
+	axl_doc_free (doc);
+
 	
 	return true;
 }
