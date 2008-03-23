@@ -322,6 +322,11 @@ struct _axlDoc {
 	 * @brief Current xml encoding document.
 	 */
 	char    * encoding;
+	/**
+	 * @internal
+	 * @brief Current entity encoding detected.
+	 */ 
+	char    * detected_encoding;
 	
 	/** 
 	 * @internal
@@ -473,6 +478,39 @@ char * __axl_doc_alloc (int size, axlDoc * doc)
 }
 
 /** 
+ * @internal Internal function that tries to check encoding found to
+ * configure the proper set of functions to translate from and to
+ * utf-8.
+ * 
+ * @param doc The document being configured.
+ *
+ * @param error An optional error that will be filled in the case an
+ * error is found.
+ * 
+ * @return true if the operation was completed, otherwise false is
+ * returned.
+ */
+bool axl_doc_configure_encoding (axlDoc * doc, axlError ** error)
+{
+	/* normalize encoding found */
+	if (doc->encoding) {
+		/* trim encoding */
+		axl_stream_trim (doc->encoding);
+
+		/* remove characters not required */
+		axl_stream_remove (doc->encoding, "-", false);
+		axl_stream_remove (doc->encoding, "_", false); 
+		
+	} /* end if */
+
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "configuring final document enconding, previously detected=%s, declared=%s",
+		   doc->detected_encoding ? doc->detected_encoding : "none",
+		   doc->encoding ? doc->encoding : "none");
+	
+	return true;
+}
+
+/** 
  * @internal
  * 
  * @brief Support for parsing the xml entity header 
@@ -599,6 +637,10 @@ bool __axl_doc_parse_xml_header (axlStream * stream, axlDoc * doc, axlError ** e
 		if (! axl_doc_consume_comments (doc, stream, error))
 			return false;
 	}
+
+	/* configure encoding again, now we could have more data */
+	if (! axl_doc_configure_encoding (doc, error))
+		return false;
 
 	/* now process the document type declaration */
 	if (axl_stream_inspect (stream, "<!DOCTYPE", 9) > 0) {
@@ -1005,6 +1047,11 @@ axlDoc * __axl_doc_parse_common (const char * entity, int entity_size,
 	/* create a document reference */
 	doc            = __axl_doc_new (true);
 	axl_stream_link (stream, doc, (axlDestroyFunc) axl_doc_free);
+
+	/* detect transitional entity codification to configure built
+	 * decoder */
+	if (!axl_stream_detect_codification (stream, &doc->detected_encoding, error))
+		return NULL;
 
 	/* parse initial xml header */
 	if (!__axl_doc_parse_xml_header (stream, doc, error))

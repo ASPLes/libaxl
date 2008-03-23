@@ -48,11 +48,11 @@ BEGIN_C_DECLS
  * @{
  */
 
-axlStream * axl_stream_new             (const char * stream_source, 
-					int stream_size,
-					const char * file_path,
-					int    fd_handler,
-					axlError ** error);
+axlStream * axl_stream_new             (const char  * stream_source, 
+					int           stream_size,
+					const char  * file_path,
+					int           fd_handler,
+					axlError   ** error);
 
 int         axl_stream_inspect         (axlStream * stream, const char * chunk, int inspected_size);
 
@@ -166,6 +166,8 @@ void        axl_stream_trim              (char * chunk);
 
 void        axl_stream_trim_with_size    (char * chunk, int * trimmed);
 
+void        axl_stream_remove            (char * chunk, const char * value, bool first);
+
 bool        axl_stream_cmp               (const char * chunk1, const char * chunk2, int size);
 
 bool        axl_stream_casecmp           (const char * chunk1, const char * chunk2, int size);
@@ -214,6 +216,10 @@ bool        axl_casecmp (const char * string, const char * string2);
 bool        axl_memcmp (const char * string, const char * string2, int size);
 
 char      * axl_strdup (const char * string);
+
+bool        axl_stream_detect_codification (axlStream  * stream, 
+					    char      ** encoding,
+					    axlError  ** error);
 
 /** 
  * \addtogroup axl_string_module

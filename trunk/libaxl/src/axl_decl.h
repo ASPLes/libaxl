@@ -754,6 +754,33 @@ typedef void (*axlDestroyFunc) (axlPointer ptr);
 typedef char * (*axlStreamAlloc) (int size, axlPointer data);
 
 /** 
+ * @brief Handler definition for the set of functions that allows to
+ * translate content into a particular format back to utf-8, which is
+ * the default format used for internal data stored by Axl. 
+ * 
+ * @param source The source content to be decoded into utf-8. 
+ *
+ * @param source_size The size of the source content to be decoded.
+ *
+ * @param source_encoding The encoding of the source. 
+ *
+ * @param output The output of the decode operation. This buffer is
+ * memory allocated by the caller. The size to be written is limited
+ * by the following parameter.
+ *
+ * @param output_size The size of the output produced (in terms of
+ * octects not utf-8 logical units).
+ * 
+ * @return The handler must return 1 if the operation was completed, 2
+ * if the operation was completed but not enough size was found on
+ * output buffer to store the content or 0 if the function fails.
+ */
+typedef int (*axlStreamDecode) (const char * source, int source_size,
+				 const char * source_encoding,
+				 char * output, int output_size, 
+				 int output_converted);
+
+/** 
  * @brief Axl debug levels.
  * 
  * While reporting log to the console, these levels are used to report

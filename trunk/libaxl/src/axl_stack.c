@@ -578,10 +578,9 @@ bool             axl_binary_stack_pop  (axlBinaryStack * bstack)
 bool             axl_binary_stack_peek (axlBinaryStack * bstack)
 {
 	axl_return_val_if_fail (bstack, false);
-	axl_return_val_if_fail (bstack->last, false);
 
 	/* return current state */
-	return bstack->last->state;
+	return (bstack->last && bstack->last->state);
 }
 
 /** 
