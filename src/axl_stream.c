@@ -168,6 +168,12 @@ struct _axlStream {
 	 */
 	axlPointer     alloc_data;
 
+	/** 
+	 * @internal Function used by the stream to decode content
+	 * into utf-8. This is not used in all cases.
+	 */
+	axlStreamDecode decode_f;
+
 };
 
 
@@ -233,7 +239,7 @@ bool axl_stream_prebuffer (axlStream * stream)
 		/* update the index to the positioned at the next byte
 		 * available on the buffer */
 		stream->stream_size  = (stream->stream_size - stream->stream_index);
-	}else {
+	} else {
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "   nothing to prebuffer on the head (stream->size=%d, stream-index=%d, buffer-size=%d)",
 			   stream->stream_size, stream->stream_index, stream->buffer_size);
 
@@ -382,7 +388,7 @@ bool axl_stream_prebuffer (axlStream * stream)
  * stream size.
  */
 axlStream * axl_stream_new (const char * stream_source, int stream_size,
-			    const char * file_path, int    fd_handler,
+			    const char * file_path,     int fd_handler,
 			    axlError ** error)
 {
 	axlStream * stream;
@@ -2067,6 +2073,85 @@ void        axl_stream_trim_with_size  (char * chunk, int * trimmed)
 }
 
 /** 
+ * @brief Allows to remote occurences of value from the provided
+ * string (chunk).
+ *
+ * The function do not allocate new memory for the result. All
+ * operations are applied to the string received (chunk).
+ *
+ * The idea behind the functions is to allow removing values from the
+ * string, joining remaining content. For example, removing "-" from
+ * the string "iso-8859-15" yields "iso885915".
+ * 
+ * @param chunk The string that holds values to be removed.  
+ *
+ * @param value The value to be removed.
+ *
+ * @param first If only the first ocurrence of value must be removed,
+ * otherwise all ocurrences will be removed from the string.
+ */
+void        axl_stream_remove            (char * chunk, const char * value, bool first)
+{
+	int iterator;
+	int iterator2;
+	int length;
+	int v_length;
+
+	axl_return_if_fail (chunk);
+	axl_return_if_fail (value);
+
+	/* get lengths */
+	length   = strlen (chunk);
+	v_length = strlen (value);
+
+	/* check for basic cases */
+	if (length == v_length) {
+		/* check if both strings are equal, then nullify */
+		if (axl_cmp (chunk, value))
+			chunk [0] = 0;
+		return;
+	} else if (length < v_length) {
+		/* nothing to remove because parent string is too
+		 * small to store the content */
+		return;
+	} /* end if */
+		
+
+	/* locate the string */
+	iterator = 0;
+	while (iterator < length) {
+		/* check if the string value was found */
+		if (axl_memcmp (chunk + iterator, value, v_length)) {
+			/* string found, move content remaining (if is found) */
+			if ((length - iterator - v_length) > 0) {
+				iterator2 = 0;
+				while (iterator2 < (length - iterator - v_length)) {
+					chunk [iterator + iterator2] = chunk [iterator + iterator2 + v_length];
+					iterator2++;
+				} /* end while */
+			} /* end if */
+			
+			/* update length to the new value */
+			length -= v_length;
+
+			/* check to terminate for first ocurrence */
+			if (first) {
+				chunk [length] = 0;
+				return;
+			}
+			continue;
+		} /* end if */
+
+		/* next position */
+		iterator++;
+	} /* end while */
+
+	/* nullify and terminate */
+	chunk [length] = 0;
+	return;
+}
+
+/** 
  * @brief Allows to copy the given chunk, supposing that is a properly
  * format C string that ends with a '\\0' value.
  *
@@ -2672,7 +2757,6 @@ char      * axl_stream_concat          (const char * chunk1, const char * chunk2
 	}
 
 	/* return the concatenation */
-
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "concat called.., returning %s%s", chunk1, chunk2);
 
 	/* alloc enough memory to hold both strings */
@@ -2962,6 +3046,131 @@ bool axl_memcmp (const char * string, const char * string2, int size)
 char * axl_strdup (const char * string)
 {
 	return (string != NULL) ? (char *) axl_stream_strdup ((char *) string) : NULL;
+}
+
+
+/** 
+ * @internal Function that implements the utf-16 decoding support into
+ * utf-8.
+ */
+int axl_stream_decode_utf16_le (const char * source, int source_size,
+				const char * source_encoding,
+				char * output, int output_size, 
+				int output_converted)
+{
+	/* to be implemented */
+	return 2;
+}
+
+/** 
+ * @internal Library function that allows to detect entity
+ * codification found to use the appropiate built-in decoder handler
+ * until the right codification is found (due to encoding header
+ * declaration). The intention is to move the content read from the
+ * stream abstraction into a utf-8 unified representation inside
+ * memory.
+ * 
+ * @param doc The document that is about to be checked for the
+ * appropiate codification.
+ *
+ * @param encoding Detected encoding by the function.
+ *
+ * @param error The reference where errors will be reported.
+ * 
+ * @return true if the codification detection was performed properly,
+ * otherwise false is returned if an error is found.
+ */
+bool axl_stream_detect_codification (axlStream  * stream, 
+				     char      ** encoding,
+				     axlError  ** error)
+{
+	/* check basic case where the stream have no content to
+	 * parse */
+	if (stream->stream_size < 4) {
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "unable to detect codification, stream received doesn't have enough content to parse");
+		return false;
+	} /* end if */
+
+	/* clear encoding */
+	if (encoding)
+		(*encoding) = NULL;
+
+	/* Check built-in supported formats. First check for documents
+	 * with the BOM mark configured */
+	
+	/* check UTF-8 BOM: EF BB BF */
+	if (stream->stream [stream->stream_index] == ((char) 239) &&
+	    stream->stream [stream->stream_index + 1] == ((char) 187) &&
+	    stream->stream [stream->stream_index + 2] == ((char) 191)) {
+
+		/* configure encoding detected */
+		if (encoding)
+			(*encoding) = "utf8";
+
+		/* update stream */
+		stream->stream_index += 3;
+
+		/* found utf-8 encoding, install associated filter */
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "utf-8 BOM mark found, assuming utf-8 content");
+		return true;
+	} /* end if */
+
+	/* check UTF-16 (little-endian) BOM: FF FE */
+	if (stream->stream [stream->stream_index] == ((char) 255) &&
+	    stream->stream [stream->stream_index + 1] == ((char) 254)) {
+		/* configure encoding detected */
+		if (encoding)
+			(*encoding) = "utf16";
+
+		/* update stream */
+		stream->stream_index += 2;
+
+		/* configure built-in filter to translate content into
+		 * utf-8 */
+		stream->decode_f = axl_stream_decode_utf16_le;
+
+		/* found utf-16 encoding, install associated filter */
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "utf-16 BOM mark found, assuming utf-16 content");
+		return true;
+	}
+
+	/* check UTF-32 (little-endian) BOM: FF FE 00 00 */
+	if (stream->stream [stream->stream_index] == ((char) 255) &&
+	    stream->stream [stream->stream_index + 1] == ((char) 254) &&
+	    stream->stream [stream->stream_index + 2] == 0 &&
+	    stream->stream [stream->stream_index + 3] == 0) {
+		/* configure encoding detected */
+		if (encoding)
+			(*encoding) = "utf32";
+
+		/* update stream */
+		stream->stream_index += 4;
+
+		/* found utf-16 encoding, install associated filter */
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "utf-32 BOM mark found, assuming utf-8 content");
+		return true;
+	} /* end if */
+
+	/* NO BOM MARK SECTION */
+
+	/* detect utf-8, iso 646, ascii,...*/
+	if (stream->stream [stream->stream_index] == ((char) 60) &&
+	    stream->stream [stream->stream_index + 1] == ((char) 63) &&
+	    stream->stream [stream->stream_index + 2] == ((char) 120) &&
+	    stream->stream [stream->stream_index + 3] == 109) {
+		/* no encoding detected we are not sure */ 
+
+		/* found utf-16 encoding, install associated filter */
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found utf-8, iso 646, ascii or something similiar without mark, assuming utf-8 until encoding declaration..");
+		return true;
+	} /* end if */
+
+	/* unable to detect the encoding format */
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, 
+		   "unable to detect encoding format, failed to detect encoding format");
+	axl_error_new (-1, "unable to detect encoding format, failed to detect encoding format", NULL, error);
+	return false;
+	
 }
 
 /* @} */

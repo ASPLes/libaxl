@@ -6,6 +6,38 @@
 #include <axl_ns.h>
 
 /** 
+ * @brief Extended encoding support.
+ * 
+ * @param error The optional axlError to be used to report erros.
+ * 
+ * @return true tests are ok, otherwise false is returned.
+ */
+bool test_41 (axlError ** error)
+{
+	axlDoc * doc;
+
+	/* test iso-8859-15 encoding */
+	doc = axl_doc_parse_from_file ("test_41.iso-8859-15.xml", error);
+	if (doc == NULL) 
+		return false;
+
+	axl_doc_free (doc);
+	return true;
+
+	/* test utf-16 encoding */
+	doc = axl_doc_parse_from_file ("test_41.utf-16.xml", error);
+	if (doc == NULL) 
+		return false;
+
+	/* check document content to ensure values */
+
+	/* free document */
+	axl_free (doc);
+
+	return true;
+}
+
+/** 
  * @brief Avoid including recursively white spaces content into dumped
  * documents.
  * 
@@ -910,7 +942,7 @@ LOTES<10 UDS.                  100%PIEZAS\n\
 10 UDS.<LOTES<20 UDS.  10+20% (SOBRE 10 PIEZAS)\n\
 LOTES>20  UDS                  12+10% (SOBRE 20 PIEZAS)                    \n\
  \n\
-¡¡¡¡ATENCION!!!!\n\
+Â¡ATENCION!!!!\n\
 MANIPULAR PIEZAS CON GUANTES DE LATEX EVITANDO CONTAMINAR LAS PIEZAS", -1, NULL)) {
 		axl_error_new (-1, "Expected to find invalid characters, but it wasn't found", NULL, error);
 		return false;
@@ -922,7 +954,7 @@ LOTES 10 UDS.               100%PIEZAS\n\
 10 UDS. LOTES 20 UDS.  10+20% (SOBRE 10 PIEZAS)\n\
 LOTES20  UDS                  12+10% (SOBRE 20 PIEZAS)                    \n\
  \n\
-¡¡¡¡ATENCION!!!!\n\
+Â¡ATENCION!!!!\n\
 MANIPULAR PIEZAS CON GUANTES DE LATEX EVITANDO CONTAMINAR LAS PIEZAS", -1, NULL)) {
 		axl_error_new (-1, "Expected to find valid characters, but it wasn't found", NULL, error);
 		return false;
@@ -2498,10 +2530,10 @@ bool test_13 (axlError ** error)
     <!-- Translations for the module and its attributes -->\n\
     <translate module='issued_invoice' as='Facturas emitidas' norma='no'>\n\
         <translate attr='All Columns' as='Todas las columnas' norma='no'>Value1</translate>\n\
-        <translate attr='invoice_number' as='N�mero' norma='no'>Value1</translate>\n\
+        <translate attr='invoice_number' as='Número' norma='no'>Value1</translate>\n\
         <translate attr='date' as='Fecha' norma='no'>Value1</translate>\n\
         <translate attr='amount' as='Importe' norma='no'>Value1</translate>\n\
-        <translate attr='year' as='A�o' norma='no'>Value1</translate>\n\
+        <translate attr='year' as='Año' norma='no'>Value1</translate>\n\
         <translate attr='tax' as='IVA' norma='no'>Value1</translate>\n\
         <translate attr='amount_with_tax' as='Total' norma='no'>Value1</translate>\n\
         <translate attr='cur_state' as='Estado' norma='no'>Value1</translate>\n\
@@ -5509,6 +5541,61 @@ bool test_01_03 ()
 		return false;
 	}
 
+	/* check remove function */
+	string = axl_strdup ("iso-8859-15");
+	axl_stream_remove (string, "-", false);
+	if (! axl_cmp (string, "iso885915")) {
+		printf ("Expected %s value but found %s...\n", 
+			string, "iso885915");
+		return false;
+	} /* end if */
+	axl_free (string);
+
+	string = axl_strdup ("iso885915");
+	axl_stream_remove (string, "-", false);
+	if (! axl_cmp (string, "iso885915")) {
+		printf ("Expected %s value but found %s...\n", 
+			string, "iso885915");
+		return false;
+	} /* end if */
+	axl_free (string);
+
+	string = axl_strdup ("--iso885915---");
+	axl_stream_remove (string, "-", false);
+	if (! axl_cmp (string, "iso885915")) {
+		printf ("Expected %s value but found %s...\n", 
+			"iso885915", string);
+		return false;
+	} /* end if */
+	axl_free (string);
+
+	string = axl_strdup_printf ("-----");
+	axl_stream_remove (string, "-", false);
+	if (! axl_cmp (string, "")) {
+		printf ("Expected %s value but found %s...\n", 
+			"", string);
+		return false;
+	} /* end if */
+	axl_free (string);
+
+	string = axl_strdup_printf ("iso-8859---------15");
+	axl_stream_remove (string, "-", false);
+	if (! axl_cmp (string, "iso885915")) {
+		printf ("Expected %s value but found %s...\n", 
+			"iso885915", string);
+		return false;
+	} /* end if */
+	axl_free (string);
+
+	string = axl_strdup_printf ("iso-8859---------15");
+	axl_stream_remove (string, "-", true);
+	if (! axl_cmp (string, "iso8859---------15")) {
+		printf ("Expected %s value but found %s...\n", 
+			"iso8859---------15", string);
+		return false;
+	} /* end if */
+	axl_free (string);
+
 	return true;
 }
 
@@ -7203,6 +7290,8 @@ int main (int argc, char ** argv)
 		return -1;
 	}
 
+	goto init;
+
 	/* DATA STRUCTURE TESTS */
 	if (test_01_01 ()) {
 		printf ("Test 01-01: LibAxl list implementation [   OK   ]\n");
@@ -7717,6 +7806,17 @@ int main (int argc, char ** argv)
 		printf ("Test 40: Avoid recursive content inclusion into coments  [   OK   ]\n");
 	}else {
 		printf ("Test 40: Avoid recursive content inclusion into coments  [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}
+
+ init:
+
+	if (test_41 (&error)) {
+		printf ("Test 41: Extended encoding support  [   OK   ]\n");
+	}else {
+		printf ("Test 41: Extended encoding support  [ FAILED ]\n  (CODE: %d) %s\n",
 			axl_error_get_code (error), axl_error_get (error));
 		axl_error_free (error);
 		return -1;
