@@ -7,6 +7,18 @@
  * axl_config.h file created on a i386 linux platform but changing
  * AXL_OS_UNIX to AXL_OS_WIN32 (at least for now).
  *
+ *  For commercial support on build XML enabled solutions contact us:
+ *          
+ *      Postal address:
+ *         Advanced Software Production Line, S.L.
+ *         Edificio Alius A, Oficina 102,
+ *         C/ Antonio Suarez Nº 10,
+ *         Alcalá de Henares 28802 Madrid
+ *         Spain
+ *
+ *      Email address:
+ *         info@aspl.es - http://www.aspl.es/xml
+ *
  */
 
 #ifndef __AXL_CONFIG_H__

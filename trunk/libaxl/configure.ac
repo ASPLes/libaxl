@@ -21,6 +21,19 @@ dnl  develop propietary applications using this library withtout any
 dnl  royalty or fee but returning back any change, improvement or
 dnl  addition in the form of source code, project image, documentation
 dnl  patches, etc. 
+dnl
+dnl  For commercial support on build XML enabled solutions contact us:
+dnl          
+dnl      Postal address:
+dnl         Advanced Software Production Line, S.L.
+dnl         Edificio Alius A, Oficina 102,
+dnl         C/ Antonio Suarez Nº 10,
+dnl         Alcalá de Henares 28802 Madrid
+dnl         Spain
+dnl
+dnl      Email address:
+dnl         info@aspl.es - http://www.aspl.es/xml
+dnl
 AC_INIT(src/axl.h)
 
 AXL_VERSION=`cat VERSION`
