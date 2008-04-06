@@ -29,8 +29,8 @@
  *      Postal address:
  *         Advanced Software Production Line, S.L.
  *         Edificio Alius A, Oficina 102,
- *         C/ Antonio Suarez Nº 10,
- *         Alcalá de Henares 28802 Madrid
+ *         C/ Antonio Suarez NÂº 10,
+ *         AlcalÃ¡ de Henares 28802 Madrid
  *         Spain
  *
  *      Email address:
@@ -500,12 +500,16 @@ bool axl_doc_configure_encoding (axlDoc * doc, axlError ** error)
 		/* remove characters not required */
 		axl_stream_remove (doc->encoding, "-", false);
 		axl_stream_remove (doc->encoding, "_", false); 
+
+		/* make it lower case */
+		axl_stream_to_lower (doc->encoding);
 		
 	} /* end if */
 
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "configuring final document enconding, previously detected=%s, declared=%s",
 		   doc->detected_encoding ? doc->detected_encoding : "none",
 		   doc->encoding ? doc->encoding : "none");
+	
 	
 	return true;
 }
