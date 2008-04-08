@@ -135,6 +135,18 @@ struct _axlStream {
 	 * operations.
 	 */
 	char      * temp;
+	char      * decode_temp;
+	int         decode_temp_size;
+	int         decode_temp_index;
+	int         decode_temp_last;
+	/* here is how these variables are used to decode content:
+	 * 
+	 * [   <---  decode_temp buffer ---> ] <- decode_temp_size: total buffer size (bytes)
+	 *   ^                ^
+	 *   |                |     
+	 *   |                +-- decode_temp_last: last valid content in the buffer (bytes)
+	 *   +-- decode_temp_index: next content to be consumed (bytes)
+	 */
 
 	/* more variables used to perform work: at get until */
 	char      * valid_chars;
@@ -173,7 +185,12 @@ struct _axlStream {
 	 * into utf-8. This is not used in all cases.
 	 */
 	axlStreamDecode decode_f;
-
+	
+	/** 
+	 * @internal Reference to user defined pointer provided to the
+	 * decode_f function.
+	 */
+	axlPointer      decode_f_data;
 };
 
 
@@ -529,6 +546,29 @@ int         axl_stream_inspect (axlStream * stream, const char * chunk, int insp
 
 	/* call to common implementation */
 	axl_stream_common_inspect (iterator, stream, chunk, inspected_size, true);
+}
+
+/** 
+ * @brief Allows to check the provide char code at the given \ref
+ * axlStream, using optionally an offset to perform the check.
+ * 
+ * @param stream The stream where the check operation will be
+ * implemented.
+ *
+ * @param value The value to check.
+ *
+ * @param offset The stream offset to apply to the check. Use 0 to not
+ * apply offset.
+ * 
+ * @return \ref true if the provided value is found at the current
+ * stream index (taking into consideration offset).
+ */
+bool         axl_stream_inspect_code    (axlStream * stream, char value, int offset)
+{
+	axl_return_val_if_fail (stream, false);
+	
+	/* check the value */
+	return stream->stream [stream->stream_index + offset] == value;
 }
 
 /** 
@@ -1705,6 +1745,7 @@ void axl_stream_free (axlStream * stream)
 
 	/* free temporal buffer */
 	axl_free (stream->temp);
+	axl_free (stream->decode_temp);
 
 	/* release memory allocated by the stream received. */
 	axl_free (stream);
@@ -3050,127 +3091,90 @@ char * axl_strdup (const char * string)
 
 
 /** 
- * @internal Function that implements the utf-16 decoding support into
- * utf-8.
- */
-int axl_stream_decode_utf16_le (const char * source, int source_size,
-				const char * source_encoding,
-				char * output, int output_size, 
-				int output_converted)
-{
-	/* to be implemented */
-	return 2;
-}
-
-/** 
- * @internal Library function that allows to detect entity
- * codification found to use the appropiate built-in decoder handler
- * until the right codification is found (due to encoding header
- * declaration). The intention is to move the content read from the
- * stream abstraction into a utf-8 unified representation inside
- * memory.
+ * @internal Allows to configure a decode functions to be used to
+ * translate content read into utf-8. 
  * 
- * @param doc The document that is about to be checked for the
- * appropiate codification.
+ * @param stream The stream to be configured.
  *
- * @param encoding Detected encoding by the function.
+ * @param source_encoding Original source encode.
+ *
+ * @param decode_f The function to be called to translate/check
+ * content read into utf-8. If a null value is provided the decode
+ * function is removed.
  *
  * @param error The reference where errors will be reported.
- * 
- * @return true if the codification detection was performed properly,
- * otherwise false is returned if an error is found.
+ *
+ * @return true if the function setup decode handler properly
+ * otherwise false is returned.
  */
-bool axl_stream_detect_codification (axlStream  * stream, 
-				     char      ** encoding,
-				     axlError  ** error)
+bool        axl_stream_setup_decode        (axlStream         * stream,
+					    const char        * source_encoding,
+					    axlStreamDecode     decode_f,
+					    axlPointer          user_data,
+					    axlError         ** error)
 {
-	/* check basic case where the stream have no content to
-	 * parse */
-	if (stream->stream_size < 4) {
-		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "unable to detect codification, stream received doesn't have enough content to parse");
-		return false;
-	} /* end if */
+	int result = 1;
 
-	/* clear encoding */
-	if (encoding)
-		(*encoding) = NULL;
+	axl_return_val_if_fail (stream, false);
 
-	/* Check built-in supported formats. First check for documents
-	 * with the BOM mark configured */
-	
-	/* check UTF-8 BOM: EF BB BF */
-	if (stream->stream [stream->stream_index] == ((char) 239) &&
-	    stream->stream [stream->stream_index + 1] == ((char) 187) &&
-	    stream->stream [stream->stream_index + 2] == ((char) 191)) {
+	/* do not check if the decode_f function is NULL (it's a valid
+	 * case) */
+	stream->decode_f      = decode_f;
+	stream->decode_f_data = user_data;
 
-		/* configure encoding detected */
-		if (encoding)
-			(*encoding) = "utf8";
+	/* call to check and decode if required bufferede content */
+	if (stream->decode_f) {
+		/* init decode buffer */
+		stream->decode_temp_size = (stream->buffer_size * 2) + 1;
+		stream->decode_temp      = axl_new (char, stream->decode_temp_size);
 
-		/* update stream */
-		stream->stream_index += 3;
+		/* move content into decode temporal buffer */
+		memcpy (stream->decode_temp, 
+			stream->stream + stream->stream_index, 
+			stream->stream_size - stream->stream_index);
+		stream->decode_temp_index = 0;
+		stream->decode_temp_last  = stream->stream_size - stream->stream_index;
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "procesing %d bytes from decode buffer (total size: %d, current index: 0)", 
+			   stream->decode_temp_last, stream->decode_temp_size);
 
-		/* found utf-8 encoding, install associated filter */
-		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "utf-8 BOM mark found, assuming utf-8 content");
-		return true;
-	} /* end if */
+		/* decode content from the stream directly */
+		result = stream->decode_f (
+			/* source */
+			stream->decode_temp,
+			/* source size */
+			stream->decode_temp_size,
+			/* source encoding: encode used by the source
+			 * content provided */
+			source_encoding,
+			/* output of content decoded and its size */
+			stream->stream + stream->stream_index, stream->buffer_size - stream->stream_index,
+			/* output decoded */
+			&stream->decode_temp_index,
+			/* user defined data */
+			stream->decode_f_data);
 
-	/* check UTF-16 (little-endian) BOM: FF FE */
-	if (stream->stream [stream->stream_index] == ((char) 255) &&
-	    stream->stream [stream->stream_index + 1] == ((char) 254)) {
-		/* configure encoding detected */
-		if (encoding)
-			(*encoding) = "utf16";
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "after decode operation result=%d, output_decoded (new buffer size)=%d (from %d original bytes)",
+			   result, stream->decode_temp_index, stream->stream_size - stream->stream_index);
 
-		/* update stream */
-		stream->stream_index += 2;
+		/* check result */
+		if (result == 0) {
+			axl_error_new (-1, "found internal failure at decode operation, unable to complete entity parsing",
+				       stream, error);
+			return 0;
+		} /* end if */
+		
+		/* update axl stream internal state */
+		stream->stream_size = stream->decode_temp_index;
 
-		/* configure built-in filter to translate content into
-		 * utf-8 */
-		stream->decode_f = axl_stream_decode_utf16_le;
-
-		/* found utf-16 encoding, install associated filter */
-		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "utf-16 BOM mark found, assuming utf-16 content");
-		return true;
+		/* if all was decoded, reset index */
+		if (stream->decode_temp_index == stream->decode_temp_last) {
+			stream->decode_temp_index = 0;
+			stream->decode_temp_last = 0;
+		} /* end if */
 	}
 
-	/* check UTF-32 (little-endian) BOM: FF FE 00 00 */
-	if (stream->stream [stream->stream_index] == ((char) 255) &&
-	    stream->stream [stream->stream_index + 1] == ((char) 254) &&
-	    stream->stream [stream->stream_index + 2] == 0 &&
-	    stream->stream [stream->stream_index + 3] == 0) {
-		/* configure encoding detected */
-		if (encoding)
-			(*encoding) = "utf32";
-
-		/* update stream */
-		stream->stream_index += 4;
-
-		/* found utf-16 encoding, install associated filter */
-		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "utf-32 BOM mark found, assuming utf-8 content");
-		return true;
-	} /* end if */
-
-	/* NO BOM MARK SECTION */
-
-	/* detect utf-8, iso 646, ascii,...*/
-	if (stream->stream [stream->stream_index] == ((char) 60) &&
-	    stream->stream [stream->stream_index + 1] == ((char) 63) &&
-	    stream->stream [stream->stream_index + 2] == ((char) 120) &&
-	    stream->stream [stream->stream_index + 3] == 109) {
-		/* no encoding detected we are not sure */ 
-
-		/* found utf-16 encoding, install associated filter */
-		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found utf-8, iso 646, ascii or something similiar without mark, assuming utf-8 until encoding declaration..");
-		return true;
-	} /* end if */
-
-	/* unable to detect the encoding format */
-	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, 
-		   "unable to detect encoding format, failed to detect encoding format");
-	axl_error_new (-1, "unable to detect encoding format, failed to detect encoding format", NULL, error);
-	return false;
-	
+	/* return result */
+	return (result == 1);
 }
 
 /* @} */

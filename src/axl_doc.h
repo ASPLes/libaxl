@@ -186,6 +186,13 @@ bool  axl_doc_consume_pi                   (axlDoc     * doc,
 
 axlFactory * axl_doc_get_item_factory  (axlDoc * doc);
 
+/* configuration API */
+axlDocDetectCodification axl_doc_set_detect_codification_func (axlDocDetectCodification func, 
+							       axlPointer user_data);
+
+axlDocConfigureCodification axl_doc_set_configure_codification_func (axlDocConfigureCodification func, 
+								     axlPointer user_data);
+
 /* @} */
 
 END_C_DECLS
