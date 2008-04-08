@@ -776,9 +776,10 @@ typedef char * (*axlStreamAlloc) (int size, axlPointer data);
  * output buffer to store the content or 0 if the function fails.
  */
 typedef int (*axlStreamDecode) (const char * source, int source_size,
-				 const char * source_encoding,
-				 char * output, int output_size, 
-				 int output_converted);
+				const char * source_encoding,
+				char * output, int output_size, 
+				int * output_converted,
+				axlPointer user_data);
 
 /** 
  * @brief Axl debug levels.
@@ -1272,6 +1273,48 @@ typedef bool (* axlNodeAttrForeachFunc) (const char * key, const char * value, a
  * resolver function once it is executed.
  */
 typedef const char * (* axlDtdEntityResolver) (const char * entityName, axlPointer data);
+
+/** 
+ * @brief Handler definition for the set of functions that allows to
+ * detect codification found at the document being opened by the
+ * \ref axlStream reference provided.
+ * 
+ * @param stream The stream where the detection will be implemented.
+ *
+ * @param detected A reference to the codification detected or NULL if
+ * nothing clearly detected. For example (ascii, iso-8859) but still
+ * not enough information.
+ *
+ * @param user_data A reference to user-defined data. This value was
+ * configured at \ref axl_doc_set_detect_codification_func.
+ * 
+ * @return true if the detection was implemented properly, otherse
+ * false is returned. The handler could return true and no
+ * codification be clearly detected.
+ */
+typedef bool (* axlDocDetectCodification) (axlStream * stream, char ** detected, axlPointer user_data, axlError ** error);
+
+/** 
+ * @brief Handler definition for the set of functions that allows to
+ * finally configure codification to be used for the provided stream.
+ * 
+ * @param stream A reference to the stream to be configured.
+ *
+ * @param encoding A reference to the encoding detected. It could be
+ * NULL.
+ *
+ * @param detected_encoding A reference to the detected encoding (a
+ * value provided by the \ref axlDocDetectCodification if defined).
+ * 
+ * @param user_data A reference to user defined data.
+ *
+ * @param error An optional error that will be filled in the case an
+ * error is found.
+ * 
+ * @return true if the configuration operation was done, otherwise
+ * false is returned.
+ */
+typedef bool (* axlDocConfigureCodification) (axlStream * stream, const char * encoding, const char * detected_encoding, axlPointer user_data, axlError ** error);
 
 /* @} */
 #endif

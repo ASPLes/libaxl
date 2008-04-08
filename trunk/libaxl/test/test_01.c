@@ -2525,7 +2525,7 @@ bool test_13 (axlError ** error)
 	} /* end if */
 
 	/* now check content dumped against the predefined value */
-	if (size != 1266 || ! axl_cmp (content, "<?xml version='1.0' encoding='iso-8859-15' standalone='yes' ?>\n\
+	if (size != 1262 || ! axl_cmp (content, "<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\n\
 <common-unit-translate>\n\
     <!-- Translations for the module and its attributes -->\n\
     <translate module='issued_invoice' as='Facturas emitidas' norma='no'>\n\
@@ -2545,6 +2545,7 @@ bool test_13 (axlError ** error)
         <translate value='NegativeInvoice' as='Negativa' norma='no'>Value1</translate>\n\
     </translate>\n\
 </common-unit-translate>\n")) {
+		printf ("Content lenght found: %d and size=%d..\n", strlen (content), size);
 		axl_error_new (-1, "Failed to check dump content, expected different values", NULL, error);
 		return false;
 	} /* end if */
@@ -3537,6 +3538,7 @@ bool test_01 (axlError ** error)
 	if (strcmp ("utf-8", axl_doc_get_encoding (doc))) {
 		printf ("ERROR: encoding read from the document differs from the expected (got %s, expected %s)!\n",
 			axl_doc_get_encoding (doc), "utf-8");
+		axl_error_new (-1, "ERROR: encoding read from the document differs from the expected!", NULL, error);
 		return false;
 	}
 
@@ -7283,14 +7285,25 @@ bool test_02_06 ()
 int main (int argc, char ** argv)
 {
 	axlError * error;
+
+	printf ("** LibAxl: Another XML library (regression test).\n");
+	printf ("** Copyright (C) 2008 Advanced Software Production Line, S.L.\n**\n");
+	printf ("** Axl regression tests: version=%s\n**\n",
+		VERSION);
+	printf ("** To gather information about time performance you can use:\n**\n");
+	printf ("**     >> time ./test_01\n**\n");
+	printf ("** To gather information about memory consumed (and leaks) use:\n**\n");
+	printf ("**     >> libtool --mode=execute valgrind --leak-check=yes --error-limit=no ./test_01\n**\n");
+	printf ("**\n");
+	printf ("** Report bugs to:\n**\n");
+	printf ("**     <axl@lists.aspl.es> Axl mailing list\n**\n");
+
 	
 	/* initialize axl library */
 	if (! axl_init ()) {
 		printf ("Unable to initialize Axl library\n");
 		return -1;
 	}
-
-	goto init;
 
 	/* DATA STRUCTURE TESTS */
 	if (test_01_01 ()) {
@@ -7544,7 +7557,7 @@ int main (int argc, char ** argv)
 		axl_error_free (error);
 		return -1;
 	}	
-
+	
 	if (test_13 (&error)) 
 		printf ("Test 13: XML memory dumping [   OK   ]\n");
 	else {
@@ -7810,8 +7823,6 @@ int main (int argc, char ** argv)
 		axl_error_free (error);
 		return -1;
 	}
-
- init:
 
 	if (test_41 (&error)) {
 		printf ("Test 41: Extended encoding support  [   OK   ]\n");

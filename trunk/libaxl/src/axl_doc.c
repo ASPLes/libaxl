@@ -412,6 +412,12 @@ struct _axlPI {
 	char * content;
 };
 
+/* global references to handlers and user defined configuration */
+axlDocDetectCodification detect_codification_func;
+axlPointer               detect_codification_data;
+
+axlDocConfigureCodification configure_codification_func;
+axlPointer                  configure_codification_data;
 
 /** 
  * @internal
@@ -490,28 +496,43 @@ char * __axl_doc_alloc (int size, axlDoc * doc)
  * @return true if the operation was completed, otherwise false is
  * returned.
  */
-bool axl_doc_configure_encoding (axlDoc * doc, axlError ** error)
+bool axl_doc_configure_encoding (axlDoc * doc, axlStream * stream, axlError ** error)
 {
+	char * encoding = NULL;
+	bool   result;
+	
 	/* normalize encoding found */
 	if (doc->encoding) {
+		/* copy encoding */
+		encoding = axl_strdup (doc->encoding);
+
 		/* trim encoding */
-		axl_stream_trim (doc->encoding);
+		axl_stream_trim (encoding);
 
 		/* remove characters not required */
-		axl_stream_remove (doc->encoding, "-", false);
-		axl_stream_remove (doc->encoding, "_", false); 
+		axl_stream_remove (encoding, "-", false);
+		axl_stream_remove (encoding, "_", false); 
 
 		/* make it lower case */
-		axl_stream_to_lower (doc->encoding);
+		axl_stream_to_lower (encoding);
 		
 	} /* end if */
-
+	
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "configuring final document enconding, previously detected=%s, declared=%s",
 		   doc->detected_encoding ? doc->detected_encoding : "none",
-		   doc->encoding ? doc->encoding : "none");
-	
-	
-	return true;
+		   encoding ? encoding : "none");
+
+	/* do not perform any configuration if nothing is defined */
+	if (! configure_codification_func) {
+		axl_free (encoding);
+		return true;
+	}
+
+	/* call to configure encoding */
+	result = configure_codification_func (stream, encoding, doc->detected_encoding, configure_codification_data, error);
+	axl_free (encoding);
+
+	return result;
 }
 
 /** 
@@ -643,7 +664,7 @@ bool __axl_doc_parse_xml_header (axlStream * stream, axlDoc * doc, axlError ** e
 	}
 
 	/* configure encoding again, now we could have more data */
-	if (! axl_doc_configure_encoding (doc, error))
+	if (! axl_doc_configure_encoding (doc, stream, error))
 		return false;
 
 	/* now process the document type declaration */
@@ -1053,9 +1074,11 @@ axlDoc * __axl_doc_parse_common (const char * entity, int entity_size,
 	axl_stream_link (stream, doc, (axlDestroyFunc) axl_doc_free);
 
 	/* detect transitional entity codification to configure built
-	 * decoder */
-	if (!axl_stream_detect_codification (stream, &doc->detected_encoding, error))
-		return NULL;
+	 * decoder (only if defined handler found) */
+	if (detect_codification_func) {
+		if (! detect_codification_func (stream, &doc->detected_encoding, detect_codification_data, error))
+			return NULL; 
+	} /* end if */
 
 	/* parse initial xml header */
 	if (!__axl_doc_parse_xml_header (stream, doc, error))
@@ -3097,6 +3120,7 @@ void     axl_doc_free         (axlDoc * doc)
 
 	/* free enconding allocated */
 	axl_free (doc->encoding);
+	axl_free (doc->detected_encoding);
 	
 	/* free allocated version value */
 	axl_free (doc->version);
@@ -3320,6 +3344,54 @@ bool      axl_doc_consume_pi (axlDoc * doc, axlNode * node,
 axlFactory * axl_doc_get_item_factory  (axlDoc * doc)
 {
 	return doc->item_factory;
+}
+
+/** 
+ * @brief Allows to configure a handler that implements document
+ * detection and in such cases reconfigure \ref axlStream to act an a
+ * proper manner.
+ * 
+ * @param func The function to be configured.
+ *
+ * @param user_data User defined data to be provide to the function.
+ *
+ * @return A reference to the previously configured function.
+ */
+axlDocDetectCodification axl_doc_set_detect_codification_func (axlDocDetectCodification func, 
+							       axlPointer user_data)
+{
+	axlDocDetectCodification previous;
+	
+	/* configure handler and user defined pointer */
+	previous                 = detect_codification_func;
+	detect_codification_func = func;
+	detect_codification_data = user_data;
+
+	return previous;
+}
+
+/** 
+ * @brief Allows to configure the handler used to finally configure
+ * codification to be used for a particular \ref axlStream.
+ * 
+ * @param func The function to be called to configure codification.
+ *
+ * @param user_data A reference to user defined data to be passed to
+ * the function.
+ * 
+ * @return A refernece to the previous handler configured.
+ */
+axlDocConfigureCodification axl_doc_set_configure_codification_func (axlDocConfigureCodification func, 
+								     axlPointer user_data)
+{
+	axlDocConfigureCodification previous;
+	
+	/* configure handler and user defined pointer */
+	previous                    = configure_codification_func;
+	configure_codification_func = func;
+	configure_codification_data = user_data;
+
+	return previous;
 }
 
 /* @} */

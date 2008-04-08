@@ -9,7 +9,7 @@ NS = -DAXL_NS_SUPPORT
 NS_LIB = ../ns/libaxl-ns.la
 endif
 
-INCLUDES = -I../src/ -I../ns -Wall $(LOG) $(NS)
+INCLUDES = -I../src/ -I../ns -Wall $(LOG) $(NS) -DVERSION=\""$(AXL_VERSION)"\" 
 
 # replace with bin_PROGRAMS to check performance
 bin_PROGRAMS = refresh test_01 test_01a test_02a test_03a
