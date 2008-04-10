@@ -139,6 +139,9 @@ struct _axlStream {
 	int         decode_temp_size;
 	int         decode_temp_index;
 	int         decode_temp_last;
+	int         decode_temp_remain;
+	char      * source_encoding;
+
 	/* here is how these variables are used to decode content:
 	 * 
 	 * [   <---  decode_temp buffer ---> ] <- decode_temp_size: total buffer size (bytes)
@@ -146,6 +149,13 @@ struct _axlStream {
 	 *   |                |     
 	 *   |                +-- decode_temp_last: last valid content in the buffer (bytes)
 	 *   +-- decode_temp_index: next content to be consumed (bytes)
+	 *
+	 * [decode_temp_remain]: is the amount of content pending to
+	 * be decoded. That is, starting from decode_temp_remain until
+	 * last is the valid content still to be decoded.
+	 *
+	 * [source_encoding]: is defined to hold the value of the
+	 * format for the source.
 	 */
 
 	/* more variables used to perform work: at get until */
@@ -191,6 +201,12 @@ struct _axlStream {
 	 * decode_f function.
 	 */
 	axlPointer      decode_f_data;
+
+	/** 
+	 * @internal Value that allows to signal that the buffer needs
+	 * to be expanded (no matter what shows current indexes).
+	 */
+	bool            needs_expansion;
 };
 
 
@@ -225,6 +241,7 @@ struct _axlStream {
 bool axl_stream_prebuffer (axlStream * stream)
 {
 	int  bytes_read;
+	int  op_result;
 
 	/* check some environment conditions */
 	axl_return_val_if_fail (stream, false);
@@ -262,13 +279,20 @@ bool axl_stream_prebuffer (axlStream * stream)
 
 		/* check here if the buffer is full of content and a call to
 		 * prebuffer was done */
-		if ((stream->stream_size == stream->buffer_size) && 
-		    (stream->stream_index == 0)) {
+		if (((stream->stream_size == stream->buffer_size) && 
+		    (stream->stream_index == 0)) || stream->needs_expansion) {
 			/* looks like the caller is prebuffering
 			 * having all buffers full of content .. */
+			
+
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, 
-				   "   requested to prebuffer with buffers full of content (stream-index=%d, stream-size=%d, stream-buffer-size=%d)",
-				   stream->stream_index, stream->stream_size, stream->buffer_size);
+				   "   requested to prebuffer with buffers full of content (stream-index=%d, stream-size=%d, stream-buffer-size=%d, stream-needs-expansion=%d)",
+				   stream->stream_index, stream->stream_size, stream->buffer_size, stream->needs_expansion);
+
+			/* unflag expansion requested */
+			if (stream->needs_expansion)
+				stream->needs_expansion = false;
+
 			/* duplicate the buffer size */
 			stream->buffer_size += (stream->buffer_size);
 			stream->stream       = realloc (stream->stream, stream->buffer_size + 1);
@@ -300,30 +324,106 @@ bool axl_stream_prebuffer (axlStream * stream)
 	/* reset current index */
 	stream->stream_index = 0;
 
-	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "   reading on buffer index: %d, size: %d (starting from: %d, length: %d)",
-		   stream->stream_index, stream->stream_size, stream->stream_size, stream->buffer_size - stream->stream_size);
+	/* check if we have decode functions defined */
+	if (stream->decode_f) {
+		while (1) {
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, 
+				   "check temporal decode buffer for pending content: decode_temp_index=%d, decode_temp_last=%d, decode_temp_size=%d",
+				   stream->decode_temp_index, 
+				   stream->decode_temp_last,
+				   stream->decode_temp_size);
 
-	/* read current content */
-	bytes_read = read (stream->fd, stream->stream + stream->stream_size,
-			   stream->buffer_size - stream->stream_size);
+			if (stream->decode_temp_last > 0) {
+				/* call to decode */
+				if (! axl_stream_decode (stream, 
+							 /* output */
+							 stream->stream + stream->stream_size,
+							 /* max output size */
+							 stream->buffer_size - stream->stream_size,
+							 /* output decoded */
+							 &bytes_read, &op_result, NULL)) {
+					__axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "failed to decode content at the temporal decode buffer");
+					return false;
+				} /* end if */
 
-	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "   bytes read from the file, size %d", bytes_read);
+				/* check if the decode operation
+				 * signaled that not enough espace was
+				 * available to decode and no output
+				 * was decoed, int his case flag the
+				 * stream to do a stream expansion on
+				 * the next call */
+				if (op_result == 2 && bytes_read == 0)
+					stream->needs_expansion = true;
 
-	/* check for end of file reached */
-	if (bytes_read == 0) {
-		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "end of file reached");
-		close (stream->fd);
-		stream->fd = -1;
-		return false;
-	}
+				/* add bytes read to the size */
+				stream->stream_size += bytes_read;
 
-	/* set the new size, that is the padding, the content already
-	 * read, and the bytes already read */
-	stream->stream_size += bytes_read;
+			} /* end if */
+
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, 
+				   "after checking to decode, op_result=%d, bytes_read=%d, stream->buffer_size=%d, stream->stream_size=%d",
+				   op_result, bytes_read, stream->buffer_size, stream->stream_size);
+
+			/* stop if no enought space if left and no
+			 * more bytes were translated */
+			if (op_result == 2) 
+				break;
+
+			/* check if there are still space to decode at the stream */
+			if ((stream->buffer_size - stream->stream_size) > 0) {
+				/* read content inside the decde temp buffer */
+				bytes_read = read (stream->fd, stream->decode_temp + stream->decode_temp_last,
+						   stream->decode_temp_size - stream->decode_temp_last);
+				
+				/* update the amount of data available tat the decode temp */
+				if (bytes_read > 0)
+					stream->decode_temp_last += bytes_read;
+				else if (bytes_read == 0 && stream->fd > 0) {
+					__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "end of file reached");
+					close (stream->fd);
+					stream->fd = -1;
+				} /* end if */
+			} else {
+				/* no more space is available at the reading buffer */
+				break;
+			} /* end if */
+
+			/* check to terminate */
+			if (stream->decode_temp_index == 0 && 
+			    stream->decode_temp_last == 0 && 
+			    stream->fd == -1) 
+				return true;
+			
+		} /* end while */
+
+	} else {
+
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "   reading on buffer index: %d, size: %d (starting from: %d, length: %d)",
+			   stream->stream_index, stream->stream_size, stream->stream_size, stream->buffer_size - stream->stream_size);
+
+		/* read current content */
+		bytes_read = read (stream->fd, stream->stream + stream->stream_size,
+				   stream->buffer_size - stream->stream_size);
+
+
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "   bytes read from the file, size %d", bytes_read);
+		
+		/* check for end of file reached */
+		if (bytes_read == 0) {
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "end of file reached");
+			close (stream->fd);
+			stream->fd = -1;
+			return false;
+		}
+		
+		/* set the new size, that is the padding, the content already
+		 * read, and the bytes already read */
+		stream->stream_size += bytes_read;
+	} /* end if */
 
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "   (before read) current buffer size: %d",
 		   stream->stream_size);
-
+	
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "   prebuffered data: stream size: %d, new content: %s",
 		   bytes_read, stream->stream + stream->stream_index);
 
@@ -1603,6 +1703,7 @@ char      * axl_stream_get_following   (axlStream * stream, int count)
 typedef struct _AxlStreamAssociatedData {
 	axlPointer       data;
 	axlDestroyFunc   destroy_func;
+	bool             free_on_finish;
 }AxlStreamAssociatedData;
 
 
@@ -1655,6 +1756,34 @@ void        axl_stream_link            (axlStream  *   stream,
 					axlPointer     element,
 					axlDestroyFunc func)
 {
+	/* call to base implementation */
+	axl_stream_link_full (stream, element, func, false);
+
+	return;
+}
+
+/** 
+ * @brief Allows to associate data references with a destroy function,
+ * like \ref axl_stream_link, but ensuring the object reference will
+ * be released once finished the axl stream, no mather if the
+ * application code calls to \ref axl_stream_unlink.
+ * 
+ * @param stream The axlStream where the document will be linked to.
+ *
+ * @param element The element to link (may a axlDoc or a axlDtd).
+ *
+ *
+ * @param func The function to call once the stream is released.
+ *
+ * @param free_on_finish true to make the reference to be released on
+ * \ref axlStream deallocation. Providing \ref false to this value is
+ * equivalent to call to \ref axl_stream_link directly.
+ */
+void       axl_stream_link_full     (axlStream  *   stream,
+				     axlPointer     element,
+				     axlDestroyFunc func,
+				     bool           free_on_finish)
+{
 	AxlStreamAssociatedData * data;
 	axl_return_if_fail (stream);
 	axl_return_if_fail (element);
@@ -1666,9 +1795,10 @@ void        axl_stream_link            (axlStream  *   stream,
 							(axlDestroyFunc) __stream_associated_data_free);
 
 	/* create the data to be stored */
-	data               = axl_new (AxlStreamAssociatedData, 1);
-	data->data         = element;
-	data->destroy_func = func;
+	data                 = axl_new (AxlStreamAssociatedData, 1);
+	data->data           = element;
+	data->destroy_func   = func;
+	data->free_on_finish = free_on_finish;
 
 	/* add the item to be destroy once the stream is unrefered */
 	axl_list_add (stream->elements_linked, data);
@@ -1693,11 +1823,11 @@ void axl_stream_unlink (axlStream * stream)
 	while (iterator < axl_list_length (stream->elements_linked)) {
 		/* get a referece to the node to destroy */
 		data = axl_list_get_nth (stream->elements_linked, iterator);
-		
 		/* clear it */
-		data->data         = NULL;
-		data->destroy_func = NULL;
-		
+		if (! data->free_on_finish) {
+			data->data         = NULL;
+			data->destroy_func = NULL;
+		}
 		iterator++;
 	}
 	return;
@@ -1746,6 +1876,7 @@ void axl_stream_free (axlStream * stream)
 	/* free temporal buffer */
 	axl_free (stream->temp);
 	axl_free (stream->decode_temp);
+	axl_free (stream->source_encoding);
 
 	/* release memory allocated by the stream received. */
 	axl_free (stream);
@@ -3089,6 +3220,107 @@ char * axl_strdup (const char * string)
 	return (string != NULL) ? (char *) axl_stream_strdup ((char *) string) : NULL;
 }
 
+/** 
+ * @internal Function that handles decoding operations when decode
+ * functions are defined.
+ * 
+ * @param stream The stream where the decode operation will be
+ * performed. 
+ *
+ * @param error Optional \ref axlError reference where errors will be
+ * reported.
+ * 
+ * @return true if the operation was completed.
+ */
+bool axl_stream_decode (axlStream  * stream, 
+			char       * output, 
+			int          output_max_size, 
+			int        * output_decoded, 
+			int        * op_result, 
+			axlError  ** error)
+{
+
+	int result;
+	int size;
+
+	/* clear op_result if defined */
+	if (op_result)
+		*op_result = 0;
+
+	/* decode content from the stream directly */
+	result = stream->decode_f (
+		/* source */
+		stream->decode_temp,
+		/* source size */
+		stream->decode_temp_last,
+		/* source encoding: encode used by the source
+		 * content provided */
+		stream->source_encoding,
+		/* output of content decoded and its size */
+		output,
+		/* output max size */
+		output_max_size,
+		/* output decoded */
+		output_decoded,
+		/* source remaining */
+		&(stream->decode_temp_remain),
+		/* user defined data */
+		stream->decode_f_data);
+
+	/* set op result if defined */
+	if (op_result)
+		*op_result = result;
+	
+	/* check result */
+	if (result == 0) {
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "after decode operation result=%d, output_decoded (new buffer size)=%d (from %d original bytes)",
+			   result, output_decoded ? *output_decoded : 0, stream->decode_temp_last);
+		axl_error_new (-1, "found internal failure at decode operation, unable to complete entity parsing",
+			       stream, error);
+		return false;
+	} /* end if */
+	
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "after decode operation result=%d, output_decoded (new buffer size)=%d",
+		   result, output_decoded ? *output_decoded : 0);
+	
+	/* update axl stream internal state */
+	if (result == 1) {
+		/* then the conversión was complete a no data
+		 * is pending the the temporal decode
+		 * buffer */
+		stream->decode_temp_index = 0;
+		stream->decode_temp_last  = 0;
+	} else if (result == 2) {
+		/* not enough space was found at the destination
+		 * buffer, pack content at the decode buffer at the
+		 * next operation */
+		size = stream->decode_temp_last - stream->decode_temp_remain;
+		if (size <= 0) {
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, 
+				   "found decode function return 2 (signaling pending data to be decoded) but last - remain yields to %d",
+				   size);
+			axl_error_new (-1, "found decode function return 2 (signaling pending data to be decoded) but last - remain yields to 0 or less", NULL, error);
+			return false;
+		} /* end if */
+		
+		/* moving data */
+		while (stream->decode_temp_index < size) { 
+			stream->decode_temp[stream->decode_temp_index] = stream->decode_temp[stream->decode_temp_remain +  stream->decode_temp_index];
+			stream->decode_temp_index++;
+		} /* end while */
+		
+		/* now reset */
+		stream->decode_temp_index = 0;
+		stream->decode_temp_last  = size;
+		
+		/* reset to 1 since we have moved content to
+		 * the begin of the buffer */
+		result = 1;
+	} /* end if */
+
+	return (result == 1);
+}
+
 
 /** 
  * @internal Allows to configure a decode functions to be used to
@@ -3113,14 +3345,16 @@ bool        axl_stream_setup_decode        (axlStream         * stream,
 					    axlPointer          user_data,
 					    axlError         ** error)
 {
-	int result = 1;
-
 	axl_return_val_if_fail (stream, false);
 
 	/* do not check if the decode_f function is NULL (it's a valid
 	 * case) */
 	stream->decode_f      = decode_f;
 	stream->decode_f_data = user_data;
+
+	/* store source encoding */
+	if (source_encoding != NULL)
+		stream->source_encoding = axl_strdup (source_encoding);
 
 	/* call to check and decode if required bufferede content */
 	if (stream->decode_f) {
@@ -3137,44 +3371,26 @@ bool        axl_stream_setup_decode        (axlStream         * stream,
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "procesing %d bytes from decode buffer (total size: %d, current index: 0)", 
 			   stream->decode_temp_last, stream->decode_temp_size);
 
-		/* decode content from the stream directly */
-		result = stream->decode_f (
-			/* source */
-			stream->decode_temp,
-			/* source size */
-			stream->decode_temp_size,
-			/* source encoding: encode used by the source
-			 * content provided */
-			source_encoding,
-			/* output of content decoded and its size */
-			stream->stream + stream->stream_index, stream->buffer_size - stream->stream_index,
-			/* output decoded */
-			&stream->decode_temp_index,
-			/* user defined data */
-			stream->decode_f_data);
-
-		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "after decode operation result=%d, output_decoded (new buffer size)=%d (from %d original bytes)",
-			   result, stream->decode_temp_index, stream->stream_size - stream->stream_index);
-
-		/* check result */
-		if (result == 0) {
-			axl_error_new (-1, "found internal failure at decode operation, unable to complete entity parsing",
-				       stream, error);
-			return 0;
-		} /* end if */
+		/* call to decode content */
+		if (! axl_stream_decode (stream, 
+					 /* output */
+					 (stream->stream + stream->stream_index),
+					 /* output max size */
+					 stream->buffer_size - stream->stream_index,
+					 /* output decoded */
+					 &(stream->stream_size),
+					 /* do not define op result */
+					 NULL,
+					 error))
+			return false;
 		
-		/* update axl stream internal state */
-		stream->stream_size = stream->decode_temp_index;
-
-		/* if all was decoded, reset index */
-		if (stream->decode_temp_index == stream->decode_temp_last) {
-			stream->decode_temp_index = 0;
-			stream->decode_temp_last = 0;
-		} /* end if */
-	}
+		/* add to the stream size the current index */
+		stream->stream_size += stream->stream_index;
+		
+	} /* end if */
 
 	/* return result */
-	return (result == 1);
+	return true;
 }
 
 /* @} */

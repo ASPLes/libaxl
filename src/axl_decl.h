@@ -770,6 +770,10 @@ typedef char * (*axlStreamAlloc) (int size, axlPointer data);
  *
  * @param output_size The size of the output produced (in terms of
  * octects not utf-8 logical units).
+ *
+ * @param remain_source_index Reference where the last index of valid
+ * input still pending to be process. Especially useful under
+ * situation where the decode function returns 2.
  * 
  * @return The handler must return 1 if the operation was completed, 2
  * if the operation was completed but not enough size was found on
@@ -779,6 +783,7 @@ typedef int (*axlStreamDecode) (const char * source, int source_size,
 				const char * source_encoding,
 				char * output, int output_size, 
 				int * output_converted,
+				int * remain_source_index,
 				axlPointer user_data);
 
 /** 

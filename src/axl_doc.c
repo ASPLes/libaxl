@@ -1105,7 +1105,7 @@ axlDoc * __axl_doc_parse_common (const char * entity, int entity_size,
 
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "current index: %d (global: %d)", index,
 				   axl_stream_get_global_index (stream));
-
+			
 			/* get rid from spaces according to the
 			 * xml:space configuration */
 			if (! axl_binary_stack_peek (doc->xmlPreserve)) {
