@@ -60,6 +60,7 @@ typedef struct _axlBabelTable {
 } axlBabelTable;
 
 /* include headers */
+#include <axl_babel_iso88591.h>
 #include <axl_babel_iso885915.h>
 
 bool        axl_babel_init (axlError ** error);
