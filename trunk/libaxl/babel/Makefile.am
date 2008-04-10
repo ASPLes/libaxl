@@ -12,8 +12,8 @@ libaxl_babelincludedir = $(includedir)/axl
 
 lib_LTLIBRARIES = libaxl-babel.la
 
-libaxl_babel_la_SOURCES     = axl_babel.c axl_babel_iso885915.c
-libaxl_babelinclude_HEADERS = axl_babel.h axl_babel_iso885915.h
+libaxl_babel_la_SOURCES     = axl_babel.c axl_babel_iso885915.c axl_babel_iso88591.c
+libaxl_babelinclude_HEADERS = axl_babel.h axl_babel_iso885915.h axl_babel_iso88591.h
 
 libaxl_babel_la_LDFLAGS = -no-undefined -export-symbols-regex '^(axl|__axl).*'
 
@@ -25,6 +25,7 @@ update-def:
 
 refresh-tables: gen-table
 	./gen-table codes.txt iso885915.utf8.txt iso-8859-15
+	./gen-table codes.txt iso88591.utf8.txt iso-8859-15
 
 
 # replace with bin_PROGRAMS to check performance

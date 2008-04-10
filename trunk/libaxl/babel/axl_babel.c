@@ -206,14 +206,14 @@ int axl_babel_identity_utf8 (const char * source, int source_size,
 }
 
 /** 
- * @internal Function that performs translation between iso-8859-15
- * and utf-8.
+ * @internal Function that performs translation from encoding
+ * representations using 1 octect (0..255) into utf-8.
  * 
  * @return The handler must return 1 if the operation was completed, 2
  * if the operation was completed but not enough size was found on
  * output buffer to store the content or 0 if the function fails.
  */
-int axl_babel_iso885915_utf8 (const char * source, int source_size,
+int axl_babel_single_to_utf8 (const char * source, int source_size,
 			      const char * source_encoding,
 			      char * output, int output_size, 
 			      int  * output_converted,
@@ -227,9 +227,9 @@ int axl_babel_iso885915_utf8 (const char * source, int source_size,
 	unsigned char   value;
 
 	
-	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "received request to translate source code from iso-8859-15 to utf-8: source size=%d on output size=%d: %s",
-		   source_size, output_size, source);
-
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "received request to translate source code from %s to utf-8: source size=%d on output size=%d: %s",
+		   source_encoding, source_size, output_size, source);
+	
 	iterator  = 0;
 	iterator2 = 0;
 	while (iterator < source_size && iterator2 < output_size) {
@@ -300,7 +300,7 @@ bool axl_babel_configure_encoding (axlStream  * stream,
 				   const char * detected, 
 				   axlPointer user_data, axlError ** error)
 {
-	axlBabelTable * table;
+	axlBabelTable * table = NULL;
 
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "configuring final document enconding, previously detected=%s, declared=%s",
 		   detected ? detected : "none",
@@ -308,25 +308,36 @@ bool axl_babel_configure_encoding (axlStream  * stream,
 
 	/* check case were a encoding was detected (the entity content
 	 * is encoded as detected due to marks or other means) */
-	if (detected) {
-		
-	} else {
-		/* No encoding detected or it was too open to clearly
-		 * define the codification. Then use the encoding
-		 * attribute found at the xml header. */
-		if (axl_cmp (encoding, "iso885915")) {
-			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "installed handler encoding for iso-8859-15");
+	if (detected && encoding == NULL)
+		detected = encoding;
 
-			/* install a translator handler */
-			table = axl_babel_build_iso885915_table ();
-
-			/* associate to the stream */
-			axl_stream_link_full (stream, table, axl_free, true);
-
-			if (! axl_stream_setup_decode (stream, encoding, axl_babel_iso885915_utf8, table, error))
-				return false; 
-		} /* end if */
-	} /* end if (doc->detected_encoding) */
+	/* No encoding detected or it was too open to clearly
+	 * define the codification. Then use the encoding
+	 * attribute found at the xml header. */
+	if (axl_cmp (encoding, "iso885915")) {
+		/* install a translator handler */
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "installed handler encoding for iso-8859-15");
+		table = axl_babel_build_iso885915_table ();
+	} /* end if */
+	
+	if (axl_cmp (encoding, "iso88591")) {
+		/* install a translator handler */
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "installed handler encoding for iso-8859-1");
+		table = axl_babel_build_iso88591_table ();
+	} /* end if */
+	
+	
+	if (table == NULL) {
+		/* format not defined, use default utf-8 */
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_WARNING, "encoding not defined, falling back into utf-8 without restriction");
+		return true;
+	} /* end if */
+	
+	/* associate to the stream */
+	axl_stream_link_full (stream, table, axl_free, true);
+	
+	if (! axl_stream_setup_decode (stream, encoding, axl_babel_single_to_utf8, table, error))
+		return false; 
 	
 	return true;
 }
