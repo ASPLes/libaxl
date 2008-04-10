@@ -40,6 +40,29 @@ bool test_41 (axlError ** error)
 		return false;
 	}
 
+	/*** UTF-8 support */
+	/* test utf-8 encoding */
+	printf ("Test 41: test utf-8 support..\n");
+	doc = axl_doc_parse_from_file ("test_41.utf-8.xml", error);
+	if (doc == NULL) 
+		return false;
+
+	/* find info node */
+	node = axl_doc_get_root (doc);
+	if (! NODE_CMP_NAME (node, "encodings")) {
+		axl_error_new (-1, "Expected to find root node called <info> but it wasn't found", NULL, error);
+		return false;
+	}
+
+	axl_doc_free (doc);
+
+	/* test utf-8 encoding (wrong test) */
+	printf ("Test 41: test wrong utf-8 content..\n");
+	doc = axl_doc_parse_from_file ("test_41.utf-8.wrong.xml", error);
+	if (doc != NULL) 
+		return false;
+
+	/*** ISO-8859-15 SUPPORT ***/
 	/* test iso-8859-15 encoding */
 	printf ("Test 41: test iso-8859-15..\n");
 	doc = axl_doc_parse_from_file ("test_41.iso-8859-15.xml", error);
