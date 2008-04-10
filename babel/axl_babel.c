@@ -275,6 +275,24 @@ int axl_babel_single_to_utf8 (const char * source, int source_size,
 	return 2;
 }
 
+/** 
+ * @internal Function that performs translation from encoding
+ * representations using 1 octect (0..255) into utf-8.
+ * 
+ * @return The handler must return 1 if the operation was completed, 2
+ * if the operation was completed but not enough size was found on
+ * output buffer to store the content or 0 if the function fails.
+ */
+int axl_babel_utf8_check (const char  * source, 
+			  int           source_size,
+			  const char  * source_encoding,
+			  axlPointer    user_data,
+			  axlError   ** error)
+{
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "received notification to check content size=%d to have valid utf-8: %s", source_size, source);
+	return axl_babel_check_utf8_content (source, source_size, NULL) ? 1 : 0;
+}
+
 
 /** 
  * @internal Function that tries to check encoding found to configure the
@@ -335,11 +353,23 @@ bool axl_babel_configure_encoding (axlStream  * stream,
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "installed handler encoding for iso-8859-15");
 		table = axl_babel_build_iso885915_table ();
 	} /* end if */
-	
+
+	if (axl_cmp (encoding, "utf8")) {
+		/* install a translator handler */
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "installed handler encoding for utf-8");
+		
+		/* install checker without table */
+		if (! axl_stream_setup_check (stream, encoding, axl_babel_utf8_check, NULL, error)) 
+			return false; 
+		return true;
+	} /* end if */
 	
 	if (table == NULL) {
 		/* format not defined, use default utf-8 */
-		__axl_log (LOG_DOMAIN, AXL_LEVEL_WARNING, "encoding not defined, falling back into utf-8 without restriction");
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_WARNING, "encoding='%s' (detected: '%s') not supported, falling back into utf-8 without restriction",
+			   encoding ? encoding : "",
+			   detected ? detected : "");
+		
 		return true;
 	} /* end if */
 	
@@ -408,7 +438,7 @@ bool        axl_babel_check_utf8_content  (const char  * content,
 				}
 			}
 
-			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found error while detecting 4 octect utf-8 format..");
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "found error while detecting 4 octect utf-8 format..");
 			/* found error */
 			if (index_error)
 				*index_error = iterator;
@@ -429,7 +459,7 @@ bool        axl_babel_check_utf8_content  (const char  * content,
 				} /* end if */
 			}
 
-			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found error while detecting 3 octect utf-8 format..");
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "found error while detecting 3 octect utf-8 format..");
 				
 			/* found error */
 			if (index_error)
@@ -446,7 +476,7 @@ bool        axl_babel_check_utf8_content  (const char  * content,
 				continue;
 			} /* end if */
 			
-			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found error while detecting 2 octect utf-8 format value=%d..", value);
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "found error while detecting 2 octect utf-8 format value=%d..", value);
 
 			/* found error */
 			if (index_error)
@@ -459,7 +489,7 @@ bool        axl_babel_check_utf8_content  (const char  * content,
 			continue;
 		} /* end if */
 
-		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found error while detecting single octect utf-8 format..");
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "found error while detecting single octect utf-8 format..");
 
 		/* found error */
 		if (index_error)
