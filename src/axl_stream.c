@@ -207,6 +207,18 @@ struct _axlStream {
 	 * to be expanded (no matter what shows current indexes).
 	 */
 	bool            needs_expansion;
+
+	/** 
+	 * @internal Reference to the content check function
+	 * installed.
+	 */
+	axlStreamContentCheck check_f;
+
+	/** 
+	 * @internal Reference to user defined pointer to be passed to
+	 * the content check function (check_f).
+	 */
+	axlPointer            check_f_data;
 };
 
 
@@ -407,6 +419,15 @@ bool axl_stream_prebuffer (axlStream * stream)
 
 
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "   bytes read from the file, size %d", bytes_read);
+
+		/* call to check */
+		if (stream->check_f) {
+			/* call to check */
+			if (! axl_stream_content_check (stream, stream->stream + stream->stream_size, bytes_read, NULL)) {
+				__axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "failed to prebuffer, content check function have failed");
+				return false;
+			}
+		} /* end if */
 		
 		/* check for end of file reached */
 		if (bytes_read == 0) {
@@ -3321,6 +3342,31 @@ bool axl_stream_decode (axlStream  * stream,
 	return (result == 1);
 }
 
+/** 
+ * @internal Function used by the axl stream module to call to check
+ * function defined.
+ * 
+ * @return true if the check was fine, otherwise false is returned.
+ */
+bool axl_stream_content_check (axlStream * stream, const char * content, int content_length, axlError ** error)
+{
+	if (stream == NULL || content == NULL) {
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "content check function failed because null reference was received.");
+		axl_error_new (-1, "content check function failed because null reference was received.", stream, error);
+		return false;
+	} /* end if */
+	
+	/* return appropiate value */
+	*error = NULL;
+	if (stream->check_f (content, content_length, stream->source_encoding, stream->check_f_data, error) == 1) 
+		return true;
+
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "content check function have failed");
+
+	/* check if error reference was defined */
+	return false;
+}
+
 
 /** 
  * @internal Allows to configure a decode functions to be used to
@@ -3390,6 +3436,54 @@ bool        axl_stream_setup_decode        (axlStream         * stream,
 	} /* end if */
 
 	/* return result */
+	return true;
+}
+
+/** 
+ * @internal Function that allows to configure a handler that is
+ * executed to check content read into the axl stream buffer. See \ref
+ * axlStreamContentCheck for more information.
+ * 
+ * @param stream The stream that is going to be configured.
+ *
+ * @param source_encoding The source encoding detected.
+ *
+ * @param check The function that implements the check.
+ *
+ * @param user_data User defined data to be passed to the check
+ * function.
+ *
+ * @param error Optional \ref axlError reference where errors will be
+ * reported.
+ * 
+ * @return The function returns true if the cheker was installed and
+ * first execution was completed.
+ */
+bool        axl_stream_setup_check         (axlStream                * stream,
+					    const char               * source_encoding,
+					    axlStreamContentCheck      check,
+					    axlPointer                 user_data,
+					    axlError                ** error)
+{
+	axl_return_val_if_fail (stream, false);
+
+	/* do not check if the decode_f function is NULL (it's a valid
+	 * case) */
+	stream->check_f      = check;
+	stream->check_f_data = user_data;
+
+	/* store source encoding */
+	if (source_encoding != NULL) 
+		stream->source_encoding = axl_strdup (source_encoding);
+
+	if (stream->check_f) {
+		/* call to check */
+		if (! axl_stream_content_check (stream, stream->stream + stream->stream_index, stream->stream_size, error)) {
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "content check function have failed, looks like there is a problem with content");
+			return false;
+		} /* end if */
+	} /* end if */
+
 	return true;
 }
 
