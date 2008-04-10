@@ -6,7 +6,9 @@
 #include <axl_ns.h>
 #include <axl_babel.h>
 
-#define test_41_iso_88599_15_value "Esto es una prueba: camión, españa, y la tabla de caráteres!\"#$%()*+,-./0123456789:;=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~ ¡¢£€¥Š§š©ª«¬­®¯°±²³Žµ¶·ž¹º»ŒœŸ¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ"
+#define test_41_iso_8859_15_value "Esto es una prueba: camión, españa, y la tabla de caráteres!\"#$%()*+,-./0123456789:;=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~ ¡¢£€¥Š§š©ª«¬­®¯°±²³Žµ¶·ž¹º»ŒœŸ¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ"
+
+#define test_41_iso_8859_1_value "!\"#$%'()*+,-./0123456789:;=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ"
 
 /** 
  * @brief Extended encoding support.
@@ -26,7 +28,7 @@ bool test_41 (axlError ** error)
 		return false;
 
 	/* check utf 8 */
-	if (! axl_babel_check_utf8_content (test_41_iso_88599_15_value, strlen (test_41_iso_88599_15_value), &index)) {
+	if (! axl_babel_check_utf8_content (test_41_iso_8859_15_value, strlen (test_41_iso_8859_15_value), &index)) {
 		printf ("ERROR: utf-8 content error found at index=%d..\n", index);
 		axl_error_new (-1, "Expected to find proper utf-8 content but it wasn't found", NULL, error);
 		return false;
@@ -45,10 +47,10 @@ bool test_41 (axlError ** error)
 	}
 
 	/* check node content */
-	if (! axl_cmp (test_41_iso_88599_15_value, 
+	if (! axl_cmp (test_41_iso_8859_15_value, 
 		       axl_node_get_content (node, NULL))) {
 		printf ("Found diferences at node content: (size: %d)'%s' != (size: %d) '%s'..\n",
-			strlen (test_41_iso_88599_15_value), test_41_iso_88599_15_value,
+			strlen (test_41_iso_8859_15_value), test_41_iso_8859_15_value,
 			strlen (axl_node_get_content (node, NULL)), axl_node_get_content (node, NULL));
 		axl_error_new (-1, "Found diferences at node content..\n", NULL, error);
 		return false;
@@ -57,6 +59,7 @@ bool test_41 (axlError ** error)
 	/* free document */
 	axl_doc_free (doc);
 
+	/*** ISO-8859-15 LARGE FILE ***/
 	/* now parse a large document that would require
 	 * prebuffering */
 	doc = axl_doc_parse_from_file ("test_41.iso-8859-15.2.xml", error);
@@ -84,7 +87,41 @@ bool test_41 (axlError ** error)
 
 	/* free document */
 	axl_doc_free (doc);
+
+	/*** ISO-8859-1 support ***/
+	/* now parse a large document that would require
+	 * prebuffering */
+	doc = axl_doc_parse_from_file ("test_41.iso-8859-1.xml", error);
+	if (doc == NULL) 
+		return false;
+
+	/* find info node */
+	node = axl_doc_get_root (doc);
+	if (! NODE_CMP_NAME (node, "info")) {
+		axl_error_new (-1, "Expected to find root node called <info> but it wasn't found", NULL, error);
+		return false;
+	}
+
+	/* check utf-8 format */
+	if (! axl_babel_check_utf8_content (axl_node_get_content (node, NULL), -1, &index)) {
+		printf ("ERROR: found utf-8 content error at index=%d..\n", index);
+		axl_error_new (-1, "Expected to find proper utf-8 content but a failure was found", NULL, error);
+		return false;
+	}
+
+	if (! axl_cmp (test_41_iso_8859_1_value, 
+		       axl_node_get_content (node, NULL))) {
+		printf ("Found diferences at node content: (size: %d)'%s' != (size: %d) '%s'..\n",
+			strlen (test_41_iso_8859_1_value), test_41_iso_8859_1_value,
+			strlen (axl_node_get_content (node, NULL)), axl_node_get_content (node, NULL));
+		axl_error_new (-1, "Found diferences at node content..\n", NULL, error);
+		return false;
+	}
+
+	/* free document */
+	axl_doc_free (doc);
 	return true;
+
 
 
 	/* test utf-16 encoding */
@@ -7371,6 +7408,8 @@ int main (int argc, char ** argv)
 		return -1;
 	}
 
+	goto init;
+
 	/* DATA STRUCTURE TESTS */
 	if (test_01_01 ()) {
 		printf ("Test 01-01: LibAxl list implementation [   OK   ]\n");
@@ -7890,6 +7929,7 @@ int main (int argc, char ** argv)
 		return -1;
 	}
 
+ init:
 	if (test_41 (&error)) {
 		printf ("Test 41: Extended encoding support  [   OK   ]\n");
 	}else {
