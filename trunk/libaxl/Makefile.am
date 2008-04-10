@@ -21,4 +21,4 @@ endif
 SUBDIRS = src  $(AXL_NS_DIR) $(AXL_KNIFE_DIR) $(AXL_BABEL_DIR) $(AXL_DOC_DIR) $(AXL_TEST_DIR)
 EXTRA_DIST = axl.pc.in VERSION libaxl.sln README.win32
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = axl.pc axl-ns.pc
+pkgconfig_DATA = axl.pc axl-ns.pc axl-babel.pc

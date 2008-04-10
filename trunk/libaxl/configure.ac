@@ -219,7 +219,8 @@ babel/Makefile
 test/Makefile
 knife/Makefile
 axl.pc
-axl-ns.pc])
+axl-ns.pc
+axl-babel.pc])
 
 echo "------------------------------------------"
 echo "--       LibAXL LIBRARY SETTINGS        --"
