@@ -14,7 +14,11 @@ if ENABLE_AXL_KNIFE
 AXL_KNIFE_DIR = knife
 endif
 
-SUBDIRS = src  $(AXL_NS_DIR) $(AXL_KNIFE_DIR) $(AXL_DOC_DIR) $(AXL_TEST_DIR)
+if ENABLE_AXL_BABEL
+AXL_BABEL_DIR = babel
+endif
+
+SUBDIRS = src  $(AXL_NS_DIR) $(AXL_KNIFE_DIR) $(AXL_BABEL_DIR) $(AXL_DOC_DIR) $(AXL_TEST_DIR)
 EXTRA_DIST = axl.pc.in VERSION libaxl.sln README.win32
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = axl.pc axl-ns.pc
