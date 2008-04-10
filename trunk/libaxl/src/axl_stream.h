@@ -150,6 +150,11 @@ void        axl_stream_link            (axlStream  *   stream,
 					axlPointer     element,
 					axlDestroyFunc func);
 
+void        axl_stream_link_full       (axlStream  *   stream,
+					axlPointer     element,
+					axlDestroyFunc func,
+					bool           free_on_finish);
+
 void        axl_stream_unlink          (axlStream * stream);
 
 void        axl_stream_free            (axlStream * stream);
@@ -224,6 +229,13 @@ bool        axl_stream_setup_decode        (axlStream         * stream,
 					    axlStreamDecode     decode_f,
 					    axlPointer          user_data,
 					    axlError         ** error);
+
+bool axl_stream_decode                     (axlStream  * stream, 
+					    char       * output, 
+					    int          output_max_size, 
+					    int        * output_decoded, 
+					    int        * op_result, 
+					    axlError  ** error);
 
 /** 
  * \addtogroup axl_string_module
