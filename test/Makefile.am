@@ -9,13 +9,18 @@ NS = -DAXL_NS_SUPPORT
 NS_LIB = ../ns/libaxl-ns.la
 endif
 
-INCLUDES = -I../src/ -I../ns -Wall $(LOG) $(NS) -DVERSION=\""$(AXL_VERSION)"\" 
+if ENABLE_AXL_BABEL
+BABEL = -DAXL_BABEL_SUPPORT
+BABEL_LIB = ../babel/libaxl-babel.la
+endif
+
+INCLUDES = -I../src/ -I../ns -I../babel -Wall $(LOG) $(NS) $(BABEL) -DVERSION=\""$(AXL_VERSION)"\" 
 
 # replace with bin_PROGRAMS to check performance
 bin_PROGRAMS = refresh test_01 test_01a test_02a test_03a
 
 test_01_SOURCES = test_01.c
-test_01_LDADD   = ../src/libaxl.la $(NS_LIB)
+test_01_LDADD   = ../src/libaxl.la $(NS_LIB) $(BABEL_LIB)
 
 test_01a_SOURCES = test_01a.c
 test_01a_LDADD   = ../src/libaxl.la 
