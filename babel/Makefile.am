@@ -12,8 +12,8 @@ libaxl_babelincludedir = $(includedir)/axl
 
 lib_LTLIBRARIES = libaxl-babel.la
 
-libaxl_babel_la_SOURCES     = axl_babel.c axl_babel_iso885915.c axl_babel_iso88591.c
-libaxl_babelinclude_HEADERS = axl_babel.h axl_babel_iso885915.h axl_babel_iso88591.h
+libaxl_babel_la_SOURCES     = axl_babel.c axl_babel_iso885915.c axl_babel_iso88591.c axl_babel_iso88592.c
+libaxl_babelinclude_HEADERS = axl_babel.h axl_babel_iso885915.h axl_babel_iso88591.h axl_babel_iso88592.h
 
 libaxl_babel_la_LDFLAGS = -no-undefined -export-symbols-regex '^(axl|__axl).*'
 

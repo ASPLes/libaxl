@@ -311,19 +311,23 @@ bool axl_babel_configure_encoding (axlStream  * stream,
 	if (detected && encoding == NULL)
 		detected = encoding;
 
-	/* No encoding detected or it was too open to clearly
-	 * define the codification. Then use the encoding
-	 * attribute found at the xml header. */
-	if (axl_cmp (encoding, "iso885915")) {
-		/* install a translator handler */
-		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "installed handler encoding for iso-8859-15");
-		table = axl_babel_build_iso885915_table ();
-	} /* end if */
-	
+	/* check encoding found (either detected or defined) */
 	if (axl_cmp (encoding, "iso88591")) {
 		/* install a translator handler */
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "installed handler encoding for iso-8859-1");
 		table = axl_babel_build_iso88591_table ();
+	} /* end if */
+
+	if (axl_cmp (encoding, "iso88592")) {
+		/* install a translator handler */
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "installed handler encoding for iso-8859-1");
+		table = axl_babel_build_iso88592_table ();
+	} /* end if */
+
+	if (axl_cmp (encoding, "iso885915")) {
+		/* install a translator handler */
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "installed handler encoding for iso-8859-15");
+		table = axl_babel_build_iso885915_table ();
 	} /* end if */
 	
 	
