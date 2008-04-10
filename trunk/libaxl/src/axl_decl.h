@@ -787,6 +787,32 @@ typedef int (*axlStreamDecode) (const char * source, int source_size,
 				axlPointer user_data);
 
 /** 
+ * @brief A handler definition used by axl stream API to define the
+ * set of functions that can be used to check content read from a file
+ * into the axl stream buffer. The initial intention was to allow axl
+ * babel to install an utf-8 content checked if an xml entity in utf-8
+ * was detected but it allows more features.
+ *
+ * This handler is configured using \ref axl_stream_setup_check.
+ * 
+ * @param source The source to check.
+ *
+ * @param source_size The size of the source to check.
+ *
+ * @param source_encoding The source encoding found.
+ *
+ * @param user_data User defined pointer 
+ * 
+ * @return 
+ */
+typedef int (*axlStreamContentCheck) (const char  * source, 
+				      int           source_size,
+				      const char  * source_encoding,
+				      axlPointer    user_data,
+				      axlError   ** error);
+				      
+
+/** 
  * @brief Axl debug levels.
  * 
  * While reporting log to the console, these levels are used to report

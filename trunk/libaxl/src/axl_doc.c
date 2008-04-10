@@ -530,6 +530,7 @@ bool axl_doc_configure_encoding (axlDoc * doc, axlStream * stream, axlError ** e
 
 	/* call to configure encoding */
 	result = configure_codification_func (stream, encoding, doc->detected_encoding, configure_codification_data, error);
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "result from configure encoding function=%d", result);
 	axl_free (encoding);
 
 	return result;
@@ -664,8 +665,10 @@ bool __axl_doc_parse_xml_header (axlStream * stream, axlDoc * doc, axlError ** e
 	}
 
 	/* configure encoding again, now we could have more data */
-	if (! axl_doc_configure_encoding (doc, stream, error))
+	if (! axl_doc_configure_encoding (doc, stream, error)) {
+		axl_stream_free (stream);
 		return false;
+	}
 
 	/* now process the document type declaration */
 	if (axl_stream_inspect (stream, "<!DOCTYPE", 9) > 0) {

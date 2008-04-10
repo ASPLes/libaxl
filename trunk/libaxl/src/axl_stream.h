@@ -230,12 +230,23 @@ bool        axl_stream_setup_decode        (axlStream         * stream,
 					    axlPointer          user_data,
 					    axlError         ** error);
 
-bool axl_stream_decode                     (axlStream  * stream, 
+bool        axl_stream_setup_check         (axlStream                * stream,
+					    const char               * source_encoding,
+					    axlStreamContentCheck      check,
+					    axlPointer                 user_data,
+					    axlError                ** error);
+
+bool        axl_stream_decode              (axlStream  * stream, 
 					    char       * output, 
 					    int          output_max_size, 
 					    int        * output_decoded, 
 					    int        * op_result, 
 					    axlError  ** error);
+
+bool        axl_stream_content_check       (axlStream   * stream,
+					    const char  * content,
+					    int           content_length,
+					    axlError   ** error);
 
 /** 
  * \addtogroup axl_string_module
