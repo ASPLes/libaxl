@@ -7508,8 +7508,6 @@ int main (int argc, char ** argv)
 		return -1;
 	}
 
-	goto init;
-
 	/* DATA STRUCTURE TESTS */
 	if (test_01_01 ()) {
 		printf ("Test 01-01: LibAxl list implementation [   OK   ]\n");
@@ -8029,11 +8027,10 @@ int main (int argc, char ** argv)
 		return -1;
 	}
 
- init:
 	if (test_41 (&error)) {
-		printf ("Test 41: Extended encoding support  [   OK   ]\n");
+		printf ("Test 41: Extended encoding support (through axl-babel)  [   OK   ]\n");
 	}else {
-		printf ("Test 41: Extended encoding support  [ FAILED ]\n  (CODE: %d) %s\n",
+		printf ("Test 41: Extended encoding support (through axl-babel)  [ FAILED ]\n  (CODE: %d) %s\n",
 			axl_error_get_code (error), axl_error_get (error));
 		axl_error_free (error);
 		return -1;
