@@ -79,6 +79,10 @@ dnl check to build axl knife tool
 AC_ARG_ENABLE(axl-knife, [  --enable-axl-knife     Enable building Axl Knife tool [default=yes]], enable_axl_knife="$enableval", enable_axl_knife=yes)
 AM_CONDITIONAL(ENABLE_AXL_KNIFE, test "x$enable_axl_knife" = "xyes")
 
+dnl check to build axl babel support
+AC_ARG_ENABLE(axl-babel, [  --enable-axl-babel     Enable building Axl Babel tool [default=yes]], enable_axl_babel="$enableval", enable_axl_babel=yes)
+AM_CONDITIONAL(ENABLE_AXL_BABEL, test "x$enable_axl_babel" = "xyes")
+
 # The following command also comes to produce the axl_config.h file
 # required by the tool. If you update this, remember to update the
 # af-arch main configure.ac
@@ -211,6 +215,7 @@ src/Makefile
 ns/Makefile
 doc/Makefile
 doc/axl-doc.doxygen
+babel/Makefile
 test/Makefile
 knife/Makefile
 axl.pc
