@@ -10,6 +10,8 @@
 
 #define test_41_iso_8859_1_value "!\"#$%'()*+,-./0123456789:;=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ"
 
+#define test_41_iso_8859_2_value "!\"#$%'()*+,-./0123456789:;=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~Ą˘Ł¤ĽŚ§¨ŠŞŤŹ­ŽŻ°ą˛ł´ľśˇ¸šşťź˝žżŔÁÂĂÄĹĆÇČÉĘËĚÍÎĎĐŃŇÓÔŐÖ×ŘŮÚŰÜÝŢßŕáâăäĺćçčéęëěíîďđńňóôőö÷řůúűüýţ"
+
 /** 
  * @brief Extended encoding support.
  * 
@@ -24,10 +26,12 @@ bool test_41 (axlError ** error)
 	int       index;
 
 	/* configure babel translate functions */
+	printf ("Test 41: init babel..\n");
 	if (! axl_babel_init (error)) 
 		return false;
 
 	/* check utf 8 */
+	printf ("Test 41: checking utf-8 engine..\n");
 	if (! axl_babel_check_utf8_content (test_41_iso_8859_15_value, strlen (test_41_iso_8859_15_value), &index)) {
 		printf ("ERROR: utf-8 content error found at index=%d..\n", index);
 		axl_error_new (-1, "Expected to find proper utf-8 content but it wasn't found", NULL, error);
@@ -35,6 +39,7 @@ bool test_41 (axlError ** error)
 	}
 
 	/* test iso-8859-15 encoding */
+	printf ("Test 41: test iso-8859-15..\n");
 	doc = axl_doc_parse_from_file ("test_41.iso-8859-15.xml", error);
 	if (doc == NULL) 
 		return false;
@@ -60,6 +65,7 @@ bool test_41 (axlError ** error)
 	axl_doc_free (doc);
 
 	/*** ISO-8859-15 LARGE FILE ***/
+	printf ("Test 41: test iso-8859-15 large..\n");
 	/* now parse a large document that would require
 	 * prebuffering */
 	doc = axl_doc_parse_from_file ("test_41.iso-8859-15.2.xml", error);
@@ -89,6 +95,7 @@ bool test_41 (axlError ** error)
 	axl_doc_free (doc);
 
 	/*** ISO-8859-1 support ***/
+	printf ("Test 41: test iso-8859-1..\n");
 	/* now parse a large document that would require
 	 * prebuffering */
 	doc = axl_doc_parse_from_file ("test_41.iso-8859-1.xml", error);
@@ -113,6 +120,40 @@ bool test_41 (axlError ** error)
 		       axl_node_get_content (node, NULL))) {
 		printf ("Found diferences at node content: (size: %d)'%s' != (size: %d) '%s'..\n",
 			strlen (test_41_iso_8859_1_value), test_41_iso_8859_1_value,
+			strlen (axl_node_get_content (node, NULL)), axl_node_get_content (node, NULL));
+		axl_error_new (-1, "Found diferences at node content..\n", NULL, error);
+		return false;
+	}
+
+	/* free document */
+	axl_doc_free (doc);
+
+	/*** ISO-8859-2 support ***/
+	printf ("Test 41: test iso-8859-2..\n");
+	/* now parse a large document that would require
+	 * prebuffering */
+	doc = axl_doc_parse_from_file ("test_41.iso-8859-2.xml", error);
+	if (doc == NULL) 
+		return false;
+
+	/* find info node */
+	node = axl_doc_get_root (doc);
+	if (! NODE_CMP_NAME (node, "info")) {
+		axl_error_new (-1, "Expected to find root node called <info> but it wasn't found", NULL, error);
+		return false;
+	}
+
+	/* check utf-8 format */
+	if (! axl_babel_check_utf8_content (axl_node_get_content (node, NULL), -1, &index)) {
+		printf ("ERROR: found utf-8 content error at index=%d..\n", index);
+		axl_error_new (-1, "Expected to find proper utf-8 content but a failure was found", NULL, error);
+		return false;
+	}
+
+	if (! axl_cmp (test_41_iso_8859_2_value, 
+		       axl_node_get_content (node, NULL))) {
+		printf ("Found diferences at node content: (size: %d)'%s' != (size: %d) '%s'..\n",
+			strlen (test_41_iso_8859_2_value), test_41_iso_8859_2_value,
 			strlen (axl_node_get_content (node, NULL)), axl_node_get_content (node, NULL));
 		axl_error_new (-1, "Found diferences at node content..\n", NULL, error);
 		return false;
