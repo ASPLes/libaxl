@@ -3357,7 +3357,6 @@ bool axl_stream_content_check (axlStream * stream, const char * content, int con
 	} /* end if */
 	
 	/* return appropiate value */
-	*error = NULL;
 	if (stream->check_f (content, content_length, stream->source_encoding, stream->check_f_data, error) == 1) 
 		return true;
 
