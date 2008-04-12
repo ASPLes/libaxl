@@ -329,6 +329,13 @@ struct _axlDoc {
 	char    * detected_encoding;
 	
 	/** 
+	 * @internal If the document was found in a different encoding
+	 * than utf-8, this variable will hold its associated value to
+	 * allow returning to the original encoding.
+	 */
+	char    * encoding_found;
+	
+	/** 
 	 * @internal
 	 * @brief Current standalone configuration of the given \ref
 	 * axlDoc object.
@@ -531,6 +538,19 @@ bool axl_doc_configure_encoding (axlDoc * doc, axlStream * stream, axlError ** e
 	/* call to configure encoding */
 	result = configure_codification_func (stream, encoding, doc->detected_encoding, configure_codification_data, error);
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "result from configure encoding function=%d", result);
+
+	if (result) {
+		/* encoding was fine, that means we are working in
+		 * utf-8, udate document internals to move encoding to
+		 * utf-8 */
+		doc->encoding_found = encoding;
+		encoding            = NULL;
+
+		/* reset encoding found to the new value */
+		if (doc->encoding)
+			axl_free (doc->encoding);
+		doc->encoding       = axl_strdup ("utf-8");
+	}
 	axl_free (encoding);
 
 	return result;
@@ -3124,6 +3144,7 @@ void     axl_doc_free         (axlDoc * doc)
 	/* free enconding allocated */
 	axl_free (doc->encoding);
 	axl_free (doc->detected_encoding);
+	axl_free (doc->encoding_found);
 	
 	/* free allocated version value */
 	axl_free (doc->version);
