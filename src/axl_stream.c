@@ -3477,7 +3477,7 @@ bool        axl_stream_setup_check         (axlStream                * stream,
 
 	if (stream->check_f) {
 		/* call to check */
-		if (! axl_stream_content_check (stream, stream->stream + stream->stream_index, stream->stream_size, error)) {
+		if (! axl_stream_content_check (stream, stream->stream + stream->stream_index, stream->stream_size - stream->stream_index, error)) {
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "content check function have failed, looks like there is a problem with content");
 			return false;
 		} /* end if */
