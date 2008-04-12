@@ -62,6 +62,31 @@ bool test_41 (axlError ** error)
 	if (doc != NULL) 
 		return false;
 
+	/* check unicode file without declaration */
+	printf ("Test 41: test utf-8 content without decleration..\n");
+	doc = axl_doc_parse_from_file ("test_41.utf-8.withoutencoding.xml", error);
+	if (doc == NULL) 
+		return false;
+
+	if (! axl_cmp (axl_doc_get_encoding (doc), "utf-8")) {
+		axl_error_new (-1, "Expected to find utf-8 content declaration but it wasn't found", NULL, error);
+		return false;
+	}
+	axl_doc_free (doc);
+
+	/* check large unicode file without declearation */
+	printf ("Test 41: test large utf-8 content without decleration..\n");
+	doc = axl_doc_parse_from_file ("large.xml", error);
+	if (doc == NULL) 
+		return false;
+
+	if (! axl_cmp (axl_doc_get_encoding (doc), "utf-8")) {
+		axl_error_new (-1, "Expected to find utf-8 content declaration but it wasn't found", NULL, error);
+		return false;
+	}
+	axl_doc_free (doc);
+	
+
 	/*** ISO-8859-15 SUPPORT ***/
 	/* test iso-8859-15 encoding */
 	printf ("Test 41: test iso-8859-15..\n");
