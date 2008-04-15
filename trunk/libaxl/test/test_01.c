@@ -3682,6 +3682,13 @@ bool test_03 (axlError ** error)
 	return true;
 }
 
+bool test_02_always_fail (axlStream * stream, char ** detected, axlPointer user_data, axlError ** error)
+{
+	/* always return false to check how behave the library */
+	return false;
+}
+
+
 /** 
  * @brief Checks xml document error for basic parsing.
  * 
@@ -3699,6 +3706,7 @@ bool test_02 (axlError ** error)
 		return false;
 	}
 	axl_error_free (* error);
+	(*error) = NULL;
 
 	doc = axl_doc_parse ("<?xml >", 7, error);
 	if (doc != NULL) {
@@ -3707,7 +3715,49 @@ bool test_02 (axlError ** error)
 		return false;
 	}
 	axl_error_free (* error);
+	(*error) = NULL;
 
+	/* configure an encoding function that fails to detect */
+	axl_doc_set_detect_codification_func (test_02_always_fail, NULL);
+
+	doc = axl_doc_parse ("<this />", 8, error);
+	if (doc != NULL) {
+		axl_error_new (-1, "Failed to detect wrong xml trailing header", NULL, error);
+		return false;
+	}
+	axl_error_free (* error);
+	(*error) = NULL;
+	/* uninstall detect codification */
+	axl_doc_set_detect_codification_func (NULL, NULL);
+
+	
+	/* wrong closed document comment */
+	doc = axl_doc_parse ("<document><this><!-- this not closed --</document>", 50, error);
+	if (doc != NULL) {
+		axl_error_new (-1, "Failed to detect wrong balanced xml document", NULL, error);
+		return false;
+	}
+	axl_error_free (* error);
+	(*error) = NULL;
+
+	/* opening an unbalanced document */
+	doc = axl_doc_parse ("<document><this><!-- this not closed --></document>", 51, error);
+	if (doc != NULL) {
+		axl_error_new (-1, "Failed to detect wrong balanced xml document", NULL, error);
+		return false;
+	}
+	axl_error_free (* error);
+	(*error) = NULL;
+
+	/* opening an unbalanced document with all nodes called the same */
+	printf ("Test 02: unbalanced document called with same nodes..\n");
+	doc = axl_doc_parse ("<document><document><!-- this not closed --></document>", 55, error);
+	if (doc != NULL) {
+		axl_error_new (-1, "Failed to detect wrong balanced xml document", NULL, error);
+		return false;
+	}
+	axl_error_free (* error);
+	(*error) = NULL;
 
 	return true;
 }
