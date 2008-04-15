@@ -1099,8 +1099,10 @@ axlDoc * __axl_doc_parse_common (const char * entity, int entity_size,
 	/* detect transitional entity codification to configure built
 	 * decoder (only if defined handler found) */
 	if (detect_codification_func) {
-		if (! detect_codification_func (stream, &doc->detected_encoding, detect_codification_data, error))
+		if (! detect_codification_func (stream, &doc->detected_encoding, detect_codification_data, error)) {
+			axl_stream_free (stream);
 			return NULL; 
+		}
 	} /* end if */
 
 	/* parse initial xml header */
@@ -1230,7 +1232,7 @@ axlDoc * __axl_doc_parse_common (const char * entity, int entity_size,
 			axl_stream_set_buffer_alloc (stream, (axlStreamAlloc)__axl_doc_alloc, doc);
 			string = axl_stream_get_until (stream, NULL, NULL, false, 1, "<");
 			axl_stream_set_buffer_alloc (stream, NULL, NULL);
-
+			
 			/* check for a null content found */
 			if (string == NULL) {
 				axl_error_new (-1, "an error was found while reading the xml node content", stream, error);
@@ -1257,10 +1259,8 @@ axlDoc * __axl_doc_parse_common (const char * entity, int entity_size,
 			   "current parent stack size shows that not all opened nodes were closed. This means that the XML document is not properly balanced (stack size: %d)",
 			   axl_stack_size (doc->parentNode));
 
+		/* notify error */
 		axl_error_new (-1, "XML document is not balanced, still remains xml nodes", stream, error);
-
-		/* parse complete */
-		axl_stream_unlink (stream);
 		axl_stream_free (stream);
 
 		return NULL;
@@ -2444,7 +2444,7 @@ void     axl_doc_set_child_current_parent (axlDoc * doc, axlNode * node)
 	/* set the new parent */
 	axl_stack_push (doc->parentNode, node);
 
-	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "pushed a new parent into the stack <%s>, current status after operatoin: %d",
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "pushed a new parent into the stack <%s>, current status after operation: %d",
 		   axl_node_get_name (node), axl_stack_size (doc->parentNode));
 	
 	return;
