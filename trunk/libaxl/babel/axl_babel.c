@@ -168,6 +168,7 @@ bool axl_babel_detect_codification (axlStream  * stream,
 	    axl_stream_inspect_code (stream, (char) 63, 1) &&
 	    axl_stream_inspect_code (stream, (char) 120, 2) &&
 	    axl_stream_inspect_code (stream, (char) 109, 3)) {
+	assume_utf8:
 		/* no encoding detected we are not sure */ 
 		
 		/* found utf-16 encoding, install associated filter */
@@ -175,8 +176,15 @@ bool axl_babel_detect_codification (axlStream  * stream,
 		return true;
 	} /* end if */
 
+	/* check last case where an utf-8 document could be found without xml header */
+	if (axl_stream_inspect_code (stream, (char) 60, 0) &&
+	    ! axl_stream_inspect_code (stream, (char) 60, 1) &&
+	    ! axl_stream_inspect_code (stream, (char) 62, 1)) {
+		goto assume_utf8;
+	}
+
 	/* unable to detect the encoding format */
-	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, 
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, 
 		   "unable to detect encoding format, failed to detect encoding format");
 	axl_error_new (-1, "unable to detect encoding format, failed to detect encoding format", NULL, error);
 	return false;
