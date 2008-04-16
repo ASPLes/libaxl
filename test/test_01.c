@@ -56,6 +56,24 @@ bool test_41 (axlError ** error)
 
 	axl_doc_free (doc);
 
+	/* check unicode file without xml header */
+	printf ("Test 41: test utf-8 content without xml header..\n");
+	doc = axl_doc_parse_from_file ("test_41.utf-8.withoutheader.xml", error);
+	if (doc == NULL) 
+		return false;
+
+	if (! axl_cmp (axl_doc_get_encoding (doc), "utf-8")) {
+		axl_error_new (-1, "Expected to find utf-8 content declaration but it wasn't found", NULL, error);
+		return false;
+	}
+	axl_doc_free (doc);
+
+	/* check unicode file without xml header */
+	printf ("Test 41: test wrong xml utf-8 content without xml header..\n");
+	doc = axl_doc_parse_from_file ("test_41.utf-8.wrongwithoutheader.xml", NULL);
+	if (doc != NULL) 
+		return false;
+	
 	/* test utf-8 encoding (wrong test) */
 	printf ("Test 41: test wrong utf-8 content..\n");
 	doc = axl_doc_parse_from_file ("test_41.utf-8.wrong.xml", error);
@@ -85,7 +103,6 @@ bool test_41 (axlError ** error)
 		return false;
 	}
 	axl_doc_free (doc);
-	
 
 	/*** ISO-8859-15 SUPPORT ***/
 	/* test iso-8859-15 encoding */
