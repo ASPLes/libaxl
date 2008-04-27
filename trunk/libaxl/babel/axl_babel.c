@@ -492,8 +492,8 @@ bool        axl_babel_check_utf8_content  (const char  * content,
 			return false;
 		} 
 
-		if (value >= 0 && value <= 127 ) {
-			iterator ++;
+		if (value <= 127 ) {
+			iterator++;
 			continue;
 		} /* end if */
 
