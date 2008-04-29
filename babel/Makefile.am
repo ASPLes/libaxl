@@ -27,7 +27,7 @@ libaxl_babelinclude_HEADERS = \
 	
 libaxl_babel_LDADD   = ../src/libaxl.la	
 
-libaxl_babel_la_LDFLAGS = -no-undefined -export-symbols-regex '^(axl|__axl).*'
+libaxl_babel_la_LDFLAGS = -no-undefined -export-symbols-regex '^(axl|__axl|_axl).*'
 
 libaxl-babel.def: update-def
 

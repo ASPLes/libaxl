@@ -1,0 +1,13 @@
+EXPORTS
+axl_babel_build_iso885915_table
+axl_babel_build_iso88591_table
+axl_babel_build_iso88592_table
+axl_babel_build_iso88599_table
+axl_babel_check_utf8_content
+axl_babel_configure_encoding
+axl_babel_detect_codification
+axl_babel_finish
+axl_babel_identity_utf8
+axl_babel_init
+axl_babel_single_to_utf8
+axl_babel_utf8_check

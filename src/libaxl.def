@@ -92,6 +92,7 @@ axl_doc_add_pi_target
 axl_doc_are_equal
 axl_doc_are_equal_common
 axl_doc_are_equal_trimmed
+axl_doc_configure_encoding
 axl_doc_consume_comments
 axl_doc_consume_pi
 axl_doc_create
@@ -119,7 +120,10 @@ axl_doc_parse_from_file
 axl_doc_parse_strings
 axl_doc_pop_current_parent
 axl_doc_set_child_current_parent
+axl_doc_set_configure_codification_func
+axl_doc_set_detect_codification_func
 axl_doc_set_root
+axl_dtd_are_equal
 axl_dtd_attr_validate
 axl_dtd_attribute_decl_free
 axl_dtd_attribute_free
@@ -338,6 +342,7 @@ axl_node_has_attributes
 axl_node_has_invalid_chars
 axl_node_has_pi_target
 axl_node_have_childs
+axl_node_have_childs_aux
 axl_node_is_empty
 axl_node_num_attributes
 axl_node_parse
@@ -388,6 +393,8 @@ axl_stream_clean_split
 axl_stream_cmp
 axl_stream_concat
 axl_stream_consume_white_spaces
+axl_stream_content_check
+axl_stream_decode
 axl_stream_fall_outside
 axl_stream_free
 axl_stream_freev
@@ -402,10 +409,12 @@ axl_stream_get_until_ref_zero
 axl_stream_get_until_zero
 axl_stream_get_untilv
 axl_stream_inspect
+axl_stream_inspect_code
 axl_stream_inspect_several
 axl_stream_is_white_space
 axl_stream_join
 axl_stream_link
+axl_stream_link_full
 axl_stream_move
 axl_stream_new
 axl_stream_nullify
@@ -414,7 +423,10 @@ axl_stream_prebuffer
 axl_stream_printf_len
 axl_stream_push
 axl_stream_remains
+axl_stream_remove
 axl_stream_set_buffer_alloc
+axl_stream_setup_check
+axl_stream_setup_decode
 axl_stream_split
 axl_stream_step
 axl_stream_strdup
