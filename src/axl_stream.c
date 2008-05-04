@@ -3439,8 +3439,8 @@ bool        axl_stream_setup_decode        (axlStream         * stream,
 }
 
 /** 
- * @internal Function that allows to configure a handler that is
- * executed to check content read into the axl stream buffer. See \ref
+ * @brief Function that allows to configure a handler that is executed
+ * to check content read into the axl stream buffer. See \ref
  * axlStreamContentCheck for more information.
  * 
  * @param stream The stream that is going to be configured.
