@@ -174,6 +174,53 @@ void axl_error_new (int code, char * error_code, axlStream * stream, axlError **
 }
 
 /** 
+ * @brief Allows to report a new error message with an associated
+ * error code on the provided \ref axlError reference.
+ *
+ * This function provides the same function like \ref axl_error_new
+ * but at the same time it provides support for printf-like arguments and
+ * no requires to provide a reference to an \ref axlStream which is
+ * suitable for axl libraries but not applications on top of it.
+ *
+ * @param _error Reference to the axlError to be initialized with the error
+ * to be reported. In the case NULL is received nothing is done. 
+ *
+ * @param code The error code to report.
+ *
+ * @param format Printf-like error message to report.
+ */
+void   axl_error_report   (axlError ** _error, int code, char * format, ...)
+{
+	va_list    args;
+	char     * string;
+	axlError * error;
+
+	/* do not operate if null is received */
+	if (_error == NULL)
+		return;
+
+	/* open the stdargs */
+	va_start (args, format);
+
+	/* build the string */
+	string = axl_stream_strdup_printfv (format, args);
+
+	/* close the stdargs */
+	va_end (args);
+
+	/* create the error to be reported */
+	error             = axl_new (axlError, 1); 
+	error->code       = code;
+	error->defined    = -346715;
+	/* allocate enough memory */
+	error->error      = string;
+
+	/* set the error into the recevied reference */
+	(* _error )       = error;
+	return;
+}
+
+/** 
  * @brief Allows to check if the provided reference was used to report
  * an error.
  *
