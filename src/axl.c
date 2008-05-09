@@ -84,8 +84,9 @@
  *
  * <li>Have a <b>modular</b> design that allows to use only those
  * elements required by your software. At this moment it is provided a
- * base library (with implements XML 1.0) and an optional library that
- * provides additional features to support XML Namespaces 1.0.</li>
+ * base library (with implements XML 1.0) and optionals libraries that
+ * provides additional features to support XML Namespaces 1.0 and
+ * extended encodings.</li>
  *
  * <li>The other issue is that the Af-Arch client platform should be
  * easily embedded, so, a <b>small footprint</b> is a requirement. Currently LibAxl (89K) and LibAxl-Ns (9K)</li>
@@ -117,8 +118,10 @@
  *
  *  - <a href="http://www.w3.org/TR/REC-xml-names/">XML 1.0
  *  Namespaces</a> full support, through the additional component
- *  (libaxl-ns), allowing to produce xml applications that are
+ *  (<b>libaxl-ns</b>), allowing to produce xml applications that are
  *  XML Namespace aware. 
+ *
+ *  - Support for extended encodings (<b>libaxl-babel</b>), beyond default encoding utf-8. 
  * 
  * \section documentation Library Documentation
  *
@@ -163,6 +166,7 @@
  *
  * - \ref validation
  * - \ref xml_namespace
+ * - \ref using_axl_babel
  *
  * <b>Section 4: Advanced topics </b><br>
  *
@@ -719,6 +723,35 @@
  * 
  * - \ref axl_ns_doc_module
  * - \ref axl_ns_node_module
+ *
+ * \section using_axl_babel Making your software to support other encodings than UTF-8
+ *
+ * Default axl library implementation (libaxl) assumes it will receive
+ * and produce UTF-8 content. 
+ * 
+ * Because the subset of characters that are used to properly parse
+ * XML content are located in the ASCII range, still valid UTF-8, but
+ * at same time valid in other encodings such ISO 646, some part of
+ * ISO 8859, Shift-JIS, EUC, or any other 7-bit, 8-bit, or mixed-width
+ * encoding which ensures that the characters of ASCII have their
+ * normal positions, width, and values (See section F. Autodetecting
+ * of Character Encodings at http://www.w3.org/TR/REC-xml/), causes
+ * the library to properly parse the content, even if it is not UTF-8.
+ *
+ * In many cases this is not important for you since your application
+ * do not care about content codification (such configuration files)
+ * or they are in UTF-8. 
+ *
+ * However, this could present problems if you are handling different
+ * documents with several encoding types, and your intention, for
+ * example, is to mix them. This will cause to have XML documents with
+ * different codifications at its content.
+ *
+ * <b>libaxl-babel</b> provides and checks, support to read content in
+ * supported codifications and translate it into UTF-8:
+ *
+ * \image html axl_babel_reading.png "Reading documents and handle them as they were in UTF-8"
+ *
  * 
  * \section reducing_foot_print How to reduce the library footprint 
  *
@@ -840,13 +873,16 @@
  *
  * The library package is composed by the following items:
  * 
- * - libaxl: base library implementing all XML functions. It has no
+ * - <b>libaxl</b>: base library implementing all XML functions. It has no
  * external dependencies.
  *
- * - libaxl-sn: optional library, built on top of libaxl, which
+ * - <b>libaxl-ns</b>: optional library, built on top of libaxl, which
  * provides Namespaces support. It depends on libaxl.
  *
- * - axl-knife: command line tool, built on top of libaxl and
+ * - <b>libaxl-babel</b>: optional library, built on top of libaxl,
+ * which provides extended encoding support to defult utf-8.
+ *
+ * - <b>axl-knife</b>: command line tool, built on top of libaxl and
  * libaxl-ns. It depends on the base library and the namespace library.
  *
  * Here are a set of instructions to get the library compiled for your
@@ -890,9 +926,14 @@
  *  >> pkg-config --libs --cflags axl
  * \endcode
  *
- * In the case you want give support for XML Namespaces, you must use:
+ * To give support for XML Namespaces (libaxl-ns), you must use:
  * \code
  *  >> pkg-config --libs --cflags axl-ns
+ * \endcode
+ *
+ * To give support for extended encoding support (libaxl-babel), you must use:
+ * \code
+ *  >> pkg-config --libs --cflags axl-babel
  * \endcode
  *
  * To include support into your autotool checks (configure.ac/in
@@ -901,8 +942,9 @@
  * PKG_CHECK_MODULES(LIBRARIES, axl) 
  * \endcode
  *
- * Again, add <b>axl-ns</b> to the previous instruction if you want
- * your package to also check for Axl Library Namespace support.
+ * Again, add <b>axl-ns</b> or <b>axl-babel</b> to the previous
+ * instruction if you want your package to also check for Axl Library
+ * Namespace support.
  * 
  * \section Including Axl Library headers
  *
@@ -914,6 +956,11 @@
  * In the case Namespace is required, you must use: 
  * \code
  * #include <axl_ns.h>
+ * \endcode
+ *
+ * To include babel support, you must use: 
+ * \code
+ * #include <axl_babel.h>
  * \endcode
  */
 

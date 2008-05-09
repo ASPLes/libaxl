@@ -39,13 +39,20 @@
 #ifndef __AXL_BABEL_H__
 #define __AXL_BABEL_H__
 
+/** 
+ * \addtogroup axl_babel
+ * @{
+ */
+
 /* include base library */
 #include <axl.h>
 
 /**
  * @brief Public definition for a translation unit from a native
- * codification and universal unicode representation using UTF-8
- * format.
+ * codification into universal unicode representation using UTF-8
+ * format. This type is used by modules providing input encoding
+ * support to axl babel. If you are not developing an encoding module,
+ * this type isn't useful for you.
  */
 typedef struct _axlBabelTable {
 	/**
@@ -54,7 +61,7 @@ typedef struct _axlBabelTable {
 	short size;
 
 	/**
-	 * @brief support for 6 octects for unicode 
+	 * @brief Support for 6 octects to represent one unicode unit.
 	 */
 	unsigned char  buffer[6];
 } axlBabelTable;
@@ -86,3 +93,7 @@ bool        axl_babel_check_utf8_content  (const char * content,
 
 
 #endif /* end __AXL_BABEL_H__ */
+
+/**
+ * @}
+ */

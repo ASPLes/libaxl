@@ -41,6 +41,15 @@
 
 #define LOG_DOMAIN "axl-babel"
 
+/**
+ * \defgroup axl_babel Axl Babel: Main functions to enable axl babel support
+ */
+
+/** 
+ * \addtogroup axl_babel
+ * @{
+ */
+
 /** 
  * @brief Allows to configure babel encoding functions making axl
  * library to use its API to support encoding formats.
@@ -509,3 +518,7 @@ bool        axl_babel_check_utf8_content  (const char  * content,
 
 	return true;
 }
+
+/** 
+ * @}
+ */
