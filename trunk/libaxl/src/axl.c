@@ -740,15 +740,16 @@
  *
  * In many cases this is not important for you since your application
  * do not care about content codification (such configuration files)
- * or they are in UTF-8. 
+ * or they are in UTF-8.
  *
  * However, this could present problems if you are handling different
- * documents with several encoding types, and your intention, for
- * example, is to mix them. This will cause to have XML documents with
- * different codifications at its content.
+ * documents with several encoding types. The idea is to have the an
+ * unified way to handle such different encoded documents, with a
+ * single, run-time encoding: UTF-8.
  *
- * <b>libaxl-babel</b> provides and checks, support to read content in
- * supported codifications and translate it into UTF-8:
+ * <b>libaxl-babel</b> provides support to read content in supported
+ * codifications and translate it into UTF-8 at run-time (checking
+ * result to be valid UTF-8):
  *
  * \image html axl_babel_reading.png "Reading documents and handle them as they were in UTF-8"
  *
