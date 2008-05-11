@@ -46,6 +46,7 @@
 #include <axl_babel_iso88594.h>
 #include <axl_babel_iso88595.h>
 #include <axl_babel_iso88596.h>
+#include <axl_babel_iso88597.h>
 #include <axl_babel_iso88599.h>
 #include <axl_babel_iso885915.h>
 
@@ -398,6 +399,12 @@ bool axl_babel_configure_encoding (axlStream  * stream,
 		/* install a translator handler */
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "installed handler encoding for iso-8859-6");
 		table = axl_babel_build_iso88596_table ();
+	} /* end if */
+
+	if (axl_cmp (encoding, "iso88597")) {
+		/* install a translator handler */
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "installed handler encoding for iso-8859-7");
+		table = axl_babel_build_iso88597_table ();
 	} /* end if */
 
 	if (axl_cmp (encoding, "iso88599")) {

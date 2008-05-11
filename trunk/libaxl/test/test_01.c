@@ -18,6 +18,8 @@
 
 #define test_41_iso_8859_6_value "!\"#$%&'()*+,-./0123456789:;=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~¤،­؛؟ءآأؤإئابةتثجحخدذرزسشصضطظعغـفقكلمنهوىيًٌٍَُِّْ"
 
+#define test_41_iso_8859_7_value "!\"#$%'()*+,-./0123456789:;=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~‘’£€₯¦§¨©ͺ«¬­―°±²³΄΅Ά·ΈΉΊ»Ό½ΎΏΐΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩΪΫάέήίΰαβγδεζηθικλμνξοπρςστυφχψωϊϋόύώ"
+
 #define test_41_iso_8859_9_value "!\"#$%'()*+,-./0123456789:;=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~ ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏĞÑÒÓÔÕÖ×ØÙÚÛÜİŞßàáâãäåæçèéêëìíîïğñòóôõö÷øùúûüışÿ"
 
 #define test_41_iso_8859_15_value "Esto es una prueba: camión, españa, y la tabla de caráteres!\"#$%()*+,-./0123456789:;=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~ ¡¢£€¥Š§š©ª«¬­®¯°±²³Žµ¶·ž¹º»ŒœŸ¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ"
@@ -369,6 +371,40 @@ bool test_41 (axlError ** error)
 		       axl_node_get_content (node, NULL))) {
 		printf ("Found diferences at node content: (size: %d)'%s' != (size: %d) '%s'..\n",
 			strlen (test_41_iso_8859_6_value), test_41_iso_8859_6_value,
+			strlen (axl_node_get_content (node, NULL)), axl_node_get_content (node, NULL));
+		axl_error_new (-1, "Found diferences at node content..\n", NULL, error);
+		return false;
+	}
+
+	/* free document */
+	axl_doc_free (doc);
+
+	/*** ISO-8859-7 support ***/
+	printf ("Test 41: test iso-8859-7..\n");
+	/* now parse a large document that would require
+	 * prebuffering */
+	doc = axl_doc_parse_from_file ("test_41.iso-8859-7.xml", error);
+	if (doc == NULL) 
+		return false;
+
+	/* find info node */
+	node = axl_doc_get_root (doc);
+	if (! NODE_CMP_NAME (node, "info")) {
+		axl_error_new (-1, "Expected to find root node called <info> but it wasn't found", NULL, error);
+		return false;
+	}
+
+	/* check utf-8 format */
+	if (! axl_babel_check_utf8_content (axl_node_get_content (node, NULL), -1, &index)) {
+		printf ("ERROR: found utf-8 content error at index=%d..\n", index);
+		axl_error_new (-1, "Expected to find proper utf-8 content but a failure was found", NULL, error);
+		return false;
+	}
+
+	if (! axl_cmp (test_41_iso_8859_7_value, 
+		       axl_node_get_content (node, NULL))) {
+		printf ("Found diferences at node content: (size: %d)'%s' != (size: %d) '%s'..\n",
+			strlen (test_41_iso_8859_7_value), test_41_iso_8859_7_value,
 			strlen (axl_node_get_content (node, NULL)), axl_node_get_content (node, NULL));
 		axl_error_new (-1, "Found diferences at node content..\n", NULL, error);
 		return false;
