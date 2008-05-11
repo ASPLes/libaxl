@@ -22,6 +22,7 @@ libaxl_babel_la_SOURCES     = \
 	axl_babel_iso88595.c \
 	axl_babel_iso88596.c \
 	axl_babel_iso88597.c \
+	axl_babel_iso88598.c \
 	axl_babel_iso88599.c
 
 libaxl_babelinclude_HEADERS = \
@@ -34,6 +35,7 @@ libaxl_babelinclude_HEADERS = \
 	axl_babel_iso88595.h \
 	axl_babel_iso88596.h \
 	axl_babel_iso88597.h \
+	axl_babel_iso88598.h \
 	axl_babel_iso88599.h
 
 libaxl_babel_LIDADD   = ../src/libaxl.la	
@@ -55,6 +57,7 @@ refresh-tables: gen-table
 	./gen-table codes.txt iso88595.utf8.txt iso-8859-5
 	./gen-table codes.txt iso88596.utf8.txt iso-8859-6
 	./gen-table codes.txt iso88597.utf8.txt iso-8859-7
+	./gen-table codes.txt iso88598.utf8.txt iso-8859-8
 	./gen-table codes.txt iso88599.utf8.txt iso-8859-9
 
 
