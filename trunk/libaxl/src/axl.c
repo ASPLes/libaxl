@@ -743,7 +743,7 @@
  * or they are in UTF-8.
  *
  * However, this could present problems if you are handling different
- * documents with several encoding types. The idea is to have the an
+ * documents with several encoding types. The idea is to have an
  * unified way to handle such different encoded documents, with a
  * single, run-time encoding: UTF-8.
  *
@@ -753,6 +753,36 @@
  *
  * \image html axl_babel_reading.png "Reading documents and handle them as they were in UTF-8"
  *
+ * The library works as an extension that configures a set of handlers
+ * making the library to open XML documents and translating them into
+ * UTF-8 if required.
+ * 
+ * To activate the library, you must use \ref axl_babel_init at the
+ * begining of your application or library. Here is an example:
+ *
+ * \code
+ * // optional axlError declaration
+ * axlError * error;
+ * 
+ * // init axl babel 
+ * if (! axl_babel_init (&error)) {
+ *      printf ("Failed to start axl babel: %s...\n",
+ *              axl_error_get (error));
+ *      axl_error_free (error);
+ *      return false;
+ * } 
+ * \endcode
+ * 
+ * Once done, every call to the base API (such \ref axl_doc_parse,
+ * \ref axl_doc_parse_from_file) will open the document as usual. It
+ * is not required to perform any additional special operation.
+ *
+ * It is not required to call to \ref axl_babel_finish on application
+ * exit. However, in the case you want to deactivate
+ * <b>libaxl-babel</b> but still keep on using axl base library, you
+ * can use \ref axl_babel_finish.
+ *
+ * See \ref axl_babel_init for currently supported formats.
  * 
  * \section reducing_foot_print How to reduce the library footprint 
  *
@@ -842,6 +872,11 @@
  *    - \ref axl_ns_node_module
  *
  *  </li>
+ *  <li><b>Axl BABEL API (required to support additional encoding formats): </b></li>
+ *
+ *    - \ref axl_babel
+ *
+ *  </li>
  *  <li><b>Error reporting and debugging functions (base library libaxl): </b></li>
  * 
  *    - \ref axl_error_module
@@ -874,8 +909,11 @@
  *
  * The library package is composed by the following items:
  * 
- * - <b>libaxl</b>: base library implementing all XML functions. It has no
- * external dependencies.
+ * \image html axl-components.png "Axl library components"
+ * 
+ * - <b>libaxl</b>: base library implementing all XML functions, and
+ * common API used by extension libraries. It has no external
+ * dependencies.
  *
  * - <b>libaxl-ns</b>: optional library, built on top of libaxl, which
  * provides Namespaces support. It depends on libaxl.
@@ -884,7 +922,8 @@
  * which provides extended encoding support to defult utf-8.
  *
  * - <b>axl-knife</b>: command line tool, built on top of libaxl and
- * libaxl-ns. It depends on the base library and the namespace library.
+ * libaxl-ns. It depends on the base library and the namespace
+ * library.
  *
  * Here are a set of instructions to get the library compiled for your
  * platform:

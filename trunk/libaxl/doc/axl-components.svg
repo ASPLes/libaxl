@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://web.resource.org/cc/"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="210mm"
+   height="297mm"
+   id="svg2"
+   sodipodi:version="0.32"
+   inkscape:version="0.45.1"
+   sodipodi:docbase="/home/acinom/af-arch/libaxl/doc"
+   sodipodi:docname="axl-components.svg"
+   inkscape:output_extension="org.inkscape.output.svg.inkscape">
+  <defs
+     id="defs4">
+    <marker
+       inkscape:stockid="Arrow2Mend"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="Arrow2Mend"
+       style="overflow:visible;">
+      <path
+         id="path3264"
+         style="font-size:12.0;fill-rule:evenodd;stroke-width:0.62500000;stroke-linejoin:round;"
+         d="M 8.7185878,4.0337352 L -2.2072895,0.016013256 L 8.7185884,-4.0017078 C 6.9730900,-1.6296469 6.9831476,1.6157441 8.7185878,4.0337352 z "
+         transform="scale(0.6) rotate(180) translate(0,0)" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow1Send"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="Arrow1Send"
+       style="overflow:visible;">
+      <path
+         id="path3252"
+         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1.0pt;marker-start:none;"
+         transform="scale(0.2) rotate(180) translate(6,0)" />
+    </marker>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.37203459"
+     inkscape:cx="669.53405"
+     inkscape:cy="508.25562"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     inkscape:window-width="996"
+     inkscape:window-height="844"
+     inkscape:window-x="149"
+     inkscape:window-y="58" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Capa 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <g
+       id="g3161"
+       transform="translate(-29.567143,32.255065)">
+      <rect
+         ry="0"
+         rx="0"
+         y="632.36218"
+         x="102.85714"
+         height="154.28571"
+         width="505.71429"
+         id="rect2160"
+         style="fill:#204a87;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+      <text
+         id="text3134"
+         y="692.6748"
+         x="355.72604"
+         style="font-size:48.20739746px;font-style:normal;font-weight:normal;text-align:center;text-anchor:middle;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Sans"
+         xml:space="preserve"><tspan
+           style="font-weight:bold"
+           y="692.6748"
+           x="355.72604"
+           id="tspan3136"
+           sodipodi:role="line">LibAxl</tspan><tspan
+           y="752.93405"
+           x="355.72604"
+           sodipodi:role="line"
+           id="tspan3155">(base library)</tspan></text>
+      <rect
+         y="645.2193"
+         x="115.71429"
+         height="128.57143"
+         width="480"
+         id="rect3143"
+         style="opacity:1;fill:none;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+    </g>
+    <g
+       id="g3190"
+       transform="translate(-134.31698,27.662651)">
+      <rect
+         ry="0"
+         rx="0"
+         y="325.19772"
+         x="-142.61957"
+         height="153.99586"
+         width="543.72729"
+         id="rect3170"
+         style="fill:#4e9a06;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+      <text
+         id="text3172"
+         y="385.51035"
+         x="132.10678"
+         style="font-size:48.20739746px;font-style:normal;font-weight:normal;text-align:center;text-anchor:middle;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Sans"
+         xml:space="preserve"><tspan
+           style="font-weight:bold"
+           y="385.51035"
+           x="132.10679"
+           id="tspan3174"
+           sodipodi:role="line">LibAxl-NS</tspan><tspan
+           y="445.76959"
+           x="132.10678"
+           sodipodi:role="line"
+           id="tspan3180">(Namespace Library)</tspan></text>
+      <rect
+         y="338.14722"
+         x="-129.67003"
+         height="128.38663"
+         width="516.87787"
+         id="rect3178"
+         style="fill:none;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:5.18478823;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+    </g>
+    <g
+       id="g3225"
+       transform="translate(-8.063763,-33.848946)">
+      <rect
+         ry="0"
+         rx="0"
+         y="386.70932"
+         x="416.24442"
+         height="153.99586"
+         width="756.07312"
+         id="rect3199"
+         style="fill:#ce5c00;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+      <text
+         id="text3201"
+         y="446.87704"
+         x="793.11182"
+         style="font-size:48.20739746px;font-style:normal;font-weight:normal;text-align:center;text-anchor:middle;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Sans"
+         xml:space="preserve"><tspan
+           style="font-weight:bold"
+           y="446.87704"
+           x="793.11182"
+           id="tspan3203"
+           sodipodi:role="line">LibAxl-BABEL</tspan><tspan
+           y="507.13629"
+           x="793.11181"
+           sodipodi:role="line"
+           id="tspan3205">(Extended Encoding Library)</tspan></text>
+      <rect
+         y="399.99286"
+         x="429.67288"
+         height="127.42876"
+         width="730.9538"
+         id="rect3207"
+         style="fill:none;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:6.14265108;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+    </g>
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:3.1;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-start:none;marker-end:url(#Arrow2Mend);stroke-miterlimit:4;stroke-dasharray:none"
+       d="M 102.14104,641.1101 C 83.325585,619.60672 -29.567143,528.21737 -29.567143,528.21737"
+       id="path3232" />
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:3.19876027;stroke-linecap:butt;stroke-linejoin:miter;marker-start:none;marker-end:url(#Arrow2Mend);stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 535.26643,652.65169 C 559.8107,635.10031 693.63677,522.87606 693.63677,522.87606"
+       id="path3434"
+       sodipodi:nodetypes="cc" />
+    <g
+       id="g3457"
+       transform="translate(-40.318832,-37.630909)">
+      <rect
+         ry="0"
+         rx="0"
+         y="139.42049"
+         x="88.317909"
+         height="153.99586"
+         width="543.72729"
+         id="rect3442"
+         style="fill:#5c3566;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+      <text
+         id="text3444"
+         y="199.73311"
+         x="363.04425"
+         style="font-size:48.20739746px;font-style:normal;font-weight:normal;text-align:center;text-anchor:middle;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Sans"
+         xml:space="preserve"><tspan
+           style="font-weight:bold"
+           y="199.73311"
+           x="363.04424"
+           id="tspan3446"
+           sodipodi:role="line">Axl-KNIFE</tspan><tspan
+           y="259.99236"
+           x="363.04425"
+           sodipodi:role="line"
+           id="tspan3448">(Command line tool)</tspan></text>
+      <rect
+         y="152.36998"
+         x="101.26745"
+         height="128.38663"
+         width="516.87787"
+         id="rect3450"
+         style="fill:none;fill-opacity:1;fill-rule:nonzero;stroke:#ffffff;stroke-width:5.18478823;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+    </g>
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:3.61058283;stroke-linecap:butt;stroke-linejoin:miter;marker-start:none;marker-end:url(#Arrow2Mend);stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 315.37957,657.48737 C 312.19748,423.40665 315.37957,263.24615 315.37957,263.24615"
+       id="path3464"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:3.0999999;stroke-linecap:butt;stroke-linejoin:miter;marker-start:none;marker-end:url(#Arrow2Mend);stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M -159.10148,340.56785 C -62.336288,257.24226 20.989295,187.35629 20.989295,187.35629"
+       id="path3466"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:3.57189059;stroke-linecap:butt;stroke-linejoin:miter;marker-start:none;marker-end:url(#Arrow2Mend);stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 865.14674,323.14688 C 736.67958,239.82129 626.0551,169.93532 626.0551,169.93532"
+       id="path3472"
+       sodipodi:nodetypes="cc" />
+  </g>
+</svg>
