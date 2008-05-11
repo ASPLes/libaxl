@@ -53,6 +53,10 @@
 /** 
  * @brief Allows to configure babel encoding functions making axl
  * library to use its API to support encoding formats.
+ *
+ * Current encoding format supported at:
+ * - utf-8, ascii.
+ * - iso-8859-1, iso-8859-2, iso-8859-9, iso-8859-15
  * 
  * @param error An optional reference to an axlError where failure
  * will be notified.
