@@ -56,7 +56,7 @@
  *
  * Current encoding format supported at:
  * - utf-8, ascii.
- * - iso-8859-1, iso-8859-2, iso-8859-9, iso-8859-15
+ * - iso-8859-1, iso-8859-2, iso-8859-3, iso-8859-9, iso-8859-15
  * 
  * @param error An optional reference to an axlError where failure
  * will be notified.
@@ -361,6 +361,12 @@ bool axl_babel_configure_encoding (axlStream  * stream,
 		/* install a translator handler */
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "installed handler encoding for iso-8859-2");
 		table = axl_babel_build_iso88592_table ();
+	} /* end if */
+
+	if (axl_cmp (encoding, "iso88593")) {
+		/* install a translator handler */
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "installed handler encoding for iso-8859-3");
+		table = axl_babel_build_iso88593_table ();
 	} /* end if */
 
 	if (axl_cmp (encoding, "iso88599")) {
