@@ -378,6 +378,12 @@ bool axl_babel_configure_encoding (axlStream  * stream,
 		table = axl_babel_build_iso88594_table ();
 	} /* end if */
 
+	if (axl_cmp (encoding, "iso88595")) {
+		/* install a translator handler */
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "installed handler encoding for iso-8859-5");
+		table = axl_babel_build_iso88595_table ();
+	} /* end if */
+
 	if (axl_cmp (encoding, "iso88599")) {
 		/* install a translator handler */
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "installed handler encoding for iso-8859-9");
