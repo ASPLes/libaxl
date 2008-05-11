@@ -944,7 +944,15 @@
  *  >> make
  *  >> make install
  * \endcode
+ *
+ * Once finished, to check your axl build to properly work, get inside
+ * the test/ directory and run axl regression test (test_01):
+ * \code
+ *  >> cd test/
+ *  >> ./test_01
+ * \endcode
  * 
+ * All test must execute properly to ensure the library is fully functional.
  *
  * \section windows Windows installation instructions
  *
