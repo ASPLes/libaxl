@@ -39,6 +39,16 @@
 
 #include <axl_babel.h>
 
+/* include local headers */
+#include <axl_babel_iso88591.h>
+#include <axl_babel_iso88592.h>
+#include <axl_babel_iso88593.h>
+#include <axl_babel_iso88594.h>
+#include <axl_babel_iso88595.h>
+#include <axl_babel_iso88596.h>
+#include <axl_babel_iso88599.h>
+#include <axl_babel_iso885915.h>
+
 #define LOG_DOMAIN "axl-babel"
 
 /**
