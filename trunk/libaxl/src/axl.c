@@ -928,7 +928,7 @@
  * Here are a set of instructions to get the library compiled for your
  * platform:
  *
- * \section unix GNU/Linux (or any posix OS) installation instructions
+ * \section axl_on_unix GNU/Linux (or any posix OS) installation instructions
  *
  * First, download the package from the download section. Check <a
  * href="http://www.aspl.es/axl/doc.html">this section to know more
@@ -944,6 +944,8 @@
  *  >> make
  *  >> make install
  * \endcode
+ * 
+ * \section checking_axl Checking Axl Library compilation (regression test)
  *
  * Once finished, to check your axl build to properly work, get inside
  * the test/ directory and run axl regression test (test_01):
@@ -952,7 +954,7 @@
  *  >> ./test_01
  * \endcode
  * 
- * All test must execute properly to ensure the library is fully functional.
+ * All test must execute properly to ensure the library is fully functional. 
  *
  * \section windows Windows installation instructions
  *
