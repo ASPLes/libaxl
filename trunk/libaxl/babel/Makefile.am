@@ -17,14 +17,17 @@ libaxl_babel_la_SOURCES     = \
 	axl_babel_iso885915.c \
 	axl_babel_iso88591.c \
 	axl_babel_iso88592.c \
+	axl_babel_iso88593.c \
 	axl_babel_iso88599.c
+
 libaxl_babelinclude_HEADERS = \
 	axl_babel.h \
 	axl_babel_iso885915.h \
 	axl_babel_iso88591.h \
 	axl_babel_iso88592.h \
+	axl_babel_iso88593.h \
 	axl_babel_iso88599.h
-	
+
 libaxl_babel_LIDADD   = ../src/libaxl.la	
 
 libaxl_babel_la_LDFLAGS = -no-undefined -export-symbols-regex '^(axl|__axl|_axl).*'
@@ -39,6 +42,7 @@ refresh-tables: gen-table
 	./gen-table codes.txt iso885915.utf8.txt iso-8859-15
 	./gen-table codes.txt iso88591.utf8.txt iso-8859-1
 	./gen-table codes.txt iso88592.utf8.txt iso-8859-2
+	./gen-table codes.txt iso88593.utf8.txt iso-8859-3
 	./gen-table codes.txt iso88599.utf8.txt iso-8859-9
 
 

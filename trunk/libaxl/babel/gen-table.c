@@ -96,31 +96,41 @@ int main (int argc, char ** argv)
 	iterator = 0;
 	while (fread (buffer, 1, 1, file) == 1) {
 
-		/* read the terminator */
+		/* read character from base file */
 		if (fread (&(buffer[1]), 1, 1, file) != 1) {
 			break;
 		}
 
 		if (buffer[1] != '\n') {
-			printf ("Expected to find new line character at=%d..\n", iterator);
+			printf ("ERROR (1): Expected to find new line character at=%d..\n", iterator);
 			return -1;
 		}   
 
 		/* check max value here */
 		if (iterator >= max_value) {
-			printf ("Reached max value expected at the translated file. Translation table must have a 1:1 relation.\n");
+			printf ("ERROR (2): Reached max value expected at the translated file. Translation table must have a 1:1 relation.\n");
 			return -1;
 		}
 
-
+		/* read content from translated file */
 		if (fread (buffer2, 1, 1, file2) != 1) {
-			printf ("failed to read utf-8 file at iterator=%d (while handling buffer[0]='%c' (%u)..\n", 
+			printf ("ERROR (3): failed to read utf-8 file at iterator=%d (while handling buffer[0]='%c' (%u)..\n", 
 				iterator, buffer[0], (unsigned char) buffer[0]);
 			return -1;
 		} /* end if */
 
+		if (buffer2[0] == '\n' && buffer[0] != '\n') {
+			printf ("WARN: found no definition for buffer[0]='%c' (%u), iterator=%d..\n",
+				buffer[0], (unsigned char) buffer[0], iterator);
+			fprintf (output, "\t/* store item associated to code %d */\n", iterator);
+			fprintf (output, "\ttable[%d].size      = 1;\n", iterator);
+			fprintf (output, "\ttable[%d].buffer[0] = 0; /* unsupported translation */\n\n", iterator);
+			iterator++;
+			continue;
+		}
+
 		if (fread (&(buffer2[1]), 1, 1, file2) != 1) {
-			printf ("failed to read utf-8 file (while handling buffer[0]='%c'..\n", iterator);
+			printf ("ERROR (4): failed to read utf-8 file (while handling buffer[0]='%c'..\n", iterator);
 			return -1;
 		} /* end if */
 
@@ -133,7 +143,7 @@ int main (int argc, char ** argv)
 		}
 
 		if (fread (&(buffer2[2]), 1, 1, file2) != 1) {
-			printf ("failed to read utf-8 file (2 type unit)..\n");
+			printf ("ERROR (5): failed to read utf-8 file (2 type unit)..\n");
 			return -1;
 		} /* end if */
 		
@@ -147,7 +157,7 @@ int main (int argc, char ** argv)
 		}
 
 		if (fread (&(buffer2[3]), 1, 1, file2) != 1) {
-			printf ("failed to read utf-8 file (3 type unit)..\n");
+			printf ("ERROR (6): failed to read utf-8 file (3 type unit)..\n");
 			return -1;
 		} /* end if */
 
