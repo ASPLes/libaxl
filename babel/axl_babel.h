@@ -71,6 +71,7 @@ typedef struct _axlBabelTable {
 #include <axl_babel_iso88592.h>
 #include <axl_babel_iso88593.h>
 #include <axl_babel_iso88594.h>
+#include <axl_babel_iso88595.h>
 #include <axl_babel_iso88599.h>
 #include <axl_babel_iso885915.h>
 
