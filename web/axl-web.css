@@ -229,3 +229,10 @@ ul.list {
   border-bottom: 1px dotted #000090;
 }
 
+.features ul { 
+  list-style: square;
+}
+
+.features li { 
+  padding-bottom: 5px;
+}

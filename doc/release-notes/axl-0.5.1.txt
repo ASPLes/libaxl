@@ -1,0 +1,282 @@
+          ####################################
+          #            Axl Library           #
+          #         La torre de babel        # 
+          #               0.5.1              #
+          ####################################
+
+Advanced Software Production Line is proud to announce a new Axl
+Library release.
+
+Axl Library is an small and efficient XML toolkit, written in ANSI C,
+and released under the LGPL, that will allow you to produce efficient
+and clear code that interfaces with XML data.
+
+The library was produced to support XML requirements needed by
+software developed by Advanced Software Production Line, S.L.
+
+At this moment the library is being used by Vortex Library, Af-Arch,
+Turbulence, Shaper and Fovap.
+
+Resources
+~~~~~~~~~
+
+   Axl Homepage
+   [ http://www.aspl.es/xml ]
+
+   Advanced Software Production Line, S.L.
+   [ http://www.aspl.es ]
+
+This release in short
+~~~~~~~~~~~~~~~~~~~~~
+
+  Next major stable release. Base library (libaxl) was updated to
+  allow configuring a set of external handler that allows to perform
+  run-time buffered decode operations. This was used to implement
+  libaxl-babel, the foundation to give Axl Library support for more
+  encoding formats than utf-8.
+
+  Fixed several bugs at the library and some improvements were
+  implemented on axl-knife (like producing a C inline representation
+  for a DTD). 
+
+Thanks to..
+~~~~~~~~~~~
+  Benoit Amiaux (report memory leaks on document load failure).
+  Dave Dribin (report and fix compilation errors on Mac OS).
+
+Change notifications
+~~~~~~~~~~~~~~~~~~~~
+  None. 
+
+Changes from previous release 0.4.14
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* [new] Finished support for iso-8859-8 inside axl babel. Updated
+  regression test.
+
+* [fix] Updated documentation (new encoding support and some tips to
+  check axl build by using regression test).
+
+* [new] Added support for iso-8859-7 into babel and updated regression
+  test to check it.
+
+* [fix] Making axl babel to not export encoding header because they
+  are only used internally.
+
+* [new] Added support for iso-8859-6 to axl babel. Updated regression
+  test to check it.
+
+* [new] Added support for iso-8859-5 encoding inside axl babel.
+
+* [new] Added support to babel for iso-8859-4 encoding.
+
+* [new] Added support for iso-8859-3 encoding format inside axl babel.
+  Updated regression test to check this new format supported.  Updated
+  documentation.
+
+* [fix] Added initial documentation to explain how to use axl babel
+  library.
+
+* [new] Updating axl error module to include a new to produce axlError
+  reporting without including axlStream parameter, and allowing
+  printf-like arguments. API added:
+
+   - axl_error_report
+
+* [fix] Updated documentation.
+
+* [fix] Renaming libaxl_ns_LDADD and libaxl_babel_LDADD, changing
+  LDADD with LIBADD. Error reported by Dave Dribin, while compiling at
+  MacOSX.
+
+* [fix] Committing changes to Makefile.am to also export _axl symbols.
+  Added missing libaxl-babel.def file.
+
+* [fix] Added explicit references to ../src/libaxl.la object from
+  babel/ and ns/ directory.
+
+* [fix] Fixing minor comparison axl_babel_check_utf8_content.
+
+* [fix] Fixing babel bug which wasn't detecting codification for utf-8
+  like documents without xml header declaration. Updated regression
+  test to reproduce and check the fix introduced.
+
+* [fix] Fixed memory leaks associated to document loading on
+  situations where the document is erroneous an its unbalanced at the
+  end or the encode detection func fails. Fixes integrated into
+  RT. Reported by Benoit Amiaux.
+
+* [fix] Updated regression test to check latest bug found at
+  axl_stream_check_content and support to load large utf-8 files
+  without content declaration.
+
+* [fix] Fixed bug inside axl_stream_content_check.
+
+* [fix] Making axl stream to not nullify error reference at 
+  axl_stream_content_check.
+
+* [fix] Making axl doc module to detect a proper encoding
+  configuration and reconfigure document encoding declaration into
+  utf-8 to avoid future problems with other APIs like axl_doc_dump*
+  functions.
+
+* [fix] Committing changes to compile all the platform..
+
+* [new] Committing changes to produce a pkg-config file for axl-babel
+  and updating documentation.
+
+* [new] Updated axl stream engine to allow configuring an external
+  handler that allows to check content that goes to the application
+  buffer.  This is now used to implement utf-8 checks from
+  axl-babel. API added:
+   
+   - axl_stream_content_check (internal)
+   - axl_stream_setup_check
+   - axlStreamContentCheck (handler)
+
+* [fix] implemented internal content check for utf-8 files.
+
+* [fix] Updating regression tests..
+
+* [fix] Extended regression test to check wrong utf-8 content.
+
+* [new] Committing support for iso-8859-9 encoding..
+
+* [fix] Updated regression test to check babel support for iso-8859-9.
+
+* [new] Adding files to add support for iso-8859-2 to babel.
+
+* [fix] Committing changes to regression test to check iso-8859-2 support.
+
+* [fix] Adding to babel support for iso-8859-1.
+
+* [fix] Updated regression test to support iso-8859-1 encoding.
+
+* [fix] Updating main configure.ac and Makefile.am file to check and
+  build babel. By default enabled as it do not require external
+  support.
+
+* [new] Updating regression test to check initial babel features
+  (test_41).  Adding documents required by tests.
+
+* [new] Finished initial support to connect a set of handler to
+  perform run-time decoding of xml documents opened. GREAT!
+
+* [fix] Updated axl stream API to include new functions to support
+  previous feature. API added:
+
+    - axl_stream_link_full
+    - axl_stream_decode (internal)
+
+* [new] Committing first fully working implementation of libaxl-babel,
+  the component that will provide extended format support to axl base
+  library. Added initial support to translate iso-8859-15 content into
+  utf-8 as a plug-in to the axl stream decoder support. API added:
+
+    - axlBabelTable (type)
+    - axl_babel_init
+    - axl_babel_finish
+    - axl_babel_detect_codification
+    - axl_babel_configure_encoding
+    - axl_babel_check_utf8_content
+    - axl_babel_build_iso885915_table
+
+
+* [new] Updated axl stream API to include a function that allows to
+  check for the numeric value at the stream header:
+
+    - axl_stream_inspect_code
+
+* [new] Added two new handlers to make codification handling to be
+  plug-able and external to the base library. API added:
+  
+    - axlDocDetectCodification (handler)
+    - axlDocConfigureCodification (handler)
+    - axl_doc_set_detect_codification_func
+    - axl_doc_set_configure_codification_func
+
+* [fix] moving all files to utf-8 codification and committing some
+  changes..
+
+* [fix] Committing initial implementation to support codifications
+  inside axl. Work in progress.... Updated regression test file to be
+  codified using utf-8.
+
+* [new] Added new function to axl stream module that allows to remove
+  some particular string on a given string. API added:
+
+    - axl_stream_remove
+
+* [fix] Committing test files to regression test 41.
+
+* [fix] Fixed wrong handling for nodes with only content while dumping
+  xml content using pretty functions. Updated regression test to check
+  this.
+
+* [fix] Fixed bug at axl_doc_dump* functions which was causing to not
+  dump comments included at the root level. Updated regression test to
+  check this and the previous bug fix.
+
+* [fix] Making axl_doc_dump* functions to not include new white spaces
+  if the comment is found to have starting white spaces (avoid content
+  recursion generation).
+
+* [fix] Updated documentation to include some references to axl-knife.
+
+* [new] Added support to the tool to detect if input file is newer
+  than output file (--ifnewer) avoiding to recreate it.
+
+* [fix] Fixed bug inside DTD parsing which was causing to not properly
+  handle attribute values inside ATTLIST.
+
+* [fix] Fixed wrong handling while calling to axl_stream_get_until_zero
+  for streams opened from a file. 
+
+* [fix] Updated axl regression test to produce new dtd inline files
+  and to check them for its proper parsing. Nice!!
+
+* [new] axl-knife: Added initial implementation to produce a C inline
+  representation from a DTD document, allowing to include the DTD
+  inside the code in an easy way.
+
+* [new] Updated axl dtd module API to include a function that allows
+  to check if two dtd documents loaded are equal. Updated regression
+  test to check this feature.
+
+* [fix] Updated regression test to check support for inline dtd
+  support.
+
+* [fix] Added internal check for temporal buffer used inside axl
+  stream.
+
+* [fix] Making axl_hash_get to directly return NULL if empty hash is
+  detected.
+
+About Advanced Software Production Line, S.L.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Advanced Software Production Line is leading the Af-Arch project: a
+  complete framework to develop distributed application to manage
+  enterprise process.
+
+  Af-Arch project uses Axl library to support its XML requirements
+  while exchanging data between nodes.
+
+  Advanced Software Production Line also provides GNU/Linux support
+  and consulting services to enable organization to introduce
+  GNU/Linux inside its process, making other platforms to interact
+  with GNU/Linux.
+
+  Contact us, using English or Spanish, to get commercial support
+  and/or XML based development services.
+
+  You can reach us:
+
+       http://www.aspl.es - info@aspl.es
+
+  We hope Axl Library help you. Enjoy Axl Library!
+
+--
+Francis Brosnan Blázquez           - francis@aspl.es
+Advanced Software Production Line  - http://www.aspl.es
+12th may 2008, Madrid (Spain)
