@@ -5,9 +5,9 @@ OBJ      = test_01.o
 
 PROGRAMS = test_01.exe 
 
-LIBS     = -Wall -g -L../src -laxl -L"../ns" -laxl-ns
+LIBS     = -Wall -g -L../src -laxl -L"../ns" -laxl-ns -L"../babel" -laxl-babel
 
-INCS =  -I"." -I"../src" -I"../ns" -DAXL_NS_SUPPORT
+INCS =  -I"." -I"../src" -I"../ns" -DAXL_NS_SUPPORT -I"../babel" 
 
 CFLAGS   = $(INCS) -DVERSION=\""$(AXL_VERSION)"\" -Wall -g
 
@@ -29,6 +29,7 @@ test_01.exe: test_01.o
 links:
 	cp ../src/libaxl.dll .
 	cp ../ns/libaxl-ns.dll .
+	cp ../babel/libaxl-babel.dll .
 %.o: %.c
 	$(CC) -c $< -o $@ $(CFLAGS)
 
