@@ -1,4 +1,6 @@
-EXTRA_DIST      = $(wildcard *.c) $(wildcard *.dtd) $(wildcard *.xml) $(wildcard *.xdl) Makefile.win test_01.vcproj
+EXTRA_DIST      = fact.dtd.h channel.dtd.h xml-rpc.dtd.h tls.dtd.h \
+	$(wildcard *.c) $(wildcard *.dtd) $(wildcard *.xml) \
+	$(wildcard *.xdl) Makefile.win test_01.vcproj
 
 if ENABLE_AXL_LOG
 LOG = -DSHOW_DEBUG_LOG
