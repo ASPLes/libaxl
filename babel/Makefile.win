@@ -1,0 +1,45 @@
+# Makefile for windows (mingw)
+OBJ  = axl_babel.o \
+	axl_babel_iso885915.o \
+	axl_babel_iso88591.o \
+	axl_babel_iso88592.o \
+	axl_babel_iso88593.o \
+	axl_babel_iso88594.o \
+	axl_babel_iso88595.o \
+	axl_babel_iso88596.o \
+	axl_babel_iso88597.o \
+	axl_babel_iso88598.o \
+	axl_babel_iso88599.o
+
+DLL        = $(axl_dll)-babel.dll
+IMPORT_DLL = $(DLL).a
+STATIC_LIB = $(axl_dll)-babel.a
+
+LIBS = -Wall -g --add-stdcall-alias $(search_lib_path) -laxl -L"../src"
+
+INCS = -I"." -I"../src" 
+
+CFLAGS = $(INCS) -DVERSION=\""$(AXL_VERSION)"\" -Wall -g # -DSHOW_DEBUG_LOG
+
+RM = rm -f
+
+.PHONY: all clean
+
+all: $(DLL)
+
+clean: 
+	${RM} $(OBJ) $(DLL) *.a *.dll.a *.lib *.dll
+
+install: all
+
+
+$(DLL): $(OBJ)
+# add the following line to create an import library. At this point this step
+# is not requiered because gcc automatically get an import library from the dll.
+# -Wl,--out-implib,libaxl.lib
+	$(CC) -m$(MODE) -shared -Wl,--out-implib,$(IMPORT_DLL) --export-all-symbols \
+		  $(OBJ) -o $(DLL)        $(LIBS)
+	lib.exe /def:$(axl_dll)-babel.def
+
+%.o: %.c
+	$(CC) -c $< -o $@ $(CFLAGS)
