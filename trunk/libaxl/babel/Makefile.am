@@ -1,4 +1,4 @@
-EXTRA_DIST = Makefile.win # libaxl-babel.def libaxl-babel.vcproj
+EXTRA_DIST = Makefile.win libaxl-babel.def # libaxl-babel.vcproj
 
 if ENABLE_AXL_LOG
 LOG = -DSHOW_DEBUG_LOG

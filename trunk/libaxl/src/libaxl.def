@@ -159,6 +159,7 @@ axl_error_free
 axl_error_get
 axl_error_get_code
 axl_error_new
+axl_error_report
 axl_error_was_ok
 axl_factory_create
 axl_factory_free
