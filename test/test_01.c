@@ -134,8 +134,8 @@ bool test_41 (axlError ** error)
 	if (! axl_cmp (test_41_iso_8859_15_value, 
 		       axl_node_get_content (node, NULL))) {
 		printf ("Found diferences at node content: (size: %d)'%s' != (size: %d) '%s'..\n",
-			strlen (test_41_iso_8859_15_value), test_41_iso_8859_15_value,
-			strlen (axl_node_get_content (node, NULL)), axl_node_get_content (node, NULL));
+			(int) strlen (test_41_iso_8859_15_value), test_41_iso_8859_15_value,
+			(int) strlen (axl_node_get_content (node, NULL)), axl_node_get_content (node, NULL));
 		axl_error_new (-1, "Found diferences at node content..\n", NULL, error);
 		return false;
 	}
@@ -167,7 +167,7 @@ bool test_41 (axlError ** error)
 
 	if (strlen (axl_node_get_content (node, NULL)) != 26642) {
 		printf ("ERROR: expected content lenght %d but found %d\n",
-			strlen (axl_node_get_content (node, NULL)), 26642);
+			(int) strlen (axl_node_get_content (node, NULL)), 26642);
 	}
 
 	/* free document */
@@ -198,8 +198,8 @@ bool test_41 (axlError ** error)
 	if (! axl_cmp (test_41_iso_8859_1_value, 
 		       axl_node_get_content (node, NULL))) {
 		printf ("Found diferences at node content: (size: %d)'%s' != (size: %d) '%s'..\n",
-			strlen (test_41_iso_8859_1_value), test_41_iso_8859_1_value,
-			strlen (axl_node_get_content (node, NULL)), axl_node_get_content (node, NULL));
+			(int) strlen (test_41_iso_8859_1_value), test_41_iso_8859_1_value,
+			(int) strlen (axl_node_get_content (node, NULL)), axl_node_get_content (node, NULL));
 		axl_error_new (-1, "Found diferences at node content..\n", NULL, error);
 		return false;
 	}
@@ -232,8 +232,8 @@ bool test_41 (axlError ** error)
 	if (! axl_cmp (test_41_iso_8859_2_value, 
 		       axl_node_get_content (node, NULL))) {
 		printf ("Found diferences at node content: (size: %d)'%s' != (size: %d) '%s'..\n",
-			strlen (test_41_iso_8859_2_value), test_41_iso_8859_2_value,
-			strlen (axl_node_get_content (node, NULL)), axl_node_get_content (node, NULL));
+			(int) strlen (test_41_iso_8859_2_value), test_41_iso_8859_2_value,
+			(int) strlen (axl_node_get_content (node, NULL)), axl_node_get_content (node, NULL));
 		axl_error_new (-1, "Found diferences at node content..\n", NULL, error);
 		return false;
 	}
@@ -266,8 +266,8 @@ bool test_41 (axlError ** error)
 	if (! axl_cmp (test_41_iso_8859_3_value, 
 		       axl_node_get_content (node, NULL))) {
 		printf ("Found diferences at node content: (size: %d)'%s' != (size: %d) '%s'..\n",
-			strlen (test_41_iso_8859_3_value), test_41_iso_8859_3_value,
-			strlen (axl_node_get_content (node, NULL)), axl_node_get_content (node, NULL));
+			(int) strlen (test_41_iso_8859_3_value), test_41_iso_8859_3_value,
+			(int) strlen (axl_node_get_content (node, NULL)), axl_node_get_content (node, NULL));
 		axl_error_new (-1, "Found diferences at node content..\n", NULL, error);
 		return false;
 	}
@@ -300,8 +300,8 @@ bool test_41 (axlError ** error)
 	if (! axl_cmp (test_41_iso_8859_4_value, 
 		       axl_node_get_content (node, NULL))) {
 		printf ("Found diferences at node content: (size: %d)'%s' != (size: %d) '%s'..\n",
-			strlen (test_41_iso_8859_4_value), test_41_iso_8859_4_value,
-			strlen (axl_node_get_content (node, NULL)), axl_node_get_content (node, NULL));
+			(int) strlen (test_41_iso_8859_4_value), test_41_iso_8859_4_value,
+			(int) strlen (axl_node_get_content (node, NULL)), axl_node_get_content (node, NULL));
 		axl_error_new (-1, "Found diferences at node content..\n", NULL, error);
 		return false;
 	}
@@ -334,8 +334,8 @@ bool test_41 (axlError ** error)
 	if (! axl_cmp (test_41_iso_8859_5_value, 
 		       axl_node_get_content (node, NULL))) {
 		printf ("Found diferences at node content: (size: %d)'%s' != (size: %d) '%s'..\n",
-			strlen (test_41_iso_8859_5_value), test_41_iso_8859_5_value,
-			strlen (axl_node_get_content (node, NULL)), axl_node_get_content (node, NULL));
+			(int) strlen (test_41_iso_8859_5_value), test_41_iso_8859_5_value,
+			(int) strlen (axl_node_get_content (node, NULL)), axl_node_get_content (node, NULL));
 		axl_error_new (-1, "Found diferences at node content..\n", NULL, error);
 		return false;
 	}
@@ -368,8 +368,8 @@ bool test_41 (axlError ** error)
 	if (! axl_cmp (test_41_iso_8859_6_value, 
 		       axl_node_get_content (node, NULL))) {
 		printf ("Found diferences at node content: (size: %d)'%s' != (size: %d) '%s'..\n",
-			strlen (test_41_iso_8859_6_value), test_41_iso_8859_6_value,
-			strlen (axl_node_get_content (node, NULL)), axl_node_get_content (node, NULL));
+			(int) strlen (test_41_iso_8859_6_value), test_41_iso_8859_6_value,
+			(int) strlen (axl_node_get_content (node, NULL)), axl_node_get_content (node, NULL));
 		axl_error_new (-1, "Found diferences at node content..\n", NULL, error);
 		return false;
 	}
@@ -402,8 +402,8 @@ bool test_41 (axlError ** error)
 	if (! axl_cmp (test_41_iso_8859_7_value, 
 		       axl_node_get_content (node, NULL))) {
 		printf ("Found diferences at node content: (size: %d)'%s' != (size: %d) '%s'..\n",
-			strlen (test_41_iso_8859_7_value), test_41_iso_8859_7_value,
-			strlen (axl_node_get_content (node, NULL)), axl_node_get_content (node, NULL));
+			(int) strlen (test_41_iso_8859_7_value), test_41_iso_8859_7_value,
+			(int) strlen (axl_node_get_content (node, NULL)), axl_node_get_content (node, NULL));
 		axl_error_new (-1, "Found diferences at node content..\n", NULL, error);
 		return false;
 	}
@@ -436,8 +436,8 @@ bool test_41 (axlError ** error)
 	if (! axl_cmp (test_41_iso_8859_8_value, 
 		       axl_node_get_content (node, NULL))) {
 		printf ("Found diferences at node content: (size: %d)'%s' != (size: %d) '%s'..\n",
-			strlen (test_41_iso_8859_8_value), test_41_iso_8859_8_value,
-			strlen (axl_node_get_content (node, NULL)), axl_node_get_content (node, NULL));
+			(int) strlen (test_41_iso_8859_8_value), test_41_iso_8859_8_value,
+			(int) strlen (axl_node_get_content (node, NULL)), axl_node_get_content (node, NULL));
 		axl_error_new (-1, "Found diferences at node content..\n", NULL, error);
 		return false;
 	}
@@ -470,8 +470,8 @@ bool test_41 (axlError ** error)
 	if (! axl_cmp (test_41_iso_8859_9_value, 
 		       axl_node_get_content (node, NULL))) {
 		printf ("Found diferences at node content: (size: %d)'%s' != (size: %d) '%s'..\n",
-			strlen (test_41_iso_8859_9_value), test_41_iso_8859_9_value,
-			strlen (axl_node_get_content (node, NULL)), axl_node_get_content (node, NULL));
+			(int) strlen (test_41_iso_8859_9_value), test_41_iso_8859_9_value,
+			(int) strlen (axl_node_get_content (node, NULL)), axl_node_get_content (node, NULL));
 		axl_error_new (-1, "Found diferences at node content..\n", NULL, error);
 		return false;
 	}
@@ -550,7 +550,7 @@ bool test_40 (axlError ** error)
 	/* check content */
 	if (! axl_cmp (content, content2)) {
 		printf ("Failed, expected equal content, but found differences: (%d)'%s' != (%d)'%s'\n",
-			strlen (content), content, strlen (content2), content2);
+			(int) strlen (content), content, (int) strlen (content2), content2);
 		axl_error_new (-1, "Failed, expected equal content, but found differences", NULL, error);
 		return false;
 	}
@@ -3006,7 +3006,7 @@ bool test_13 (axlError ** error)
         <translate value='NegativeInvoice' as='Negativa' norma='no'>Value1</translate>\n\
     </translate>\n\
 </common-unit-translate>\n")) {
-		printf ("Content lenght found: %d and size=%d..\n", strlen (content), size);
+	        printf ("Content lenght found: %d and size=%d..\n", (int) strlen (content), size);
 		axl_error_new (-1, "Failed to check dump content, expected different values", NULL, error);
 		return false;
 	} /* end if */
@@ -5556,12 +5556,18 @@ bool test_01_03_vargs (const char * format, ...)
 	if (axl_stream_vprintf_len (format, args) != 8)
 		return false;
 
-	if (axl_stream_vprintf_len (format, args) != 8)
-		return false;
+	va_end (args);
+	va_start (args, format);
 
 	if (axl_stream_vprintf_len (format, args) != 8)
 		return false;
-	
+
+	va_end (args);
+	va_start (args, format);
+
+	if (axl_stream_vprintf_len (format, args) != 8)
+		return false;
+
 	va_end (args);
 
 	return true;
@@ -5753,42 +5759,42 @@ bool test_01_03 ()
 	}
 
 	/* check axl_stream_vprintf_len implementation */
-	if (axl_stream_vprintf_len (NULL, NULL) != 0) {
+	if (axl_stream_printf_len (NULL, NULL) != 0) {
 		printf ("failed, expected to find an string value of 0, but it wasn't found\n");
 		return false;
 	} /* end if */
 
-	if (axl_stream_vprintf_len (" this is a test", NULL) != 16) {
+	if (axl_stream_printf_len (" this is a test", NULL) != 16) {
 		printf ("failed, expected to find an string value of 16, but it wasn't found\n");
 		return false;
 	}
 
-	if (axl_stream_vprintf_len (" this %% is a %% test", NULL) != 20) {
+	if (axl_stream_printf_len (" this %% is a %% test", NULL) != 20) {
 		printf ("failed, expected to find an string value of 20, but it wasn't found\n");
 		return false;
 	}
 
-	if (axl_stream_vprintf_len ("", NULL) != 1) {
+	if (axl_stream_printf_len ("", NULL) != 1) {
 		printf ("failed, expected to find an string value of 1, but it wasn't found\n");
 		return false;
 	}
 
-	if (axl_stream_vprintf_len ("%%", NULL) != 2) {
+	if (axl_stream_printf_len ("%%", NULL) != 2) {
 		printf ("failed, expected to find an string value of 2, but it wasn't found\n");
 		return false;
 	}
 
-	if (axl_stream_vprintf_len ("\"", NULL) != 2) {
+	if (axl_stream_printf_len ("\"", NULL) != 2) {
 		printf ("failed, expected to find an string value of 2, but it wasn't found\n");
 		return false;
 	}
 
-	if (axl_stream_vprintf_len ("\"", NULL) != 2) {
+	if (axl_stream_printf_len ("\"", NULL) != 2) {
 		printf ("failed, expected to find an string value of 2, but it wasn't found\n");
 		return false;
 	}
 
-	if (axl_stream_vprintf_len (" this is a test \r \t \n  asdf", NULL) != 28) {
+	if (axl_stream_printf_len (" this is a test \r \t \n  asdf", NULL) != 28) {
 		printf ("failed, expected to find an string value of 28, but it wasn't found\n");
 		return false;
 	} /* end if */
