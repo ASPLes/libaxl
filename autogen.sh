@@ -47,8 +47,8 @@ touch NEWS README AUTHORS ChangeLog
 libtoolize --force;
 aclocal $ACLOCAL_FLAGS; 
 autoheader; 
-automake --add-missing; 
-autoconf; 
+automake --add-missing --Werror;
+autoconf --force;
 
 
 ./configure $@ --enable-maintainer-mode --enable-compile-warnings
