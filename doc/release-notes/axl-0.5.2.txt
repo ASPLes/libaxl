@@ -34,6 +34,8 @@ This release in short
   This release contains no new features; only fixes a compilation bug
   which seems to be affecting to MacOS/X.
 
+  This release is API/ABI compatible with 0.5.1.
+
 Thanks to..
 ~~~~~~~~~~~
   Dave Dribin (report and fix compilation errors on Mac OS).
@@ -69,4 +71,4 @@ About Advanced Software Production Line, S.L.
 --
 Francis Brosnan Blázquez           - francis@aspl.es
 Advanced Software Production Line  - http://www.aspl.es
-12th may 2008, Madrid (Spain)
+16th may 2008, Madrid (Spain)

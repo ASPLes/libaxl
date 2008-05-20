@@ -14,7 +14,7 @@ lib_LTLIBRARIES = libaxl-ns.la
 
 libaxl_ns_la_SOURCES     = axl_ns_doc.c axl_ns_node.c
 libaxl_nsinclude_HEADERS = axl_ns.h axl_ns_doc.h axl_ns_node.h
-libaxl_ns_la_LIDADD      = ../src/libaxl.la
+libaxl_ns_la_LIBADD      = ../src/libaxl.la
 
 libaxl_ns_la_LDFLAGS = -no-undefined -export-symbols-regex '^(axl|__axl|_axl).*'
 

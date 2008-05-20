@@ -38,7 +38,7 @@ libaxl_babelinclude_HEADERS = \
 	axl_babel_iso88598.h \
 	axl_babel_iso88599.h
 
-libaxl_babel_la_LIDADD  = ../src/libaxl.la	
+libaxl_babel_la_LIBADD  = ../src/libaxl.la	
 
 libaxl_babel_la_LDFLAGS = -no-undefined -export-symbols-regex '^(axl|__axl|_axl).*'
 
