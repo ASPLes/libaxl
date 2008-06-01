@@ -5587,6 +5587,7 @@ bool test_01_03 ()
 	char ** result;
 	char  * join;
 	int     res;
+	int     real_size;
 	int     trimmed;
 
 	/* check that axl_stream_split works */
@@ -6114,6 +6115,191 @@ bool test_01_03 ()
 		return false;
 	} /* end if */
 	axl_free (string);
+
+	/* check printf buffer */
+	string = axl_new (char, 100);
+	string [21] = 'a';
+	res    = axl_stream_printf_buffer (string, 100, &real_size, "SEQ %d %d %d\x0D\x0A", 10, 1203020, 4096);
+	/* printf ("Found string (size: %d, real: %d): %s..\n", res, real_size, string); */
+
+	if (res  != strlen (string)) {
+		printf ("ERROR: expected to find string length %d but found %d..\n",
+			res, strlen (string));
+		return false;
+	}
+
+	if (res != 21) {
+		printf ("ERROR: expected to find string length %d but found %d..\n",
+			res, 21);
+		return false;
+	}
+	/* check string termination */
+	if (string [21] != '\0') {
+		printf ("ERROR: expected string termination at position %d..\n", 21);
+		return false;
+	}
+
+	/* check real size and returned value */
+	if (real_size != res) {
+		printf ("ERROR: expected to find same value returned as real size (%d != %d) but it wasn't found..\n",
+			real_size, res);
+		return false;
+	}
+
+	/* check content */
+	if (! axl_cmp (string, "SEQ 10 1203020 4096\x0D\x0A")) {
+		printf ("ERROR: expected to find '%s' but found '%s'..\n",
+			string, "SEQ 10 1203020 4096\x0D\x0A");
+		return false;
+	}
+
+	/* check printf buffer */
+	string[70] = 'a';
+	res    = axl_stream_printf_buffer (string, 100, &real_size, "SEQ ###############################################3 %d %d %d\x0D\x0A", 10, 1203020, 4096);
+	/* printf ("Found string (size: %d, real: %d): %s..\n", res, real_size, string); */
+	
+	if (res  != strlen (string)) {
+		printf ("ERROR: expected to find string length %d but found %d..\n",
+			res, strlen (string));
+		return false;
+	}
+
+	if (res != 70) {
+		printf ("ERROR: expected to find string length %d but found %d..\n",
+			res, 21);
+		return false;
+	}
+
+	/* check string termination */
+	if (string [70] != '\0') {
+		printf ("ERROR: expected string termination at position %d..\n", 21);
+		return false;
+	}
+
+	/* check real size and returned value */
+	if (real_size != res) {
+		printf ("ERROR: expected to find same value returned as real size (%d != %d) but it wasn't found..\n",
+			real_size, res);
+		return false;
+	}
+
+	/* check content */
+	if (! axl_cmp (string, "SEQ ###############################################3 10 1203020 4096\x0D\x0A")) {
+		printf ("ERROR: expected to find '%s' but found '%s'..\n",
+			string, "SEQ ###############################################3 10 1203020 4096\x0D\x0A");
+		return false;
+	}
+
+	/* check printf buffer */
+	string[96] = 'a';
+	res    = axl_stream_printf_buffer (string, 100, &real_size, "SEQ ############################################asdfasdfasdfasdfasdfasdfas###3 %d %d %d\x0D\x0A", 10, 1203020, 4096);
+	/* printf ("Found string (size: %d, real: %d): %s..\n", res, real_size, string); */
+
+	if (res != strlen (string)) {
+		printf ("ERROR: expected to find string length %d but found %d..\n", res, strlen (string));
+		return false;
+	}
+
+	if (res != 96) {
+		printf ("ERROR: expected to find string length %d but found %d..\n", res, 96);
+		return false;
+	}
+
+	/* check string termination */
+	if (string [96] != '\0') {
+		printf ("ERROR: expected string termination at position %d..\n", 21);
+		return false;
+	}
+
+	/* check real size and returned value */
+	if (real_size != res) {
+		printf ("ERROR: expected to find same value returned as real size (%d != %d) but it wasn't found..\n",
+			real_size, res);
+		return false;
+	}
+
+	/* check content */
+	if (! axl_cmp (string, "SEQ ############################################asdfasdfasdfasdfasdfasdfas###3 10 1203020 4096\x0D\x0A")) {
+		printf ("ERROR: expected to find '%s' but found '%s'..\n",
+			string, "SEQ ############################################asdfasdfasdfasdfasdfasdfas###3 10 1203020 4096\x0D\x0A");
+		return false;
+	}
+
+	/* check printf buffer */
+	string[99] = 'a';
+	res    = axl_stream_printf_buffer (string, 100, &real_size, "SEQ ###@@@#########################################asdfasdfasdfasdfasdfasdfas###3 %d %d %d\x0D\x0A", 
+					   10, 1203020, 4096);
+	/* printf ("Found string (size: %d, real: %d): %s..\n", res, real_size, string); */
+
+	if (res != strlen (string)) {
+		printf ("ERROR: expected to find string length %d but found %d (1)..\n", res, strlen (string));
+		return false;
+	}
+
+	if (res != 99) {
+		printf ("ERROR: expected to find string length %d but found %d (2)..\n", res, 99);
+		return false;
+	}
+
+	/* check string termination */
+	if (string [99] != '\0') {
+		printf ("ERROR: expected string termination at position %d..\n", 21);
+		return false;
+	}
+
+	/* check real size and returned value */
+	if (real_size != res) {
+		printf ("ERROR: expected to find same value returned as real size (%d != %d) but it wasn't found..\n",
+			real_size, res);
+		return false;
+	}
+
+	/* check content */
+	if (! axl_cmp (string, "SEQ ###@@@#########################################asdfasdfasdfasdfasdfasdfas###3 10 1203020 4096\x0D\x0A")) {
+		printf ("ERROR: expected to find '%s' but found '%s'..\n",
+			string, "SEQ ###@@@#########################################asdfasdfasdfasdfasdfasdfas###3 10 1203020 4096\x0D\x0A");
+		return false;
+	}
+
+	/* check printf buffer (out of space situation) */
+	string[99] = 'a';
+	res    = axl_stream_printf_buffer (string, 100, &real_size, 
+					   "SEQ ###@@@##fffasdklfjasdlfkjasdlfkjadf#######################################asdfasdfasdfasdfasdfasdfas###3 %d %d %d\x0D\x0A", 
+					   10, 1203020, 4096);
+	/* printf ("Found string (size: %d, real: %d): %s..\n", res, real_size, string); */
+
+	if (res != strlen (string)) {
+		printf ("ERROR: expected to find string length %d but found %d (1)..\n", res, strlen (string));
+		return false;
+	}
+
+	if (res != 99) {
+		printf ("ERROR: expected to find string length %d but found %d (2)..\n", res, 99);
+		return false;
+	}
+
+	/* check string termination */
+	if (string [99] != '\0') {
+		printf ("ERROR: expected string termination at position %d..\n", 21);
+		return false;
+	}
+
+	/* check real size and returned value */
+	if (real_size != 126) {
+		printf ("ERROR: expected to find same value returned as real size (%d != %d) but it wasn't found..\n",
+			real_size, 126);
+		return false;
+	}
+
+	/* check content */
+	if (! axl_cmp (string, "SEQ ###@@@##fffasdklfjasdlfkjasdlfkjadf#######################################asdfasdfasdfasdfasdfa")) {
+		printf ("ERROR: expected to find '%s' but found '%s'..\n",
+			string, "SEQ ###@@@##fffasdklfjasdlfkjasdlfkjadf#######################################asdfasdfasdfasdfasdfa");
+		return false;
+	}
+
+	axl_free (string);
+
 
 	return true;
 }
