@@ -2440,6 +2440,73 @@ int axl_stream_vprintf_len (const char * format, va_list args)
 }
 
 /** 
+ * @brief Allows to perform a printf operation on the provided buffer
+ * (which must be allocated by the caller, and its size signaled by
+ * buffer_size).
+ *
+ *
+ * @param buffer The already allocated buffer to hold the result.
+ *
+ * @param buffer_size The size of the buffer provided. 
+ *
+ * @param real_size Optional reference where the real space required
+ * to hold the content will be placed. In cases where the content is
+ * enough small to hold in the buffer, this value will contain the
+ * same value as returned by the function. In the case the buffer
+ * provide can't hold all the content, the function will return at
+ * maximum (buffer_size - 1) bytes written, that is, all content that
+ * was possible to be included plus a trailing \0 to terminate the
+ * string, and, if defined <i>real_size</i> variable, it will contain
+ * the space that will be required.
+ *
+ * @param format The printf like format to use to create the content
+ * to be placed at the buffer provided.
+ *
+ * @return The amount of bytes written. The function will return at
+ * maximum buffer_size - 1 bytes written. Use <i>real_size</i>
+ * variable to check if the function was able to write all content (if
+ * real_size == value returned). 
+ */
+int axl_stream_printf_buffer (char * buffer, 
+			      int    buffer_size, 
+			      int  * real_size,
+			      const char * format, ...)
+{
+	va_list args;
+	int     result;
+
+	/* check foramt and optn */
+	if (format == NULL) {
+		/* clean real size if it was defined */
+		if (real_size)
+			(*real_size) = 0;
+		return 0;
+	}
+	/* open stdargs */
+	va_start (args, format);
+
+# if defined (AXL_OS_WIN32) && ! defined (__GNUC__)
+	/* windows case */
+	result = _vsnprintf (buffer, buffer_size, format, args);
+#else
+	/* gnu gcc case */
+	result = vsnprintf (buffer, buffer_size, format, args);
+#endif
+	/* close stdarg */
+	va_end (args);
+
+	/* report real size required */
+	if (real_size)
+		(*real_size) = result;
+
+	/* limit result */
+	if (result > (buffer_size - 1))
+		result = (buffer_size - 1);
+
+	return result;
+}
+
+/** 
  * @internal Function that allows to get how many bytes will be
  * required to hold the format and the arguments provided.
  * 

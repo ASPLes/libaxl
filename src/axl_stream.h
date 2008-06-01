@@ -196,6 +196,11 @@ char      * axl_stream_strdup_printfv    (const char * chunk, va_list args);
 char      * axl_stream_strdup_printf_len (const char * chunk, 
 					  int  * chunk_size, ...);
 
+int         axl_stream_printf_buffer     (char * buffer, 
+					  int    buffer_size, 
+					  int  * real_size,
+					  const char * format, ...);
+
 char     ** axl_stream_split           (const char * chunk, int separator_num, ...);
 
 void        axl_stream_clean_split     (char ** split);
