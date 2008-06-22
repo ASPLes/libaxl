@@ -6124,7 +6124,7 @@ bool test_01_03 ()
 
 	if (res  != strlen (string)) {
 		printf ("ERROR: expected to find string length %d but found %d..\n",
-			res, strlen (string));
+			res, (int) strlen (string));
 		return false;
 	}
 
@@ -6160,7 +6160,7 @@ bool test_01_03 ()
 	
 	if (res  != strlen (string)) {
 		printf ("ERROR: expected to find string length %d but found %d..\n",
-			res, strlen (string));
+			res, (int) strlen (string));
 		return false;
 	}
 
@@ -6196,7 +6196,7 @@ bool test_01_03 ()
 	/* printf ("Found string (size: %d, real: %d): %s..\n", res, real_size, string); */
 
 	if (res != strlen (string)) {
-		printf ("ERROR: expected to find string length %d but found %d..\n", res, strlen (string));
+	        printf ("ERROR: expected to find string length %d but found %d..\n", res, (int) strlen (string));
 		return false;
 	}
 
@@ -6232,7 +6232,7 @@ bool test_01_03 ()
 	/* printf ("Found string (size: %d, real: %d): %s..\n", res, real_size, string); */
 
 	if (res != strlen (string)) {
-		printf ("ERROR: expected to find string length %d but found %d (1)..\n", res, strlen (string));
+	        printf ("ERROR: expected to find string length %d but found %d (1)..\n", res, (int) strlen (string));
 		return false;
 	}
 
@@ -6269,7 +6269,7 @@ bool test_01_03 ()
 	/* printf ("Found string (size: %d, real: %d): %s..\n", res, real_size, string); */
 
 	if (res != strlen (string)) {
-		printf ("ERROR: expected to find string length %d but found %d (1)..\n", res, strlen (string));
+	        printf ("ERROR: expected to find string length %d but found %d (1)..\n", res, (int) strlen (string));
 		return false;
 	}
 

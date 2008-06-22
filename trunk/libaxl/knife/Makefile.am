@@ -1,4 +1,7 @@
-EXTRA_DIST      = $(wildcard *.c) $(wildcard *.h) Makefile.win 
+EXTRA_DIST      = \
+	axl-knife.c axl-knife.h \
+	exarg.c exarg.h \
+	Makefile.win 
 
 if ENABLE_AXL_LOG
 LOG = -DSHOW_DEBUG_LOG
