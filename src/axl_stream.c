@@ -2455,7 +2455,7 @@ int axl_stream_vprintf_len (const char * format, va_list args)
  * same value as returned by the function. In the case the buffer
  * provide can't hold all the content, the function will return at
  * maximum (buffer_size - 1) bytes written, that is, all content that
- * was possible to be included plus a trailing \0 to terminate the
+ * was possible to be included plus a trailing \\0 to terminate the
  * string, and, if defined <i>real_size</i> variable, it will contain
  * the space that will be required.
  *
