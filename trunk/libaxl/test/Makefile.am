@@ -1,16 +1,11 @@
-EXTRA_DIST      = \
-	\ # .h files 
-	fact.dtd.h channel.dtd.h xml-rpc.dtd.h tls.dtd.h \
-	\ # .c files
-	gen-codes.c gen-table.c read-codes.c test_01.c 
+h_files = fact.dtd.h channel.dtd.h xml-rpc.dtd.h tls.dtd.h 
+c_files = gen-codes.c gen-table.c read-codes.c test_01.c 
 	test_01a.c test_02a.c test_02b.c test_03a.c test_03c.c \
-	test_04a.c test_04b.c \
-	\ # .dtd files
-	channel.dtd fact.dtd test_30b.dtd test_30.dtd test_31a.dtd \
-	test_31.dtd test_32.dtd test_38.dtd test_39.dtd test3.dtd \
-	test4.dtd test5.1.dtd test5.dtd test.dtd tls.dtd xml-rpc.dtd \
-	\ # .xml files
-	test_41.iso-8859-8.xml test_41.iso-8859-7.2.xml test_41.iso-8859-7.xml  \
+	test_04a.c test_04b.c 
+dtd_files = channel.dtd fact.dtd test_30b.dtd test_30.dtd test_31a.dtd \
+	test_31.dtd test_32.dtd test_38.dtd test3.dtd \
+	test4.dtd test5.1.dtd test5.dtd test.dtd tls.dtd xml-rpc.dtd 
+xml_files = test_41.iso-8859-8.xml test_41.iso-8859-7.xml  \
 	test_41.iso-8859-6.xml test_41.iso-8859-5.xml test_41.iso-8859-4.xml  \
 	test_41.iso-8859-3.xml test_41.utf-8.withoutheader.xml  \
 	test_41.utf-8.wrongwithoutheader.xml \
@@ -23,16 +18,16 @@ EXTRA_DIST      = \
 	test_30b.xml test_30a.xml test_30.xml test_29.xml test_28.xml \
 	test_27.xml test_26d.xml test_23d.xml test_26c.xml test_26b.xml  \
 	test_26.xml large.xml test_23b.xml test_23.xml test_21.xml  \
-	test_01d.xml test_20a.xmltest_20.xml test_01b.xml test_13b.xml \
+	test_01d.xml test_20a.xml test_20.xml test_01b.xml test_13b.xml \
 	test_13c.xml test_19a.xml test_19b.xml test_19c.xml test_19d.xml \
 	test_19e.xml test_19f.xml test_19g.xml test_19.xml test13.xml  \
 	channel5.xml channel4.xml channel2.xml channel3.xml channel.xml \
 	test5.xml test3.xml test4.xml gmovil2.xml gmovil.xml small.xml  \
-	test2.xml test.xml \
-	\ # .xdl files
-	test17.xdl test03.xdl test04.xdl test01.xdl test02.xdl \
-	\ # misc files
-	Makefile.win test_01.vcproj
+	test2.xml test.xml 
+xdl_files = test17.xdl test03.xdl test04.xdl test01.xdl test02.xdl 
+misc_files = Makefile.win test_01.vcproj
+
+EXTRA_DIST      = $(h_files) $(c_files) $(dtd_files) $(xml_files) $(misc_files)
 
 if ENABLE_AXL_LOG
 LOG = -DSHOW_DEBUG_LOG
