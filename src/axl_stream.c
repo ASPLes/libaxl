@@ -2474,6 +2474,9 @@ int axl_stream_printf_buffer (char * buffer,
 {
 	va_list args;
 	int     result;
+#if defined(AXL_OS_WIN32)
+	int     check_size;
+#endif 
 
 	/* check foramt and optn */
 	if (format == NULL) {
@@ -2485,9 +2488,24 @@ int axl_stream_printf_buffer (char * buffer,
 	/* open stdargs */
 	va_start (args, format);
 
-# if defined (AXL_OS_WIN32) && ! defined (__GNUC__)
+# if defined (AXL_OS_WIN32)
+	/* because undre windows all its string family of functions
+	 * return -1 in the case not enough espace is available, we
+	 * have to check first before calling to _vsnprintf */
+	check_size = axl_stream_vprintf_len (format, args);
+
+	/* call to close to avoid problems with amd64 platforms */
+	va_end (args);
+	va_start (args, format);
+
 	/* windows case */
 	result = _vsnprintf (buffer, buffer_size, format, args);
+	if (result == -1) {
+		/* nullify last character and update "result" to point
+		 * to the amount of data written (buffer - 1). */
+		result = (buffer_size - 1);
+		buffer[result] = 0; 
+	} /* end if */
 #else
 	/* gnu gcc case */
 	result = vsnprintf (buffer, buffer_size, format, args);
@@ -2496,8 +2514,13 @@ int axl_stream_printf_buffer (char * buffer,
 	va_end (args);
 
 	/* report real size required */
-	if (real_size)
+	if (real_size) {
+#if defined(AXL_OS_WIN32)
+		(*real_size) = check_size - 1;
+#else
 		(*real_size) = result;
+#endif
+	} /* end if */
 
 	/* limit result */
 	if (result > (buffer_size - 1))
