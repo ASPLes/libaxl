@@ -1,0 +1,105 @@
+          ####################################
+          #           Axl Library            #
+          #       Don't touch the PRNG!     # 
+          #              0.5.3               #
+          ####################################
+
+Advanced Software Production Line is proud to announce a new Axl
+Library release.
+
+Axl Library is an small and efficient XML toolkit, written in ANSI C,
+and released under the LGPL, that will allow you to produce efficient
+and clear code that interfaces with XML data.
+
+The library was produced to support XML requirements needed by
+software developed by Advanced Software Production Line, S.L.
+
+At this moment the library is being used by Vortex Library, Af-Arch,
+Turbulence, Shaper and Fovap.
+
+Resources
+~~~~~~~~~
+
+   Axl Homepage
+   [ http://www.aspl.es/xml ]
+
+   Advanced Software Production Line, S.L.
+   [ http://www.aspl.es ]
+
+This release in short
+~~~~~~~~~~~~~~~~~~~~~
+
+  Fixings and new function inside Axl stream API to perform printf
+  operation on an allocated buffer.
+
+Thanks to..
+~~~~~~~~~~~
+  Dave Dribin (report and fix compilation errors on Mac OS).
+
+Change notifications
+~~~~~~~~~~~~~~~~~~~~
+  None. 
+
+Changes from previous release 0.5.2
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* [fix] Updates inside axl_stream_printf_buffer to better support
+  windows platform and to allow the function to return the real amount
+  of memory required on operation where the buffer is not enough big.
+
+* [fix] Fixed Makefile.am files to make dist command to properly
+  complete. Removed false references. Fixed typo error. Updated .def
+  files.
+
+* [fix] Fixed warnings at libaxl regression test at amd64 platforms.
+  
+* [fix] Fixed non-portable automake declarations using wild cards not
+  supported by all make implementations.
+
+* [new] Updated axl stream API to include a new function to perform
+  printf operations on a provided buffer, returning the content used
+  and the content that would be required to support the operation in
+  the case not enough space is found. Updated regression test to check
+  its function (error codes, content returned on error, and sizes
+  used).
+
+* [fix] More updates to autogen.sh to include options to warn all
+  errors found during autoconf process.
+
+* [fix] Updating autogen.sh to add --Werror to avoiding releasing
+  faulty tarballs.
+
+* [fix] Fixed misspell error supposed to be fixed in 0.5.2 (but it
+  wasn't).  Re-reported again by Dave Dribin.
+
+* [fix] Fixing regression to properly execute on amd64 platforms.
+
+
+About Advanced Software Production Line, S.L.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Advanced Software Production Line is leading the Af-Arch project: a
+  complete framework to develop distributed application to manage
+  enterprise process.
+
+  Af-Arch project uses Axl library to support its XML requirements
+  while exchanging data between nodes.
+
+  Advanced Software Production Line also provides GNU/Linux support
+  and consulting services to enable organization to introduce
+  GNU/Linux inside its process, making other platforms to interact
+  with GNU/Linux.
+
+  Contact us, using English or Spanish, to get commercial support
+  and/or XML based development services.
+
+  You can reach us:
+
+       http://www.aspl.es - info@aspl.es
+
+  We hope Axl Library help you. Enjoy Axl Library!
+
+--
+Francis Brosnan Blázquez           - francis@aspl.es
+Advanced Software Production Line  - http://www.aspl.es
+25th jun 2008, Madrid (Spain)
