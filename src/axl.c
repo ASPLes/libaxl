@@ -688,6 +688,24 @@
  * }
  * \endcode
  *
+ * Until now, we have seen how to check xml structure. But this do not
+ * cover xml node attributes. This is checked by using
+ * <b>&lt;!ATTLIST></b> declaration.
+ *
+ * In the case we have a node <b>testA</b> with two attribuets
+ * <b>attr1</b> and <b>attr2</b> the first one optional and the second
+ * one mandatory, we can declare something like:
+ *
+ * <div class="xml-doc">
+ * \code
+ * <!-- attribute validation for node testA -->
+ * <!ATTLIST testA 
+ *           attr1     CDATA   #IMPLIED
+ *           attr2     CDATA   #REQUIRED>
+ * \endcode
+ * </div>
+ * 
+ *
  * \section xml_namespace Enabling your software with XML Namespaces
  *
  * XML 1.0 initial design didn't take care about situations where
@@ -898,7 +916,7 @@
  * 
  */
 
-/**
+/** 
  * @page axl_install Installing Axl library and using it
  *
  * \section intro Introduction
