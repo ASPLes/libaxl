@@ -464,19 +464,24 @@ char  * exarg_strdup_printfv    (char * chunk, va_list args)
 	char    * result   = NULL;
 	int       new_size = -1;
 	int       size     = 0;
+	va_list   copy;
 
 	/* return a NULL reference */
 	if (chunk == NULL)
 		return NULL;
 
 	/* get current buffer size to copy */
-	size     = vsnprintf (NULL, 0, chunk, args);
+	__va_copy (copy, args);
+	size     = vsnprintf (NULL, 0, chunk, copy);
+	va_end (copy);
 
 	/* allocate memory */
 	result   = exarg_new (char, size + 2);
 
 	/* copy current size */
+	__va_copy (copy, args);
 	new_size = vsnprintf (result, size + 1, chunk, args);
+	va_end (copy);
 
 	/* return the result */
 	return result;

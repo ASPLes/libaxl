@@ -1972,6 +1972,44 @@ axlDtd   * axl_dtd_parse (const char * entity,
  * @param error An optional \ref axlError reference where all errors found will be reported.
  * 
  * @return A newly allocated \ref axlDtd instance or NULL if it fails.
+ *
+ * <b>Making a DTD to be inline loaded: </b><br>
+ * 
+ * It may be helpful to make the DTD definition available at your
+ * binary, inline compiled, to avoid distributing DTD files along with
+ * libraries, etc. This also solves installation problems like
+ * provisioning a default location to make your application to find
+ * such files.
+ *
+ * With the following command you can create an inline representation
+ * from your DTD file:
+ * \code
+ * >> axl-knife --input your-file.dtd --dtd-to-c --output your-file.dtd.h --ifnewer
+ * \endcode
+ *
+ * This will create a header with an C-macro style definition of your
+ * DTD. Now, you can include it using:
+ *
+ * \code
+ * #include <your-file.dtd.h>
+ * \endcode
+ *
+ * In the case you are developing a library, it is recommended to do
+ * such include at the body implementation (usually .c or .cpp files,
+ * to avoid requiring your API consumers to also include your DTD
+ * inline definition). 
+ *
+ * Now, to load your DTD file, use the following:
+ *
+ * \code
+ * axlError * err = NULL;
+ * axlDtd   * dtd = axl_dtd_parse (YOUR_FILE_DTD, -1, &err);
+ * if (dtd == NULL) {
+ *    // This won't happen unless axl-runtime error found, since axl-knife 
+ *    // checks your dtd file before producing the in-line definition.
+ *    // However, bug happens! check this.
+ * }
+ * \endcode
  */
 axlDtd   * axl_dtd_parse_from_file (const char * file_path,
 				    axlError ** error)
@@ -2679,17 +2717,25 @@ bool     __axl_dtd_validate_element_type_empty (axlDtdElement  * element,
 						axlStack       * stack,
 						axlError      ** error)
 {
+	char * err_msg;
+
 	/* check the node is indeed, empty */
 	if (! axl_node_is_empty (parent)) {
-		axl_error_new (-1, "Found a node that it is especified that must be empty, but it isn't",
-			       NULL, error);
+		err_msg = axl_strdup_printf (
+			"Found a node <%s> that it is especified that must be empty, but it isn't",
+			axl_node_get_name (parent));
+		axl_error_new (-1, err_msg, NULL, error);
+		axl_free (err_msg);
 		return false;
 	}
 
 	/* check the node doesn't have childs */
 	if (axl_node_have_childs (parent)) {
-		axl_error_new (-1, "Found a node that it is especified that must be empty, but it has childs",
-			       NULL, error);
+		err_msg = axl_strdup_printf (
+			"Found a node <%s> that it is especified that must be empty, but it has childs",
+			axl_node_get_name (parent));
+		axl_error_new (-1, err_msg, NULL, error);
+		axl_free (err_msg);
 		return false;
 	}
 	
@@ -2990,7 +3036,11 @@ bool           axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 		element = axl_dtd_get_element (dtd, axl_node_get_name (parent));
 		if (element == NULL) { /*  || ! axl_dtd_element_is_toplevel (dtd, element)) { */
 			/* root node doesn't match */
-			axl_error_new (-1, "Found that root node doesn't match!", NULL, error);
+			err_msg = axl_strdup_printf ("Found that root node doesn't match (%s != %s!",
+						     axl_node_get_name (parent), 
+						     axl_dtd_get_element_name (element));
+			axl_error_new (-1, err_msg, NULL, error);
+			axl_free (err_msg);
 			return false;
 
 		} /* end if */
