@@ -138,8 +138,8 @@ struct _axlError {
  */
 void axl_error_new (int code, char * error_code, axlStream * stream, axlError ** _error)
 {
-	axlError * error;
-	char     * following;
+	axlError   * error;
+	const char * following;
 
 	/* get a reference to the error to be created */
 	if (_error == NULL)
