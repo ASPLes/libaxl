@@ -1650,9 +1650,9 @@ int         axl_stream_get_size        (axlStream * stream)
  * 
  * @return A string that is taken counting bytes with provided
  * <b>count</b> value starting from the index. Stream provided must be
- * not NULL and count value must be greater than 0.
+ * not NULL and count value must be greater than 0. 
  */
-char      * axl_stream_get_near_to     (axlStream * stream, int count)
+const char  * axl_stream_get_near_to     (axlStream * stream, int count)
 {
 	int first_index;
 	int last_index;
@@ -1694,7 +1694,7 @@ char      * axl_stream_get_near_to     (axlStream * stream, int count)
  * @return A string referece, containing the first <b>count</b> bytes
  * or NULL if fails. Reference returned shouldn't be deallocated.
  */
-char      * axl_stream_get_following   (axlStream * stream, int count)
+const char  * axl_stream_get_following   (axlStream * stream, int count)
 {
 	axl_return_val_if_fail (stream, NULL);
 

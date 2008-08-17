@@ -142,9 +142,9 @@ int         axl_stream_get_global_index (axlStream * stream);
 
 int         axl_stream_get_size        (axlStream * stream);
 
-char      * axl_stream_get_near_to     (axlStream * stream, int count);
+const char * axl_stream_get_near_to    (axlStream * stream, int count);
 
-char      * axl_stream_get_following   (axlStream * stream, int count);
+const char * axl_stream_get_following  (axlStream * stream, int count);
 
 void        axl_stream_link            (axlStream  *   stream,
 					axlPointer     element,
