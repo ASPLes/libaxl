@@ -302,6 +302,11 @@ void       axl_list_set_destroy_func (axlList * list, axlDestroyFunc destroy_dat
  * This handler is optional, and in the case it is not provided, the
  * list returned will be a copy having reference to the content
  * stored.
+ *
+ * NOTE: the function also copy the destroy and equal function
+ * configured at \ref axl_list_new. If you want to disable destroy
+ * function on the copy returned you must use \ref
+ * axl_list_set_destroy_func, passing NULL as destroy handler.
  * 
  * @param list The list to copy.
  * @param func The duplication function used to perform a deep copy (optional handler).
