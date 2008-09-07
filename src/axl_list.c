@@ -273,6 +273,23 @@ axlList * axl_list_new    (axlEqualFunc are_equal, axlDestroyFunc destroy_data)
 	return result;
 }
 
+/**
+ * @brief Allows to reconfigure the destroy function to be used on
+ * this list. This function can be useful to disable the destroy
+ * function associated to the list. 
+ *
+ * @param list The list to reconfigure or disable (NULL) the destroy function.
+ *
+ * @param destroy_data The reference to the destroy function to be
+ * used or NULL to disable it.
+ */
+void       axl_list_set_destroy_func (axlList * list, axlDestroyFunc destroy_data)
+{
+	axl_return_if_fail (list);
+	list->destroy_data = destroy_data;
+	return;
+}
+
 /** 
  * @brief Allows to copy the provided list, returning a newly
  * allocated structure. 

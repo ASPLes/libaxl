@@ -45,6 +45,8 @@ BEGIN_C_DECLS
 
 axlList  * axl_list_new    (axlEqualFunc are_equal, axlDestroyFunc destroy_data);
 
+void       axl_list_set_destroy_func (axlList * list, axlDestroyFunc destroy_func);
+
 int        axl_list_equal_string (axlPointer a, axlPointer b);
 
 int        axl_list_equal_int    (axlPointer a, axlPointer b);
