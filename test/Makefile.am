@@ -47,6 +47,7 @@ INCLUDES = -I../src/ -I../ns -I../babel -Wall $(LOG) $(NS) $(BABEL) -DVERSION=\"
 
 # replace with bin_PROGRAMS to check performance
 bin_PROGRAMS = test_01 test_01a test_02a test_03a
+TESTS = test_01
 
 test_01_SOURCES = test_01.c
 test_01_LDADD   = ../src/libaxl.la $(NS_LIB) $(BABEL_LIB)
