@@ -27,7 +27,7 @@ major=2
 config.status: configure
 	dh_testdir
 # Add here commands to configure the package.
-# ./configure --host=$(DEB_HOST_GNU_TYPE) --build=$(DEB_BUILD_GNU_TYPE) --prefix=/usr
+	./configure --prefix=/usr --sysconfdir=/etc
 
 build: prepare build-stamp
 build-stamp:  prepare config.status
