@@ -29,10 +29,11 @@ config.status: configure
 # Add here commands to configure the package.
 # ./configure --host=$(DEB_HOST_GNU_TYPE) --build=$(DEB_BUILD_GNU_TYPE) --prefix=/usr
 
-
-build: build-stamp
-build-stamp:  config.status
+build: prepare build-stamp
+build-stamp:  prepare config.status
 	dh_testdir
+prepare:
+	./autogen.sh --prefix=/usr --sysconfdir=/etc
 
 # Add here commands to compile the package.
 	$(MAKE)
