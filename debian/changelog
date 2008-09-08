@@ -1,3 +1,9 @@
+libaxl (0.5.3-etch1) unstable; urgency=low
+
+  * New upstream version 0.5.3.
+
+ -- Francis Brosnan <francis@aspl.es>  Mon,  8 Sep 2008 15:43:57 +0200
+
 libaxl (0.4.5-1) unstable; urgency=low
 
   * First debian package version.
