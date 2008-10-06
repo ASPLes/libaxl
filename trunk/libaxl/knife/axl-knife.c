@@ -35,7 +35,6 @@
 
 /* internal errno redefinition */
 #if defined(AXL_OS_WIN32)
-#define errno (GetLastError())
 #define S_ISLNK(m) (0)
 #endif
 
