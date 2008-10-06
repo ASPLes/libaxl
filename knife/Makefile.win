@@ -1,0 +1,38 @@
+# Project: vortex-listener vortex-client
+
+CC       = gcc.exe -g -Wall
+OBJ      = axl-knife.o exarg.o
+
+PROGRAM = axl-knife.exe 
+
+LIBS     = -Wall -g -L../src -laxl -L"../ns" -laxl-ns -L"../babel" -laxl-babel
+
+INCS =  -I"." -I"../src" -I"../ns" -DAXL_NS_SUPPORT -I"../babel"  -D__COMPILING_AXL_KNIFE__
+
+CFLAGS   = $(INCS) -DVERSION=\""$(AXL_VERSION)"\" -Wall -g
+
+.PHONY: all all-before all-after clean clean-custom
+
+all: all-before $(PROGRAM) all-after links
+
+all-before:
+	cd ../src;make -f Makefile.win
+	cd ../ns;make -f Makefile.win
+	cd ../babel;make -f Makefile.win
+
+all-after:
+
+clean: 
+	${RM} $(OBJ) $(PROGRAM) *.dll
+
+$(PROGRAM): $(OBJ)
+	$(CC) -mconsole $(OBJ) -o $(PROGRAM) $(LIBS)
+
+links:
+	cp ../src/libaxl.dll .
+	cp ../ns/libaxl-ns.dll .
+	cp ../babel/libaxl-babel.dll .
+
+%.o: %.c
+	$(CC) -c $< -o $@ $(CFLAGS)
+

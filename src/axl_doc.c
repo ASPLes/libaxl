@@ -1408,7 +1408,7 @@ int __axl_doc_get_flat_size_common (axlDoc * doc, bool pretty_print, int tabular
  * @internal
  * Common implementation for the dumping functions.
  */
-bool __axl_doc_dump_common (axlDoc * doc, char ** content, int * size, bool pretty_print, int tabular)
+bool __axl_doc_dump_common (axlDoc * doc, char ** content, int * size, bool pretty_print, int tabular, axlError ** err)
 {
 
 	char * result;
@@ -1421,9 +1421,16 @@ bool __axl_doc_dump_common (axlDoc * doc, char ** content, int * size, bool pret
 		*size = 0;
 
 	/* perform some envrironmental checks */
-	axl_return_val_if_fail (doc, false);
-	axl_return_val_if_fail (content, false);
-	axl_return_val_if_fail (size, false);
+	if (doc == NULL) {
+		axl_error_report (err, -1, "Received null doc reference to perform dump operation.");
+		return false;
+	} else if (content == NULL) {
+		axl_error_report (err, -2, "Received null content reference to perform dump operation. To dump the content it is required a valid memory reference to place the content.");
+		return false;
+	} else if (size == NULL) {
+		axl_error_report (err, -3, "Received null size reference to perform dump operation. To dump the content it is required a valid memory reference to report size");
+		return false;
+	}
 
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "getting document size..");
 
@@ -1433,8 +1440,10 @@ bool __axl_doc_dump_common (axlDoc * doc, char ** content, int * size, bool pret
 	(* content) = NULL;
 
 	/* check returned size */
-	if ((* size) == -1)
+	if ((* size) == -1) {
+		axl_error_report (err, -4, "Failed to perform dump operation, unable to calculate document size to perform dump.");
 		return false;
+	}
 
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "document dump size: %d", *size);
 	
@@ -1490,6 +1499,9 @@ bool __axl_doc_dump_common (axlDoc * doc, char ** content, int * size, bool pret
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "internal dump error, inconsitent size: calculated=%d != returned=%d",
 			   *size, index);
 
+		axl_error_report (err, -5, "Internal dump error, inconsistent size: calculated=%d != returned=%d",
+				  *size, index);
+
 		/* free allocated result */
 		axl_free (result);
 
@@ -1527,7 +1539,7 @@ bool      axl_doc_dump                     (axlDoc  * doc,
 					    int     * size)
 {
 	/* use common implementation */
-	return __axl_doc_dump_common (doc, content, size, false, 0);
+	return __axl_doc_dump_common (doc, content, size, false, 0, NULL);
 }
 
 
@@ -1553,7 +1565,7 @@ bool      axl_doc_dump_pretty              (axlDoc  * doc,
 					    int       tabular)
 {
 	/* use common implementation */
-	return __axl_doc_dump_common (doc, content, size, true, tabular);
+	return __axl_doc_dump_common (doc, content, size, true, tabular, NULL);
 }
 
 /** 
@@ -1589,7 +1601,7 @@ bool      axl_doc_dump_to_file             (axlDoc  * doc,
 	FILE * fd      = NULL;
 
 	/* dump content and check result */
-	if (! __axl_doc_dump_common (doc, &content, &size, false, 0)) {
+	if (! __axl_doc_dump_common (doc, &content, &size, false, 0, NULL)) {
 		/* no dump operation done */
 		return false;
 	}
@@ -1601,6 +1613,7 @@ bool      axl_doc_dump_to_file             (axlDoc  * doc,
 	if ((fd = fopen (file_path, "w")) == NULL) {
 #endif
 		/* failed to open the file to dump the content */
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "failed to dump document due to an error on fopen() call.");
 		axl_free (content);
 
 		return false;
@@ -1655,16 +1668,20 @@ bool      axl_doc_dump_pretty_to_file      (axlDoc  * doc,
 					    char    * file_path,
 					    int       tabular)
 {
-	char * content = NULL;
-	int    size    = -1;
-	int    written = -1;
-	FILE * fd      = NULL;
+	char     * content = NULL;
+	int        size    = -1;
+	int        written = -1;
+	FILE     * fd      = NULL;
+	axlError * err     = NULL;
 
 	/* dump content and check result */
-	if (! __axl_doc_dump_common (doc, &content, &size, true, tabular)) {
+	if (! __axl_doc_dump_common (doc, &content, &size, true, tabular, &err)) {
 		/* no dump operation done */
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "failed to perform dump operation. Internal error found: %s",
+			   axl_error_get (err));
+		axl_error_free (err);
 		return false;
-	}
+	} /* end if */
 
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "document dumped, now transfer that content to a file");
 
@@ -1675,6 +1692,7 @@ bool      axl_doc_dump_pretty_to_file      (axlDoc  * doc,
 	if ((fd = fopen (file_path, "w")) == NULL) {
 #endif
 		/* failed to open the file to dump the content */
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "failed to dump document due to an error on fopen() call.");
 		axl_free (content);
 
 		return false;
