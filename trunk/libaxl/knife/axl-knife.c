@@ -35,7 +35,8 @@
 
 /* internal errno redefinition */
 #if defined(AXL_OS_WIN32)
-#define errno WSAGetLastError()
+#define errno (GetLastError())
+#define S_ISLNK(m) (0)
 #endif
 
 #define HELP_HEADER "Axl Knife: Console Tool on top of Axl Library\n\
