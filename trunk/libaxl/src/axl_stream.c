@@ -161,7 +161,7 @@ struct _axlStream {
 	/* more variables used to perform work: at get until */
 	char      * valid_chars;
 	int         chunk_matched;
-	bool        accept_terminator;
+	int         accept_terminator;
 	int         result_size;
 	int         chunk_num;
 
@@ -171,7 +171,7 @@ struct _axlStream {
 	 * operation done in a STREAM_MEM must be considered as a
 	 * terminator character found.
 	 */
-	bool        zero;
+	int         zero;
 
 	/** 
 	 * @internal Alloc function to be used to require memory for
@@ -206,7 +206,7 @@ struct _axlStream {
 	 * @internal Value that allows to signal that the buffer needs
 	 * to be expanded (no matter what shows current indexes).
 	 */
-	bool            needs_expansion;
+	int             needs_expansion;
 
 	/** 
 	 * @internal Reference to the content check function
@@ -250,7 +250,7 @@ struct _axlStream {
  * filled or false if end of file was reached. In that case the
  * stream size is not updated.
  */
-bool axl_stream_prebuffer (axlStream * stream)
+int  axl_stream_prebuffer (axlStream * stream)
 {
 	int  bytes_read;
 	int  op_result;
@@ -684,7 +684,7 @@ int         axl_stream_inspect (axlStream * stream, const char * chunk, int insp
  * @return \ref true if the provided value is found at the current
  * stream index (taking into consideration offset).
  */
-bool         axl_stream_inspect_code    (axlStream * stream, char value, int offset)
+int          axl_stream_inspect_code    (axlStream * stream, char value, int offset)
 {
 	axl_return_val_if_fail (stream, false);
 	
@@ -989,7 +989,7 @@ void        axl_stream_step            (axlStream * stream, int bytes)
 char      * axl_stream_get_until       (axlStream * stream, 
 					char      * valid_chars, 
 					int       * chunk_matched,
-					bool        accept_terminator,
+					int         accept_terminator,
 					int         chunk_num, ...)
 {
 	char * result;
@@ -1066,7 +1066,7 @@ char      * axl_stream_get_until       (axlStream * stream,
 char      * axl_stream_get_until_ref   (axlStream * stream, 
 					char      * valid_chars, 
 					int       * chunk_matched,
-					bool        accept_terminator,
+					int         accept_terminator,
 					int       * result_size,
 					int         chunk_num, ...)
 {
@@ -1156,7 +1156,7 @@ char      * axl_stream_get_until_ref   (axlStream * stream,
 char      * axl_stream_get_until_zero  (axlStream * stream, 
 					char      * valid_chars, 
 					int       * chunk_matched,
-					bool        accept_terminator,
+					int         accept_terminator,
 					int         chunk_num, ...)
 {
 	char * result;
@@ -1180,7 +1180,7 @@ char      * axl_stream_get_until_zero  (axlStream * stream,
 char      * axl_stream_get_until_ref_zero  (axlStream * stream, 
 					    char      * valid_chars, 
 					    int       * chunk_matched,
-					    bool        accept_terminator,
+					    int         accept_terminator,
 					    int       * result_size,
 					    int         chunk_num, ...)
 {
@@ -1279,9 +1279,9 @@ char * __axl_stream_get_untilv_wide (axlStream * stream, va_list args)
 	int          _index      = 0;
 	int          length      = 0;
 	int          max_length  = 0;
-	bool         matched;
+	int          matched;
 	char       * string      = NULL;
-	bool         match_empty = false;
+	int          match_empty = false;
 	int          empty_index = 0;
 
 	/* get how many bytes remains to be read */
@@ -1553,7 +1553,7 @@ char * __axl_stream_get_untilv_wide (axlStream * stream, va_list args)
 char      * axl_stream_get_untilv      (axlStream * stream, 
 					char      * valid_chars, 
 					int       * chunk_matched,
-					bool        accept_terminator,
+					int         accept_terminator,
 					int       * result_size,
 					int         chunk_num, 
 					va_list args)
@@ -1724,7 +1724,7 @@ const char  * axl_stream_get_following   (axlStream * stream, int count)
 typedef struct _AxlStreamAssociatedData {
 	axlPointer       data;
 	axlDestroyFunc   destroy_func;
-	bool             free_on_finish;
+	int              free_on_finish;
 }AxlStreamAssociatedData;
 
 
@@ -1803,7 +1803,7 @@ void        axl_stream_link            (axlStream  *   stream,
 void       axl_stream_link_full     (axlStream  *   stream,
 				     axlPointer     element,
 				     axlDestroyFunc func,
-				     bool           free_on_finish)
+				     int            free_on_finish)
 {
 	AxlStreamAssociatedData * data;
 	axl_return_if_fail (stream);
@@ -1922,7 +1922,7 @@ void axl_stream_free (axlStream * stream)
  * @return true if the chunk contains a white space or false
  * if not.
  */
-bool        axl_stream_is_white_space  (char * chunk)
+int         axl_stream_is_white_space  (char * chunk)
 {
 	/* do not complain about receive a null refernce chunk */
 	if (chunk == NULL)
@@ -2011,7 +2011,7 @@ void axl_stream_consume_white_spaces (axlStream * stream)
  * some value provided is NULL or the size to compare is not greater
  * than 0 the function will return false directly.
  */
-bool        axl_stream_cmp             (const char * chunk1, const char * chunk2, int size)
+int         axl_stream_cmp             (const char * chunk1, const char * chunk2, int size)
 {
 	/* perform some environmental condition checking */
 	if (chunk1 == NULL)
@@ -2047,7 +2047,7 @@ bool        axl_stream_cmp             (const char * chunk1, const char * chunk2
  * some value provided is NULL or the size to compare is not greater
  * than 0 the function will return false directly.
  */
-bool        axl_stream_casecmp           (const char * chunk1, const char * chunk2, int size)
+int         axl_stream_casecmp           (const char * chunk1, const char * chunk2, int size)
 {
 	/* perform some environmental condition checking */
 	if (chunk1 == NULL)
@@ -2081,7 +2081,7 @@ bool        axl_stream_casecmp           (const char * chunk1, const char * chun
  * stream boundaries, or false if requested inspected size could
  * be supported.
  */
-bool axl_stream_fall_outside (axlStream * stream, int inspected_size)
+int  axl_stream_fall_outside (axlStream * stream, int inspected_size)
 {
 	/* if the content is inside memory, check it */
 	if (fall_out_side_checking (stream, inspected_size)) {
@@ -2104,7 +2104,7 @@ bool axl_stream_fall_outside (axlStream * stream, int inspected_size)
  * @return Returns true if the given stream contains the value requested
  * or false if not.
  */
-bool         axl_stream_check           (axlStream * stream, char * chunk, int inspected_size)
+int          axl_stream_check           (axlStream * stream, char * chunk, int inspected_size)
 {
 	int iterator;
 
@@ -2122,7 +2122,7 @@ bool         axl_stream_check           (axlStream * stream, char * chunk, int i
  * 
  * @return true if the stream is exhausted or false if not.
  */
-bool        axl_stream_remains         (axlStream * stream)
+int         axl_stream_remains         (axlStream * stream)
 {
 	axl_return_val_if_fail (stream, false);
 
@@ -2283,7 +2283,7 @@ void        axl_stream_trim_with_size  (char * chunk, int * trimmed)
  * @param first If only the first ocurrence of value must be removed,
  * otherwise all ocurrences will be removed from the string.
  */
-void        axl_stream_remove            (char * chunk, const char * value, bool first)
+void        axl_stream_remove            (char * chunk, const char * value, int  first)
 {
 	int iterator;
 	int iterator2;
@@ -2919,7 +2919,7 @@ char      * axl_stream_join            (char      ** strings,
 	int    sep_length;
 	int    iterator;
 	char * result;
-	bool   next_sep;
+	int    next_sep;
 
 	axl_return_val_if_fail (strings && strings[0], NULL);
 	axl_return_val_if_fail (separator, NULL);
@@ -3117,7 +3117,7 @@ void        axl_stream_freev           (char ** chunks)
  * @param chunk The chunk to modify
  * @param desp Bits to increase.
  */
-void __axl_stream_common_to (char * chunk, bool to_upper)
+void __axl_stream_common_to (char * chunk, int  to_upper)
 {
 	int iterator = 0;
 
@@ -3244,7 +3244,7 @@ char      * axl_stream_to_lower_copy   (const char  * chunk)
  * @return \ref true if both string are equal, otherwise \ref false is
  * returned.
  */
-bool axl_cmp (const char * string, const char * string2)
+int  axl_cmp (const char * string, const char * string2)
 {
 	int iterator = 0;
 
@@ -3273,7 +3273,7 @@ bool axl_cmp (const char * string, const char * string2)
 	return true;
 }
 
-bool        axl_casecmp (const char * string, const char * string2)
+int         axl_casecmp (const char * string, const char * string2)
 {
 	int length;
 
@@ -3310,7 +3310,7 @@ bool        axl_casecmp (const char * string, const char * string2)
  * @return \ref true if the both strings are equal for its initial
  * size bytes or \ref false if not.
  */
-bool axl_memcmp (const char * string, const char * string2, int size)
+int  axl_memcmp (const char * string, const char * string2, int size)
 {
 	int iterator = 0;
 
@@ -3343,7 +3343,7 @@ char * axl_strdup (const char * string)
  * 
  * @return true if the operation was completed.
  */
-bool axl_stream_decode (axlStream  * stream, 
+int  axl_stream_decode (axlStream  * stream, 
 			char       * output, 
 			int          output_max_size, 
 			int        * output_decoded, 
@@ -3438,7 +3438,7 @@ bool axl_stream_decode (axlStream  * stream,
  * 
  * @return true if the check was fine, otherwise false is returned.
  */
-bool axl_stream_content_check (axlStream * stream, const char * content, int content_length, axlError ** error)
+int  axl_stream_content_check (axlStream * stream, const char * content, int content_length, axlError ** error)
 {
 	if (stream == NULL || content == NULL) {
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "content check function failed because null reference was received.");
@@ -3474,7 +3474,7 @@ bool axl_stream_content_check (axlStream * stream, const char * content, int con
  * @return true if the function setup decode handler properly
  * otherwise false is returned.
  */
-bool        axl_stream_setup_decode        (axlStream         * stream,
+int         axl_stream_setup_decode        (axlStream         * stream,
 					    const char        * source_encoding,
 					    axlStreamDecode     decode_f,
 					    axlPointer          user_data,
@@ -3548,7 +3548,7 @@ bool        axl_stream_setup_decode        (axlStream         * stream,
  * @return The function returns true if the cheker was installed and
  * first execution was completed.
  */
-bool        axl_stream_setup_check         (axlStream                * stream,
+int         axl_stream_setup_check         (axlStream                * stream,
 					    const char               * source_encoding,
 					    axlStreamContentCheck      check,
 					    axlPointer                 user_data,

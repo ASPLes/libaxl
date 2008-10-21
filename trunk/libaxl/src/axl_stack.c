@@ -177,7 +177,7 @@ axlPointer axl_stack_peek (axlStack * stack)
  * @internal Common support function for foreach over an stack for all
  * foreach functions defined.
  */
-bool       __axl_stack_foreach_common (axlStack         * stack, 
+int        __axl_stack_foreach_common (axlStack         * stack, 
 				       axlStackForeach2   func,
 				       axlStackForeach3   func3,
 				       axlPointer         user_data, 
@@ -237,7 +237,7 @@ bool       __axl_stack_foreach_common (axlStack         * stack,
  * function will also return \ref false to indicate a failure the
  * stack and func parameters are null.
  */
-bool       axl_stack_foreach (axlStack         * stack, 
+int        axl_stack_foreach (axlStack         * stack, 
 			      axlStackForeach2   func,
 			      axlPointer         user_data, 
 			      axlPointer         user_data2)
@@ -280,7 +280,7 @@ bool       axl_stack_foreach (axlStack         * stack,
  * function will also return \ref false to indicate a failure the
  * stack and func parameters are null.
  */
-bool       axl_stack_foreach3 (axlStack         * stack, 
+int        axl_stack_foreach3 (axlStack         * stack, 
 			       axlStackForeach3   func,
 			       axlPointer         user_data,
 			       axlPointer         user_data2,
@@ -314,7 +314,7 @@ int        axl_stack_size (axlStack * stack)
  * 
  * @return \ref true if the stack is empty or false if not.
  */
-bool       axl_stack_is_empty (axlStack * stack)
+int        axl_stack_is_empty (axlStack * stack)
 {
 	axl_return_val_if_fail (stack, false);
 	
@@ -355,7 +355,7 @@ void       axl_stack_free (axlStack * stack)
 
 typedef struct _axlBinaryStackNode {
 	int  count;
-	bool state;
+	int  state;
 } axlBinaryStackNode;
 
 
@@ -414,7 +414,7 @@ axlBinaryStack * axl_binary_stack_new ()
  *
  * @param state The state to push into the queue.
  */
-void             axl_binary_stack_push (axlBinaryStack * bstack, bool state)
+void             axl_binary_stack_push (axlBinaryStack * bstack, int  state)
 {
 	axlBinaryStackNode * node;
 
@@ -503,10 +503,10 @@ void             axl_binary_stack_push_the_same (axlBinaryStack * bstack)
  * able to differenciate a false value stored from a false value
  * returned by an error.
  */
-bool             axl_binary_stack_pop  (axlBinaryStack * bstack)
+int              axl_binary_stack_pop  (axlBinaryStack * bstack)
 {
 	axlBinaryStackNode * node;
-	bool                 state;
+	int                  state;
 	axl_return_val_if_fail (bstack, false);
 
 	/* get last value */
@@ -575,7 +575,7 @@ bool             axl_binary_stack_pop  (axlBinaryStack * bstack)
  * at least one value, otherwise the returned value is not
  * reliable. See \ref axl_binary_stack_is_empty to avoid calling to this function.
  */
-bool             axl_binary_stack_peek (axlBinaryStack * bstack)
+int              axl_binary_stack_peek (axlBinaryStack * bstack)
 {
 	axl_return_val_if_fail (bstack, false);
 
@@ -592,7 +592,7 @@ bool             axl_binary_stack_peek (axlBinaryStack * bstack)
  * @return true if the binary stack is empty, otherwise false is
  * returned.
  */
-bool             axl_binary_stack_is_empty (axlBinaryStack * bstack)
+int              axl_binary_stack_is_empty (axlBinaryStack * bstack)
 {
 	axl_return_val_if_fail (bstack, false);
 

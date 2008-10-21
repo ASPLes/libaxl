@@ -33,7 +33,7 @@
  * 
  * @return true tests are ok, otherwise false is returned.
  */
-bool test_41 (axlError ** error)
+int  test_41 (axlError ** error)
 {
 	axlDoc  * doc;
 	axlNode * node;
@@ -506,7 +506,7 @@ bool test_41 (axlError ** error)
  * 
  * @return true tests are ok, otherwise false is returned.
  */
-bool test_40 (axlError ** error)
+int  test_40 (axlError ** error)
 {
 	axlDoc  * doc = axl_doc_parse_from_file ("test_40.xml", error);
 	axlDoc  * doc2;
@@ -575,7 +575,7 @@ bool test_40 (axlError ** error)
  * @return true if the validity test is passed, otherwise false is
  * returned.
  */
-bool test_39 (axlError ** error)
+int  test_39 (axlError ** error)
 {
 	axlDtd          * dtd;
 	axlDtd          * dtd2;
@@ -672,7 +672,7 @@ bool test_39 (axlError ** error)
  * @return true if the validity test is passed, otherwise false is
  * returned.
  */
-bool test_38 (axlError ** error)
+int  test_38 (axlError ** error)
 {
 	axlDtd          * dtd;
 	axlDoc          * doc;
@@ -706,7 +706,7 @@ bool test_38 (axlError ** error)
  * @return true if the validity test is passed, otherwise false is
  * returned.
  */
-bool test_37 (axlError ** error)
+int  test_37 (axlError ** error)
 {
 	
 	axlDoc  * doc;
@@ -745,7 +745,7 @@ bool test_37 (axlError ** error)
  * @return true if the validity test is passed, otherwise false is
  * returned.
  */
-bool test_36 (axlError ** error)
+int  test_36 (axlError ** error)
 {
 	/* parse the document */
 	axlDoc  * doc = axl_doc_parse_from_file ("test_35.xml", error);
@@ -820,7 +820,7 @@ bool test_36 (axlError ** error)
  * @return true if the validity test is passed, otherwise false is
  * returned.
  */
-bool test_35 (axlError ** error)
+int  test_35 (axlError ** error)
 {
 	/* parse the document */
 	axlDoc * doc = axl_doc_parse_from_file ("test_35.xml", error);
@@ -843,7 +843,7 @@ bool test_35 (axlError ** error)
  * @return true if the validity test is passed, otherwise false is
  * returned.
  */
-bool test_34 (axlError ** error)
+int  test_34 (axlError ** error)
 {
 	char  * string = axl_strdup (" ");
 
@@ -888,7 +888,7 @@ bool test_34 (axlError ** error)
  * @return true if the validity test is passed, otherwise false is
  * returned.
  */
-bool test_33 (axlError ** error)
+int  test_33 (axlError ** error)
 {
 	axlDoc          * doc;
 	axlNode         * node;
@@ -935,7 +935,7 @@ bool test_33 (axlError ** error)
  * 
  * @return true if the validity test is passed, false if not.
  */
-bool test_32 (axlError ** error) {
+int  test_32 (axlError ** error) {
 	
 	axlDtd          * dtd;
 	axlDoc          * doc;
@@ -969,7 +969,7 @@ bool test_32 (axlError ** error) {
  * 
  * @return true if the validity test is passed, false if not.
  */
-bool test_31 (axlError ** error) {
+int  test_31 (axlError ** error) {
 	
 	axlDtd          * dtd;
 	axlDoc          * doc;
@@ -1012,7 +1012,7 @@ bool test_31 (axlError ** error) {
  * 
  * @return true if the validity test is passed, false if not.
  */
-bool test_30 (axlError ** error) {
+int  test_30 (axlError ** error) {
 	
 	axlDtd          * dtd;
 	axlDtdAttribute * attr;
@@ -1113,7 +1113,7 @@ bool test_30 (axlError ** error) {
  * 
  * @return true if the validity test is passed, false if not.
  */
-bool test_29 (axlError ** error)
+int  test_29 (axlError ** error)
 {
 	axlDoc  * doc;
 	axlNode * node;
@@ -1168,7 +1168,7 @@ bool test_29 (axlError ** error)
  * 
  * @return true if the validity test is passed, false if not.
  */
-bool test_28 (axlError ** error)
+int  test_28 (axlError ** error)
 {
 	axlDoc  * doc;
 	axlNode * node;
@@ -1215,7 +1215,7 @@ bool test_28 (axlError ** error)
  * 
  * @return true if the validity test is passed, false if not.
  */
-bool test_27 (axlError ** error)
+int  test_27 (axlError ** error)
 {
 	axlDoc  * doc;
 	axlNode * node;
@@ -1270,7 +1270,7 @@ bool test_27 (axlError ** error)
  * 
  * @return true if the validity test is passed, false if not.
  */
-bool test_26 (axlError ** error)
+int  test_26 (axlError ** error)
 {
 	axlDoc * doc;
 
@@ -1339,7 +1339,7 @@ bool test_26 (axlError ** error)
  * 
  * @return true if the validity test is passed, false if not.
  */
-bool test_25 (axlError ** error) {
+int  test_25 (axlError ** error) {
 	
 	axlDoc  * doc;
 	axlNode * root;
@@ -1396,7 +1396,7 @@ bool test_25 (axlError ** error) {
  * 
  * @return true if the validity test is passed, false if not.
  */
-bool test_24 (axlError ** error) {
+int  test_24 (axlError ** error) {
 	if (! axl_node_has_invalid_chars ("MEDIR PIEZAS S/MUESTREO EN MAQUINA DE VISION SIN CONTACTO\n\
 \n\
 LOTES<10 UDS.                  100%PIEZAS\n\
@@ -1432,7 +1432,7 @@ MANIPULAR PIEZAS CON GUANTES DE LATEX EVITANDO CONTAMINAR LAS PIEZAS", -1, NULL)
  * 
  * @return true if the validity test is passed, false if not.
  */
-bool test_23 (axlError ** error)
+int  test_23 (axlError ** error)
 {
 	axlDoc  * doc;
 	axlDoc  * doc2;
@@ -1519,7 +1519,7 @@ bool test_23 (axlError ** error)
  * 
  * @return true if the validity test is passed, false if not.
  */
-bool test_22 (axlError ** error)
+int  test_22 (axlError ** error)
 {
 	axlDoc        * doc;
 	axlNode       * node;
@@ -1897,7 +1897,7 @@ bool test_22 (axlError ** error)
  * 
  * @return true if the validity test is passed, false if not.
  */
-bool test_21 (axlError ** error)
+int  test_21 (axlError ** error)
 {
 	axlDoc  * doc;
 	axlNode * node;
@@ -2058,7 +2058,7 @@ bool test_21 (axlError ** error)
  * 
  * @return true if the validity test is passed, false if not.
  */
-bool test_20b (axlError ** error)
+int  test_20b (axlError ** error)
 {
 	axlNode * node;
 
@@ -2173,7 +2173,7 @@ bool test_20b (axlError ** error)
  * 
  * @return true if the validity test is passed, false if not.
  */
-bool test_20 (axlError ** error)
+int  test_20 (axlError ** error)
 {
 	axlNode * node;
 	axlNode * root;
@@ -2282,7 +2282,7 @@ bool test_20 (axlError ** error)
  * 
  * @return true if the validity test is passed, false if not.
  */
-bool test_19 (axlError ** error)
+int  test_19 (axlError ** error)
 {
 	axlDoc  * doc;
 	axlDoc  * reference;
@@ -2481,7 +2481,7 @@ bool test_19 (axlError ** error)
  * 
  * @return true if the validity test is passed, false if not.
  */
-bool test_18 (axlError ** error)
+int  test_18 (axlError ** error)
 {
 	axlDtd * dtd = NULL;
 	char   * content;
@@ -2538,7 +2538,7 @@ bool test_18 (axlError ** error)
  * 
  * @return true if the validity test is passed, false if not.
  */
-bool test_17 (axlError ** error) 
+int  test_17 (axlError ** error) 
 {
 	axlDoc  * doc  = NULL;
 	axlDtd  * dtd  = NULL;
@@ -2579,7 +2579,7 @@ bool test_17 (axlError ** error)
  * 
  * @return true if the validity test is passed, false if not.
  */
-bool test_16 (axlError ** error) 
+int  test_16 (axlError ** error) 
 {
 	axlDoc  * doc  = NULL;
 	axlDtd  * dtd  = NULL;
@@ -2632,7 +2632,7 @@ bool test_16 (axlError ** error)
  * 
  * @return true if the validity test is passed, false if not.
  */
-bool test_15 (axlError ** error) 
+int  test_15 (axlError ** error) 
 {
 	axlDoc  * doc  = NULL;
 	axlDtd  * dtd  = NULL;
@@ -2685,7 +2685,7 @@ bool test_15 (axlError ** error)
  * 
  * @return true if the validity test is passed, false if not.
  */
-bool test_14 (axlError ** error) 
+int  test_14 (axlError ** error) 
 {
 	axlDoc  * doc  = NULL;
 	axlNode * node = NULL;
@@ -2808,7 +2808,7 @@ bool test_14 (axlError ** error)
  * 
  * @return true if the validity test is passed, false if not.
  */
-bool test_13 (axlError ** error) 
+int  test_13 (axlError ** error) 
 {
 	axlDoc  * doc  = NULL;
 	axlDoc  * doc2 = NULL;
@@ -3027,7 +3027,7 @@ bool test_13 (axlError ** error)
  * 
  * @return true if the validity test is passed, false if not.
  */
-bool test_12 (axlError ** error) 
+int  test_12 (axlError ** error) 
 {
 	axlDoc * doc = NULL;
 	axlDtd * dtd = NULL;
@@ -3125,7 +3125,7 @@ bool test_12 (axlError ** error)
  * 
  * @return true if the validity test is passed, false if not.
  */
-bool test_11 (axlError ** error) 
+int  test_11 (axlError ** error) 
 {
 	axlDoc * doc = NULL;
 	axlDtd * dtd = NULL;
@@ -3162,7 +3162,7 @@ bool test_11 (axlError ** error)
  * 
  * @return true if the validity test is passed, false if not.
  */
-bool test_10 (axlError ** error) 
+int  test_10 (axlError ** error) 
 {
 	axlDoc                * doc      = NULL;
 	axlDtd                * dtd      = NULL;
@@ -3243,7 +3243,7 @@ bool test_10 (axlError ** error)
  * 
  * @return true if the validity test is passed, false if not.
  */
-bool test_09 (axlError ** error) 
+int  test_09 (axlError ** error) 
 {
 	axlDoc                * doc      = NULL;
 	axlDtd                * dtd      = NULL;
@@ -3432,7 +3432,7 @@ bool test_09 (axlError ** error)
  * 
  * @return true if the validity test is passed, false if not.
  */
-bool test_08 (axlError ** error)
+int  test_08 (axlError ** error)
 {
 	/* top level definitions */
 	axlDoc            * doc = NULL;
@@ -3456,7 +3456,7 @@ bool test_08 (axlError ** error)
  * 
  * @return true if the validity test is passed, false if not.
  */
-bool test_07 (axlError ** error)
+int  test_07 (axlError ** error)
 {
 	/* top level definitions */
 	axlDoc            * doc = NULL;
@@ -3493,7 +3493,7 @@ bool test_07 (axlError ** error)
  * 
  * @return true if the validity test is passed, false if not.
  */
-bool test_06 (axlError ** error)
+int  test_06 (axlError ** error)
 {
 	/* top level definitions */
 	axlDoc            * doc = NULL;
@@ -3657,7 +3657,7 @@ bool test_06 (axlError ** error)
  * 
  * @return true if the validity test is passed, false if not.
  */
-bool test_05 (axlError ** error)
+int  test_05 (axlError ** error)
 {
 
 	axlDoc * doc;
@@ -3718,7 +3718,7 @@ bool test_05 (axlError ** error)
  *
  * @return The \ref true if test is passed, false if not.
  */
-bool test_04 (axlError ** error)
+int  test_04 (axlError ** error)
 {
 	axlDoc  * doc;
 	axlNode * node;
@@ -3845,7 +3845,7 @@ bool test_04 (axlError ** error)
  * 
  * @return \ref true if test is passed, false if not.
  */
-bool test_03 (axlError ** error)
+int  test_03 (axlError ** error)
 {
 
 	axlDoc  * doc;
@@ -3915,7 +3915,7 @@ bool test_03 (axlError ** error)
 	return true;
 }
 
-bool test_02_always_fail (axlStream * stream, char ** detected, axlPointer user_data, axlError ** error)
+int  test_02_always_fail (axlStream * stream, char ** detected, axlPointer user_data, axlError ** error)
 {
 	/* always return false to check how behave the library */
 	return false;
@@ -3929,7 +3929,7 @@ bool test_02_always_fail (axlStream * stream, char ** detected, axlPointer user_
  * 
  * @return true if test are properly run. false if not.
  */
-bool test_02 (axlError ** error) 
+int  test_02 (axlError ** error) 
 {
 	axlDoc * doc;
 	
@@ -4004,7 +4004,7 @@ bool test_02 (axlError ** error)
  * @return false if the function fails to parse the
  * document. true if the test was properly executed.
  */
-bool test_01 (axlError ** error) 
+int  test_01 (axlError ** error) 
 {
 	/* axl document representation */
 	axlDoc   * doc;
@@ -4080,7 +4080,7 @@ bool test_01 (axlError ** error)
  * @return false if the function fails to parse the
  * document. true if the test was properly executed.
  */
-bool test_01a (axlError ** error) 
+int  test_01a (axlError ** error) 
 {
 	axlStream * stream;
 	char      * value;
@@ -4181,10 +4181,10 @@ bool test_01a (axlError ** error)
 
 
 
-bool test_01b_show_node_found (axlNode * node,
+int  test_01b_show_node_found (axlNode * node,
 			       axlNode * parent,
 			       axlDoc  * doc,
-			       bool    * was_removed,
+			       int     * was_removed,
 			       axlPointer ptr, 
 			       axlPointer ptr2)
 {
@@ -4441,10 +4441,10 @@ bool test_01b_show_node_found (axlNode * node,
 }
 
 
-bool test_01b_show_node_found2 (axlNode * node, 
+int  test_01b_show_node_found2 (axlNode * node, 
 				axlNode * parent,
 				axlDoc  * doc,  
-				bool    * was_removed,
+				int     * was_removed,
 				axlPointer ptr, axlPointer ptr2)
 {
 	int * iterator = ptr;
@@ -4600,7 +4600,7 @@ bool test_01b_show_node_found2 (axlNode * node,
  * @return false if the function fails to parse the
  * document. true if the test was properly executed.
  */
-bool test_01b (axlError ** error)  
+int  test_01b (axlError ** error)  
 {
 	axlDoc   * doc;
 	axlNode  * node;
@@ -4654,7 +4654,7 @@ bool test_01b (axlError ** error)
  * @return false if the function fails to parse the
  * document. true if the test was properly executed.
  */
-bool test_01c (axlError ** error)  
+int  test_01c (axlError ** error)  
 {
 	axlDoc   * doc;
 	axlNode  * node;
@@ -4834,7 +4834,7 @@ bool test_01c (axlError ** error)
  * @return false if the function fails to parse the
  * document. true if the test was properly executed.
  */
-bool test_01d (axlError ** error)  
+int  test_01d (axlError ** error)  
 {
 	axlDoc   * doc;
 	axlNode  * node;
@@ -4932,7 +4932,7 @@ bool test_01d (axlError ** error)
  * @return false if the function fails to parse the
  * document. true if the test was properly executed.
  */
-bool test_01e (axlError ** error)  
+int  test_01e (axlError ** error)  
 {
 	axlDoc         * doc;
 	axlNode        * node;
@@ -4960,7 +4960,7 @@ bool test_01e (axlError ** error)
  * @return false if the function fails to parse the document. true if
  * the test was properly executed.
  */
-bool test_01f (axlError ** error)  
+int  test_01f (axlError ** error)  
 {
 	axlDoc         * doc;
 	axlNode        * node;
@@ -5027,7 +5027,7 @@ bool test_01f (axlError ** error)
  * 
  * @return true if it works properly or false if not.
  */
-bool test_01_01 () 
+int  test_01_01 () 
 {
 	axlList * list;
 	int       value;
@@ -5457,7 +5457,7 @@ bool test_01_01 ()
 	return true;
 }
 
-bool test_01_02_foreach (axlPointer stack_data, 
+int  test_01_02_foreach (axlPointer stack_data, 
 			 axlPointer user_data, 
 			 axlPointer user_data2)
 {
@@ -5486,7 +5486,7 @@ bool test_01_02_foreach (axlPointer stack_data,
  * @return true if the stack works properly, otherwise false
  * is returned.
  */
-bool test_01_02 () 
+int  test_01_02 () 
 {
 	axlStack * stack;
 	char     * value;
@@ -5546,7 +5546,7 @@ bool test_01_02 ()
 	return true;
 }
 
-bool test_01_03_vargs (const char * format, ...)
+int  test_01_03_vargs (const char * format, ...)
 {
 	va_list args;
 
@@ -5581,7 +5581,7 @@ bool test_01_03_vargs (const char * format, ...)
  * @return The function must return true if everything is
  * ok. Otherwise false is returned.
  */
-bool test_01_03 () 
+int  test_01_03 () 
 {
 	char  * string;
 	char ** result;
@@ -6305,7 +6305,7 @@ bool test_01_03 ()
 /** 
  * @brief Intensive axl list implementation.
  */
-bool test_01_04 () {
+int  test_01_04 () {
 	int             iterator = 0;
 	int             value;
 	axlList       * list;
@@ -6400,7 +6400,7 @@ bool test_01_04 () {
  * 
  * @return \ref true if ok, \ref false on rainy days.
  */
-bool test_01_05 () 
+int  test_01_05 () 
 {
 	axlError * error = NULL;
 
@@ -6442,7 +6442,7 @@ void test_02_02_check_key (axlHash * hash, char * key)
  *
  * @return true if it works properly or false if not.
  */
-bool test_02_02 () 
+int  test_02_02 () 
 {
 	axlHash     * hash;
 	int           iterator;
@@ -7440,7 +7440,7 @@ axlPointer test_02_01_copy_value (axlPointer key, axlDestroyFunc key_destroy, ax
  * 
  * @return \ref true if it was ok.
  */
-bool test_02_01 () 
+int  test_02_01 () 
 {
 	axlHash    * hash;
 	axlHash    * hash2;
@@ -7498,7 +7498,7 @@ bool test_02_01 ()
  *
  * @return true if it works properly or false if not.
  */
-bool test_02_03 () 
+int  test_02_03 () 
 {
 	axlHash * hash;
 
@@ -7530,7 +7530,7 @@ bool test_02_03 ()
 	return true;
 }
 
-bool test_02_03a ()
+int  test_02_03a ()
 {
 	axlHash * hash;
 
@@ -7600,7 +7600,7 @@ void show_item_test_02_04 (axlPointer key, axlPointer data)
 	__axl_log ("hash-test", AXL_LEVEL_DEBUG, "  %s -> %s", (char *) key, (char *) data);
 }
 
-bool test_02_04 () 
+int  test_02_04 () 
 {
 	axlHash * hash;
 	
@@ -7654,7 +7654,7 @@ bool test_02_04 ()
 
 }
 
-bool test_02_05 ()
+int  test_02_05 ()
 {
 	axlHash       * hash;
 	axlHashCursor * cursor;
@@ -7865,9 +7865,9 @@ bool test_02_05 ()
  * 
  * @return true if tests are ok.
  */
-bool test_02_06 ()
+int  test_02_06 ()
 {
-	bool             value;
+	int              value;
 	axlBinaryStack * bstack;
 	int              iterator;
 

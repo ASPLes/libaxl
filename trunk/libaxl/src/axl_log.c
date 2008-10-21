@@ -48,12 +48,12 @@
  */
 
 /* console log */
-bool     not_executed  = true;
-bool     debug_enabled = false;
+int      not_executed  = true;
+int      debug_enabled = false;
 
 /* colored log */
-bool     not_executed_color  = true;
-bool     debug_color_enabled = false;
+int      not_executed_color  = true;
+int      debug_color_enabled = false;
 
 /** 
  * @brief Allows to check if the log reporting inside the system is
@@ -61,7 +61,7 @@ bool     debug_color_enabled = false;
  *
  * @return true if the log is enabled or false
  */
-bool      axl_log_is_enabled () 
+int       axl_log_is_enabled () 
 {
 #if defined(AXL_OS_WIN32) && ! defined(__GNUC__)
 	int requiredSize;
@@ -87,7 +87,7 @@ bool      axl_log_is_enabled ()
  * 
  * @return true if the color log is enabled or false
  */
-bool    axl_log_color_is_enabled ()
+int     axl_log_color_is_enabled ()
 {
 #if defined(AXL_OS_WIN32) && ! defined(__GNUC__)
 	int requiredSize;
@@ -114,7 +114,7 @@ bool    axl_log_color_is_enabled ()
  * @param value true to enable log to console, otherwise false is
  * returned.
  */
-void     axl_log_enable (bool value)
+void     axl_log_enable (int  value)
 {
 	/* activate debuging according to the variable */
 	not_executed  = false;
@@ -129,7 +129,7 @@ void     axl_log_enable (bool value)
  * @param value true to enable log to console, otherwise false is
  * returned.
  */
-void     axl_log_color_enable (bool value)
+void     axl_log_color_enable (int  value)
 {
 	/* activate color debuging according to the variable */
 	not_executed_color  = false;

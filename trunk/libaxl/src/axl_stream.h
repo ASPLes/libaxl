@@ -70,33 +70,33 @@ void        axl_stream_step            (axlStream * stream, int bytes);
 
 void        axl_stream_push            (axlStream * stream, const char * content, int size);
 
-bool        axl_stream_fall_outside    (axlStream * stream, int inspected_size);
+int         axl_stream_fall_outside    (axlStream * stream, int inspected_size);
 
-bool        axl_stream_check           (axlStream * stream, char * chunk, int inspected_size);
+int         axl_stream_check           (axlStream * stream, char * chunk, int inspected_size);
 
 char      * axl_stream_get_until       (axlStream * stream, 
 					char      * valid_chars, 
 					int       * chunk_matched,
-					bool        accept_terminator,
+					int         accept_terminator,
 					int         chunk_num, ...);
 
 char      * axl_stream_get_until_ref   (axlStream * stream, 
 					char      * valid_chars, 
 					int       * chunk_matched,
-					bool        accept_terminator,
+					int         accept_terminator,
 					int       * result_size,
 					int         chunk_num, ...);
 
 char      * axl_stream_get_until_zero  (axlStream * stream, 
 					char      * valid_chars, 
 					int       * chunk_matched,
-					bool        accept_terminator,
+					int         accept_terminator,
 					int         chunk_num, ...);
 
 char      * axl_stream_get_until_ref_zero  (axlStream * stream, 
 					    char      * valid_chars, 
 					    int       * chunk_matched,
-					    bool        accept_terminator,
+					    int         accept_terminator,
 					    int       * result_size,
 					    int         chunk_num, ...);
 
@@ -131,7 +131,7 @@ void        axl_stream_nullify         (axlStream * stream,
 char      * axl_stream_get_untilv      (axlStream * stream, 
 					char      * valid_chars, 
 					int       * chunk_matched,
-					bool        accept_terminator,
+					int         accept_terminator,
 					int       * result_size,
 					int         chunk_num,
 					va_list args);
@@ -153,17 +153,17 @@ void        axl_stream_link            (axlStream  *   stream,
 void        axl_stream_link_full       (axlStream  *   stream,
 					axlPointer     element,
 					axlDestroyFunc func,
-					bool           free_on_finish);
+					int            free_on_finish);
 
 void        axl_stream_unlink          (axlStream * stream);
 
 void        axl_stream_free            (axlStream * stream);
 
-bool        axl_stream_is_white_space  (char * chunk);
+int         axl_stream_is_white_space  (char * chunk);
 
 void        axl_stream_consume_white_spaces (axlStream * stream);
 
-bool        axl_stream_remains         (axlStream * stream);
+int         axl_stream_remains         (axlStream * stream);
 
 /* @} */
 
@@ -173,11 +173,11 @@ void        axl_stream_trim              (char * chunk);
 
 void        axl_stream_trim_with_size    (char * chunk, int * trimmed);
 
-void        axl_stream_remove            (char * chunk, const char * value, bool first);
+void        axl_stream_remove            (char * chunk, const char * value, int  first);
 
-bool        axl_stream_cmp               (const char * chunk1, const char * chunk2, int size);
+int         axl_stream_cmp               (const char * chunk1, const char * chunk2, int size);
 
-bool        axl_stream_casecmp           (const char * chunk1, const char * chunk2, int size);
+int         axl_stream_casecmp           (const char * chunk1, const char * chunk2, int size);
 
 char      * axl_stream_strdup            (const char * chunk);
 
@@ -221,34 +221,34 @@ char      * axl_stream_to_upper_copy   (const char  * chunk);
 
 char      * axl_stream_to_lower_copy   (const char  * chunk);
 
-bool        axl_cmp (const char * string, const char * string2);
+int         axl_cmp (const char * string, const char * string2);
 
-bool        axl_casecmp (const char * string, const char * string2);
+int         axl_casecmp (const char * string, const char * string2);
 
-bool        axl_memcmp (const char * string, const char * string2, int size);
+int         axl_memcmp (const char * string, const char * string2, int size);
 
 char      * axl_strdup (const char * string);
 
-bool        axl_stream_setup_decode        (axlStream         * stream,
+int         axl_stream_setup_decode        (axlStream         * stream,
 					    const char        * source_encoding,
 					    axlStreamDecode     decode_f,
 					    axlPointer          user_data,
 					    axlError         ** error);
 
-bool        axl_stream_setup_check         (axlStream                * stream,
+int         axl_stream_setup_check         (axlStream                * stream,
 					    const char               * source_encoding,
 					    axlStreamContentCheck      check,
 					    axlPointer                 user_data,
 					    axlError                ** error);
 
-bool        axl_stream_decode              (axlStream  * stream, 
+int         axl_stream_decode              (axlStream  * stream, 
 					    char       * output, 
 					    int          output_max_size, 
 					    int        * output_decoded, 
 					    int        * op_result, 
 					    axlError  ** error);
 
-bool        axl_stream_content_check       (axlStream   * stream,
+int         axl_stream_content_check       (axlStream   * stream,
 					    const char  * content,
 					    int           content_length,
 					    axlError   ** error);

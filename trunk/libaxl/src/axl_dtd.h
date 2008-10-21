@@ -55,11 +55,11 @@ axlDtd             * axl_dtd_parse            (const char * entity,
 axlDtd             * axl_dtd_parse_from_file  (const char * file_path,
 					       axlError ** error);
 
-bool                 axl_dtd_validate         (axlDoc * doc, 
+int                  axl_dtd_validate         (axlDoc * doc, 
 					       axlDtd * dtd,
 					       axlError ** error);
 
-bool                 axl_dtd_are_equal        (axlDtd * dtd,
+int                  axl_dtd_are_equal        (axlDtd * dtd,
 					       axlDtd * dtd2);
 
 axlDtdElement      * axl_dtd_get_root         (axlDtd * dtd); 
@@ -73,7 +73,7 @@ AxlDtdElementType    axl_dtd_get_element_type (axlDtdElement * element);
 
 axlDtdElementList  * axl_dtd_get_item_list    (axlDtdElement * element);
 
-bool                 axl_dtd_element_is_toplevel (axlDtd * dtd, axlDtdElement * element);
+int                  axl_dtd_element_is_toplevel (axlDtd * dtd, axlDtdElement * element);
 
 int                  axl_dtd_item_list_count  (axlDtdElementList * itemList);
 
@@ -92,7 +92,7 @@ char               * axl_dtd_item_node_get_value (axlDtdElementListNode * node);
 
 AxlDtdTimes          axl_dtd_item_node_get_repeat (axlDtdElementListNode * node);
 
-bool                 axl_dtd_entity_exists    (axlDtd            * dtd, 
+int                  axl_dtd_entity_exists    (axlDtd            * dtd, 
 					       const char        * name,
 					       axlDtdEntityType    type);
 
@@ -112,7 +112,7 @@ void                 axl_dtd_element_free     (axlDtdElement * element);
 
 void                 axl_dtd_item_list_free   (axlDtdElementList * list);
 
-bool                 axl_dtd_check_entity_ref_and_expand  (axlDtdEntityResolver   resolver, 
+int                  axl_dtd_check_entity_ref_and_expand  (axlDtdEntityResolver   resolver, 
 							   axlPointer             data,
 							   axlStream            * stream, 
 							   const           char * prefix,
@@ -120,11 +120,11 @@ bool                 axl_dtd_check_entity_ref_and_expand  (axlDtdEntityResolver 
 
 
 /* DON'T USE THIS FUNCTIONS, PROTOTYPES DECLARATIONS */
-bool     __axl_dtd_validate_item_list (axlDtdElementList  * itemList, 
+int      __axl_dtd_validate_item_list (axlDtdElementList  * itemList, 
 				       axlNode            * parent, 
 				       int                * child_pos,
 				       axlError          ** error,
-				       bool                 top_level);
+				       int                  top_level);
 
 
 /* @} */

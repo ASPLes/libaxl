@@ -47,7 +47,7 @@ void   axl_error_new      (int code, char * error, axlStream * stream, axlError 
 
 void   axl_error_report   (axlError ** _error, int code, char * format, ...);
 
-bool   axl_error_was_ok   (axlError * _error);
+int    axl_error_was_ok   (axlError * _error);
 
 int    axl_error_get_code (axlError * _error);
 

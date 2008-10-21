@@ -4,7 +4,7 @@
 /* the lookup function  */
 int lookups = 0;
 
-bool __find_item (axlPointer _element, axlPointer data)
+int  __find_item (axlPointer _element, axlPointer data)
 {
 	char * value = _element;
 	char * name  = data;
@@ -37,7 +37,7 @@ void test_01_check_key (axlList * list, char * key)
  *
  * @return true if it works properly or false if not.
  */
-bool test_01 () 
+int  test_01 () 
 {
 	axlList * list;
 	int       iterator;

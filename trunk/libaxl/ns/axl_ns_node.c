@@ -88,7 +88,7 @@
  * function returns \ref false in the of some paremeter is provided
  * null.
  */
-bool axl_ns_node_cmp (axlNode    * node, 
+int  axl_ns_node_cmp (axlNode    * node, 
 		      const char * ns, 
 		      const char * name)
 {
@@ -328,7 +328,7 @@ axlNode * axl_ns_node_get_previous_called (axlNode    * node,
  * returned. The function also returns \ref false if the node
  * reference received is NULL.
  */
-bool axl_ns_node_is_prefixed  (axlNode * node, int * position)
+int  axl_ns_node_is_prefixed  (axlNode * node, int * position)
 {
 	int          iterator = 0;
 	const char * name;

@@ -79,7 +79,7 @@
  * @return true if the init operation was properly implemented,
  * otherwise false is returned.
  */
-bool        axl_babel_init (axlError ** error)
+int         axl_babel_init (axlError ** error)
 {
 	/* call to configure babel */
 	axl_doc_set_detect_codification_func    (axl_babel_detect_codification, NULL);
@@ -121,7 +121,7 @@ void        axl_babel_finish ()
  * @return true if the codification detection was performed properly,
  * otherwise false is returned if an error is found.
  */
-bool axl_babel_detect_codification (axlStream  * stream, 
+int  axl_babel_detect_codification (axlStream  * stream, 
 				    char      ** encoding,
 				    axlPointer   user_data,
 				    axlError  ** error)
@@ -349,7 +349,7 @@ int axl_babel_utf8_check (const char  * source,
  * @return true if the operation was completed, otherwise false is
  * returned.
  */
-bool axl_babel_configure_encoding (axlStream  * stream, 
+int  axl_babel_configure_encoding (axlStream  * stream, 
 				   const char * encoding, 
 				   const char * detected, 
 				   axlPointer user_data, axlError ** error)
@@ -470,7 +470,7 @@ bool axl_babel_configure_encoding (axlStream  * stream,
  * false is returned. In the case index_error or error is defined and
  * an error is found, they are defined to the appropriate value.
  */
-bool        axl_babel_check_utf8_content  (const char  * content,
+int         axl_babel_check_utf8_content  (const char  * content,
 					   int           content_length,
 					   int         * index_error)
 {

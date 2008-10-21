@@ -48,13 +48,13 @@ BEGIN_C_DECLS
  * @{
  */
 
-bool axl_ns_doc_validate (axlDoc * doc, axlError ** error);
+int  axl_ns_doc_validate (axlDoc * doc, axlError ** error);
 
-bool axl_ns_doc_node_check (axlNode    * node, 
+int  axl_ns_doc_node_check (axlNode    * node, 
 			    const char * ns_prefix, 
 			    const char * ns);
 
-bool axl_ns_doc_check_default (axlNode    * node, 
+int  axl_ns_doc_check_default (axlNode    * node, 
 			       const char * ns);
 
 /** 
