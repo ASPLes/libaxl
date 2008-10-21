@@ -48,11 +48,11 @@ at <axl@lists.aspl.es>."
 /** 
  * @internal Controls if messages must be send to the console log.
  */
-bool        console_enabled        = true;
-bool        console_debug          = false;
-bool        console_debug2         = false;
-bool        console_debug3         = false;
-bool        console_color_debug    = false;
+int         console_enabled        = true;
+int         console_debug          = false;
+int         console_debug2         = false;
+int         console_debug3         = false;
+int         console_color_debug    = false;
 int         axl_knife_pid          = -1;
 
 /** 
@@ -333,7 +333,7 @@ void axl_knife_introduce_indentation (int level)
 	return;
 }
 
-bool axl_knife_htmlize_iterator_node (FILE * fstream, axlNode * node, int level)
+int  axl_knife_htmlize_iterator_node (FILE * fstream, axlNode * node, int level)
 {
 	
 	axlItem       * item;
@@ -454,7 +454,7 @@ bool axl_knife_htmlize_iterator_node (FILE * fstream, axlNode * node, int level)
 	return true;
 }
 
-bool axl_knife_htmlize (axlDoc * doc)
+int  axl_knife_htmlize (axlDoc * doc)
 {
 	FILE       * fstream = stdout;
 
@@ -480,7 +480,7 @@ bool axl_knife_htmlize (axlDoc * doc)
 	return true;
 }
 
-bool axl_knife_dtd_to_c ()
+int  axl_knife_dtd_to_c ()
 {
 	
 	/* check the document received is a DTD */
@@ -603,7 +603,7 @@ bool axl_knife_dtd_to_c ()
  * @return true if the modification time is newer than compare,
  * otherwise false is returned.
  */
-bool axl_knife_check_if_newer (const char * basefile, const char * compare)
+int  axl_knife_check_if_newer (const char * basefile, const char * compare)
 {
 	struct stat stat1, stat2;
 	
@@ -764,9 +764,9 @@ int main (int argc, char ** argv)
  * 
  * @return true if all test returns true. Otherwise false is returned.
  */
-bool   axl_knife_file_test (const char * path, FileTest test)
+int    axl_knife_file_test (const char * path, FileTest test)
 {
-	bool result = false;
+	int  result = false;
 	struct stat file_info;
 
 	/* perform common checks */

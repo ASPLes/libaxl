@@ -1,0 +1,71 @@
+       #####################################
+       ####     Change notification     ####
+       #####################################
+
+    Change Id: axl-bool-removal-01
+ Project name: Axl library
+  Included in: 0.5.4
+       Status: NOTIFY
+       Author: Francis Brosnan Blázquez
+
+Motivation
+~~~~~~~~~~
+
+Current c++ users consuming the Axl Library API have some issues to
+properly use bool type. Because this type is built-in supported by c++
+language, and new C versions (C99), but modeled with 8 byte, this
+produce memory align problems with C ansi compiled versions of Axl
+that models the bool type as an int (4 or 8 bytes according to the
+platform) causing the value receive to not be properly
+handled/read/returned.
+
+The change intention is to remove the bool type definition, leaving C
+users in the same situation until now: they keep on using int type,
+but, at the same time, c++ users can interface with the API without
+needing to create wrappers.
+
+Change Description
+~~~~~~~~~~~~~~~~~~
+
+1) "bool" type definition in axl_decl.h header is removed. Until now it
+   was a typedef to int. 
+
+2) "false" and "true" definitions are kept and they are fully
+   usable. Both values evals to 0 and 1. These values will be the API
+   convention to handle boolean values internally.
+
+3) All functions receiving or returning bool values now receive or
+   return int. 
+
+Solution to incompatibility
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+C users: because the typedef was a "cosmetic" definition making the
+         API to look better, no change is required. In fact, the API
+         was already expecting to receive an int value. Because in
+         many cases "false" and "true" definitions from axl_decl.h was
+         used, current code is BINARY and API compatible. So, no
+         change is required.
+
+c++ users: they won't need to use wrappers around functions using bool
+           type from Axl Library for newly written code. For wrappers
+           already written, they will still work since the Axl Library
+           API is expecting int as in previous releases.
+
+References
+~~~~~~~~~~
+[1] Axl library
+    http://xml.aspl.es
+
+[2] Axl library change notifications
+    http://xml.aspl.es/doc.html
+
+[3] Change notification definition
+    http://www.aspl.es/change/change-notification.txt
+
+[4] A discussion about int and bool type on Axl and Vortex API
+    http://lists.aspl.es/pipermail/vortex/2008-October/000712.html
+
+[5] An article about integer types
+    http://home.att.net/~jackklein/c/inttypes.html
+

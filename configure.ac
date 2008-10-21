@@ -126,7 +126,7 @@ AC_CONFIG_COMMANDS([axl_config.h],
  *
  * @return A \ref axlPointer reference.
  */
-#define INT_TO_PTR(integer)   ((axlPointer) ${pti_cast} (integer))
+#define INT_TO_PTR(integer)   ((axlPointer) ${pti_cast} ((int)integer))
 
 /** 
  * @brief Allows to convert a pointer reference (\ref axlPointer),

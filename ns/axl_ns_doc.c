@@ -85,10 +85,10 @@ void __axl_ns_free_table (axlNsTable * table)
 } /* end __axl_ns_free_table */
 
 /* check and install all ns declerations found on this node */
-bool __axl_ns_node_check_and_install_ns_decls (axlNode * node, axlAttrCursor * cursor, axlError ** error)
+int  __axl_ns_node_check_and_install_ns_decls (axlNode * node, axlAttrCursor * cursor, axlError ** error)
 {
 	const char    * attr;
-	bool            default_found = false;
+	int             default_found = false;
 	axlNsTable    * ns_table = NULL;
 
 	/* for each attribute installed on the node */
@@ -169,11 +169,11 @@ bool __axl_ns_node_check_and_install_ns_decls (axlNode * node, axlAttrCursor * c
  * @internal Function that validates the node against current status
  * of the namespace support.
  */
-bool __axl_ns_node_validate (axlNode * node, axlError ** error)
+int  __axl_ns_node_validate (axlNode * node, axlError ** error)
 {
 	int          iterator = 0;
 	char       * name;
-	bool         found    = false;
+	int          found    = false;
 	axlNsTable * ns_table;
 	axlNode    * parent;
 	axlNode    * child;
@@ -428,7 +428,7 @@ bool __axl_ns_node_validate (axlNode * node, axlError ** error)
  * @return \ref true if the document is namespace-valid, otherwise,
  * \ref false is returned.
  */
-bool axl_ns_doc_validate (axlDoc * doc, axlError ** error)
+int  axl_ns_doc_validate (axlDoc * doc, axlError ** error)
 {
 	axlNode * node;
 
@@ -466,7 +466,7 @@ bool axl_ns_doc_validate (axlDoc * doc, axlError ** error)
  * using the node as reference for all declarations found inside the
  * particular node (or its parents).
  */
-bool axl_ns_doc_node_check (axlNode    * node, 
+int  axl_ns_doc_node_check (axlNode    * node, 
 			    const char * ns_prefix, 
 			    const char * ns)
 {
@@ -506,7 +506,7 @@ bool axl_ns_doc_node_check (axlNode    * node,
  * @return \ref true if the node has as default namespace the value
  * received. Otherwise \ref false is returned.
  */
-bool axl_ns_doc_check_default (axlNode    * node, 
+int  axl_ns_doc_check_default (axlNode    * node, 
 			       const char * ns)
 {
 	axlNode    * parent   = node;

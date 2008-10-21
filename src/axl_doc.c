@@ -340,7 +340,7 @@ struct _axlDoc {
 	 * @brief Current standalone configuration of the given \ref
 	 * axlDoc object.
 	 */
-	bool    standalone;
+	int     standalone;
 
 	/** 
 	 * @internal
@@ -373,7 +373,7 @@ struct _axlDoc {
 	 * instruction that are only found inside the root document,
 	 * or after the xml header definition.
 	 */
-	bool    headerProcess;
+	int     headerProcess;
 
 	/** 
 	 * @internal Factory to create items in a memory efficient
@@ -435,7 +435,7 @@ axlPointer                  configure_codification_data;
  * 
  * @return A newly allocated \ref axlDoc reference.
  */
-axlDoc * __axl_doc_new (bool create_parent_stack) 
+axlDoc * __axl_doc_new (int  create_parent_stack) 
 {
 	axlDoc    * result = axl_new (axlDoc, 1);
 
@@ -503,10 +503,10 @@ char * __axl_doc_alloc (int size, axlDoc * doc)
  * @return true if the operation was completed, otherwise false is
  * returned.
  */
-bool axl_doc_configure_encoding (axlDoc * doc, axlStream * stream, axlError ** error)
+int  axl_doc_configure_encoding (axlDoc * doc, axlStream * stream, axlError ** error)
 {
 	char * encoding = NULL;
-	bool   result;
+	int    result;
 	
 	/* normalize encoding found */
 	if (doc->encoding) {
@@ -576,7 +576,7 @@ bool axl_doc_configure_encoding (axlDoc * doc, axlStream * stream, axlError ** e
  * with the given stream will be released. If the document is
  * associated, it will also be released.
  */
-bool __axl_doc_parse_xml_header (axlStream * stream, axlDoc * doc, axlError ** error)
+int  __axl_doc_parse_xml_header (axlStream * stream, axlDoc * doc, axlError ** error)
 {
 	char      * string_aux;
 	int         size;
@@ -745,10 +745,10 @@ bool __axl_doc_parse_xml_header (axlStream * stream, axlDoc * doc, axlError ** e
  * false if not. If the function find something wrong the document
  * is unrefered.
  */
-bool __axl_doc_parse_node (axlStream   * stream, 
+int  __axl_doc_parse_node (axlStream   * stream, 
 			   axlDoc      * doc, 
 			   axlNode    ** calling_node, 
-			   bool        * is_empty, 
+			   int         * is_empty, 
 			   axlError   ** error)
 {
 	char    * string_aux;
@@ -756,7 +756,7 @@ bool __axl_doc_parse_node (axlStream   * stream,
 	axlNode * node;
 	int       matched_chunk;
 	int       length;
-	bool      delim;
+	int       delim;
 	
 	/* consume a possible comment */
 	if (! axl_doc_consume_comments (doc, stream, error))
@@ -1016,7 +1016,7 @@ bool __axl_doc_parse_node (axlStream   * stream,
  * @brief Perform the close node operation.
  *
  */
-bool __axl_doc_parse_close_node (axlStream * stream, axlDoc * doc, axlNode ** _node, axlError ** error)
+int  __axl_doc_parse_close_node (axlStream * stream, axlDoc * doc, axlNode ** _node, axlError ** error)
 {
 	char    * string;
 	int       result_size = -1;
@@ -1086,7 +1086,7 @@ axlDoc * __axl_doc_parse_common (const char * entity, int entity_size,
 	axlNode   * node          = NULL;
 	char      * string        = NULL;
 	int         index;
-	bool        is_empty      = false;
+	int         is_empty      = false;
 	
 	/* create the xml stream using provided data */
 	stream         = axl_stream_new (entity, entity_size, file_path, fd_handle, error);
@@ -1328,7 +1328,7 @@ axlDoc * __axl_doc_parse_common (const char * entity, int entity_size,
  */
 axlDoc  * axl_doc_create                   (const char     * version, 
 					    const char     * encoding,
-					    bool   standalone)
+					    int    standalone)
 {
 	axlDoc * doc;
 
@@ -1359,7 +1359,7 @@ axlDoc  * axl_doc_create                   (const char     * version,
  * 
  * @return The number of bytes or -1 if it fails.
  */
-int __axl_doc_get_flat_size_common (axlDoc * doc, bool pretty_print, int tabular) 
+int __axl_doc_get_flat_size_common (axlDoc * doc, int  pretty_print, int tabular) 
 {
 	
 	int result;
@@ -1408,7 +1408,7 @@ int __axl_doc_get_flat_size_common (axlDoc * doc, bool pretty_print, int tabular
  * @internal
  * Common implementation for the dumping functions.
  */
-bool __axl_doc_dump_common (axlDoc * doc, char ** content, int * size, bool pretty_print, int tabular, axlError ** err)
+int  __axl_doc_dump_common (axlDoc * doc, char ** content, int * size, int  pretty_print, int tabular, axlError ** err)
 {
 
 	char * result;
@@ -1534,7 +1534,7 @@ bool __axl_doc_dump_common (axlDoc * doc, char ** content, int * size, bool pret
  * @return The function returns \ref true if the dump operation was
  * performed. Otherwise \ref false is returned.
  */
-bool      axl_doc_dump                     (axlDoc  * doc, 
+int       axl_doc_dump                     (axlDoc  * doc, 
 					    char   ** content, 
 					    int     * size)
 {
@@ -1559,7 +1559,7 @@ bool      axl_doc_dump                     (axlDoc  * doc,
  * @return \ref true if the document was dumped, \ref false if
  * something has failed.
  */
-bool      axl_doc_dump_pretty              (axlDoc  * doc,
+int       axl_doc_dump_pretty              (axlDoc  * doc,
 					    char   ** content,
 					    int     * size,
 					    int       tabular)
@@ -1592,7 +1592,7 @@ bool      axl_doc_dump_pretty              (axlDoc  * doc,
  * @return \ref true if the dump operation was ok, otherwisde \ref
  * false is returned.
  */
-bool      axl_doc_dump_to_file             (axlDoc  * doc,
+int       axl_doc_dump_to_file             (axlDoc  * doc,
 					    char    * file_path)
 {
 	char * content = NULL;
@@ -1664,7 +1664,7 @@ bool      axl_doc_dump_to_file             (axlDoc  * doc,
  * @return \ref true if the dump operation was ok, otherwisde \ref
  * false is returned.
  */
-bool      axl_doc_dump_pretty_to_file      (axlDoc  * doc,
+int       axl_doc_dump_pretty_to_file      (axlDoc  * doc,
 					    char    * file_path,
 					    int       tabular)
 {
@@ -1950,7 +1950,7 @@ axlDoc  * axl_doc_parse_strings            (axlError ** error,
  * Internal support function which checks the provided child and its
  * childs are equal.
  */
-bool __axl_doc_are_equal (axlNode * node, axlNode * node2, bool trimmed)
+int  __axl_doc_are_equal (axlNode * node, axlNode * node2, int  trimmed)
 {
 	int       iterator;
 	int       length;
@@ -2019,9 +2019,9 @@ bool __axl_doc_are_equal (axlNode * node, axlNode * node2, bool trimmed)
 /** 
  * @internal Common implementation for equal documents.
  */
-bool      axl_doc_are_equal_common (axlDoc * doc,
+int       axl_doc_are_equal_common (axlDoc * doc,
 				    axlDoc * doc2,
-				    bool     trimmed)
+				    int      trimmed)
 {
 	axlNode * node;
 	axlNode * node2;
@@ -2065,7 +2065,7 @@ bool      axl_doc_are_equal_common (axlDoc * doc,
  * @return \ref true if both documents are equal in the sense
  * described, otherwise \ref false is returned.
  */
-bool      axl_doc_are_equal_trimmed        (axlDoc * doc,
+int       axl_doc_are_equal_trimmed        (axlDoc * doc,
 					    axlDoc * doc2)
 {
 	/* call to common implemenation, activating triming */
@@ -2092,7 +2092,7 @@ bool      axl_doc_are_equal_trimmed        (axlDoc * doc,
  * @return true if both documents represents the same document,
  * false if not.
  */
-bool      axl_doc_are_equal                (axlDoc * doc, 
+int       axl_doc_are_equal                (axlDoc * doc, 
 					    axlDoc * doc2)
 {
 	/* call to common implemenation, activating triming */
@@ -2390,7 +2390,7 @@ const char * axl_doc_get_encoding (axlDoc * doc)
  * returned. Keep in mind that the function will return an \ref
  * false value if a null reference is received.
  */
-bool     axl_doc_get_standalone (axlDoc * doc)
+int      axl_doc_get_standalone (axlDoc * doc)
 {
 	axl_return_val_if_fail (doc, false);
 
@@ -2554,7 +2554,7 @@ void      axl_doc_add_pi_target            (axlDoc * doc,
  * @return true is the processing instruction is defined,
  * otherwise false is returned.
  */
-bool      axl_doc_has_pi_target            (axlDoc * doc, char * pi_target)
+int       axl_doc_has_pi_target            (axlDoc * doc, char * pi_target)
 {
 	axlPI * pi;
 	int     iterator = 0;
@@ -2729,7 +2729,7 @@ axlPI   * axl_pi_copy                      (axlPI  * pi)
  * of parameters received are NULL, the function will always return
  * \ref false.
  */
-bool      axl_pi_are_equal                 (axlPI  * pi, 
+int       axl_pi_are_equal                 (axlPI  * pi, 
 					    axlPI * pi2)
 {
 	/* basic null reference check */
@@ -2816,7 +2816,7 @@ int       axl_pi_get_size                  (axlPI  * pi)
  *
  * Common implementation for \ref axl_doc_iterate and \ref axl_doc_iterate2.
  */
-bool __axl_doc_iterate_common (axlDoc            * doc, 
+int  __axl_doc_iterate_common (axlDoc            * doc, 
 			       axlNode           * root,
 			       AxlIterationMode    mode, 
 			       axlIterationFunc    func, 
@@ -2825,7 +2825,7 @@ bool __axl_doc_iterate_common (axlDoc            * doc,
 			       axlPointer          ptr2)
 {
 	int        iterator;
-	bool       was_removed = false;
+	int        was_removed = false;
 
 	axlNode  * node;
 	axlNode  * nodeAux;
@@ -2948,8 +2948,8 @@ bool __axl_doc_iterate_common (axlDoc            * doc,
  *                      NULL);
  * }
  *
- * bool show_node_found (axlNode * node, axlNode * parent,
- *                       axlDoc  * doc, bool * was_removed, 
+ * int  show_node_found (axlNode * node, axlNode * parent,
+ *                       axlDoc  * doc, int  * was_removed, 
  *                       axlPointer ptr)
  * {
  *      // Show node found 
@@ -2988,7 +2988,7 @@ bool __axl_doc_iterate_common (axlDoc            * doc,
  * iteration). The function also false if the parameters provided doc
  * or func are not defined.
  */
-bool      axl_doc_iterate                  (axlDoc           * doc,
+int       axl_doc_iterate                  (axlDoc           * doc,
 					    AxlIterationMode   mode,
 					    axlIterationFunc   func,
 					    axlPointer         ptr)
@@ -3040,7 +3040,7 @@ bool      axl_doc_iterate                  (axlDoc           * doc,
  * iteration). The function also false if the parameters provided doc
  * or func are not defined.
  */
-bool      axl_doc_iterate_full             (axlDoc            * doc,
+int       axl_doc_iterate_full             (axlDoc            * doc,
 					    AxlIterationMode    mode,
 					    axlIterationFunc2   func,
 					    axlPointer          ptr,
@@ -3097,7 +3097,7 @@ bool      axl_doc_iterate_full             (axlDoc            * doc,
  * iteration). The function also false if the parameters provided doc
  * or func are not defined.
  */
-bool      axl_doc_iterate_full_from        (axlDoc           * doc,
+int       axl_doc_iterate_full_from        (axlDoc           * doc,
 					    axlNode          * starting_from,
 					    AxlIterationMode   mode,
 					    axlIterationFunc2  func,
@@ -3182,10 +3182,10 @@ void     axl_doc_free         (axlDoc * doc)
  *
  * @param error An optional axlError where problem will be reported.
  */
-bool      axl_doc_consume_comments         (axlDoc * doc, axlStream * stream, axlError ** error)
+int       axl_doc_consume_comments         (axlDoc * doc, axlStream * stream, axlError ** error)
 {
 
-	bool      found_item;
+	int       found_item;
 	char    * content;
 	int       size;
 
@@ -3269,8 +3269,8 @@ bool      axl_doc_consume_comments         (axlDoc * doc, axlStream * stream, ax
  * @return true if not error was found, otherwise AXL_FASLSE is
  * returned.
  */
-bool      axl_doc_consume_pi (axlDoc * doc, axlNode * node, 
-				  axlStream * stream, axlError ** error)
+int       axl_doc_consume_pi (axlDoc * doc, axlNode * node, 
+			      axlStream * stream, axlError ** error)
 {
 	char  * string_aux;
 	char  * string_aux2;

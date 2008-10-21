@@ -48,13 +48,13 @@ BEGIN_C_DECLS
  * @{
  */
 
-bool     axl_log_is_enabled ();
+int      axl_log_is_enabled ();
 
-bool     axl_log_color_is_enabled ();
+int      axl_log_color_is_enabled ();
 
-void     axl_log_enable (bool value);
+void     axl_log_enable (int  value);
 
-void     axl_log_color_enable (bool value);
+void     axl_log_color_enable (int  value);
 
 
 #if defined(SHOW_DEBUG_LOG)

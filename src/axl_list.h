@@ -79,11 +79,11 @@ void       axl_list_remove_last (axlList * list);
 
 void       axl_list_unlink_last (axlList * list);
 
-bool       axl_list_exists (axlList * list, axlPointer pointer);
+int        axl_list_exists (axlList * list, axlPointer pointer);
 
-bool       axl_list_exists_at (axlList * list, axlPointer pointer, int position);
+int        axl_list_exists_at (axlList * list, axlPointer pointer, int position);
 
-bool       axl_list_is_empty  (axlList * list);
+int        axl_list_is_empty  (axlList * list);
 
 axlPointer axl_list_get_first (axlList * list);
 
@@ -93,7 +93,7 @@ axlPointer axl_list_get_nth   (axlList * list, int position);
 
 axlPointer axl_list_lookup    (axlList * list, axlLookupFunc func, axlPointer data);
 
-bool       axl_list_find_string (axlPointer element, axlPointer data);
+int        axl_list_find_string (axlPointer element, axlPointer data);
 
 int        axl_list_length (axlList * list);
 
@@ -110,11 +110,11 @@ void            axl_list_cursor_next         (axlListCursor * cursor);
 
 void            axl_list_cursor_previous     (axlListCursor * cursor);
 
-bool            axl_list_cursor_has_next     (axlListCursor * cursor);
+int             axl_list_cursor_has_next     (axlListCursor * cursor);
 
-bool            axl_list_cursor_has_previous (axlListCursor * cursor);
+int             axl_list_cursor_has_previous (axlListCursor * cursor);
 
-bool            axl_list_cursor_has_item     (axlListCursor * cursor);
+int             axl_list_cursor_has_item     (axlListCursor * cursor);
 
 void            axl_list_cursor_unlink       (axlListCursor * cursor);
 

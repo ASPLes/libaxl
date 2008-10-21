@@ -171,6 +171,7 @@
  * <b>Section 4: Advanced topics </b><br>
  *
  * - \ref reducing_foot_print
+ * - \ref axl_manual_boolean_type
  *
  * <b>Apendix</b><br>
  *
@@ -844,7 +845,21 @@
  * Previous information applies to the Axl base Library
  * (libaxl.so/.dll), however the same happens for the rest of software
  * components bundle with Axl.
+ *
+ * \section axl_manual_boolean_type How boolean type is handled in Axl Library API
+ *
+ * In short, <b>int</b> type is used. It is also provided a definition
+ * to \ref false (which is evaluated to 0) and a definition for \ref
+ * true (which is evaluated to 1). This is only useful for C programmers.
  * 
+ * These definitions aren't required. You can directly use 0 or 1 to
+ * achive the same results. 
+ *
+ * Previous to 0.5.3 release, Axl Library provided <b>bool</b> type
+ * definition, mapped on <b>int</b> type. This was removed to avoid
+ * memory align issues for C++ users consuming the C api (since bool
+ * type on c++ uses 1 byte and, in many cases, integer can use 4 or 8
+ * bytes).
  *
  * \section futher Futher reading where to go for more information
  * 
@@ -1051,10 +1066,10 @@
  *
  * However the API is provided for future usage.
  * 
- * @return The function returns true if it was properly
- * initialized or false if something fails.  if fails.
+ * @return The function returns \ref true if it was properly
+ * initialized or \ref false if something fails.  if fails.
  */
-bool axl_init ()
+int axl_init ()
 {
 	/* nothing to initialize dude */
 	return true;

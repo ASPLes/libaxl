@@ -237,7 +237,7 @@ void   axl_error_report   (axlError ** _error, int code, char * format, ...)
  * "ERROR" (an error wasn't reported), otherwise, \ref false is
  * returned.
  */
-bool   axl_error_was_ok   (axlError * _error)
+int    axl_error_was_ok   (axlError * _error)
 {
 	/* check if it was ok */
 	if (_error == NULL || _error->error == NULL || (_error->defined != -346715))

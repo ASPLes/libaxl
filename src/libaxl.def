@@ -267,6 +267,7 @@ axl_list_remove
 axl_list_remove_first
 axl_list_remove_last
 axl_list_remove_ptr
+axl_list_set_destroy_func
 axl_list_unlink
 axl_list_unlink_first
 axl_list_unlink_last

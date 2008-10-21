@@ -126,6 +126,6 @@ typedef enum {
 } FileTest;
 
 
-bool axl_knife_file_test   (const char * path,   FileTest test);
+int  axl_knife_file_test   (const char * path,   FileTest test);
 
 #endif
