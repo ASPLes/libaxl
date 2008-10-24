@@ -1,0 +1,126 @@
+          ####################################
+          #           Axl Library            #
+          #        Friday I'm in love!       # 
+          #              0.5.4               #
+          ####################################
+
+Advanced Software Production Line is proud to announce a new Axl
+Library release.
+
+Axl Library is an small and efficient XML toolkit, written in ANSI C,
+and released under the LGPL, that will allow you to produce efficient
+and clear code that interfaces with XML data.
+
+The library was produced to support XML requirements needed by
+software developed by Advanced Software Production Line, S.L.
+
+At this moment the library is being used by Vortex Library, Af-Arch,
+Turbulence, Shaper and Fovap.
+
+Resources
+~~~~~~~~~
+
+   Axl Homepage
+   [ http://www.aspl.es/xml ]
+
+   Advanced Software Production Line, S.L.
+   [ http://www.aspl.es ]
+
+This release in short
+~~~~~~~~~~~~~~~~~~~~~
+
+ Bug fixes, debian package support and an API change that removes all
+ references to bool type. See axl-bool-removal-01 for more details.
+
+ [1] axl-bool-removal-01
+    http://lists.aspl.es/pipermail/axl/2008-October/000093.html
+
+Thanks to..
+~~~~~~~~~~~
+  Robert Münch (reporting wrong WSAGetLastError at windows), Martin
+  Huter (Reported and provided suggestions to propose
+  axl-bool-removal-01 change notification).
+
+Change notifications
+~~~~~~~~~~~~~~~~~~~~
+[1] axl-bool-removal-01
+    http://lists.aspl.es/pipermail/axl/2008-October/000093.html
+
+Changes from previous release 0.5.3
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* [fix] Updated axl_dtd_parse_from_file documentation to point how to
+  make DTD to be in-line available through axl-knife and
+  axl_dtd_parse.
+
+* [fix] Improved error messages for DTD failures.
+
+* [fix] Fixed segmentation fault of axl-knife on amd64 platforms.
+
+* [fix] Flagging axl_stream_get_following and axl_stream_get_near_to
+  to return const char * (rather char *). Updated axl error module to
+  conform with the new change.
+
+* [new] Added a new function to reconfigure destroy handler associated
+  to an axlList. API added:
+
+  - axl_list_set_destroy_func
+
+* [fix] Updated axl_list_copy documentation.
+
+* [fix] Committing more updates to debian package support.
+
+* [fix] More update to debian packages.
+
+* [fix] Finished initial working support for debian stable. Added
+  support for make check to run regression tests.
+
+* [fix] More debian changes.
+
+* [fix] Making axl-knife to not use WSAGetLastError. Replaced by
+  GetLastError. Added a definition to S_ISLNK to complete win32
+  build. Bug reported and fixes suggested by Robert M. Münch.
+
+* [fix] Committing missing ico files for windows package.
+
+* [fix] Improved error reporting axl doc dump functions.
+
+* [fix] Fixed axl-knife support on windows.
+
+* [fix] Included axl-knife into default windows installer.
+
+* [fix] Applying axl-bool-removal-01 change notification. Committing
+  updates Done in base, ns, babel and knife components. Checked
+  regression test.
+
+* [fix] General platform API update due to axl-bool-removal-01.
+
+
+About Advanced Software Production Line, S.L.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Advanced Software Production Line is leading the Af-Arch project: a
+  complete framework to develop distributed application to manage
+  enterprise process.
+
+  Af-Arch project uses Axl library to support its XML requirements
+  while exchanging data between nodes.
+
+  Advanced Software Production Line also provides GNU/Linux support
+  and consulting services to enable organization to introduce
+  GNU/Linux inside its process, making other platforms to interact
+  with GNU/Linux.
+
+  Contact us, using English or Spanish, to get commercial support
+  and/or XML based development services.
+
+  You can reach us:
+
+       http://www.aspl.es - info@aspl.es
+
+  We hope Axl Library help you. Enjoy Axl Library!
+
+--
+Francis Brosnan Blázquez           - francis@aspl.es
+Advanced Software Production Line  - http://www.aspl.es
+24th oct 2008, Madrid (Spain)
