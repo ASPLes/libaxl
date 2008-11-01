@@ -877,7 +877,7 @@ axlListNode * axl_list_internal_get_nth (axlList * list, int position)
 
 /* remove the selected node */
 void __axl_list_common_remove_selected_node (axlList * list, axlListNode * node, 
-					     int  alsoRemove)
+					     axl_bool alsoRemove)
 {
 	axlPointer pointer;
 
@@ -930,7 +930,7 @@ void __axl_list_common_remove_selected_node (axlList * list, axlListNode * node,
  *
  * @param byPtr Makes the linear search to be done by pointer.
  */
-void     axl_list_common_remove (axlList * list, axlPointer pointer, int  alsoRemove, int  byPtr)
+void     axl_list_common_remove (axlList * list, axlPointer pointer, axl_bool alsoRemove, axl_bool byPtr)
 {
 	axlListNode * node;
 
@@ -981,9 +981,9 @@ void      axl_list_remove (axlList * list, axlPointer pointer)
 	/* perform a complete removing */
 	axl_list_common_remove (list, pointer, 
 				/* alsoRemove */
-				true, 
+				axl_true, 
 				/* byPtr */ 
-				false);
+				axl_false);
 
 	return;
 }
@@ -1005,9 +1005,9 @@ void axl_list_remove_ptr (axlList * list, axlPointer pointer)
 	/* perform a complete removing */
 	axl_list_common_remove (list, pointer, 
 				/* alsoRemove */
-				true, 
+				axl_true, 
 				/* byPtr */ 
-				true);
+				axl_true);
 }
 
 /** 
@@ -1023,9 +1023,9 @@ void       axl_list_unlink (axlList * list, axlPointer pointer)
 	/* perform a complete removing */
 	axl_list_common_remove (list, pointer, 
 				/* alsoRemove */
-				false, 
+				axl_false, 
 				/* byPtr */ 
-				false);
+				axl_false);
 
 	return;
 }
@@ -1048,9 +1048,9 @@ void axl_list_unlink_ptr (axlList * list, axlPointer pointer)
 	/* perform a complete removing */
 	axl_list_common_remove (list, pointer, 
 				/* alsoRemove */
-				false, 
+				axl_false, 
 				/* byPtr */ 
-				true);
+				axl_true);
 	
 	return;
 }
@@ -1071,7 +1071,7 @@ void       axl_list_remove_first (axlList * list)
 		return;
 
 	/* remove the selected node */
-	__axl_list_common_remove_selected_node (list, list->first_node, true);
+	__axl_list_common_remove_selected_node (list, list->first_node, axl_true);
 
 	return;
 }
@@ -1092,7 +1092,7 @@ void       axl_list_unlink_first (axlList * list)
 		return;
 
 	/* remove the selected node */
-	__axl_list_common_remove_selected_node (list, list->first_node, false);
+	__axl_list_common_remove_selected_node (list, list->first_node, axl_false);
 
 	return;
 }
@@ -1112,7 +1112,7 @@ void       axl_list_remove_last (axlList * list)
 		return;
 
 	/* remove the selected node */
-	__axl_list_common_remove_selected_node (list, list->last_node, true);
+	__axl_list_common_remove_selected_node (list, list->last_node, axl_true);
 
 	return;
 }
@@ -1132,7 +1132,7 @@ void       axl_list_unlink_last (axlList * list)
 		return;
 
 	/* remove the selected node */
-	__axl_list_common_remove_selected_node (list, list->last_node, false);
+	__axl_list_common_remove_selected_node (list, list->last_node, axl_false);
 
 	return;
 }
@@ -1145,18 +1145,18 @@ void       axl_list_unlink_last (axlList * list)
  *
  * @param pointer The pointer to lookup.
  * 
- * @return \ref true if the element is stored on the list,
- * otherwise false is returned. The function will fail to lookup
+ * @return \ref axl_true if the element is stored on the list,
+ * otherwise axl_false is returned. The function will fail to lookup
  * if a NULL reference is received, either the list or the pointer.
  */
-int           axl_list_exists (axlList * list, axlPointer pointer)
+axl_bool          axl_list_exists (axlList * list, axlPointer pointer)
 {
-	axl_return_val_if_fail (list, false);
-	axl_return_val_if_fail (pointer, false);
+	axl_return_val_if_fail (list, axl_false);
+	axl_return_val_if_fail (pointer, axl_false);
 
 	if (axl_list_internal_lookup (list, pointer) != NULL)
-		return true;
-	return false;
+		return axl_true;
+	return axl_false;
 }
 
 /** 
@@ -1165,12 +1165,12 @@ int           axl_list_exists (axlList * list, axlPointer pointer)
  * 
  * @param list The list to check for emptyness.
  * 
- * @return true if the list is empty, false if not. The function
- * return false in the case a null reference is provided.
+ * @return axl_true if the list is empty, axl_false if not. The function
+ * return axl_false in the case a null reference is provided.
  */
-int        axl_list_is_empty  (axlList * list)
+axl_bool       axl_list_is_empty  (axlList * list)
 {
-	axl_return_val_if_fail (list, false);
+	axl_return_val_if_fail (list, axl_false);
 
 	/* check if the first node is defined */
 	return (list->first_node == NULL);
@@ -1183,19 +1183,19 @@ int        axl_list_is_empty  (axlList * list)
  * @param pointer The pointer to check.
  * @param position The position where is expected to find the pointer.
  * 
- * @return true if the given data, referenced by the pointer, is
+ * @return axl_true if the given data, referenced by the pointer, is
  * stored on the given position.
  */
-int            axl_list_exists_at (axlList * list, axlPointer pointer, int position)
+axl_bool           axl_list_exists_at (axlList * list, axlPointer pointer, int position)
 {
 	axlListNode * node;
 
 	node = axl_list_internal_get_nth (list, position);
 	if (node != NULL) {
 		if (! list->are_equal (node->data, pointer))
-			return true;
+			return axl_true;
 	}
-	return false;
+	return axl_false;
 }
 
 /** 
@@ -1267,17 +1267,17 @@ axlPointer axl_list_get_nth   (axlList * list, int position)
  * return axl_list_lookup (list, __find_item, name);
  *
  * // the lookup function 
- * int  __find_item (axlPointer _element, axlPointer data)
+ * axl_bool __find_item (axlPointer _element, axlPointer data)
  * {
  *	SomeItem * element = _element;
  *	char     * name    = data;
  *
  *	// check the name 
  *	if (axl_cmp (element->name, name))
- *		return true;
+ *		return axl_true;
  *
  *	// it is not the element 
- *	return false;
+ *	return axl_false;
  * }
  * \endcode
  *
@@ -1332,13 +1332,13 @@ axlPointer axl_list_lookup    (axlList * list, axlLookupFunc func, axlPointer da
  * @param data The data provided at \ref axl_list_lookup, in this
  * case, the value we are looking.
  * 
- * @return \ref true if the string was found, \ref false if not.
+ * @return \ref axl_true if the string was found, \ref axl_false if not.
  */
-int        axl_list_find_string (axlPointer element, axlPointer data)
+axl_bool       axl_list_find_string (axlPointer element, axlPointer data)
 {
-	/* if the string received is null, just return false */
+	/* if the string received is null, just return axl_false */
 	if (data == NULL)
-		return false;
+		return axl_false;
 
 	/* return the comparison status */
 	return axl_cmp ((char *) element, (char *) data);
@@ -1563,16 +1563,16 @@ void            axl_list_cursor_previous (axlListCursor * cursor)
  * @param cursor The cursor that is required to return if there are
  * next items.
  * 
- * @return \ref true if more items are found, otherwise \ref false is
+ * @return \ref axl_true if more items are found, otherwise \ref axl_false is
  * returned.
  */
-int             axl_list_cursor_has_next (axlListCursor * cursor)
+axl_bool            axl_list_cursor_has_next (axlListCursor * cursor)
 {
-	axl_return_val_if_fail (cursor, false);
+	axl_return_val_if_fail (cursor, axl_false);
 
 	/* check for empty list */
 	if (cursor->current == NULL)
-		return false;
+		return axl_false;
 
 	/* return if the next element isn't null */
 	return (cursor->current->next != NULL);
@@ -1585,16 +1585,16 @@ int             axl_list_cursor_has_next (axlListCursor * cursor)
  * @param cursor The cursor that is required to return if there are
  * next items.
  * 
- * @return \ref true if more items are found, otherwise \ref false is
+ * @return \ref axl_true if more items are found, otherwise \ref axl_false is
  * returned.
  */
-int             axl_list_cursor_has_previous (axlListCursor * cursor)
+axl_bool            axl_list_cursor_has_previous (axlListCursor * cursor)
 {
-	axl_return_val_if_fail (cursor, false);
+	axl_return_val_if_fail (cursor, axl_false);
 
 	/* check for empty list */
 	if (cursor->current == NULL)
-		return false;
+		return axl_false;
 
 	/* return if the next element isn't null */
 	return (cursor->current->previous != NULL);
@@ -1606,12 +1606,12 @@ int             axl_list_cursor_has_previous (axlListCursor * cursor)
  * @param cursor The cursor that is requested to return if a call to
  * \ref axl_list_cursor_get will return data.
  * 
- * @return \ref true if the list that is iterated can return data at
- * the current position, otherwise \ref false is returned.
+ * @return \ref axl_true if the list that is iterated can return data at
+ * the current position, otherwise \ref axl_false is returned.
  */
-int             axl_list_cursor_has_item    (axlListCursor * cursor)
+axl_bool            axl_list_cursor_has_item    (axlListCursor * cursor)
 {
-	axl_return_val_if_fail (cursor, false);
+	axl_return_val_if_fail (cursor, axl_false);
 
 	/* return if there are current */
 	return (cursor->current != NULL);
@@ -1645,7 +1645,7 @@ void            axl_list_cursor_unlink       (axlListCursor * cursor)
 	cursor->current = (node->next != NULL) ? node->next : node->previous;
 
 	/* call to unlik */
-	__axl_list_common_remove_selected_node (cursor->list, node, false);
+	__axl_list_common_remove_selected_node (cursor->list, node, axl_false);
 
 	return;
 }
@@ -1679,7 +1679,7 @@ void            axl_list_cursor_remove       (axlListCursor * cursor)
 	cursor->current = (node->next != NULL) ? node->next : node->previous;
 
 	/* call to remove */
-	__axl_list_common_remove_selected_node (cursor->list, node, true);
+	__axl_list_common_remove_selected_node (cursor->list, node, axl_true);
 
 	return;
 }

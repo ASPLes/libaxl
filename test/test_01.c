@@ -31,9 +31,9 @@
  * 
  * @param error The optional axlError to be used to report erros.
  * 
- * @return true tests are ok, otherwise false is returned.
+ * @return axl_true tests are ok, otherwise axl_false is returned.
  */
-int  test_41 (axlError ** error)
+axl_bool test_41 (axlError ** error)
 {
 	axlDoc  * doc;
 	axlNode * node;
@@ -42,14 +42,14 @@ int  test_41 (axlError ** error)
 	/* configure babel translate functions */
 	printf ("Test 41: init babel..\n");
 	if (! axl_babel_init (error)) 
-		return false;
+		return axl_false;
 
 	/* check utf 8 */
 	printf ("Test 41: checking utf-8 engine..\n");
 	if (! axl_babel_check_utf8_content (test_41_iso_8859_15_value, strlen (test_41_iso_8859_15_value), &index)) {
 		printf ("ERROR: utf-8 content error found at index=%d..\n", index);
 		axl_error_new (-1, "Expected to find proper utf-8 content but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/*** UTF-8 support */
@@ -57,13 +57,13 @@ int  test_41 (axlError ** error)
 	printf ("Test 41: test utf-8 support..\n");
 	doc = axl_doc_parse_from_file ("test_41.utf-8.xml", error);
 	if (doc == NULL) 
-		return false;
+		return axl_false;
 
 	/* find info node */
 	node = axl_doc_get_root (doc);
 	if (! NODE_CMP_NAME (node, "encodings")) {
 		axl_error_new (-1, "Expected to find root node called <info> but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	axl_doc_free (doc);
@@ -72,11 +72,11 @@ int  test_41 (axlError ** error)
 	printf ("Test 41: test utf-8 content without xml header..\n");
 	doc = axl_doc_parse_from_file ("test_41.utf-8.withoutheader.xml", error);
 	if (doc == NULL) 
-		return false;
+		return axl_false;
 
 	if (! axl_cmp (axl_doc_get_encoding (doc), "utf-8")) {
 		axl_error_new (-1, "Expected to find utf-8 content declaration but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 	axl_doc_free (doc);
 
@@ -84,23 +84,23 @@ int  test_41 (axlError ** error)
 	printf ("Test 41: test wrong xml utf-8 content without xml header..\n");
 	doc = axl_doc_parse_from_file ("test_41.utf-8.wrongwithoutheader.xml", NULL);
 	if (doc != NULL) 
-		return false;
+		return axl_false;
 	
 	/* test utf-8 encoding (wrong test) */
 	printf ("Test 41: test wrong utf-8 content..\n");
 	doc = axl_doc_parse_from_file ("test_41.utf-8.wrong.xml", error);
 	if (doc != NULL) 
-		return false;
+		return axl_false;
 
 	/* check unicode file without declaration */
 	printf ("Test 41: test utf-8 content without decleration..\n");
 	doc = axl_doc_parse_from_file ("test_41.utf-8.withoutencoding.xml", error);
 	if (doc == NULL) 
-		return false;
+		return axl_false;
 
 	if (! axl_cmp (axl_doc_get_encoding (doc), "utf-8")) {
 		axl_error_new (-1, "Expected to find utf-8 content declaration but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 	axl_doc_free (doc);
 
@@ -108,11 +108,11 @@ int  test_41 (axlError ** error)
 	printf ("Test 41: test large utf-8 content without decleration..\n");
 	doc = axl_doc_parse_from_file ("large.xml", error);
 	if (doc == NULL) 
-		return false;
+		return axl_false;
 
 	if (! axl_cmp (axl_doc_get_encoding (doc), "utf-8")) {
 		axl_error_new (-1, "Expected to find utf-8 content declaration but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 	axl_doc_free (doc);
 
@@ -121,13 +121,13 @@ int  test_41 (axlError ** error)
 	printf ("Test 41: test iso-8859-15..\n");
 	doc = axl_doc_parse_from_file ("test_41.iso-8859-15.xml", error);
 	if (doc == NULL) 
-		return false;
+		return axl_false;
 
 	/* find info node */
 	node = axl_doc_get_root (doc);
 	if (! NODE_CMP_NAME (node, "info")) {
 		axl_error_new (-1, "Expected to find root node called <info> but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* check node content */
@@ -137,7 +137,7 @@ int  test_41 (axlError ** error)
 			(int) strlen (test_41_iso_8859_15_value), test_41_iso_8859_15_value,
 			(int) strlen (axl_node_get_content (node, NULL)), axl_node_get_content (node, NULL));
 		axl_error_new (-1, "Found diferences at node content..\n", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* free document */
@@ -149,20 +149,20 @@ int  test_41 (axlError ** error)
 	 * prebuffering */
 	doc = axl_doc_parse_from_file ("test_41.iso-8859-15.2.xml", error);
 	if (doc == NULL) 
-		return false;
+		return axl_false;
 
 	/* find info node */
 	node = axl_doc_get_root (doc);
 	if (! NODE_CMP_NAME (node, "info")) {
 		axl_error_new (-1, "Expected to find root node called <info> but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* check utf-8 format */
 	if (! axl_babel_check_utf8_content (axl_node_get_content (node, NULL), -1, &index)) {
 		printf ("ERROR: found utf-8 content error at index=%d..\n", index);
 		axl_error_new (-1, "Expected to find proper utf-8 content but a failure was found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	if (strlen (axl_node_get_content (node, NULL)) != 26642) {
@@ -179,20 +179,20 @@ int  test_41 (axlError ** error)
 	 * prebuffering */
 	doc = axl_doc_parse_from_file ("test_41.iso-8859-1.xml", error);
 	if (doc == NULL) 
-		return false;
+		return axl_false;
 
 	/* find info node */
 	node = axl_doc_get_root (doc);
 	if (! NODE_CMP_NAME (node, "info")) {
 		axl_error_new (-1, "Expected to find root node called <info> but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* check utf-8 format */
 	if (! axl_babel_check_utf8_content (axl_node_get_content (node, NULL), -1, &index)) {
 		printf ("ERROR: found utf-8 content error at index=%d..\n", index);
 		axl_error_new (-1, "Expected to find proper utf-8 content but a failure was found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	if (! axl_cmp (test_41_iso_8859_1_value, 
@@ -201,7 +201,7 @@ int  test_41 (axlError ** error)
 			(int) strlen (test_41_iso_8859_1_value), test_41_iso_8859_1_value,
 			(int) strlen (axl_node_get_content (node, NULL)), axl_node_get_content (node, NULL));
 		axl_error_new (-1, "Found diferences at node content..\n", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* free document */
@@ -213,20 +213,20 @@ int  test_41 (axlError ** error)
 	 * prebuffering */
 	doc = axl_doc_parse_from_file ("test_41.iso-8859-2.xml", error);
 	if (doc == NULL) 
-		return false;
+		return axl_false;
 
 	/* find info node */
 	node = axl_doc_get_root (doc);
 	if (! NODE_CMP_NAME (node, "info")) {
 		axl_error_new (-1, "Expected to find root node called <info> but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* check utf-8 format */
 	if (! axl_babel_check_utf8_content (axl_node_get_content (node, NULL), -1, &index)) {
 		printf ("ERROR: found utf-8 content error at index=%d..\n", index);
 		axl_error_new (-1, "Expected to find proper utf-8 content but a failure was found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	if (! axl_cmp (test_41_iso_8859_2_value, 
@@ -235,7 +235,7 @@ int  test_41 (axlError ** error)
 			(int) strlen (test_41_iso_8859_2_value), test_41_iso_8859_2_value,
 			(int) strlen (axl_node_get_content (node, NULL)), axl_node_get_content (node, NULL));
 		axl_error_new (-1, "Found diferences at node content..\n", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* free document */
@@ -247,20 +247,20 @@ int  test_41 (axlError ** error)
 	 * prebuffering */
 	doc = axl_doc_parse_from_file ("test_41.iso-8859-3.xml", error);
 	if (doc == NULL) 
-		return false;
+		return axl_false;
 
 	/* find info node */
 	node = axl_doc_get_root (doc);
 	if (! NODE_CMP_NAME (node, "info")) {
 		axl_error_new (-1, "Expected to find root node called <info> but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* check utf-8 format */
 	if (! axl_babel_check_utf8_content (axl_node_get_content (node, NULL), -1, &index)) {
 		printf ("ERROR: found utf-8 content error at index=%d..\n", index);
 		axl_error_new (-1, "Expected to find proper utf-8 content but a failure was found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	if (! axl_cmp (test_41_iso_8859_3_value, 
@@ -269,7 +269,7 @@ int  test_41 (axlError ** error)
 			(int) strlen (test_41_iso_8859_3_value), test_41_iso_8859_3_value,
 			(int) strlen (axl_node_get_content (node, NULL)), axl_node_get_content (node, NULL));
 		axl_error_new (-1, "Found diferences at node content..\n", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* free document */
@@ -281,20 +281,20 @@ int  test_41 (axlError ** error)
 	 * prebuffering */
 	doc = axl_doc_parse_from_file ("test_41.iso-8859-4.xml", error);
 	if (doc == NULL) 
-		return false;
+		return axl_false;
 
 	/* find info node */
 	node = axl_doc_get_root (doc);
 	if (! NODE_CMP_NAME (node, "info")) {
 		axl_error_new (-1, "Expected to find root node called <info> but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* check utf-8 format */
 	if (! axl_babel_check_utf8_content (axl_node_get_content (node, NULL), -1, &index)) {
 		printf ("ERROR: found utf-8 content error at index=%d..\n", index);
 		axl_error_new (-1, "Expected to find proper utf-8 content but a failure was found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	if (! axl_cmp (test_41_iso_8859_4_value, 
@@ -303,7 +303,7 @@ int  test_41 (axlError ** error)
 			(int) strlen (test_41_iso_8859_4_value), test_41_iso_8859_4_value,
 			(int) strlen (axl_node_get_content (node, NULL)), axl_node_get_content (node, NULL));
 		axl_error_new (-1, "Found diferences at node content..\n", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* free document */
@@ -315,20 +315,20 @@ int  test_41 (axlError ** error)
 	 * prebuffering */
 	doc = axl_doc_parse_from_file ("test_41.iso-8859-5.xml", error);
 	if (doc == NULL) 
-		return false;
+		return axl_false;
 
 	/* find info node */
 	node = axl_doc_get_root (doc);
 	if (! NODE_CMP_NAME (node, "info")) {
 		axl_error_new (-1, "Expected to find root node called <info> but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* check utf-8 format */
 	if (! axl_babel_check_utf8_content (axl_node_get_content (node, NULL), -1, &index)) {
 		printf ("ERROR: found utf-8 content error at index=%d..\n", index);
 		axl_error_new (-1, "Expected to find proper utf-8 content but a failure was found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	if (! axl_cmp (test_41_iso_8859_5_value, 
@@ -337,7 +337,7 @@ int  test_41 (axlError ** error)
 			(int) strlen (test_41_iso_8859_5_value), test_41_iso_8859_5_value,
 			(int) strlen (axl_node_get_content (node, NULL)), axl_node_get_content (node, NULL));
 		axl_error_new (-1, "Found diferences at node content..\n", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* free document */
@@ -349,20 +349,20 @@ int  test_41 (axlError ** error)
 	 * prebuffering */
 	doc = axl_doc_parse_from_file ("test_41.iso-8859-6.xml", error);
 	if (doc == NULL) 
-		return false;
+		return axl_false;
 
 	/* find info node */
 	node = axl_doc_get_root (doc);
 	if (! NODE_CMP_NAME (node, "info")) {
 		axl_error_new (-1, "Expected to find root node called <info> but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* check utf-8 format */
 	if (! axl_babel_check_utf8_content (axl_node_get_content (node, NULL), -1, &index)) {
 		printf ("ERROR: found utf-8 content error at index=%d..\n", index);
 		axl_error_new (-1, "Expected to find proper utf-8 content but a failure was found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	if (! axl_cmp (test_41_iso_8859_6_value, 
@@ -371,7 +371,7 @@ int  test_41 (axlError ** error)
 			(int) strlen (test_41_iso_8859_6_value), test_41_iso_8859_6_value,
 			(int) strlen (axl_node_get_content (node, NULL)), axl_node_get_content (node, NULL));
 		axl_error_new (-1, "Found diferences at node content..\n", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* free document */
@@ -383,20 +383,20 @@ int  test_41 (axlError ** error)
 	 * prebuffering */
 	doc = axl_doc_parse_from_file ("test_41.iso-8859-7.xml", error);
 	if (doc == NULL) 
-		return false;
+		return axl_false;
 
 	/* find info node */
 	node = axl_doc_get_root (doc);
 	if (! NODE_CMP_NAME (node, "info")) {
 		axl_error_new (-1, "Expected to find root node called <info> but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* check utf-8 format */
 	if (! axl_babel_check_utf8_content (axl_node_get_content (node, NULL), -1, &index)) {
 		printf ("ERROR: found utf-8 content error at index=%d..\n", index);
 		axl_error_new (-1, "Expected to find proper utf-8 content but a failure was found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	if (! axl_cmp (test_41_iso_8859_7_value, 
@@ -405,7 +405,7 @@ int  test_41 (axlError ** error)
 			(int) strlen (test_41_iso_8859_7_value), test_41_iso_8859_7_value,
 			(int) strlen (axl_node_get_content (node, NULL)), axl_node_get_content (node, NULL));
 		axl_error_new (-1, "Found diferences at node content..\n", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* free document */
@@ -417,20 +417,20 @@ int  test_41 (axlError ** error)
 	 * prebuffering */
 	doc = axl_doc_parse_from_file ("test_41.iso-8859-8.xml", error);
 	if (doc == NULL) 
-		return false;
+		return axl_false;
 
 	/* find info node */
 	node = axl_doc_get_root (doc);
 	if (! NODE_CMP_NAME (node, "info")) {
 		axl_error_new (-1, "Expected to find root node called <info> but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* check utf-8 format */
 	if (! axl_babel_check_utf8_content (axl_node_get_content (node, NULL), -1, &index)) {
 		printf ("ERROR: found utf-8 content error at index=%d..\n", index);
 		axl_error_new (-1, "Expected to find proper utf-8 content but a failure was found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	if (! axl_cmp (test_41_iso_8859_8_value, 
@@ -439,7 +439,7 @@ int  test_41 (axlError ** error)
 			(int) strlen (test_41_iso_8859_8_value), test_41_iso_8859_8_value,
 			(int) strlen (axl_node_get_content (node, NULL)), axl_node_get_content (node, NULL));
 		axl_error_new (-1, "Found diferences at node content..\n", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* free document */
@@ -451,20 +451,20 @@ int  test_41 (axlError ** error)
 	 * prebuffering */
 	doc = axl_doc_parse_from_file ("test_41.iso-8859-9.xml", error);
 	if (doc == NULL) 
-		return false;
+		return axl_false;
 
 	/* find info node */
 	node = axl_doc_get_root (doc);
 	if (! NODE_CMP_NAME (node, "info")) {
 		axl_error_new (-1, "Expected to find root node called <info> but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* check utf-8 format */
 	if (! axl_babel_check_utf8_content (axl_node_get_content (node, NULL), -1, &index)) {
 		printf ("ERROR: found utf-8 content error at index=%d..\n", index);
 		axl_error_new (-1, "Expected to find proper utf-8 content but a failure was found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	if (! axl_cmp (test_41_iso_8859_9_value, 
@@ -473,19 +473,19 @@ int  test_41 (axlError ** error)
 			(int) strlen (test_41_iso_8859_9_value), test_41_iso_8859_9_value,
 			(int) strlen (axl_node_get_content (node, NULL)), axl_node_get_content (node, NULL));
 		axl_error_new (-1, "Found diferences at node content..\n", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* free document */
 	axl_doc_free (doc);
-	return true;
+	return axl_true;
 
 
 
 	/* test utf-16 encoding */
 	doc = axl_doc_parse_from_file ("test_41.utf-16.xml", error);
 	if (doc == NULL) 
-		return false;
+		return axl_false;
 
 	/* check document content to ensure values */
 
@@ -495,7 +495,7 @@ int  test_41 (axlError ** error)
 	/* finish babel */
 	axl_babel_finish ();
 
-	return true;
+	return axl_true;
 }
 
 /** 
@@ -504,9 +504,9 @@ int  test_41 (axlError ** error)
  * 
  * @param error The optional axlError to be used to report erros.
  * 
- * @return true tests are ok, otherwise false is returned.
+ * @return axl_true tests are ok, otherwise axl_false is returned.
  */
-int  test_40 (axlError ** error)
+axl_bool test_40 (axlError ** error)
 {
 	axlDoc  * doc = axl_doc_parse_from_file ("test_40.xml", error);
 	axlDoc  * doc2;
@@ -516,16 +516,16 @@ int  test_40 (axlError ** error)
 	char    * content2;
 
 	if (doc == NULL)
-		return false;
+		return axl_false;
 	
 	/* now dump the document */
 	if (! axl_doc_dump_pretty_to_file (doc, "test_40.xml.test", 8))
-		return false;
+		return axl_false;
 
 	/* now parse dumped document */
 	doc2 = axl_doc_parse_from_file ("test_40.xml.test", error);
 	if (doc2 == NULL)
-		return false;
+		return axl_false;
 
 	/* check comment content */
 	node     = axl_doc_get_root (doc2);
@@ -535,7 +535,7 @@ int  test_40 (axlError ** error)
 	content  = axl_item_get_content (item, NULL);
 	if (content == NULL) {
 		axl_error_new (-1, "Expected to find content defined for first axl item found inside test_40.xml", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	node     = axl_doc_get_root (doc);
@@ -543,7 +543,7 @@ int  test_40 (axlError ** error)
 	content2 = axl_item_get_content (item, NULL);
 	if (content2 == NULL) {
 		axl_error_new (-1, "Expected to find content defined for first axl item found inside test_40.xml.test", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 
@@ -552,13 +552,13 @@ int  test_40 (axlError ** error)
 		printf ("Failed, expected equal content, but found differences: (%d)'%s' != (%d)'%s'\n",
 			(int) strlen (content), content, (int) strlen (content2), content2);
 		axl_error_new (-1, "Failed, expected equal content, but found differences", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	axl_doc_free (doc);
 	axl_doc_free (doc2);
 
-	return true;
+	return axl_true;
 }
 
 /* include inline dtd definition (test_39) */
@@ -572,10 +572,10 @@ int  test_40 (axlError ** error)
  * 
  * @param error The optional axlError to be used to report erros.
  * 
- * @return true if the validity test is passed, otherwise false is
+ * @return axl_true if the validity test is passed, otherwise axl_false is
  * returned.
  */
-int  test_39 (axlError ** error)
+axl_bool test_39 (axlError ** error)
 {
 	axlDtd          * dtd;
 	axlDtd          * dtd2;
@@ -583,17 +583,17 @@ int  test_39 (axlError ** error)
 	/* check channel.dtd */
 	dtd = axl_dtd_parse (CHANNEL_DTD, -1, error);
 	if (dtd == NULL) {
-		return false;
+		return axl_false;
 	}
 
 	dtd2 = axl_dtd_parse_from_file ("channel.dtd", error);
 	if (dtd2 == NULL)
-		return false;
+		return axl_false;
 	
 	/* check if both dtds are equal */
 	if (! axl_dtd_are_equal (dtd, dtd2)) {
 		axl_error_new (-1, "Expected to find equal dtd definitions, but axl_dtd_are_equal failed", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* free dtd and doc */
@@ -603,17 +603,17 @@ int  test_39 (axlError ** error)
 	/* check channel.dtd */
 	dtd = axl_dtd_parse (FACT_DTD, -1, error);
 	if (dtd == NULL) {
-		return false;
+		return axl_false;
 	}
 
 	dtd2 = axl_dtd_parse_from_file ("fact.dtd", error);
 	if (dtd2 == NULL)
-		return false;
+		return axl_false;
 	
 	/* check if both dtds are equal */
 	if (! axl_dtd_are_equal (dtd, dtd2)) {
 		axl_error_new (-1, "Expected to find equal dtd definitions, but axl_dtd_are_equal failed", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* free dtd and doc */
@@ -623,17 +623,17 @@ int  test_39 (axlError ** error)
 	/* check channel.dtd */
 	dtd = axl_dtd_parse (XML_RPC_DTD, -1, error);
 	if (dtd == NULL) {
-		return false;
+		return axl_false;
 	}
 
 	dtd2 = axl_dtd_parse_from_file ("xml-rpc.dtd", error);
 	if (dtd2 == NULL)
-		return false;
+		return axl_false;
 	
 	/* check if both dtds are equal */
 	if (! axl_dtd_are_equal (dtd, dtd2)) {
 		axl_error_new (-1, "Expected to find equal dtd definitions, but axl_dtd_are_equal failed", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* free dtd and doc */
@@ -643,24 +643,24 @@ int  test_39 (axlError ** error)
 	/* check channel.dtd */
 	dtd = axl_dtd_parse (TLS_DTD, -1, error);
 	if (dtd == NULL) {
-		return false;
+		return axl_false;
 	}
 
 	dtd2 = axl_dtd_parse_from_file ("tls.dtd", error);
 	if (dtd2 == NULL)
-		return false;
+		return axl_false;
 	
 	/* check if both dtds are equal */
 	if (! axl_dtd_are_equal (dtd, dtd2)) {
 		axl_error_new (-1, "Expected to find equal dtd definitions, but axl_dtd_are_equal failed", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* free dtd and doc */
 	axl_dtd_free (dtd);
 	axl_dtd_free (dtd2);
 
-	return true;
+	return axl_true;
 }
 
 
@@ -669,33 +669,33 @@ int  test_39 (axlError ** error)
  * 
  * @param error The optional axlError to be used to report erros.
  * 
- * @return true if the validity test is passed, otherwise false is
+ * @return axl_true if the validity test is passed, otherwise axl_false is
  * returned.
  */
-int  test_38 (axlError ** error)
+axl_bool test_38 (axlError ** error)
 {
 	axlDtd          * dtd;
 	axlDoc          * doc;
 
 	dtd = axl_dtd_parse_from_file ("test_38.dtd", error);
 	if (dtd == NULL)
-		return false;
+		return axl_false;
 
 	doc = axl_doc_parse_from_file ("test_38.xml", error);
 	if (doc == NULL)
-		return false;
+		return axl_false;
 
 	/* validate */
 	if (! axl_dtd_validate (doc, dtd, error)) {
 		axl_error_new (-1, "Expected to find proper a validation for the test (IDREF references)", NULL, error);
-		return false;
+		return axl_false;
 	}
 	
 	/* free dtd and doc */
 	axl_dtd_free (dtd);
 	axl_doc_free (doc);
 
-	return true;
+	return axl_true;
 }
 
 /** 
@@ -703,10 +703,10 @@ int  test_38 (axlError ** error)
  * 
  * @param error The optional axlError to be used to report erros.
  * 
- * @return true if the validity test is passed, otherwise false is
+ * @return axl_true if the validity test is passed, otherwise axl_false is
  * returned.
  */
-int  test_37 (axlError ** error)
+axl_bool test_37 (axlError ** error)
 {
 	
 	axlDoc  * doc;
@@ -716,25 +716,25 @@ int  test_37 (axlError ** error)
 	/* parse file */
 	doc  = axl_doc_parse ("<child> This is content, more content </child>", -1, error);
 	if (doc == NULL)
-		return false;
+		return axl_false;
 
 	doc2 = axl_doc_parse ("<child />", -1, error);
 	if (doc2 == NULL)
-		return false;
+		return axl_false;
 
 	/* clear content */
 	root = axl_doc_get_root (doc);
-	axl_node_set_is_empty (root, true);
+	axl_node_set_is_empty (root, axl_true);
 
 	if (! axl_doc_are_equal (doc, doc2)) {
 		axl_error_new (-1, "Expected equal documents, not found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	axl_doc_free (doc);
 	axl_doc_free (doc2);
 
-	return true;
+	return axl_true;
 }
 
 /** 
@@ -742,10 +742,10 @@ int  test_37 (axlError ** error)
  * 
  * @param error The optional axlError to be used to report erros.
  * 
- * @return true if the validity test is passed, otherwise false is
+ * @return axl_true if the validity test is passed, otherwise axl_false is
  * returned.
  */
-int  test_36 (axlError ** error)
+axl_bool test_36 (axlError ** error)
 {
 	/* parse the document */
 	axlDoc  * doc = axl_doc_parse_from_file ("test_35.xml", error);
@@ -753,7 +753,7 @@ int  test_36 (axlError ** error)
 
 	/* check returned document */
 	if (doc == NULL)
-		return false;
+		return axl_false;
 
 	/* now get the root node and detach it */
 	root = axl_doc_get_root (doc);
@@ -793,7 +793,7 @@ int  test_36 (axlError ** error)
 				       NULL);
 	if (root == NULL) {
 		printf ("Error: unable to parse content..\n");
-		return false;
+		return axl_false;
 	}
 
 	axl_node_free (root);
@@ -802,13 +802,13 @@ int  test_36 (axlError ** error)
 	root = axl_node_parse (error, "<child><widget class=\"GtkLabel\" id=\"label4\"/></child>");
 	if (root == NULL) {
 		printf ("Error: unable to parse content..\n");
-		return false;
+		return axl_false;
 	}
 
 	axl_node_free (root);
 	
 
-	return true;
+	return axl_true;
 
 }
 
@@ -817,21 +817,21 @@ int  test_36 (axlError ** error)
  * 
  * @param error The optional axlError to be used to report erros.
  * 
- * @return true if the validity test is passed, otherwise false is
+ * @return axl_true if the validity test is passed, otherwise axl_false is
  * returned.
  */
-int  test_35 (axlError ** error)
+axl_bool test_35 (axlError ** error)
 {
 	/* parse the document */
 	axlDoc * doc = axl_doc_parse_from_file ("test_35.xml", error);
 
 	if (doc == NULL)
-		return false;
+		return axl_false;
 
 	/* free the document */
 	axl_doc_free (doc);
 
-	return true;
+	return axl_true;
 	
 }
 
@@ -840,17 +840,17 @@ int  test_35 (axlError ** error)
  * 
  * @param error The optional axlError to be used to report erros.
  * 
- * @return true if the validity test is passed, otherwise false is
+ * @return axl_true if the validity test is passed, otherwise axl_false is
  * returned.
  */
-int  test_34 (axlError ** error)
+axl_bool test_34 (axlError ** error)
 {
 	char  * string = axl_strdup (" ");
 
 	axl_stream_trim (string);
 	if (strlen (string) != 0) {
 		axl_error_new (-1, "Expected to find empty string after trim operation, but not found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	axl_free (string);
@@ -861,7 +861,7 @@ int  test_34 (axlError ** error)
 	axl_stream_trim (string);
 	if (strlen (string) != 0) {
 		axl_error_new (-1, "Expected to find empty string after trim operation, but not found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	axl_free (string);
@@ -872,12 +872,12 @@ int  test_34 (axlError ** error)
 	axl_stream_trim (string);
 	if (strlen (string) != 1) {
 		axl_error_new (-1, "Expected to find one byte length string after trim operation, but not found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	axl_free (string);
 
-	return true;
+	return axl_true;
 }
 
 /** 
@@ -885,10 +885,10 @@ int  test_34 (axlError ** error)
  * 
  * @param error The optional axlError to be used to report erros.
  * 
- * @return true if the validity test is passed, otherwise false is
+ * @return axl_true if the validity test is passed, otherwise axl_false is
  * returned.
  */
-int  test_33 (axlError ** error)
+axl_bool test_33 (axlError ** error)
 {
 	axlDoc          * doc;
 	axlNode         * node;
@@ -896,7 +896,7 @@ int  test_33 (axlError ** error)
 	int               iterator;
 
 	/* create an empty document */
-	doc       = axl_doc_create (NULL, NULL, true);
+	doc       = axl_doc_create (NULL, NULL, axl_true);
 	
 	/* set the root node */
 	node      = axl_node_create ("test");
@@ -924,7 +924,7 @@ int  test_33 (axlError ** error)
 	/* free */
 	axl_doc_free (doc);
 
-	return true;
+	return axl_true;
 }
 
 /** 
@@ -933,32 +933,32 @@ int  test_33 (axlError ** error)
  * 
  * @param error The optional axlError to be used to report errors.
  * 
- * @return true if the validity test is passed, false if not.
+ * @return axl_true if the validity test is passed, axl_false if not.
  */
-int  test_32 (axlError ** error) {
+axl_bool test_32 (axlError ** error) {
 	
 	axlDtd          * dtd;
 	axlDoc          * doc;
 
 	dtd = axl_dtd_parse_from_file ("test_32.dtd", error);
 	if (dtd == NULL)
-		return false;
+		return axl_false;
 
 	doc = axl_doc_parse_from_file ("test_32.xml", error);
 	if (doc == NULL)
-		return false;
+		return axl_false;
 
 	/* validate */
 	if (! axl_dtd_validate (doc, dtd, error)) {
 		axl_error_new (-1, "Expected to find a validation error for the test (IDREF references)", NULL, error);
-		return false;
+		return axl_false;
 	}
 	
 	/* free dtd and doc */
 	axl_dtd_free (dtd);
 	axl_doc_free (doc);
 
-	return true;
+	return axl_true;
 }
 
 /** 
@@ -967,25 +967,25 @@ int  test_32 (axlError ** error) {
  * 
  * @param error The optional axlError to be used to report errors.
  * 
- * @return true if the validity test is passed, false if not.
+ * @return axl_true if the validity test is passed, axl_false if not.
  */
-int  test_31 (axlError ** error) {
+axl_bool test_31 (axlError ** error) {
 	
 	axlDtd          * dtd;
 	axlDoc          * doc;
 
 	dtd = axl_dtd_parse_from_file ("test_31.dtd", error);
 	if (dtd == NULL)
-		return false;
+		return axl_false;
 
 	doc = axl_doc_parse_from_file ("test_31.xml", error);
 	if (doc == NULL)
-		return false;
+		return axl_false;
 
 	/* validate */
 	if (! axl_dtd_validate (doc, dtd, error)) {
 		axl_error_new (-1, "Expected to find a validation error for the test (unique ID)", NULL, error);
-		return false;
+		return axl_false;
 	}
 	
 	/* free dtd and doc */
@@ -996,12 +996,12 @@ int  test_31 (axlError ** error) {
 	if (dtd != NULL) {
 		axl_error_new (-1, "Expected to find a error due to double declaration for an ID attribute, but DTD was loaded ok", NULL, error);
 		axl_dtd_free (dtd);
-		return false;
+		return axl_false;
 	}
 	axl_error_free (*error);
 	*error = NULL;
 
-	return true;
+	return axl_true;
 }
 
 
@@ -1010,9 +1010,9 @@ int  test_31 (axlError ** error) {
  * 
  * @param error The optional axlError to be used to report errors.
  * 
- * @return true if the validity test is passed, false if not.
+ * @return axl_true if the validity test is passed, axl_false if not.
  */
-int  test_30 (axlError ** error) {
+axl_bool test_30 (axlError ** error) {
 	
 	axlDtd          * dtd;
 	axlDtdAttribute * attr;
@@ -1020,50 +1020,50 @@ int  test_30 (axlError ** error) {
 
 	dtd = axl_dtd_parse_from_file ("test_30.dtd", error);
 	if (dtd == NULL)
-		return false;
+		return axl_false;
 
 	/* get the declarations found */
 	attr = axl_dtd_get_attr (dtd, "node");
 	if (attr == NULL) {
 		axl_error_new (-1, "expected to find attribute declaration, but not found", NULL, error);
-		return false;
+		return axl_false;
 	} /* end if */
 
 	/* get the declarations found */
 	attr = axl_dtd_get_attr (dtd, "node1");
 	if (attr != NULL) {
 		axl_error_new (-1, "expected to NOT find attribute declaration, but not found", NULL, error);
-		return false;
+		return axl_false;
 	} /* end if */
 
 	/* check the number of contraints */
 	if (axl_dtd_get_attr_contraints (dtd, "node") != 3) {
 		axl_error_new (-1, "expected to find 2 contraints for the <node>, but not found", NULL, error);
-		return false;
+		return axl_false;
 	} /* end if */
 
 	doc = axl_doc_parse_from_file ("test_30.xml", error);
 	if (doc == NULL) {
 		axl_error_new (-1, "unable to parse file to check attribute validation", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* validate */
 	if (! axl_dtd_validate (doc, dtd, error))
-		return false;
+		return axl_false;
 
 	axl_doc_free (doc);
 
 	doc = axl_doc_parse_from_file ("test_30a.xml", error);
 	if (doc == NULL) {
 		axl_error_new (-1, "unable to parse file to check attribute validation", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* validate */
 	if (axl_dtd_validate (doc, dtd, error)) {
 		axl_error_new (-1, "Expected to find non-proper validation for enum value (2), inside attlist declaration", NULL, error);
-		return false;
+		return axl_false;
 	}
 	axl_error_free (*error);
 
@@ -1071,13 +1071,13 @@ int  test_30 (axlError ** error) {
 
 	dtd = axl_dtd_parse_from_file ("test_30b.dtd", error);
 	if (dtd == NULL)
-		return false;
+		return axl_false;
 
 	
 	/* validate */
 	if (axl_dtd_validate (doc, dtd, error)) {
 		axl_error_new (-1, "Expected to  find non-proper validation for required value, inside attlist declaration", NULL, error);
-		return false;
+		return axl_false;
 	}
 	axl_error_free (*error);
 	
@@ -1086,18 +1086,18 @@ int  test_30 (axlError ** error) {
 	doc = axl_doc_parse_from_file ("test_30b.xml", error);
 	if (doc == NULL) {
 		axl_error_new (-1, "unable to parse file to check attribute validation", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* validate */
 	if (! axl_dtd_validate (doc, dtd, error)) {
 		axl_error_new (-1, "Expected to FIND proper validation for required value, inside attlist declaration", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	axl_doc_free (doc);
 	axl_dtd_free (dtd);
-	return true;
+	return axl_true;
 }
 
 #ifdef AXL_NS_SUPPORT
@@ -1111,9 +1111,9 @@ int  test_30 (axlError ** error) {
  * 
  * @param error The optional axlError to be used to report errors.
  * 
- * @return true if the validity test is passed, false if not.
+ * @return axl_true if the validity test is passed, axl_false if not.
  */
-int  test_29 (axlError ** error)
+axl_bool test_29 (axlError ** error)
 {
 	axlDoc  * doc;
 	axlNode * node;
@@ -1121,11 +1121,11 @@ int  test_29 (axlError ** error)
 	/* parse namespace file */
 	doc = axl_doc_parse_from_file ("test_29.xml", error);
 	if (doc == NULL)
-		return false;
+		return axl_false;
 
 	/* call to validate namespace */
 	if (! axl_ns_doc_validate (doc, error))
-		return false;
+		return axl_false;
 
 	/* get root document */
 	node = axl_doc_get_root (doc);
@@ -1134,7 +1134,7 @@ int  test_29 (axlError ** error)
 	node = axl_ns_node_find_called (node, HTML_NS, "p");
 	if (node == NULL || ! axl_ns_node_cmp (node, HTML_NS, "p")) {
 		axl_error_new (-1, "Expected to find xhtml p node, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	} /* end if */
 
 	/* get root document */
@@ -1144,21 +1144,21 @@ int  test_29 (axlError ** error)
 	node = axl_ns_node_get_child_called (node, ISBN_NS, "number");
 	if (node == NULL || ! axl_ns_node_cmp (node, ISBN_NS, "number")) {
 		axl_error_new (-1, "Expected to find isbn number node, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	} /* end if */
 
 	/* find number inside isbn namespace */
 	node = axl_ns_node_get_next_called (node, ISBN_NS, "test");
 	if (node == NULL || ! axl_ns_node_cmp (node, ISBN_NS, "test")) {
 		axl_error_new (-1, "Expected to find isbn test node, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	} /* end if */
 
 	
 	/* free document */
 	axl_doc_free (doc);
 
-	return true;
+	return axl_true;
 }
 
 /** 
@@ -1166,9 +1166,9 @@ int  test_29 (axlError ** error)
  * 
  * @param error The optional axlError to be used to report errors.
  * 
- * @return true if the validity test is passed, false if not.
+ * @return axl_true if the validity test is passed, axl_false if not.
  */
-int  test_28 (axlError ** error)
+axl_bool test_28 (axlError ** error)
 {
 	axlDoc  * doc;
 	axlNode * node;
@@ -1176,11 +1176,11 @@ int  test_28 (axlError ** error)
 	/* parse namespace file */
 	doc = axl_doc_parse_from_file ("test_28.xml", error);
 	if (doc == NULL)
-		return false;
+		return axl_false;
 
 	/* call to validate namespace */
 	if (! axl_ns_doc_validate (doc, error))
-		return false;
+		return axl_false;
 
 	/* get root document */
 	node = axl_doc_get_root (doc);
@@ -1191,7 +1191,7 @@ int  test_28 (axlError ** error)
 	/* check default namespace */
 	if (! axl_ns_node_cmp (node, HTML_NS, "table")) {
 		axl_error_new (-1, "expected to find a valid ns-node-cmp, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* get the following */
@@ -1200,12 +1200,12 @@ int  test_28 (axlError ** error)
 	/* check default namespace */
 	if (! axl_ns_node_cmp (node, HTML_NS, "th")) {
 		axl_error_new (-1, "expected to find a valid ns-node-cmp, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	axl_doc_free (doc);
 
-	return true;
+	return axl_true;
 }
 
 /** 
@@ -1213,9 +1213,9 @@ int  test_28 (axlError ** error)
  * 
  * @param error The optional axlError to be used to report errors.
  * 
- * @return true if the validity test is passed, false if not.
+ * @return axl_true if the validity test is passed, axl_false if not.
  */
-int  test_27 (axlError ** error)
+axl_bool test_27 (axlError ** error)
 {
 	axlDoc  * doc;
 	axlNode * node;
@@ -1223,18 +1223,18 @@ int  test_27 (axlError ** error)
 	/* parse namespace file */
 	doc = axl_doc_parse_from_file ("test_27.xml", error);
 	if (doc == NULL)
-		return false;
+		return axl_false;
 
 	/* call to validate namespace */
 	if (! axl_ns_doc_validate (doc, error))
-		return false;
+		return axl_false;
 
 	/* get root document */
 	node = axl_doc_get_root (doc);
 
 	if (! axl_ns_node_cmp (node, BOOK_NS, "book")) {
 		axl_error_new (-1, "expected to find a valid ns-node-cmp, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* get first child */
@@ -1242,24 +1242,24 @@ int  test_27 (axlError ** error)
 
 	if (! axl_ns_node_cmp (node, BOOK_NS, "title")) {
 		axl_error_new (-1, "expected to find a failure validating with ns-node-cmp, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	node = axl_node_get_next (node);
 	if (axl_ns_node_cmp (node, BOOK_NS, "number")) {
 		axl_error_new (-1, "expected to find a failure validating with ns-node-cmp, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* get next */
 	if (! axl_ns_node_cmp (node, ISBN_NS, "number")) {
 		axl_error_new (-1, "expected to find a valid ns-node-cmp, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	axl_doc_free (doc);
 
-	return true;
+	return axl_true;
 }
 
 
@@ -1268,32 +1268,32 @@ int  test_27 (axlError ** error)
  * 
  * @param error The optional axlError to be used to report errors.
  * 
- * @return true if the validity test is passed, false if not.
+ * @return axl_true if the validity test is passed, axl_false if not.
  */
-int  test_26 (axlError ** error)
+axl_bool test_26 (axlError ** error)
 {
 	axlDoc * doc;
 
 	/* parse namespace file */
 	doc = axl_doc_parse_from_file ("test_26.xml", error);
 	if (doc == NULL)
-		return false;
+		return axl_false;
 
 	/* call to validate namespace */
 	if (! axl_ns_doc_validate (doc, error))
-		return false;
+		return axl_false;
 
 	axl_doc_free (doc);
 
 	/* parse a namespace file that do not follow rules (node) */
 	doc = axl_doc_parse_from_file ("test_26b.xml", error);
 	if (doc == NULL)
-		return false;
+		return axl_false;
 
 	/* call to validate namespace */
 	if (axl_ns_doc_validate (doc, error)) {
 		axl_error_new (-1, "Expected to find ns validation error, but not found (test_26b)", NULL, error);
-		return false;
+		return axl_false;
 	}
 	axl_error_free (*error);
 
@@ -1302,12 +1302,12 @@ int  test_26 (axlError ** error)
 	/* parse a namespace file that do not follow rules (attribute) */
 	doc = axl_doc_parse_from_file ("test_26c.xml", error);
 	if (doc == NULL)
-		return false;
+		return axl_false;
 
 	/* call to validate namespace */
 	if (axl_ns_doc_validate (doc, error)) {
 		axl_error_new (-1, "Expected to find ns validation error, but not found (test_26c)", NULL, error);
-		return false;
+		return axl_false;
 	}
 	axl_error_free (*error);
 
@@ -1316,18 +1316,18 @@ int  test_26 (axlError ** error)
 	/* parse a namespace file that do not follow rules (declaring twice default namespace) */
 	doc = axl_doc_parse_from_file ("test_26d.xml", error);
 	if (doc == NULL)
-		return false;
+		return axl_false;
 
 	/* call to validate namespace */
 	if (axl_ns_doc_validate (doc, error)) {
 		axl_error_new (-1, "Expected to find ns validation error, but not found (test_26d)", NULL, error);
-		return false;
+		return axl_false;
 	}
 	axl_error_free (*error);
 
 	axl_doc_free (doc);
 
-	return true;
+	return axl_true;
 }
 
 #endif /* end #ifdef AXL_NS_SUPPORT */
@@ -1337,9 +1337,9 @@ int  test_26 (axlError ** error)
  * 
  * @param error The optional axlError to be used to report errors.
  * 
- * @return true if the validity test is passed, false if not.
+ * @return axl_true if the validity test is passed, axl_false if not.
  */
-int  test_25 (axlError ** error) {
+axl_bool test_25 (axlError ** error) {
 	
 	axlDoc  * doc;
 	axlNode * root;
@@ -1348,7 +1348,7 @@ int  test_25 (axlError ** error) {
 	/* load the document */
 	doc = axl_doc_parse_from_file ("test_23.xml", error);
 	if (doc == NULL)
-		return false;	
+		return axl_false;	
 
 	/* get root node */
 	root = axl_doc_get_root (doc);
@@ -1358,7 +1358,7 @@ int  test_25 (axlError ** error) {
 
 	if (! NODE_CMP_NAME (node, "child3")) {
 		axl_error_new (-1, "Expected to find <child3> node but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	} 
 
 	/* lookup a node */
@@ -1366,25 +1366,25 @@ int  test_25 (axlError ** error) {
 
 	if (! NODE_CMP_NAME (node, "strong")) {
 		axl_error_new (-1, "Expected to find <strong> node but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	} 
 
 	if (! axl_cmp (axl_node_get_content (node, NULL), "this content goes\n  bold")) {
 		axl_error_new (-1, "Expected to find <strong> node content, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* lookup a node */
 	node = axl_node_find_called (root, "strong1");
 	if (node != NULL) {
 		axl_error_new (-1, "Expected to not find node content, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* free the document */
 	axl_doc_free (doc);
 	
-	return true;
+	return axl_true;
 }
 
 
@@ -1394,9 +1394,9 @@ int  test_25 (axlError ** error) {
  * 
  * @param error The optional axlError to be used to report errors.
  * 
- * @return true if the validity test is passed, false if not.
+ * @return axl_true if the validity test is passed, axl_false if not.
  */
-int  test_24 (axlError ** error) {
+axl_bool test_24 (axlError ** error) {
 	if (! axl_node_has_invalid_chars ("MEDIR PIEZAS S/MUESTREO EN MAQUINA DE VISION SIN CONTACTO\n\
 \n\
 LOTES<10 UDS.                  100%PIEZAS\n\
@@ -1406,7 +1406,7 @@ LOTES>20  UDS                  12+10% (SOBRE 20 PIEZAS)                    \n\
 Â¡ATENCION!!!!\n\
 MANIPULAR PIEZAS CON GUANTES DE LATEX EVITANDO CONTAMINAR LAS PIEZAS", -1, NULL)) {
 		axl_error_new (-1, "Expected to find invalid characters, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	if (axl_node_has_invalid_chars ("MEDIR PIEZAS S/MUESTREO EN MAQUINA DE VISION SIN CONTACTO\n\
@@ -1418,10 +1418,10 @@ LOTES20  UDS                  12+10% (SOBRE 20 PIEZAS)                    \n\
 Â¡ATENCION!!!!\n\
 MANIPULAR PIEZAS CON GUANTES DE LATEX EVITANDO CONTAMINAR LAS PIEZAS", -1, NULL)) {
 		axl_error_new (-1, "Expected to find valid characters, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
-	return true;
+	return axl_true;
 }
 
 /** 
@@ -1430,9 +1430,9 @@ MANIPULAR PIEZAS CON GUANTES DE LATEX EVITANDO CONTAMINAR LAS PIEZAS", -1, NULL)
  * 
  * @param error The optional axlError to be used to report errors.
  * 
- * @return true if the validity test is passed, false if not.
+ * @return axl_true if the validity test is passed, axl_false if not.
  */
-int  test_23 (axlError ** error)
+axl_bool test_23 (axlError ** error)
 {
 	axlDoc  * doc;
 	axlDoc  * doc2;
@@ -1442,52 +1442,52 @@ int  test_23 (axlError ** error)
 	/* load the document */
 	doc = axl_doc_parse_from_file ("test_23.xml", error);
 	if (doc == NULL)
-		return false;
+		return axl_false;
 
 	/* get the child1 node */
 	node = axl_doc_get (doc, "/document/childs/child3a");
 	if (node == NULL) {
 		axl_error_new (-1, "Unable to get child3a node under /document/child3a", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	if (! NODE_CMP_NAME (node, "child3a")) {
 		axl_error_new (-1, "Found node that wasn't expected", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	if (! axl_node_is_empty (node)) {
 		axl_error_new (-1, "Expected to find child3a node to be empty, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 	
 	/* get the child1 node */
 	node = axl_doc_get (doc, "/document/childs/child1");
 	if (node == NULL) {
 		axl_error_new (-1, "Unable to get child1 node under /document/childs", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	if (! NODE_CMP_NAME (node, "child1")) {
 		axl_error_new (-1, "Found node that wasn't expected", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* create content */
 	item = axl_item_new (ITEM_CONTENT, "This is a test");
 
 	/* replace the node */
-	axl_item_replace (axl_item_node_holder (node), item, true);
+	axl_item_replace (axl_item_node_holder (node), item, axl_true);
 
 	/* now parse the reference xml document */
 	doc2 = axl_doc_parse_from_file ("test_23b.xml", error);
 	if (doc2 == NULL)
-		return false;
+		return axl_false;
 	
 	/* check that both documents are equal */
 	if (! axl_doc_are_equal_trimmed (doc, doc2)) {
 		axl_error_new (-1, "Expected to find equal documents, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 	
 	/* free the document */
@@ -1496,12 +1496,12 @@ int  test_23 (axlError ** error)
 	/* load the document */
 	doc = axl_doc_parse_from_file ("test_23.xml", error);
 	if (doc == NULL)
-		return false;
+		return axl_false;
 
 	/* check that both documents aren't equal using strict comparation */
 	if (axl_doc_are_equal (doc, doc2)) {
 		axl_error_new (-1, "Expected to find documents not equal, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* free the document */
@@ -1509,7 +1509,7 @@ int  test_23 (axlError ** error)
 	axl_doc_free (doc2);
 
 	/* test ok */
-	return true;
+	return axl_true;
 }
 
 /** 
@@ -1517,9 +1517,9 @@ int  test_23 (axlError ** error)
  * 
  * @param error The optional axlError to be used to report errors.
  * 
- * @return true if the validity test is passed, false if not.
+ * @return axl_true if the validity test is passed, axl_false if not.
  */
-int  test_22 (axlError ** error)
+axl_bool test_22 (axlError ** error)
 {
 	axlDoc        * doc;
 	axlNode       * node;
@@ -1528,7 +1528,7 @@ int  test_22 (axlError ** error)
 
 	
 	/* create a document */
-	doc  = axl_doc_create (NULL, NULL, false);
+	doc  = axl_doc_create (NULL, NULL, axl_false);
 
 	node = axl_node_create ("root-node");
 	axl_doc_set_root (doc, node);
@@ -1536,14 +1536,14 @@ int  test_22 (axlError ** error)
 	/* check for attributes */
 	if (axl_node_has_attribute (node, "attribute-not-found")) {
 		axl_error_new (-1, "Found an attribute requested, which doesn't exists", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* get attribute */
 	value = axl_node_get_attribute_value (node, "attribute-not-found");
 	if (value != NULL) {
 		axl_error_new (-1, "Found an attribute requested, which doesn't exists", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* store an attriburte */
@@ -1552,14 +1552,14 @@ int  test_22 (axlError ** error)
 	/* check for attributes */
 	if (! axl_node_has_attribute (node, "attribute1")) {
 		axl_error_new (-1, "Not found an attribute requested, which should exists", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* get attribute */
 	value = axl_node_get_attribute_value (node, "attribute1");
 	if (! axl_cmp (value, "value1")) {
 		axl_error_new (-1, "Not found an attribute requested, which should exists", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* store more attributes to check function with hashes */
@@ -1576,31 +1576,31 @@ int  test_22 (axlError ** error)
 		if (axl_cmp ("attribute2", axl_node_attr_cursor_get_key (cursor)) &&
 		    ! axl_cmp ("value2", axl_node_attr_cursor_get_value (cursor))) {
 			axl_error_new (-1, "Found that the value associated to 'attribute2' isn't 'value2'", NULL, error);
-			return false;
+			return axl_false;
 		} /* end if */
 
 		if (axl_cmp ("attribute3", axl_node_attr_cursor_get_key (cursor)) &&
 		    ! axl_cmp ("value3", axl_node_attr_cursor_get_value (cursor))) {
 			axl_error_new (-1, "Found that the value associated to 'attribute3' isn't 'value3'", NULL, error);
-			return false;
+			return axl_false;
 		} /* end if */
 
 		if (axl_cmp ("attribute4", axl_node_attr_cursor_get_key (cursor)) &&
 		    ! axl_cmp ("value4", axl_node_attr_cursor_get_value (cursor))) {
 			axl_error_new (-1, "Found that the value associated to 'attribute4' isn't 'value4'", NULL, error);
-			return false;
+			return axl_false;
 		} /* end if */
 			     
 		if (axl_cmp ("attribute5", axl_node_attr_cursor_get_key (cursor)) &&
 		    ! axl_cmp ("value5", axl_node_attr_cursor_get_value (cursor))) {
 			axl_error_new (-1, "Found that the value associated to 'attribute5' isn't 'value5'", NULL, error);
-			return false;
+			return axl_false;
 		} /* end if */
 
 		if (axl_cmp ("attribute6", axl_node_attr_cursor_get_key (cursor)) &&
 		    ! axl_cmp ("value6", axl_node_attr_cursor_get_value (cursor))) {
 			axl_error_new (-1, "Found that the value associated to 'attribute6' isn't 'value6'", NULL, error);
-			return false;
+			return axl_false;
 		} /* end if */
 
 		/* go next */
@@ -1620,20 +1620,20 @@ int  test_22 (axlError ** error)
 	/* check that an attribute doesn't exists */
 	if (axl_node_has_attribute (node, "attribute-not-found")) {
 		axl_error_new (-1, "Found an attribute requested, which doesn't exists", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* get attribute */
 	value = axl_node_get_attribute_value (node, "attribute-not-found");
 	if (value != NULL) {
 		axl_error_new (-1, "Found an attribute requested, which doesn't exists", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* check for attributes */
 	if (! axl_node_has_attribute (node, "attribute2")) {
 		axl_error_new (-1, "Not found an attribute requested, which should exists(2)", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* get attribute */
@@ -1641,124 +1641,124 @@ int  test_22 (axlError ** error)
 	if (! axl_cmp (value, "value2")) {
 		printf ("value2 != %s\n", value);
 		axl_error_new (-1, "Not found an attribute requested, which should exists(value2)", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* check for attributes */
 	if (! axl_node_has_attribute (node, "attribute3")) {
 		axl_error_new (-1, "Not found an attribute requested, which should exists(3)", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* get attribute */
 	value = axl_node_get_attribute_value (node, "attribute3");
 	if (! axl_cmp (value, "value3")) {
 		axl_error_new (-1, "Not found an attribute requested, which should exists (value3)", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* check for attributes */
 	if (! axl_node_has_attribute (node, "attribute4")) {
 		axl_error_new (-1, "Not found an attribute requested, which should exists (value4)", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* get attribute */
 	value = axl_node_get_attribute_value (node, "attribute4");
 	if (! axl_cmp (value, "value4")) {
 		axl_error_new (-1, "Not found an attribute requested, which should exists (value4)", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* check for attributes */
 	if (! axl_node_has_attribute (node, "attribute5")) {
 		axl_error_new (-1, "Not found an attribute requested, which should exists (value5)", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* get attribute */
 	value = axl_node_get_attribute_value (node, "attribute5");
 	if (! axl_cmp (value, "value5")) {
 		axl_error_new (-1, "Not found an attribute requested, which should exists (value5)", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* check for attributes */
 	if (! axl_node_has_attribute (node, "attribute6")) {
 		axl_error_new (-1, "Not found an attribute requested, which should exists (value6)", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* get attribute */
 	value = axl_node_get_attribute_value (node, "attribute6");
 	if (! axl_cmp (value, "value6")) {
 		axl_error_new (-1, "Not found an attribute requested, which should exists (value6)", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* check for attributes */
 	if (! axl_node_has_attribute (node, "attribute7")) {
 		axl_error_new (-1, "Not found an attribute requested, which should exists (value7)", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* get attribute */
 	value = axl_node_get_attribute_value (node, "attribute7");
 	if (! axl_cmp (value, "value7")) {
 		axl_error_new (-1, "Not found an attribute requested, which should exists (value7)", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* check for attributes */
 	if (! axl_node_has_attribute (node, "attribute8")) {
 		axl_error_new (-1, "Not found an attribute requested, which should exists (value8)", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* get attribute */
 	value = axl_node_get_attribute_value (node, "attribute8");
 	if (! axl_cmp (value, "value8")) {
 		axl_error_new (-1, "Not found an attribute requested, which should exists (value8)", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* check for attributes */
 	if (! axl_node_has_attribute (node, "attribute9")) {
 		axl_error_new (-1, "Not found an attribute requested, which should exists (value9)", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* get attribute */
 	value = axl_node_get_attribute_value (node, "attribute9");
 	if (! axl_cmp (value, "value9")) {
 		axl_error_new (-1, "Not found an attribute requested, which should exists (value9)", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* check for attributes */
 	if (! axl_node_has_attribute (node, "attribute10")) {
 		axl_error_new (-1, "Not found an attribute requested, which should exists (value10)", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* get attribute */
 	value = axl_node_get_attribute_value (node, "attribute10");
 	if (! axl_cmp (value, "value10")) {
 		axl_error_new (-1, "Not found an attribute value requested, which should exists (value10)", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* check for attributes */
 	if (! axl_node_has_attribute (node, "attribute11")) {
 		axl_error_new (-1, "Not found an attribute requested, which should exists (value11)", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* get attribute */
 	value = axl_node_get_attribute_value (node, "attribute11");
 	if (! axl_cmp (value, "value11")) {
 		axl_error_new (-1, "Not found an attribute requested, which should exists (value11)", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* check axl attribute iteration API */
@@ -1768,61 +1768,61 @@ int  test_22 (axlError ** error)
 		if (axl_cmp ("attribute2", axl_node_attr_cursor_get_key (cursor)) &&
 		    ! axl_cmp ("value2", axl_node_attr_cursor_get_value (cursor))) {
 			axl_error_new (-1, "Found that the value associated to 'attribute2' isn't 'value2'", NULL, error);
-			return false;
+			return axl_false;
 		} /* end if */
 
 		if (axl_cmp ("attribute3", axl_node_attr_cursor_get_key (cursor)) &&
 		    ! axl_cmp ("value3", axl_node_attr_cursor_get_value (cursor))) {
 			axl_error_new (-1, "Found that the value associated to 'attribute3' isn't 'value3'", NULL, error);
-			return false;
+			return axl_false;
 		} /* end if */
 
 		if (axl_cmp ("attribute4", axl_node_attr_cursor_get_key (cursor)) &&
 		    ! axl_cmp ("value4", axl_node_attr_cursor_get_value (cursor))) {
 			axl_error_new (-1, "Found that the value associated to 'attribute4' isn't 'value4'", NULL, error);
-			return false;
+			return axl_false;
 		} /* end if */
 			     
 		if (axl_cmp ("attribute5", axl_node_attr_cursor_get_key (cursor)) &&
 		    ! axl_cmp ("value5", axl_node_attr_cursor_get_value (cursor))) {
 			axl_error_new (-1, "Found that the value associated to 'attribute5' isn't 'value5'", NULL, error);
-			return false;
+			return axl_false;
 		} /* end if */
 
 		if (axl_cmp ("attribute6", axl_node_attr_cursor_get_key (cursor)) &&
 		    ! axl_cmp ("value6", axl_node_attr_cursor_get_value (cursor))) {
 			axl_error_new (-1, "Found that the value associated to 'attribute6' isn't 'value6'", NULL, error);
-			return false;
+			return axl_false;
 		} /* end if */
 
 		if (axl_cmp ("attribute7", axl_node_attr_cursor_get_key (cursor)) &&
 		    ! axl_cmp ("value7", axl_node_attr_cursor_get_value (cursor))) {
 			axl_error_new (-1, "Found that the value associated to 'attribute7' isn't 'value7'", NULL, error);
-			return false;
+			return axl_false;
 		} /* end if */
 
 		if (axl_cmp ("attribute8", axl_node_attr_cursor_get_key (cursor)) &&
 		    ! axl_cmp ("value8", axl_node_attr_cursor_get_value (cursor))) {
 			axl_error_new (-1, "Found that the value associated to 'attribute8' isn't 'value8'", NULL, error);
-			return false;
+			return axl_false;
 		} /* end if */
 
 		if (axl_cmp ("attribute9", axl_node_attr_cursor_get_key (cursor)) &&
 		    ! axl_cmp ("value9", axl_node_attr_cursor_get_value (cursor))) {
 			axl_error_new (-1, "Found that the value associated to 'attribute9' isn't 'value9'", NULL, error);
-			return false;
+			return axl_false;
 		} /* end if */
 
 		if (axl_cmp ("attribute10", axl_node_attr_cursor_get_key (cursor)) &&
 		    ! axl_cmp ("value10", axl_node_attr_cursor_get_value (cursor))) {
 			axl_error_new (-1, "Found that the value associated to 'attribute10' isn't 'value10'", NULL, error);
-			return false;
+			return axl_false;
 		} /* end if */
 
 		if (axl_cmp ("attribute11", axl_node_attr_cursor_get_key (cursor)) &&
 		    ! axl_cmp ("value11", axl_node_attr_cursor_get_value (cursor))) {
 			axl_error_new (-1, "Found that the value associated to 'attribute11' isn't 'value11'", NULL, error);
-			return false;
+			return axl_false;
 		} /* end if */
 
 		/* go next */
@@ -1835,18 +1835,18 @@ int  test_22 (axlError ** error)
 	/* remove attributes */
 	if (axl_node_num_attributes (node) != 11) {
 		axl_error_new (-1, "Expected to find 11 attributes", NULL, error);
-		return false;
+		return axl_false;
 	}
 	axl_node_remove_attribute (node, "attribute1");
 
 	if (axl_node_num_attributes (node) != 10) {
 		axl_error_new (-1, "Expected to find 10 attributes", NULL, error);
-		return false;
+		return axl_false;
 	}
 	
 	if (axl_node_has_attribute (node, "attribute1")) {
 		axl_error_new (-1, "Found that attribute1 should not appear, but it was found", NULL, error);
-		return false;
+		return axl_false;
 	} /* end if */
 
 	node = axl_node_create ("test");
@@ -1854,14 +1854,14 @@ int  test_22 (axlError ** error)
 	
 	if (axl_node_num_attributes (node) != 1) {
 		axl_error_new (-1, "Expected to find 1 attributes", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	axl_node_remove_attribute (node, "test");
 
 	if (axl_node_num_attributes (node) != 0) {
 		axl_error_new (-1, "Expected to find 1 attributes", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	axl_node_set_attribute (node, "test1", "test");
@@ -1870,7 +1870,7 @@ int  test_22 (axlError ** error)
 
 	if (axl_node_num_attributes (node) != 3) {
 		axl_error_new (-1, "Expected to find 3 attributes", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	axl_node_remove_attribute (node, "test1");
@@ -1879,7 +1879,7 @@ int  test_22 (axlError ** error)
 
 	if (axl_node_num_attributes (node) != 0) {
 		axl_error_new (-1, "Expected to find 0 attributes", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	axl_node_free (node);
@@ -1887,7 +1887,7 @@ int  test_22 (axlError ** error)
 	/* free document */
 	axl_doc_free (doc);
 
-	return true;
+	return axl_true;
 }
 
 /** 
@@ -1895,9 +1895,9 @@ int  test_22 (axlError ** error)
  * 
  * @param error The optional axlError to be used to report errors.
  * 
- * @return true if the validity test is passed, false if not.
+ * @return axl_true if the validity test is passed, axl_false if not.
  */
-int  test_21 (axlError ** error)
+axl_bool test_21 (axlError ** error)
 {
 	axlDoc  * doc;
 	axlNode * node;
@@ -1908,7 +1908,7 @@ int  test_21 (axlError ** error)
 	/* load the document */
 	doc = axl_doc_parse_from_file ("test_21.xml", error);
 	if (doc == NULL)
-		return false;
+		return axl_false;
 
 	/* get the root node */
 	node = axl_doc_get_root (doc);
@@ -1916,7 +1916,7 @@ int  test_21 (axlError ** error)
 	/* check document content */
 	if (! NODE_CMP_NAME (node, "document")) {
 		axl_error_new (-1, "Expected to find root node=<document> but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* iterate root childs */
@@ -1924,21 +1924,21 @@ int  test_21 (axlError ** error)
 
 	if (axl_item_get_type (item) != ITEM_CONTENT) {
 		axl_error_new (-1, "Expected to find content but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}	
 
 	/* get the content */
 	content = axl_item_get_content (item, &content_size);
 	if (! axl_cmp (content, "\n  Some content inside the document ")) {
 		axl_error_new (-1, "Expected to find content but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* get tne the item */
 	item = axl_item_get_next (item);
 	if (axl_item_get_type (item) != ITEM_NODE) {
 		axl_error_new (-1, "Expected to find a node but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* get the node */
@@ -1947,7 +1947,7 @@ int  test_21 (axlError ** error)
 	/* check document content */
 	if (! NODE_CMP_NAME (node, "strong")) {
 		axl_error_new (-1, "Expected to find root node=<strong> but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* get the first child of <strong> */
@@ -1955,14 +1955,14 @@ int  test_21 (axlError ** error)
 
 	if (axl_item_get_type (item) != ITEM_CONTENT) {
 		axl_error_new (-1, "Expected to find content inside strong but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}	
 
 	/* get the content */
 	content = axl_item_get_content (item, &content_size);
 	if (! axl_cmp (content, "this content goes\n  bold")) {
 		axl_error_new (-1, "Expected to find content but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* now get the next item following the <strong> node */
@@ -1970,27 +1970,27 @@ int  test_21 (axlError ** error)
 
 	if (item == NULL) {
 		axl_error_new (-1, "Expected to find content following <strong> but a null item reference was found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* check to be it a content */
 	if (axl_item_get_type (item) != ITEM_CONTENT) {
 		axl_error_new (-1, "Expected to find content following <strong> node but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}	
 
 	/* get the content */
 	content = axl_item_get_content (item, &content_size);
 	if (! axl_cmp (content, " more data stored directly inside the document node.\n\n ")) {
 		axl_error_new (-1, "Expected to find content but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* get the next item */
 	item = axl_item_get_next (item);
 	if (axl_item_get_type (item) != ITEM_NODE) {
 		axl_error_new (-1, "Expected to find a node but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* get the node */
@@ -1999,21 +1999,21 @@ int  test_21 (axlError ** error)
 	/* check document content */
 	if (! NODE_CMP_NAME (node, "childs")) {
 		axl_error_new (-1, "Expected to find root node=<strong> but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* get the first item */
 	item = axl_item_get_first_child (node);
 	if (axl_item_get_type (item) != ITEM_COMMENT) {
 		axl_error_new (-1, "Expected to find content inside strong but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}	
 
 	/* get the content */
 	content = axl_item_get_content (item, &content_size);
 	if (! axl_cmp (content, " here goes a comment before text block ")) {
 		axl_error_new (-1, "Expected to find a comment, child of <childs>, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}	
 
 	/* get next item */
@@ -2022,14 +2022,14 @@ int  test_21 (axlError ** error)
 	/* check to be it a content */
 	if (axl_item_get_type (item) != ITEM_CONTENT) {
 		axl_error_new (-1, "Expected to find content following <childs> node comment but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}	
 
 	/* get the content */
 	content = axl_item_get_content (item, &content_size);
 	if (! axl_cmp (content, "More text after child declaration.\n   ")) {
 		axl_error_new (-1, "Expected to find a content inside <childs> node, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}	
 
 	/* get next item */
@@ -2041,14 +2041,14 @@ int  test_21 (axlError ** error)
 	/* check document content */
 	if (! NODE_CMP_NAME (node, "child1")) {
 		axl_error_new (-1, "Expected to find root node=<strong> but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 
 	/* free axl document */
 	axl_doc_free (doc);
 
-	return true;
+	return axl_true;
 }
 
 /** 
@@ -2056,9 +2056,9 @@ int  test_21 (axlError ** error)
  * 
  * @param error The optional axlError to be used to report errors.
  * 
- * @return true if the validity test is passed, false if not.
+ * @return axl_true if the validity test is passed, axl_false if not.
  */
-int  test_20b (axlError ** error)
+axl_bool test_20b (axlError ** error)
 {
 	axlNode * node;
 
@@ -2079,12 +2079,12 @@ int  test_20b (axlError ** error)
 	/* load the document */
 	doc = axl_doc_parse_from_file ("test_20.xml", error);
 	if (doc == NULL)
-		return false;
+		return axl_false;
 
 	/* load reference */
 	doc2 = axl_doc_parse_from_file ("test_20a.xml", error);
 	if (doc2 == NULL)
-		return false;
+		return axl_false;
 
 	while (iterator < 10) {
 
@@ -2092,7 +2092,7 @@ int  test_20b (axlError ** error)
 		root = axl_doc_get_root (doc);
 	
 		/* copy and release */
-		node = axl_node_copy (root, true, true);
+		node = axl_node_copy (root, axl_true, axl_true);
 
 		/* get the child1 reference */
 		child1 = axl_node_get_first_child (node);
@@ -2116,7 +2116,7 @@ int  test_20b (axlError ** error)
 				 * the copy node doesn't have the
 				 * expected child number */
 				axl_error_new (-1, "After doing the deattach process, the copy node doesn't have the expected child number", NULL, error);
-				return false;
+				return axl_false;
 			}
 
 			/* set the node to the document root */
@@ -2125,7 +2125,7 @@ int  test_20b (axlError ** error)
 			if (! NODE_CMP_NAME (axl_node_get_parent (aux), "document")) {
 				
 				axl_error_new (-1, "Expected to find a parent not found", NULL, error);
-				return false;
+				return axl_false;
 			}
 
 			/* get the next child */
@@ -2135,16 +2135,16 @@ int  test_20b (axlError ** error)
 
 		/* remove the child1 node */
 		aux = axl_node_get_first_child (node);
-		axl_node_remove (aux, true);
+		axl_node_remove (aux, axl_true);
 
 		/* create the document holding the result */
-		doc3 = axl_doc_create (NULL, NULL, false);
+		doc3 = axl_doc_create (NULL, NULL, axl_false);
 		axl_doc_set_root (doc3, node);
 
 		/* compare the document */
 		if (!axl_doc_are_equal (doc2, doc3)) {
 			axl_error_new (-1, "Expected to find equal documents but (modified doc2 != doc3), they wasn't found", NULL, error);
-			return false;
+			return axl_false;
 		}
 
 		/* free the document */
@@ -2161,7 +2161,7 @@ int  test_20b (axlError ** error)
 	/* free the document */
 	axl_doc_free (doc);
 
-	return true;
+	return axl_true;
 
 }
 
@@ -2171,9 +2171,9 @@ int  test_20b (axlError ** error)
  * 
  * @param error The optional axlError to be used to report errors.
  * 
- * @return true if the validity test is passed, false if not.
+ * @return axl_true if the validity test is passed, axl_false if not.
  */
-int  test_20 (axlError ** error)
+axl_bool test_20 (axlError ** error)
 {
 	axlNode * node;
 	axlNode * root;
@@ -2185,25 +2185,25 @@ int  test_20 (axlError ** error)
 	/* load the document */
 	doc = axl_doc_parse_from_file ("test_20.xml", error);
 	if (doc == NULL)
-		return false;
+		return axl_false;
 
 	/* get document root */
 	root = axl_doc_get_root (doc);
-	node = axl_node_copy (root, true, true);
+	node = axl_node_copy (root, axl_true, axl_true);
 
 	/* check if both nodes are equal */
 	if (! axl_node_are_equal (root, node)) {
 		axl_error_new (-1, "Expected to find equal nodes but they weren't", NULL, error);
-		return false;
+		return axl_false;
 	}
 	
 	/* create a new document */
-	doc2 = axl_doc_create (NULL, NULL, false);
+	doc2 = axl_doc_create (NULL, NULL, axl_false);
 	axl_doc_set_root (doc2, node);
 
 	if (! axl_doc_are_equal (doc, doc2)) {
 		axl_error_new (-1, "Expected to find equal documents but they weren't", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* free document */
@@ -2222,56 +2222,56 @@ int  test_20 (axlError ** error)
 	axl_node_annotate_data (node, "key1", "value1");
 
 	/* perform searches */
-	data = axl_node_annotate_get (node, "key", false);
+	data = axl_node_annotate_get (node, "key", axl_false);
 	if (data != NULL) {
 		axl_error_new (-1, "Expected to find nothing while looking for 'key'(1)", NULL, error);
-		return false;
+		return axl_false;
 	}
 
-	data = axl_node_annotate_get (node, "key", true);
+	data = axl_node_annotate_get (node, "key", axl_true);
 	if (data == NULL || !axl_cmp (data, "value")) {
 		axl_error_new (-1, "Expected to find data while looking for 'key' at parents (2)", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* perform searches inside the node */
-	data = axl_node_annotate_get (node, "key1", false);
+	data = axl_node_annotate_get (node, "key1", axl_false);
 	if (data == NULL || !axl_cmp (data, "value1")) {
 		axl_error_new (-1, "Expected to find nothing while looking for 'key1'(3)", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* perform more anotation but with native data */
 	axl_node_annotate_int (root, "int-value", 14);
 	
-	if (axl_node_annotate_get_int (root, "int-value", false) != 14) {
+	if (axl_node_annotate_get_int (root, "int-value", axl_false) != 14) {
 		axl_error_new (-1, "Expected to find an integer value (14), but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	axl_node_annotate_double (root, "double-value", 58.20);
 
-	if (axl_node_annotate_get_double (root, "double-value", false) != 58.20) {
+	if (axl_node_annotate_get_double (root, "double-value", axl_false) != 58.20) {
 		axl_error_new (-1, "Expected to find an double value (58.20), but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	axl_node_annotate_string (root, "string-value", "this is a test string");
 
-	if (! axl_cmp (axl_node_annotate_get_string (root, "string-value", false), "this is a test string")) {
+	if (! axl_cmp (axl_node_annotate_get_string (root, "string-value", axl_false), "this is a test string")) {
 		axl_error_new (-1, "Expected to find a string value (\"this is a test string\"), but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
-	if (axl_node_annotate_get_string (root, "string-not-found", false) != NULL) {
+	if (axl_node_annotate_get_string (root, "string-not-found", axl_false) != NULL) {
 		axl_error_new (-1, "Expected to find empty value for an anotated element which isn't installed", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* free document created */
 	axl_doc_free (doc);
 
-	return true;
+	return axl_true;
 
 }
 
@@ -2280,9 +2280,9 @@ int  test_20 (axlError ** error)
  * 
  * @param error The optional axlError to be used to report errors.
  * 
- * @return true if the validity test is passed, false if not.
+ * @return axl_true if the validity test is passed, axl_false if not.
  */
-int  test_19 (axlError ** error)
+axl_bool test_19 (axlError ** error)
 {
 	axlDoc  * doc;
 	axlDoc  * reference;
@@ -2295,7 +2295,7 @@ int  test_19 (axlError ** error)
 
 	doc = axl_doc_parse_from_file ("test_19.xml", error);
 	if (doc == NULL)
-		return false;
+		return axl_false;
 	
 	/* document */
 	node = axl_doc_get_root (doc);
@@ -2307,46 +2307,46 @@ int  test_19 (axlError ** error)
 	node = axl_node_get_first_child (node);
 
 	/* replace */
-	axl_node_replace (node, replace, false);
+	axl_node_replace (node, replace, axl_false);
 
 	reference = axl_doc_parse_from_file ("test_19a.xml", error);
 	if (reference == NULL)
-		return false;
+		return axl_false;
 
 	/* check both documents to be equal */
 	if (! axl_doc_are_equal (doc, reference)) {
 		axl_error_new (-1, "Expected to find equal documents, but not found on first child replace", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* free reference */
 	axl_doc_free (reference);
 
 	/* restore */
-	axl_node_replace (replace, node, false);
+	axl_node_replace (replace, node, axl_false);
 
 	/* get child2 */
 	node = axl_node_get_next (node);
 	
 	/* replace */
-	axl_node_replace (node, replace, false);
+	axl_node_replace (node, replace, axl_false);
 
 
 	reference = axl_doc_parse_from_file ("test_19b.xml", error);
 	if (reference == NULL)
-		return false;
+		return axl_false;
 
 	/* check both documents to be equal */
 	if (! axl_doc_are_equal (doc, reference)) {
 		axl_error_new (-1, "Expected to find equal documents, but not found on first child replace", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* free reference */
 	axl_doc_free (reference);	
 
 	/* restore */
-	axl_node_replace (replace, node, false);
+	axl_node_replace (replace, node, axl_false);
 
 	/* get child2 */
 	node = axl_node_get_next (node);
@@ -2354,16 +2354,16 @@ int  test_19 (axlError ** error)
 	node = axl_node_get_next (node);
 	
 	/* replace */
-	axl_node_replace (node, replace, true);
+	axl_node_replace (node, replace, axl_true);
 
 	reference = axl_doc_parse_from_file ("test_19c.xml", error);
 	if (reference == NULL)
-		return false;
+		return axl_false;
 
 	/* check both documents to be equal */
 	if (! axl_doc_are_equal (doc, reference)) {
 		axl_error_new (-1, "Expected to find equal documents, but not found on first child replace", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* free reference */
@@ -2373,7 +2373,7 @@ int  test_19 (axlError ** error)
 	axl_node_set_content (node, "test", -1);
 
 	/* replace */
-	axl_node_replace (replace, node, true);
+	axl_node_replace (replace, node, axl_true);
 
 	/* document */
 	node = axl_doc_get_root (doc);
@@ -2383,16 +2383,16 @@ int  test_19 (axlError ** error)
 	node = axl_node_get_first_child (node);	
 
 	/* remove child2 */
-	axl_node_remove (node, true);
+	axl_node_remove (node, axl_true);
 
 	reference = axl_doc_parse_from_file ("test_19d.xml", error);
 	if (reference == NULL)
-		return false;
+		return axl_false;
 
 	/* check both documents to be equal */
 	if (! axl_doc_are_equal (doc, reference)) {
 		axl_error_new (-1, "Expected to find equal documents, but not found on first child remove", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* free reference */
@@ -2406,16 +2406,16 @@ int  test_19 (axlError ** error)
 	node = axl_node_get_first_child (node);	
 
 	/* remove child3 */
-	axl_node_remove (node, true);
+	axl_node_remove (node, axl_true);
 
 	reference = axl_doc_parse_from_file ("test_19e.xml", error);
 	if (reference == NULL)
-		return false;
+		return axl_false;
 
 	/* check both documents to be equal */
 	if (! axl_doc_are_equal (doc, reference)) {
 		axl_error_new (-1, "Expected to find equal documents, but not found on first child remove", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* free reference */
@@ -2429,16 +2429,16 @@ int  test_19 (axlError ** error)
 	node = axl_node_get_first_child (node);	
 
 	/* remove child4 */
-	axl_node_remove (node, true);
+	axl_node_remove (node, axl_true);
 
 	reference = axl_doc_parse_from_file ("test_19f.xml", error);
 	if (reference == NULL)
-		return false;
+		return axl_false;
 
 	/* check both documents to be equal */
 	if (! axl_doc_are_equal (doc, reference)) {
 		axl_error_new (-1, "Expected to find equal documents, but not found on first child remove", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* free reference */
@@ -2452,16 +2452,16 @@ int  test_19 (axlError ** error)
 	node = axl_node_get_first_child (node);	
 
 	/* remove child5 */
-	axl_node_remove (node, true);
+	axl_node_remove (node, axl_true);
 
 	reference = axl_doc_parse_from_file ("test_19g.xml", error);
 	if (reference == NULL)
-		return false;
+		return axl_false;
 
 	/* check both documents to be equal */
 	if (! axl_doc_are_equal (doc, reference)) {
 		axl_error_new (-1, "Expected to find equal documents, but not found on first child remove", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* free reference */
@@ -2471,7 +2471,7 @@ int  test_19 (axlError ** error)
 	axl_doc_free (doc);
 
 	/* free reference */
-	return true;
+	return axl_true;
 }
 
 /** 
@@ -2479,9 +2479,9 @@ int  test_19 (axlError ** error)
  * 
  * @param error The optional axlError to be used to report errors.
  * 
- * @return true if the validity test is passed, false if not.
+ * @return axl_true if the validity test is passed, axl_false if not.
  */
-int  test_18 (axlError ** error)
+axl_bool test_18 (axlError ** error)
 {
 	axlDtd * dtd = NULL;
 	char   * content;
@@ -2489,46 +2489,46 @@ int  test_18 (axlError ** error)
 	/* parse af-arch DTD */
 	dtd = axl_dtd_parse_from_file ("channel.dtd", error);
 	if (dtd == NULL)
-		return false;
+		return axl_false;
 
 	/* lookup for entity definitions */
 	if (axl_dtd_entity_exists (dtd, "TEST", GENERAL_ENTITY)) {
 		axl_error_new (-1, "Expected to not find an entity value which was found (TEST)..", NULL, error);
-		return false;
+		return axl_false;
 	}
 	
 	if (axl_dtd_entity_exists (dtd, "URI", GENERAL_ENTITY)) {
 		axl_error_new (-1, "Expected to not find an entity value which was found (URI)..", NULL, error);
-		return false;
+		return axl_false;
 	}
 	
 	/* lookup for entity definitions that are expected to be found */
 	if (! axl_dtd_entity_exists (dtd, "URI", PARAMETER_ENTITY)) {
 		axl_error_new (-1, "Expected to find an entity value which wasn't found (% URI)..", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	if (! axl_dtd_entity_exists (dtd, "LOCS", PARAMETER_ENTITY)) {
 		axl_error_new (-1, "Expected to find an entity value which wasn' found (% LOCS)..", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* now get the content inside */
 	content = axl_dtd_entity_value (dtd, "CHAN", PARAMETER_ENTITY);
 	if (content == NULL) {
 		axl_error_new (-1, "Expected to find parameter entity content for (% CHAN) but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 	
 	if (! axl_cmp (content, "CDATA")) {
 		axl_error_new (-1, "Expected to find parameter entity content for (% CHAN) it doesn't match", NULL, error);
-		return false;	
+		return axl_false;	
 	}
 
 	/* free the dtd */
 	axl_dtd_free (dtd);
 
-	return true;
+	return axl_true;
 }
 
 /** 
@@ -2536,9 +2536,9 @@ int  test_18 (axlError ** error)
  * 
  * @param error The optional axlError to be used to report errors.
  * 
- * @return true if the validity test is passed, false if not.
+ * @return axl_true if the validity test is passed, axl_false if not.
  */
-int  test_17 (axlError ** error) 
+axl_bool test_17 (axlError ** error) 
 {
 	axlDoc  * doc  = NULL;
 	axlDtd  * dtd  = NULL;
@@ -2546,17 +2546,17 @@ int  test_17 (axlError ** error)
 	/* parse common DTD file */
 	dtd = axl_dtd_parse_from_file ("xml-rpc.dtd", error);
 	if (dtd == NULL)
-		return false;
+		return axl_false;
 
 	/* parse a file that must not be valid */
 	doc = axl_doc_parse_from_file ("test17.xdl", error);
 	if (doc == NULL)
-		return false;
+		return axl_false;
 
 	/* the following validation must fail */
 	if (axl_dtd_validate (doc, dtd, error)) {
 		axl_error_new (-1, "A validation was produced when expected a failure", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* because a failure was expected, release memory allocated by
@@ -2569,7 +2569,7 @@ int  test_17 (axlError ** error)
 	/* release DTD reference */
 	axl_dtd_free (dtd);
 
-	return true;
+	return axl_true;
 }
 
 /** 
@@ -2577,9 +2577,9 @@ int  test_17 (axlError ** error)
  * 
  * @param error The optional axlError to be used to report errors.
  * 
- * @return true if the validity test is passed, false if not.
+ * @return axl_true if the validity test is passed, axl_false if not.
  */
-int  test_16 (axlError ** error) 
+axl_bool test_16 (axlError ** error) 
 {
 	axlDoc  * doc  = NULL;
 	axlDtd  * dtd  = NULL;
@@ -2587,17 +2587,17 @@ int  test_16 (axlError ** error)
 	/* parse common DTD file */
 	dtd = axl_dtd_parse_from_file ("xml-rpc.dtd", error);
 	if (dtd == NULL)
-		return false;
+		return axl_false;
 
 	/* parse a file that must not be valid */
 	doc = axl_doc_parse_from_file ("test03.xdl", error);
 	if (doc == NULL)
-		return false;
+		return axl_false;
 
 	/* the following validation must fail */
 	if (axl_dtd_validate (doc, dtd, error)) {
 		axl_error_new (-1, "A validation was produced when expected a failure", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* because a failure was expected, release memory allocated by
@@ -2610,11 +2610,11 @@ int  test_16 (axlError ** error)
 	/* parse the next file that must be valid */
 	doc = axl_doc_parse_from_file ("test04.xdl", error);
 	if (doc == NULL)
-		return false;
+		return axl_false;
 
 	/* the following validation should successed */
 	if (! axl_dtd_validate (doc, dtd, error))
-		return false;
+		return axl_false;
 
 	/* release the document */
 	axl_doc_free (doc);
@@ -2622,7 +2622,7 @@ int  test_16 (axlError ** error)
 	/* release DTD reference */
 	axl_dtd_free (dtd);
 
-	return true;
+	return axl_true;
 }
 
 /** 
@@ -2630,9 +2630,9 @@ int  test_16 (axlError ** error)
  * 
  * @param error The optional axlError to be used to report errors.
  * 
- * @return true if the validity test is passed, false if not.
+ * @return axl_true if the validity test is passed, axl_false if not.
  */
-int  test_15 (axlError ** error) 
+axl_bool test_15 (axlError ** error) 
 {
 	axlDoc  * doc  = NULL;
 	axlDtd  * dtd  = NULL;
@@ -2640,17 +2640,17 @@ int  test_15 (axlError ** error)
 	/* parse common DTD file */
 	dtd = axl_dtd_parse_from_file ("xml-rpc.dtd", error);
 	if (dtd == NULL)
-		return false;
+		return axl_false;
 
 	/* parse a file that must not be valid */
 	doc = axl_doc_parse_from_file ("test01.xdl", error);
 	if (doc == NULL)
-		return false;
+		return axl_false;
 
 	/* the following validation must fail */
 	if (axl_dtd_validate (doc, dtd, error)) {
 		axl_error_new (-1, "A validation was produced when expected a failure", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* because a failure was expected, release memory allocated by
@@ -2663,11 +2663,11 @@ int  test_15 (axlError ** error)
 	/* parse the next file that must be valid */
 	doc = axl_doc_parse_from_file ("test02.xdl", error);
 	if (doc == NULL)
-		return false;
+		return axl_false;
 
 	/* the following validation should successed */
 	if (! axl_dtd_validate (doc, dtd, error))
-		return false;
+		return axl_false;
 
 	/* release the document */
 	axl_doc_free (doc);
@@ -2675,7 +2675,7 @@ int  test_15 (axlError ** error)
 	/* release DTD reference */
 	axl_dtd_free (dtd);
 
-	return true;
+	return axl_true;
 }
 
 /** 
@@ -2683,9 +2683,9 @@ int  test_15 (axlError ** error)
  * 
  * @param error The optional axlError to be used to report errors.
  * 
- * @return true if the validity test is passed, false if not.
+ * @return axl_true if the validity test is passed, axl_false if not.
  */
-int  test_14 (axlError ** error) 
+axl_bool test_14 (axlError ** error) 
 {
 	axlDoc  * doc  = NULL;
 	axlNode * node = NULL;
@@ -2697,7 +2697,7 @@ int  test_14 (axlError ** error)
 	
 
 	/* create an emtpy document */
-	doc = axl_doc_create ("1.0", NULL, false);
+	doc = axl_doc_create ("1.0", NULL, axl_false);
 
 	/* create the root node */
 	node = axl_node_create ("test");
@@ -2711,7 +2711,7 @@ int  test_14 (axlError ** error)
 	if (!axl_cmp ("<?xml version='1.0' ?><test>This is a test (&apos;) (&quot;) (&gt;) (&lt;) (&amp;), more data###</test>",
 		      xml_document)) {
 		axl_error_new (-1, "Found dump mismatch that shows entities are not handled properly", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* free memory dump */
@@ -2722,7 +2722,7 @@ int  test_14 (axlError ** error)
 
 	if (size != 68) {
 		axl_error_new (-1, "Found a document size mismatch while dumping entity content", NULL, error);
-		return false;
+		return axl_false;
 	}
 	
 	/* free the content received */
@@ -2733,13 +2733,13 @@ int  test_14 (axlError ** error)
 
 	if (size != 48) {
 		axl_error_new (-1, "Found a document size mismatch while dumping entity content (already translated)", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* check node content returned */
 	if (!axl_cmp (value, "This is a test (\') (\") (>) (<) (&), more data###")) {
 		axl_error_new (-1, "Found an string mismatch while checking a node content which was translated", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* free the content translated */
@@ -2751,14 +2751,14 @@ int  test_14 (axlError ** error)
 	doc = axl_doc_parse ("<?xml version='1.0' ?><test></test>", 37, error);
 	if (doc == NULL) {
 		printf ("Expected to parse a document but it fails, error was: %s\n", axl_error_get (*error));
-		return false;
+		return axl_false;
 	}
 
 	/* get the content */
 	node = axl_doc_get (doc, "/test");
 	if (node == NULL) {
 		axl_error_new (-1, "Expected to find a node reference not found (/test)\n", NULL, error);
-		return false;		
+		return axl_false;		
 	}
 
 	/* get the content */
@@ -2766,7 +2766,7 @@ int  test_14 (axlError ** error)
 	value = (char*) axl_node_get_content (node, &size);
 	if (size != 0) {
 		axl_error_new (-1, "Expected to find a node content with 0 bytes but it 11 (/test)\n", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* get the content copy */
@@ -2774,7 +2774,7 @@ int  test_14 (axlError ** error)
 	value = axl_node_get_content_copy (node, &size);
 	if (size != 0) {
 		axl_error_new (-1, "Expected to find a node content with 0 bytes but it 13 (/test)\n", NULL, error);
-		return false;
+		return axl_false;
 	}
 	axl_free (value);
 
@@ -2783,7 +2783,7 @@ int  test_14 (axlError ** error)
 	value = axl_node_get_content_trans (node, &size);
 	if (size != 0) {
 		axl_error_new (-1, "Expected to find a node content with 0 bytes but it 14 (/test)\n", NULL, error);
-		return false;
+		return axl_false;
 	}
 	axl_free (value);
 
@@ -2792,13 +2792,13 @@ int  test_14 (axlError ** error)
 	value = axl_node_get_content_trim (node, &size);
 	if (size != 0) {
 		axl_error_new (-1, "Expected to find a node content with 0 bytes but it 15 (/test)\n", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* free the document */
 	axl_doc_free (doc);
 
-	return true;
+	return axl_true;
 }
 
 /** 
@@ -2806,9 +2806,9 @@ int  test_14 (axlError ** error)
  * 
  * @param error The optional axlError to be used to report errors.
  * 
- * @return true if the validity test is passed, false if not.
+ * @return axl_true if the validity test is passed, axl_false if not.
  */
-int  test_13 (axlError ** error) 
+axl_bool test_13 (axlError ** error) 
 {
 	axlDoc  * doc  = NULL;
 	axlDoc  * doc2 = NULL;
@@ -2820,19 +2820,19 @@ int  test_13 (axlError ** error)
 	
 	doc = axl_doc_parse_from_file ("test13.xml", error);
 	if (doc == NULL)
-		return false;
+		return axl_false;
 
 	/* dump xml document */
 	axl_doc_dump (doc, &content, &size);
 
 	doc2 = axl_doc_parse (content, size, error);
 	if (doc2 == NULL)
-		return false;
+		return axl_false;
 
 	/* check if both documents are equals */
 	if (! axl_doc_are_equal (doc, doc2)) {
 		axl_error_new (-1, "Expected to dump an equivalent xml document, but found an error", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* free dump */
@@ -2846,23 +2846,23 @@ int  test_13 (axlError ** error)
 
 	doc = axl_doc_parse_from_file ("test_13c.xml", error);
 	if (doc == NULL)
-		return false;
+		return axl_false;
 
 	if (! axl_doc_dump_pretty (doc, &content, &size, 4)) {
 		axl_error_new (-1, "Failed to dump pretty print, while expected a proper execution", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	doc2 = axl_doc_parse (content, size, error);
 	if (doc2 == NULL)
-		return false;
+		return axl_false;
 
 	/* free content */
 	axl_free (content);
 
 	if (! axl_doc_are_equal (doc, doc2)) {
 		axl_error_new (-1, "Expected to find documents to be equal.", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* free both document references */
@@ -2872,20 +2872,20 @@ int  test_13 (axlError ** error)
 	/* check pretty printing function */
 	doc = axl_doc_parse_from_file ("test_13b.xml", error);
 	if (doc == NULL) 
-		return false;
+		return axl_false;
 
 	if (! axl_doc_dump_pretty (doc, &content, &size, 4)) {
 		axl_error_new (-1, "Failed to dump pretty print, while expected a proper execution", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	doc2 = axl_doc_parse (content, size, error);
 	if (doc2 == NULL)
-		return false;
+		return axl_false;
 
 	if (! axl_doc_are_equal (doc, doc2)) {
 		axl_error_new (-1, "Expected to find documents to be equal.", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* free content */
@@ -2898,20 +2898,20 @@ int  test_13 (axlError ** error)
 	/* reopen document to dump nodes */
 	doc = axl_doc_parse_from_file ("test_13c.xml", error);
 	if (doc == NULL)
-		return false;
+		return axl_false;
 
 	/* get a reference to the first root child node: <test> */
 	node = axl_doc_get_root (doc);
 	node = axl_node_get_first_child (node);
 	if (! NODE_CMP_NAME (node, "test")) {
 		axl_error_new (-1, "Expected to find a child node called: <test>", NULL, error);
-		return false;
+		return axl_false;
 	} /* end if */
 
 	/* dump the content */
 	if (! axl_node_dump (node, &content, &size)) {
 		axl_error_new (-1, "Expected to find a proper dump operation", NULL, error);
-		return false;
+		return axl_false;
 	} /* end if */
 
 	/* parse the content dumped, to check it is really the result
@@ -2919,19 +2919,19 @@ int  test_13 (axlError ** error)
 	doc2 = axl_doc_parse (content, size, NULL);
 	if (doc2 == NULL) {
 		axl_error_new (-1, "Expected to parse properly dumped content from a node, but a failure was found", NULL, error);
-		return false;
+		return axl_false;
 	} /* end if */
 
 	doc3 = axl_doc_parse_from_file ("test_13d.xml", NULL);
 	if (doc3 == NULL) {
 		axl_error_new (-1, "Expected to parse properly a reference file but an error was found", NULL, error);
-		return false;
+		return axl_false;
 	} /* end if */
 
 	/* check result */
 	if (! axl_doc_are_equal (doc2, doc3)) {
 		axl_error_new (-1, "Expected to find equal document to reference, at node dump operations, but not found", NULL, error);
-		return false;
+		return axl_false;
 	} /* end if */
 
 	/* free the content */
@@ -2946,26 +2946,26 @@ int  test_13 (axlError ** error)
 	doc = axl_doc_parse_from_file ("test_13e.xml", NULL);
 	if (doc == NULL) {
 		axl_error_new (-1, "Expected to find parseable document, but an error was found..", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* now dump the document */
 	if (!axl_doc_dump_pretty_to_file (doc, "test_13e.xml.test", 4)) {
 		axl_error_new (-1, "Expected to perform a proper dump operation but an error was found..", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* now open the content produced and check both results */
 	doc2 = axl_doc_parse_from_file ("test_13e.xml.test", NULL);
 	if (doc2 == NULL) {
 		axl_error_new (-1, "Failed to open document that was expected to be opened", NULL, error);
-		return false;
+		return axl_false;
 	} /* end if */
 	
 	/* check both document */
 	if (! axl_doc_are_equal (doc, doc2)) {
 		axl_error_new (-1, "Expected to find equal documents before dump operation, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* free both documents */
@@ -2976,13 +2976,13 @@ int  test_13 (axlError ** error)
 	doc = axl_doc_parse_from_file ("test_13f.xml", NULL);
 	if (doc == NULL) {
 		axl_error_new (-1, "Expected to find parseable document, but an error was found..", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* dump to memory */
 	if (! axl_doc_dump_pretty (doc, &content, &size, 4)) {
 		axl_error_new (-1, "Expected to find proper dump operation not found", NULL, error);
-		return false;
+		return axl_false;
 	} /* end if */
 
 	/* now check content dumped against the predefined value */
@@ -3008,7 +3008,7 @@ int  test_13 (axlError ** error)
 </common-unit-translate>\n")) {
 	        printf ("Content lenght found: %d and size=%d..\n", (int) strlen (content), size);
 		axl_error_new (-1, "Failed to check dump content, expected different values", NULL, error);
-		return false;
+		return axl_false;
 	} /* end if */
 
 	axl_free (content);
@@ -3017,7 +3017,7 @@ int  test_13 (axlError ** error)
 	axl_doc_free (doc);
 
 	
-	return true;
+	return axl_true;
 }
 
 /** 
@@ -3025,9 +3025,9 @@ int  test_13 (axlError ** error)
  * 
  * @param error The optional axlError to be used to report errors.
  * 
- * @return true if the validity test is passed, false if not.
+ * @return axl_true if the validity test is passed, axl_false if not.
  */
-int  test_12 (axlError ** error) 
+axl_bool test_12 (axlError ** error) 
 {
 	axlDoc * doc = NULL;
 	axlDtd * dtd = NULL;
@@ -3035,16 +3035,16 @@ int  test_12 (axlError ** error)
 	/* parse gmovil file (an af-arch xml chunk) */
 	doc = axl_doc_parse_from_file ("channel.xml", error); 
 	if (doc == NULL) 
-		return false;
+		return axl_false;
 
 	/* parse af-arch DTD */
 	dtd = axl_dtd_parse_from_file ("channel.dtd", error);
 	if (dtd == NULL)
-		return false;
+		return axl_false;
 
 	/* perform DTD validation */
 	if (! axl_dtd_validate (doc, dtd, error)) {
-		return false;
+		return axl_false;
 	}
 
 	/* free doc reference */
@@ -3053,11 +3053,11 @@ int  test_12 (axlError ** error)
 	/* parse gmovil file (an af-arch xml chunk) */
 	doc = axl_doc_parse_from_file ("channel2.xml", error); 
 	if (doc == NULL) 
-		return false;
+		return axl_false;
 
 	/* perform DTD validation */
 	if (! axl_dtd_validate (doc, dtd, error)) {
-		return false;
+		return axl_false;
 	}
 
 	/* free doc reference */
@@ -3066,11 +3066,11 @@ int  test_12 (axlError ** error)
 	/* parse gmovil file (an af-arch xml chunk) */
 	doc = axl_doc_parse_from_file ("channel3.xml", error); 
 	if (doc == NULL) 
-		return false;
+		return axl_false;
 
 	/* perform DTD validation */
 	if (! axl_dtd_validate (doc, dtd, error)) {
-		return false;
+		return axl_false;
 	}
 
 	/* free doc reference */
@@ -3079,11 +3079,11 @@ int  test_12 (axlError ** error)
 	/* parse gmovil file (an af-arch xml chunk) */
 	doc = axl_doc_parse_from_file ("channel4.xml", error); 
 	if (doc == NULL) 
-		return false;
+		return axl_false;
 
 	/* perform DTD validation */
 	if (! axl_dtd_validate (doc, dtd, error)) {
-		return false;
+		return axl_false;
 	}
 
 	/* free doc reference */
@@ -3095,16 +3095,16 @@ int  test_12 (axlError ** error)
 	/* parse a BEEP greetins example */
 	doc = axl_doc_parse_from_file ("channel5.xml", error);
 	if (doc == NULL)
-		return false;
+		return axl_false;
 
 	/* parse the TLS dtd file */
 	dtd = axl_dtd_parse_from_file ("channel.dtd", error);
 	if (dtd == NULL)
-		return false;
+		return axl_false;
 
 	/* perform DTD validation */
 	if (! axl_dtd_validate (doc, dtd, error)) {
-		return false;
+		return axl_false;
 	}
 
 	/* free doc reference */
@@ -3115,7 +3115,7 @@ int  test_12 (axlError ** error)
 	
 
 	/* test end */
-	return true;
+	return axl_true;
 }
 
 /** 
@@ -3123,9 +3123,9 @@ int  test_12 (axlError ** error)
  * 
  * @param error The optional axlError to be used to report errors.
  * 
- * @return true if the validity test is passed, false if not.
+ * @return axl_true if the validity test is passed, axl_false if not.
  */
-int  test_11 (axlError ** error) 
+axl_bool test_11 (axlError ** error) 
 {
 	axlDoc * doc = NULL;
 	axlDtd * dtd = NULL;
@@ -3133,16 +3133,16 @@ int  test_11 (axlError ** error)
 	/* parse gmovil file (an af-arch xml chunk) */
 	doc = axl_doc_parse_from_file ("gmovil2.xml", error); 
 	if (doc == NULL) 
-		return false;
+		return axl_false;
 
 	/* parse af-arch DTD */
 	dtd = axl_dtd_parse_from_file ("fact.dtd", error);
 	if (dtd == NULL)
-		return false;
+		return axl_false;
 
 	/* perform DTD validation */
 	if (! axl_dtd_validate (doc, dtd, error)) {
-		return false;
+		return axl_false;
 	}
 
 	/* free doc reference */
@@ -3152,7 +3152,7 @@ int  test_11 (axlError ** error)
 	axl_dtd_free (dtd);
 
 	/* test end */
-	return true;
+	return axl_true;
 }
 
 /** 
@@ -3160,9 +3160,9 @@ int  test_11 (axlError ** error)
  * 
  * @param error The optional axlError to be used to report errors.
  * 
- * @return true if the validity test is passed, false if not.
+ * @return axl_true if the validity test is passed, axl_false if not.
  */
-int  test_10 (axlError ** error) 
+axl_bool test_10 (axlError ** error) 
 {
 	axlDoc                * doc      = NULL;
 	axlDtd                * dtd      = NULL;
@@ -3172,12 +3172,12 @@ int  test_10 (axlError ** error)
 	/* parse gmovil file (an af-arch xml chunk) */
 	doc = axl_doc_parse_from_file ("test5.xml", error); 
 	if (doc == NULL) 
-		return false;
+		return axl_false;
 
 	/* parse af-arch DTD */
 	dtd = axl_dtd_parse_from_file ("test5.dtd", error);
 	if (dtd == NULL)
-		return false;
+		return axl_false;
 
 	/* get the dtd element representation */
 	element = axl_dtd_get_element (dtd, "choices");
@@ -3186,25 +3186,25 @@ int  test_10 (axlError ** error)
 	itemList = axl_dtd_get_item_list (element);
 	if (axl_dtd_item_list_count (itemList) != 4) {
 		axl_error_new (-1, "expected to receive an item list with 4 item nodes inside", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	if (axl_dtd_item_list_type (itemList) != CHOICE) {
 		axl_error_new (-1, "expected to receive a choice item list", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	if (axl_dtd_item_list_repeat (itemList) != ZERO_OR_MANY) {
 		axl_log ("test-01", AXL_LEVEL_DEBUG, "received a different repeat configuration: %d != %d",
 			 ZERO_OR_MANY, axl_dtd_item_list_repeat (itemList));
 		axl_error_new (-1, "expected to receive an item list with (*) zero or many spec", NULL, error);
-		return false;
+		return axl_false;
 	}
 	
 
 	/* perform DTD validation */
 	if (! axl_dtd_validate (doc, dtd, error)) { 
-		return false; 
+		return axl_false; 
 	} 
 
 	/* free dtd reference */
@@ -3214,12 +3214,12 @@ int  test_10 (axlError ** error)
 	/* parse af-arch DTD */
 	dtd = axl_dtd_parse_from_file ("test5.1.dtd", error);
 	if (dtd == NULL)
-		return false;
+		return axl_false;
 	
 	/* perform DTD validation */
 	if (axl_dtd_validate (doc, dtd, error)) { 
 		axl_error_new (-1, "A validation failure was expected.", NULL, error);
-		return false; 
+		return axl_false; 
 	} 
 
 	/* because a failure was expected, release memory allocated by
@@ -3233,7 +3233,7 @@ int  test_10 (axlError ** error)
 	axl_dtd_free (dtd);
 
 	/* test end */
-	return true;
+	return axl_true;
 }
 
 /** 
@@ -3241,9 +3241,9 @@ int  test_10 (axlError ** error)
  * 
  * @param error The optional axlError to be used to report errors.
  * 
- * @return true if the validity test is passed, false if not.
+ * @return axl_true if the validity test is passed, axl_false if not.
  */
-int  test_09 (axlError ** error) 
+axl_bool test_09 (axlError ** error) 
 {
 	axlDoc                * doc      = NULL;
 	axlDtd                * dtd      = NULL;
@@ -3255,19 +3255,19 @@ int  test_09 (axlError ** error)
 	/* parse gmovil file (an af-arch xml chunk) */
 	doc = axl_doc_parse_from_file ("test4.xml", error); 
 	if (doc == NULL) 
-		return false;
+		return axl_false;
 
 	/* parse af-arch DTD */
 	dtd = axl_dtd_parse_from_file ("test4.dtd", error);
 	if (dtd == NULL)
-		return false;
+		return axl_false;
 
 	
 	/* get dtd element */
 	element = axl_dtd_get_element (dtd, "nodes");
 	if (element == NULL) {
 		axl_error_new (-1, "unable to find expected DTD element", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* get the item list */
@@ -3276,143 +3276,143 @@ int  test_09 (axlError ** error)
 		axl_log ("test-01", AXL_LEVEL_CRITICAL, "found item list size: %d != 8",
 			 axl_dtd_item_list_count (itemList));
 		axl_error_new (-1, "expected to find an item list definition with 8 elements", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* check <first> node spec */
 	itemNode = axl_dtd_item_list_get_node (itemList, 0);
 	if (axl_dtd_item_node_get_type (itemNode) != AXL_ELEMENT_NODE) {
 		axl_error_new (-1, "expected to find an item node definition, not found", NULL, error);
-		return false;
+		return axl_false;
 	}
 	
 	if (! axl_cmp (axl_dtd_item_node_get_value (itemNode), "first")) {
 		axl_error_new (-1, "expected to find an item node name (first) definition, not found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	if (axl_dtd_item_node_get_repeat (itemNode) != ONE_OR_MANY) {
 		axl_error_new (-1, "expected to find an item node definition with one or many repeat def (+), not found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* check <second> node spec */
 	itemNode = axl_dtd_item_list_get_node (itemList, 1);
 	if (axl_dtd_item_node_get_type (itemNode) != AXL_ELEMENT_NODE) {
 		axl_error_new (-1, "expected to find an item node definition, not found", NULL, error);
-		return false;
+		return axl_false;
 	}
 	
 	if (! axl_cmp (axl_dtd_item_node_get_value (itemNode), "second")) {
 		axl_error_new (-1, "expected to find an item node name (second) definition, not found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	if (axl_dtd_item_node_get_repeat (itemNode) != ONE_AND_ONLY_ONE) {
 		axl_error_new (-1, "expected to find an item node definition with one and only one repeat def (), not found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* check <third> node spec */
 	itemNode = axl_dtd_item_list_get_node (itemList, 2);
 	if (axl_dtd_item_node_get_type (itemNode) != AXL_ELEMENT_NODE) {
 		axl_error_new (-1, "expected to find an item node definition, not found", NULL, error);
-		return false;
+		return axl_false;
 	}
 	
 	if (! axl_cmp (axl_dtd_item_node_get_value (itemNode), "third")) {
 		axl_error_new (-1, "expected to find an item node name (third) definition, not found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	if (axl_dtd_item_node_get_repeat (itemNode) != ZERO_OR_ONE) {
 		axl_error_new (-1, "expected to find an item node definition with zero or one repeat def (?), not found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* check <fourth> node spec */
 	itemNode = axl_dtd_item_list_get_node (itemList, 3);
 	if (axl_dtd_item_node_get_type (itemNode) != AXL_ELEMENT_NODE) {
 		axl_error_new (-1, "expected to find an item node definition, not found", NULL, error);
-		return false;
+		return axl_false;
 	}
 	
 	if (! axl_cmp (axl_dtd_item_node_get_value (itemNode), "fourth")) {
 		axl_error_new (-1, "expected to find an item node name (fourth) definition, not found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	if (axl_dtd_item_node_get_repeat (itemNode) != ONE_AND_ONLY_ONE) {
 		axl_error_new (-1, "expected to find an item node definition with one and only one repeat def (), not found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* check <fifth> node spec */
 	itemNode = axl_dtd_item_list_get_node (itemList, 4);
 	if (axl_dtd_item_node_get_type (itemNode) != AXL_ELEMENT_NODE) {
 		axl_error_new (-1, "expected to find an item node definition, not found", NULL, error);
-		return false;
+		return axl_false;
 	}
 	
 	if (! axl_cmp (axl_dtd_item_node_get_value (itemNode), "fifth")) {
 		axl_error_new (-1, "expected to find an item node name (fifth) definition, not found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	if (axl_dtd_item_node_get_repeat (itemNode) != ZERO_OR_MANY) {
 		axl_error_new (-1, "expected to find an item node definition with zero to many repeat def (*), not found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* check <fourth> node spec */
 	itemNode = axl_dtd_item_list_get_node (itemList, 5);
 	if (axl_dtd_item_node_get_type (itemNode) != AXL_ELEMENT_NODE) {
 		axl_error_new (-1, "expected to find an item node definition, not found", NULL, error);
-		return false;
+		return axl_false;
 	}
 	
 	if (! axl_cmp (axl_dtd_item_node_get_value (itemNode), "fourth")) {
 		axl_error_new (-1, "expected to find an item node name (fourth) definition, not found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	if (axl_dtd_item_node_get_repeat (itemNode) != ZERO_OR_MANY) {
 		axl_error_new (-1, "expected to find an item node definition with zero to many repeat def (*), not found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* check repetition pattern for node spec 6 */
 	itemNode = axl_dtd_item_list_get_node (itemList, 6);
 	if (axl_dtd_item_node_get_type (itemNode) != AXL_ELEMENT_LIST) {
 		axl_error_new (-1, "expected to find an item node definition, not found", NULL, error);
-		return false;
+		return axl_false;
 	}
 	
 	if (axl_dtd_item_node_get_repeat (itemNode) != ZERO_OR_ONE) {
 		axl_log ("test-01", AXL_LEVEL_DEBUG, "repeat configuration was different: %d != %d",
 			 axl_dtd_item_node_get_repeat (itemNode), ZERO_OR_ONE);
 		axl_error_new (-1, "expected to find an item node definition with zero or one repeat def (?), not found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* check repetition pattern for node spec 7 */
 	itemNode = axl_dtd_item_list_get_node (itemList, 7);
 	if (axl_dtd_item_node_get_type (itemNode) != AXL_ELEMENT_LIST) {
 		axl_error_new (-1, "expected to find an item node definition, not found", NULL, error);
-		return false;
+		return axl_false;
 	}
 	
 	if (axl_dtd_item_node_get_repeat (itemNode) != ZERO_OR_MANY) {
 		axl_log ("test-01", AXL_LEVEL_DEBUG, "repeat configuration was different: %d != %d",
 			 axl_dtd_item_node_get_repeat (itemNode), ZERO_OR_MANY);
 		axl_error_new (-1, "expected to find an item node definition with zero or one repeat def (*), not found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 
 	/* perform DTD validation */
 	if (! axl_dtd_validate (doc, dtd, error)) { 
-		return false; 
+		return axl_false; 
 	} 
 
 	/* free doc reference */
@@ -3422,7 +3422,7 @@ int  test_09 (axlError ** error)
 	axl_dtd_free (dtd);
 
 	/* test end */
-	return true;
+	return axl_true;
 }
 
 /** 
@@ -3430,9 +3430,9 @@ int  test_09 (axlError ** error)
  * 
  * @param error The optional axlError to be used to report errors.
  * 
- * @return true if the validity test is passed, false if not.
+ * @return axl_true if the validity test is passed, axl_false if not.
  */
-int  test_08 (axlError ** error)
+axl_bool test_08 (axlError ** error)
 {
 	/* top level definitions */
 	axlDoc            * doc = NULL;
@@ -3440,12 +3440,12 @@ int  test_08 (axlError ** error)
 	/* get current doc reference */
 	doc = axl_doc_parse_from_file ("large.xml", error);
 	if (doc == NULL)
-		return false;
+		return axl_false;
 
 	/* release the document */
 	axl_doc_free (doc);
 
-	return true;
+	return axl_true;
 }
 
 
@@ -3454,9 +3454,9 @@ int  test_08 (axlError ** error)
  * 
  * @param error The optional axlError to be used to report errors.
  * 
- * @return true if the validity test is passed, false if not.
+ * @return axl_true if the validity test is passed, axl_false if not.
  */
-int  test_07 (axlError ** error)
+axl_bool test_07 (axlError ** error)
 {
 	/* top level definitions */
 	axlDoc            * doc = NULL;
@@ -3465,16 +3465,16 @@ int  test_07 (axlError ** error)
 	/* get current doc reference */
 	doc = axl_doc_parse_from_file ("test3.xml", error);
 	if (doc == NULL)
-		return false;
+		return axl_false;
 
 	/* load DTD */
 	dtd = axl_dtd_parse_from_file ("test3.dtd", error);
 	if (dtd == NULL)
-		return false;
+		return axl_false;
 
 	/* validate the xml document */
 	if (! axl_dtd_validate (doc, dtd, error)) {
-		return  false;
+		return  axl_false;
 	}
 	
 	/* free document */
@@ -3483,7 +3483,7 @@ int  test_07 (axlError ** error)
 	/* free dtd document */
 	axl_dtd_free (dtd);
 
-	return true;
+	return axl_true;
 }
 
 /** 
@@ -3491,9 +3491,9 @@ int  test_07 (axlError ** error)
  * 
  * @param error The optional axlError to be used to report errors.
  * 
- * @return true if the validity test is passed, false if not.
+ * @return axl_true if the validity test is passed, axl_false if not.
  */
-int  test_06 (axlError ** error)
+axl_bool test_06 (axlError ** error)
 {
 	/* top level definitions */
 	axlDoc            * doc = NULL;
@@ -3507,29 +3507,29 @@ int  test_06 (axlError ** error)
 	/* get current doc reference */
 	doc = axl_doc_parse_from_file ("test3.xml", error);
 	if (doc == NULL)
-		return false;
+		return axl_false;
 
 	/* load DTD */
 	dtd = axl_dtd_parse_from_file ("test3.dtd", error);
 	if (dtd == NULL)
-		return false;
+		return axl_false;
 
 	/* get the DTD element reference and check it */
 	element = axl_dtd_get_root (dtd);
 	if (element == NULL) {
 		axl_error_new (-1, "Expected to receive a root DTD node, not found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* check expected DTD root content */
 	if (! axl_cmp (axl_dtd_get_element_name (element), "complex")) {
 		axl_error_new (-1, "Expected to receive a root DTD node name, not found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	if (axl_dtd_get_element_type (element) != ELEMENT_TYPE_CHILDREN) {
 		axl_error_new (-1, "Expected to receive a root DTD node selection type (Children), not found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* get content specification */
@@ -3538,13 +3538,13 @@ int  test_06 (axlError ** error)
 		axl_log ("test-01", AXL_LEVEL_DEBUG, "item count %d != %d item spected",
 			 axl_dtd_item_list_count (itemList), 1);
 		axl_error_new (-1, "Expected to receive an item list specification with only one node, not found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* get times configuration */
 	if (axl_dtd_item_list_repeat (itemList) != ONE_AND_ONLY_ONE) {
 		axl_error_new (-1, "Expected to receive a repetition configuration (one and only one) but not found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* get the child node reference */
@@ -3553,14 +3553,14 @@ int  test_06 (axlError ** error)
 		axl_log ("test-01", AXL_LEVEL_CRITICAL, "found item name: '%s' != data",
 			 axl_dtd_item_node_get_value (itemNode));
 		axl_error_new (-1, "Expected to receive an item node but, not found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* get the DTD element which represents the provided data */
 	element = axl_dtd_get_element (dtd, "data");
 	if ((element == NULL) || (!axl_cmp (axl_dtd_get_element_name (element), "data"))) {
 		axl_error_new (-1, "Expected to receive a DTD element definition but NULL was found or a different DTD name, not found", NULL, error);
-		return false;
+		return axl_false;
 	}
 	
 	/* get content specification */
@@ -3569,7 +3569,7 @@ int  test_06 (axlError ** error)
 		axl_log ("test-01", AXL_LEVEL_DEBUG, "item count %d != %d item spected",
 			 axl_dtd_item_list_count (itemList), 3);
 		axl_error_new (-1, "Expected to receive an item list specification with only one node, not found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* get item list especification */
@@ -3577,28 +3577,28 @@ int  test_06 (axlError ** error)
 		axl_log ("test-01", AXL_LEVEL_DEBUG, "item count %d != %d item spected",
 			 axl_dtd_item_list_count (itemList), 3);
 		axl_error_new (-1, "Expected to receive an item list specification as a sequence type, not found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* check item nodes found inside the item list */
 	itemNode = axl_dtd_item_list_get_node (itemList, 0);
 	if (! axl_cmp (axl_dtd_item_node_get_value (itemNode), "row")) {
 		axl_error_new (-1, "Expected to receive an item node (row) but, not found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* get the child node reference */
 	itemNode = axl_dtd_item_list_get_node (itemList, 1);
 	if (! axl_cmp (axl_dtd_item_node_get_value (itemNode), "column")) {
 		axl_error_new (-1, "Expected to receive an item node (column) but, not found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* get current configuration for repetition value for the
 	 * provided content particule */
 	if (axl_dtd_item_node_get_repeat (itemNode) != ONE_AND_ONLY_ONE) {
 		axl_error_new (-1, "Expected to receive an item node repeat configuration but, not found", NULL, error);
-		return false;
+		return axl_false;
 	}
 		
 
@@ -3606,14 +3606,14 @@ int  test_06 (axlError ** error)
 	itemNode = axl_dtd_item_list_get_node (itemList, 2);
 	if (! axl_cmp (axl_dtd_item_node_get_value (itemNode), "value")) {
 		axl_error_new (-1, "Expected to receive an item node (value) but, not found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* now work with the choice element */
 	element = axl_dtd_get_element (dtd, "column");
 	if ((element == NULL) || (!axl_cmp (axl_dtd_get_element_name (element), "column"))) {
 		axl_error_new (-1, "Expected to receive a DTD element definition but NULL was found or a different DTD name (column), not found", NULL, error);
-		return false;
+		return axl_false;
 	}
 	
 	/* get content specification */
@@ -3622,20 +3622,20 @@ int  test_06 (axlError ** error)
 		axl_log ("test-01", AXL_LEVEL_DEBUG, "item count %d != %d item spected",
 			 axl_dtd_item_list_count (itemList), 4);
 		axl_error_new (-1, "Expected to receive an item list specification with only one node, not found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* get item list especification */
 	if (axl_dtd_item_list_type (itemList) != CHOICE) {
 		axl_error_new (-1, "Expected to receive an item list specification as a CHOICE type, not found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* get the DTD element which represents the provided data */
 	element = axl_dtd_get_element (dtd, "data");
 	if ((element == NULL) || (!axl_cmp (axl_dtd_get_element_name (element), "data"))) {
 		axl_error_new (-1, "Expected to receive a DTD element definition but NULL was found or a different DTD name, not found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 
@@ -3645,7 +3645,7 @@ int  test_06 (axlError ** error)
 	/* free dtd document */
 	axl_dtd_free (dtd);
 
-	return true;
+	return axl_true;
 }
 
 /** 
@@ -3653,11 +3653,11 @@ int  test_06 (axlError ** error)
  * simple DTD definitions, and ensuring elements are properly read.
  * 
  * @param error The axlError reference to be filled if the function
- * returns false.
+ * returns axl_false.
  * 
- * @return true if the validity test is passed, false if not.
+ * @return axl_true if the validity test is passed, axl_false if not.
  */
-int  test_05 (axlError ** error)
+axl_bool test_05 (axlError ** error)
 {
 
 	axlDoc * doc;
@@ -3667,19 +3667,19 @@ int  test_05 (axlError ** error)
 	/* parse the document found */
 	doc = axl_doc_parse_from_file ("test.xml", error);
 	if (doc == NULL)
-		return false;
+		return axl_false;
 
 	node = axl_doc_get (doc, "/complex/data/row/td");
 	if (node == NULL) {
 		axl_error_new (-1, "Expected to receive a node, not found", NULL, error);
 		axl_doc_free (doc);
-		return false;
+		return axl_false;
 	}
 
 	if (! axl_cmp (axl_node_get_content (node, NULL), "10")) {
 		axl_error_new (-1, "Expected to receive a node content, not found", NULL, error);
 		axl_doc_free (doc);
-		return false;
+		return axl_false;
 	}
 
 	/* free previous document */
@@ -3688,16 +3688,16 @@ int  test_05 (axlError ** error)
 	/* parse the document found */
 	doc = axl_doc_parse_from_file ("test2.xml", error);
 	if (doc == NULL)
-		return false;
+		return axl_false;
 	
 	
 	dtd = axl_dtd_parse_from_file ("test.dtd", error);
 	if (dtd == NULL)
-		return false;
+		return axl_false;
 
 	/* now validate the document */
 	if (! axl_dtd_validate (doc, dtd, error)) {
-		return false;
+		return axl_false;
 	}
 
 	/* release memory used by the parser */
@@ -3706,7 +3706,7 @@ int  test_05 (axlError ** error)
 	/* release memory used by the DTD element */
 	axl_dtd_free (dtd);
 
-	return true;
+	return axl_true;
 	
 }
 
@@ -3716,9 +3716,9 @@ int  test_05 (axlError ** error)
  *
  * @param error The axlError where failures will be reported 
  *
- * @return The \ref true if test is passed, false if not.
+ * @return The \ref axl_true if test is passed, axl_false if not.
  */
-int  test_04 (axlError ** error)
+axl_bool test_04 (axlError ** error)
 {
 	axlDoc  * doc;
 	axlNode * node;
@@ -3765,7 +3765,7 @@ int  test_04 (axlError ** error)
 				     NULL);
 	/* check the result returned */
 	if (doc == NULL)
-		return false;
+		return axl_false;
 
 	/* get the node <td> value */
 	node = axl_doc_get (doc, "/complex/data/row/td");
@@ -3773,69 +3773,69 @@ int  test_04 (axlError ** error)
 		axl_log ("test-04", AXL_LEVEL_DEBUG, "found a different content than the expected ('10' != '%s')",
 			 axl_node_get_content (node, NULL));
 		axl_error_new (-1, "Expected to receive a 10 value, but not found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* get a reference to the test2 node */
 	node = axl_doc_get (doc, "/complex/data/row/more/test3");
 	if (node == NULL) {
 		axl_error_new (-1, "Expected to find a test3 node at the given location", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* check the attribute */
 	if (! axl_node_has_attribute (node, "attr")) {
 		axl_error_new (-1, "Expected to find an attribute called 'attr' inside test3 node at the given location", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* check the attribute value */
 	if (! axl_cmp (axl_node_get_attribute_value (node, "attr"), "2.0")) {
 		axl_error_new (-1, "Expected to find an attribute value equal '2.0' inside test2 node at the given location", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* add here Pi instruction checking */
 	if (! axl_doc_has_pi_target (doc, "test")) {
 		axl_error_new (-1, "failed to get expected PI target 'test'", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	if (! axl_cmp (axl_doc_get_pi_target_content (doc, "test"), "\"my content\"")) {
 		axl_error_new (-1, "expected to receive a PI content not found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	node = axl_doc_get (doc, "/complex/data/row");
 	if (node == NULL) {
 		axl_error_new (-1, "unable to get expected node to check node PI support", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	if (! axl_node_has_pi_target (node, "test")) {
 		axl_error_new (-1, "failed to get expected PI target 'test' for the node", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	
 	node = axl_doc_get (doc, "/complex/data/non-xml-document");
 	if (node == NULL) {
 		axl_error_new (-1, "Expected to receive the CDATA node, not found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	if (! axl_cmp (axl_node_get_content (node, NULL), "<xml><<<<<<>>>>>><<<>>>><<<<<<>>>")) {
 		printf ("Content doesn't match: %s != %s\n", 
 			axl_node_get_content (node, NULL), "<xml><<<<<<>>>>>><<<>>>><<<<<<>>>");
 		axl_error_new (-1, "Expected to recevie CDATA content, not found or not match", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 				     
 	/* free the memory */
 	axl_doc_free (doc);
 	
-	return true;
+	return axl_true;
 }
 
 /** 
@@ -3843,9 +3843,9 @@ int  test_04 (axlError ** error)
  * 
  * @param error The axlError where failures will be reported.
  * 
- * @return \ref true if test is passed, false if not.
+ * @return \ref axl_true if test is passed, axl_false if not.
  */
-int  test_03 (axlError ** error)
+axl_bool test_03 (axlError ** error)
 {
 
 	axlDoc  * doc;
@@ -3862,14 +3862,14 @@ int  test_03 (axlError ** error)
   </data2>\n\
 </complex>", -1, error);
 	if (doc == NULL)
-		return false;
+		return axl_false;
 
 	/* get the root node */
 	node = axl_doc_get_root (doc);
 	if (! NODE_CMP_NAME (node, "complex")) {
 		axl_error_new (-2, "Root node returned from the document is not the one excepted", NULL, error);
 		axl_doc_free (doc);
-		return false;
+		return axl_false;
 	}
 
 	/* test get node function */
@@ -3877,14 +3877,14 @@ int  test_03 (axlError ** error)
 	if (node == NULL) {
 		axl_error_new (-2, "Unable to find a node due to a path selection", NULL, error);
 		axl_doc_free (doc);
-		return false;
+		return axl_false;
 	}
 
 	/* check the node returned */
 	if (! NODE_CMP_NAME (node, "td")) {
 		axl_error_new (-2, "The node for the node looked up doesn't match ", NULL, error);
 		axl_doc_free (doc);
-		return false;
+		return axl_false;
 	}
 
 	/* check for returning bad nodes */
@@ -3892,7 +3892,7 @@ int  test_03 (axlError ** error)
 	if (node != NULL) {
 		axl_error_new (-2, "Returned a node that should be NULL", NULL, error);
 		axl_doc_free (doc);
-		return false;
+		return axl_false;
 	}
 
 	node = axl_doc_get (doc, "/complex/data2/td");
@@ -3900,25 +3900,25 @@ int  test_03 (axlError ** error)
 		axl_log ("test-03", AXL_LEVEL_DEBUG, "expected to receive a node content: ' 23  ' but received '%s'",
 			 axl_node_get_content (node, NULL));
 		axl_error_new (-2, "Node content have failed, expected a different value", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	node = axl_doc_get (doc, "complex/data3/td");
 	if (node != NULL) {
 		axl_error_new (-2, "Parsed a path that is invalid", NULL, error);
-		return false;
+		return axl_false;
 	}
 	
 	/* release memory allocated by the document */
 	axl_doc_free (doc);
 
-	return true;
+	return axl_true;
 }
 
-int  test_02_always_fail (axlStream * stream, char ** detected, axlPointer user_data, axlError ** error)
+axl_bool test_02_always_fail (axlStream * stream, char ** detected, axlPointer user_data, axlError ** error)
 {
-	/* always return false to check how behave the library */
-	return false;
+	/* always return axl_false to check how behave the library */
+	return axl_false;
 }
 
 
@@ -3927,16 +3927,16 @@ int  test_02_always_fail (axlStream * stream, char ** detected, axlPointer user_
  * 
  * @param error The axlError where failures are returned.
  * 
- * @return true if test are properly run. false if not.
+ * @return axl_true if test are properly run. axl_false if not.
  */
-int  test_02 (axlError ** error) 
+axl_bool test_02 (axlError ** error) 
 {
 	axlDoc * doc;
 	
 	doc = axl_doc_parse ("<? xml >", 8, error);
 	if (doc != NULL) {
 		axl_error_new (-1, "Failed to detect wrong xml header", NULL, error);
-		return false;
+		return axl_false;
 	}
 	axl_error_free (* error);
 	(*error) = NULL;
@@ -3945,7 +3945,7 @@ int  test_02 (axlError ** error)
 	if (doc != NULL) {
 		
 		axl_error_new (-1, "Failed to detect wrong xml trailing header", NULL, error);
-		return false;
+		return axl_false;
 	}
 	axl_error_free (* error);
 	(*error) = NULL;
@@ -3956,7 +3956,7 @@ int  test_02 (axlError ** error)
 	doc = axl_doc_parse ("<this />", 8, error);
 	if (doc != NULL) {
 		axl_error_new (-1, "Failed to detect wrong xml trailing header", NULL, error);
-		return false;
+		return axl_false;
 	}
 	axl_error_free (* error);
 	(*error) = NULL;
@@ -3968,7 +3968,7 @@ int  test_02 (axlError ** error)
 	doc = axl_doc_parse ("<document><this><!-- this not closed --</document>", 50, error);
 	if (doc != NULL) {
 		axl_error_new (-1, "Failed to detect wrong balanced xml document", NULL, error);
-		return false;
+		return axl_false;
 	}
 	axl_error_free (* error);
 	(*error) = NULL;
@@ -3977,7 +3977,7 @@ int  test_02 (axlError ** error)
 	doc = axl_doc_parse ("<document><this><!-- this not closed --></document>", 51, error);
 	if (doc != NULL) {
 		axl_error_new (-1, "Failed to detect wrong balanced xml document", NULL, error);
-		return false;
+		return axl_false;
 	}
 	axl_error_free (* error);
 	(*error) = NULL;
@@ -3987,12 +3987,12 @@ int  test_02 (axlError ** error)
 	doc = axl_doc_parse ("<document><document><!-- this not closed --></document>", 55, error);
 	if (doc != NULL) {
 		axl_error_new (-1, "Failed to detect wrong balanced xml document", NULL, error);
-		return false;
+		return axl_false;
 	}
 	axl_error_free (* error);
 	(*error) = NULL;
 
-	return true;
+	return axl_true;
 }
 
 
@@ -4001,10 +4001,10 @@ int  test_02 (axlError ** error)
  * version=1.0 and no more header.
  * 
  * 
- * @return false if the function fails to parse the
- * document. true if the test was properly executed.
+ * @return axl_false if the function fails to parse the
+ * document. axl_true if the test was properly executed.
  */
-int  test_01 (axlError ** error) 
+axl_bool test_01 (axlError ** error) 
 {
 	/* axl document representation */
 	axlDoc   * doc;
@@ -4013,13 +4013,13 @@ int  test_01 (axlError ** error)
 	/* parse the given string */
 	doc = axl_doc_parse ("<?xml version='1.0' ?><axldoc />", 32, error);
 	if (doc == NULL) {
-		return false;
+		return axl_false;
 	}
 	axl_doc_free (doc);
 
 	doc = axl_doc_parse ("<?xml      version='1.0'            ?>      <another />", 55, error);
 	if (doc == NULL) {
-		return false;
+		return axl_false;
 	}
 	
 	/* release document parsed */
@@ -4027,7 +4027,7 @@ int  test_01 (axlError ** error)
 
 	doc = axl_doc_parse ("<?xml    \n   \t \n \r version='1.0' ?>    <doc />", 50, error);
 	if (doc == NULL) {
-		return false;
+		return axl_false;
 	}
 
 	/* release document parsed */
@@ -4035,7 +4035,7 @@ int  test_01 (axlError ** error)
 
 	doc = axl_doc_parse ("<?xml  version=\"1.0\"        ?>   \r \t \n<another />", 54, error);
 	if (doc == NULL) {
-		return false;
+		return axl_false;
 	}
 
 	/* release document parsed */
@@ -4043,14 +4043,14 @@ int  test_01 (axlError ** error)
 
 	doc = axl_doc_parse ("<?xml  version=\"1.0\" \t \n \r encoding='utf-8\"   ?> <data />", 63, error);
 	if (doc == NULL) {
-		return false;
+		return axl_false;
 	}
 
 	if (strcmp ("utf-8", axl_doc_get_encoding (doc))) {
 		printf ("ERROR: encoding read from the document differs from the expected (got %s, expected %s)!\n",
 			axl_doc_get_encoding (doc), "utf-8");
 		axl_error_new (-1, "ERROR: encoding read from the document differs from the expected!", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* release document parsed */
@@ -4058,29 +4058,29 @@ int  test_01 (axlError ** error)
 
 	doc = axl_doc_parse ("<?xml version='1.0' encoding='utf-8' standalone='yes' ?>  <data/>", 65, error);
 	if (doc == NULL) {
-		return false;
+		return axl_false;
 	}
 
 	if (!axl_doc_get_standalone (doc)) {
-		printf ("ERROR: Expected to receive a true standalone configuration but false was found\n");
-		return false;
+		printf ("ERROR: Expected to receive a true standalone configuration but axl_false was found\n");
+		return axl_false;
 	}
 
 	/* release document parsed */
 	axl_doc_free (doc);
 	
 
-	return true;
+	return axl_true;
 }
 
 /** 
  * @brief Axl stream boundary checks.
  * 
  * 
- * @return false if the function fails to parse the
- * document. true if the test was properly executed.
+ * @return axl_false if the function fails to parse the
+ * document. axl_true if the test was properly executed.
  */
-int  test_01a (axlError ** error) 
+axl_bool test_01a (axlError ** error) 
 {
 	axlStream * stream;
 	char      * value;
@@ -4089,10 +4089,10 @@ int  test_01a (axlError ** error)
 	/* parse the string */
 	stream = axl_stream_new ("customer", -1, NULL, -1, error);
 	if (stream == NULL) 
-		return false;
+		return axl_false;
 
 	/* get the value */
-	value = axl_stream_get_until (stream, NULL, &chunk_matched, true, 2, "[", ".");
+	value = axl_stream_get_until (stream, NULL, &chunk_matched, axl_true, 2, "[", ".");
 	if (value != NULL) {
 		/* free the stream */
 		axl_stream_free (stream);
@@ -4100,7 +4100,7 @@ int  test_01a (axlError ** error)
 		/* fill an error */
 		axl_error_new (-1, "expected to find a null value while parsing content", NULL, error);
 		
-		return false;
+		return axl_false;
 	}
 
 	if (chunk_matched != -1) {
@@ -4110,13 +4110,13 @@ int  test_01a (axlError ** error)
 		/* fill an error */
 		axl_error_new (-1, "expected to chunk matched value equal to -1", NULL, error);
 		
-		return false;
+		return axl_false;
 	}
 
 	/* parse the stream using zero support */
 
 	/* get the value */
-	value = axl_stream_get_until_zero (stream, NULL, &chunk_matched, true, 2, "[", ".");
+	value = axl_stream_get_until_zero (stream, NULL, &chunk_matched, axl_true, 2, "[", ".");
 	if (value == NULL) {
 		/* free the stream */
 		axl_stream_free (stream);
@@ -4124,7 +4124,7 @@ int  test_01a (axlError ** error)
 		/* fill an error */
 		axl_error_new (-1, "expected to find a defined value while parsing content", NULL, error);
 		
-		return false;
+		return axl_false;
 	}
 
 	if (chunk_matched != -2) {
@@ -4134,7 +4134,7 @@ int  test_01a (axlError ** error)
 		/* fill an error */
 		axl_error_new (-1, "expected to chunk matched value equal to -2", NULL, error);
 		
-		return false;
+		return axl_false;
 	}
 
 	/* zero string found (in the current stream) */
@@ -4144,7 +4144,7 @@ int  test_01a (axlError ** error)
 		/* fill an error */
 		axl_error_new (-1, "expected to find a string not found", NULL, error);
 
-		return false;
+		return axl_false;
 	}
 
 	/* free the stream */
@@ -4153,38 +4153,38 @@ int  test_01a (axlError ** error)
 	/* parse the string */
 	stream = axl_stream_new ("customer", -1, NULL, -1, error);
 	if (stream == NULL) 
-		return false;
+		return axl_false;
 
 	axl_stream_push (stream, "provider ", 9);
 	if (! (axl_stream_peek (stream, "provider", 8) > 0)) {
 		axl_error_new (-1, "failed to check expected input at the stream after push operation", NULL, error);
-		return false;
+		return axl_false;
 	} /* end if */
 
 	if (axl_stream_get_size (stream) != 17) {
 		axl_error_new (-1, "Found unexpected stream buffer size, while expecting 17", NULL, error);
-		return false;
+		return axl_false;
 	} /* end if */
 
 	axl_stream_inspect (stream, "pro", 3);
 
 	if (! (axl_stream_inspect (stream, "vider ", 6) > 0)) {
 		axl_error_new (-1, "Expected to find an string value.. ('vider ') not found", NULL, error);
-		return false;
+		return axl_false;
 	} /* end if */
 
 	axl_stream_free (stream);
 
-	return true;
+	return axl_true;
 }
 
 
 
 
-int  test_01b_show_node_found (axlNode * node,
+axl_bool test_01b_show_node_found (axlNode * node,
 			       axlNode * parent,
 			       axlDoc  * doc,
-			       int     * was_removed,
+			       axl_bool    * was_removed,
 			       axlPointer ptr, 
 			       axlPointer ptr2)
 {
@@ -4200,7 +4200,7 @@ int  test_01b_show_node_found (axlNode * node,
 			axl_error_new (-1, "Expected to find a document node not found <document>", NULL, (axlError **) ptr2);
 
 			/* stop iterating */
-			return false;
+			return axl_false;
 		}
 
 		break;
@@ -4211,7 +4211,7 @@ int  test_01b_show_node_found (axlNode * node,
 			axl_error_new (-1, "Expected to find a document node not found <child1>", NULL, (axlError **) ptr2);
 
 			/* stop iterating */
-			return false;
+			return axl_false;
 		}
 
 		if (! NODE_CMP_NAME (parent, "document")) {
@@ -4219,7 +4219,7 @@ int  test_01b_show_node_found (axlNode * node,
 			axl_error_new (-1, "Expected to find parent node <document> for child1", NULL, (axlError **) ptr2);
 
 			/* stop iterating */
-			return false;
+			return axl_false;
 		}
 
 		break;
@@ -4230,7 +4230,7 @@ int  test_01b_show_node_found (axlNode * node,
 			axl_error_new (-1, "Expected to find a document node not found <child2>", NULL, (axlError **) ptr2);
 
 			/* stop iterating */
-			return false;
+			return axl_false;
 		}
 
 		if (! NODE_CMP_NAME (parent, "document")) {
@@ -4238,7 +4238,7 @@ int  test_01b_show_node_found (axlNode * node,
 			axl_error_new (-1, "Expected to find parent node <document> for child2", NULL, (axlError **) ptr2);
 
 			/* stop iterating */
-			return false;
+			return axl_false;
 		}
 
 		break;
@@ -4249,7 +4249,7 @@ int  test_01b_show_node_found (axlNode * node,
 			axl_error_new (-1, "Expected to find a document node not found <child3>", NULL, (axlError **) ptr2);
 
 			/* stop iterating */
-			return false;
+			return axl_false;
 		}
 
 		if (! NODE_CMP_NAME (parent, "document")) {
@@ -4257,7 +4257,7 @@ int  test_01b_show_node_found (axlNode * node,
 			axl_error_new (-1, "Expected to find parent node <document> for child3", NULL, (axlError **) ptr2);
 
 			/* stop iterating */
-			return false;
+			return axl_false;
 		}
 
 		break;
@@ -4268,7 +4268,7 @@ int  test_01b_show_node_found (axlNode * node,
 			axl_error_new (-1, "Expected to find a document node not found <a>", NULL, (axlError **) ptr2);
 
 			/* stop iterating */
-			return false;
+			return axl_false;
 		}
 
 		if (! NODE_CMP_NAME (parent, "child3")) {
@@ -4276,7 +4276,7 @@ int  test_01b_show_node_found (axlNode * node,
 			axl_error_new (-1, "Expected to find parent node <child3> for a", NULL, (axlError **) ptr2);
 
 			/* stop iterating */
-			return false;
+			return axl_false;
 		}
 
 		break;
@@ -4287,7 +4287,7 @@ int  test_01b_show_node_found (axlNode * node,
 			axl_error_new (-1, "Expected to find a document node not found <b>", NULL, (axlError **) ptr2);
 
 			/* stop iterating */
-			return false;
+			return axl_false;
 		}
 
 		if (! NODE_CMP_NAME (parent, "child3")) {
@@ -4295,7 +4295,7 @@ int  test_01b_show_node_found (axlNode * node,
 			axl_error_new (-1, "Expected to find parent node <child3> for b", NULL, (axlError **) ptr2);
 
 			/* stop iterating */
-			return false;
+			return axl_false;
 		}
 
 		break;
@@ -4306,7 +4306,7 @@ int  test_01b_show_node_found (axlNode * node,
 			axl_error_new (-1, "Expected to find a document node not found <c>", NULL, (axlError **) ptr2);
 
 			/* stop iterating */
-			return false;
+			return axl_false;
 		}
 
 		if (! NODE_CMP_NAME (parent, "child3")) {
@@ -4314,7 +4314,7 @@ int  test_01b_show_node_found (axlNode * node,
 			axl_error_new (-1, "Expected to find parent node <child3> for c", NULL, (axlError **) ptr2);
 
 			/* stop iterating */
-			return false;
+			return axl_false;
 		}
 
 		break;
@@ -4325,7 +4325,7 @@ int  test_01b_show_node_found (axlNode * node,
 			axl_error_new (-1, "Expected to find a document node not found <d>", NULL, (axlError **) ptr2);
 
 			/* stop iterating */
-			return false;
+			return axl_false;
 		}
 
 		if (! NODE_CMP_NAME (parent, "c")) {
@@ -4333,7 +4333,7 @@ int  test_01b_show_node_found (axlNode * node,
 			axl_error_new (-1, "Expected to find parent node <c> for d", NULL, (axlError **) ptr2);
 
 			/* stop iterating */
-			return false;
+			return axl_false;
 		}
 
 		break;
@@ -4344,7 +4344,7 @@ int  test_01b_show_node_found (axlNode * node,
 			axl_error_new (-1, "Expected to find a document node not found <e>", NULL, (axlError **) ptr2);
 
 			/* stop iterating */
-			return false;
+			return axl_false;
 		}
 
 		if (! NODE_CMP_NAME (parent, "c")) {
@@ -4352,7 +4352,7 @@ int  test_01b_show_node_found (axlNode * node,
 			axl_error_new (-1, "Expected to find parent node <c> for e", NULL, (axlError **) ptr2);
 
 			/* stop iterating */
-			return false;
+			return axl_false;
 		}
 
 		break;
@@ -4363,7 +4363,7 @@ int  test_01b_show_node_found (axlNode * node,
 			axl_error_new (-1, "Expected to find a document node not found <f>", NULL, (axlError **) ptr2);
 
 			/* stop iterating */
-			return false;
+			return axl_false;
 		}
 
 		if (! NODE_CMP_NAME (parent, "child3")) {
@@ -4371,7 +4371,7 @@ int  test_01b_show_node_found (axlNode * node,
 			axl_error_new (-1, "Expected to find parent node <child3> for f", NULL, (axlError **) ptr2);
 
 			/* stop iterating */
-			return false;
+			return axl_false;
 		}
 
 		break;
@@ -4382,7 +4382,7 @@ int  test_01b_show_node_found (axlNode * node,
 			axl_error_new (-1, "Expected to find a document node not found <g>", NULL, (axlError **) ptr2);
 
 			/* stop iterating */
-			return false;
+			return axl_false;
 		}
 
 		if (! NODE_CMP_NAME (parent, "child3")) {
@@ -4390,7 +4390,7 @@ int  test_01b_show_node_found (axlNode * node,
 			axl_error_new (-1, "Expected to find parent node <chile3> for g", NULL, (axlError **) ptr2);
 
 			/* stop iterating */
-			return false;
+			return axl_false;
 		}
 
 		break;
@@ -4401,7 +4401,7 @@ int  test_01b_show_node_found (axlNode * node,
 			axl_error_new (-1, "Expected to find a document node not found <child4>", NULL, (axlError **) ptr2);
 
 			/* stop iterating */
-			return false;
+			return axl_false;
 		}
 
 		if (! NODE_CMP_NAME (parent, "document")) {
@@ -4409,7 +4409,7 @@ int  test_01b_show_node_found (axlNode * node,
 			axl_error_new (-1, "Expected to find parent node <document> for child4", NULL, (axlError **) ptr2);
 
 			/* stop iterating */
-			return false;
+			return axl_false;
 		}
 		break;
 	case 12:
@@ -4419,7 +4419,7 @@ int  test_01b_show_node_found (axlNode * node,
 			axl_error_new (-1, "Expected to find a document node not found <child5>", NULL, (axlError **) ptr2);
 
 			/* stop iterating */
-			return false;
+			return axl_false;
 		}
 
 		if (! NODE_CMP_NAME (parent, "document")) {
@@ -4427,7 +4427,7 @@ int  test_01b_show_node_found (axlNode * node,
 			axl_error_new (-1, "Expected to find parent node <document> for child4", NULL, (axlError **) ptr2);
 
 			/* stop iterating */
-			return false;
+			return axl_false;
 		}
 
 		break;
@@ -4437,14 +4437,14 @@ int  test_01b_show_node_found (axlNode * node,
 	(*iterator)++;
 
 	/* keep iterating */
-	return true;
+	return axl_true;
 }
 
 
-int  test_01b_show_node_found2 (axlNode * node, 
+axl_bool test_01b_show_node_found2 (axlNode * node, 
 				axlNode * parent,
 				axlDoc  * doc,  
-				int     * was_removed,
+				axl_bool    * was_removed,
 				axlPointer ptr, axlPointer ptr2)
 {
 	int * iterator = ptr;
@@ -4458,7 +4458,7 @@ int  test_01b_show_node_found2 (axlNode * node,
 			axl_error_new (-1, "Expected to find a document node not found <document>", NULL, (axlError **) ptr2);
 
 			/* stop iterating */
-			return false;
+			return axl_false;
 		}
 		break;
 	case 1:
@@ -4468,7 +4468,7 @@ int  test_01b_show_node_found2 (axlNode * node,
 			axl_error_new (-1, "Expected to find a document node not found <child1>", NULL, (axlError **) ptr2);
 
 			/* stop iterating */
-			return false;
+			return axl_false;
 		}
 		break;
 	case 2:
@@ -4478,7 +4478,7 @@ int  test_01b_show_node_found2 (axlNode * node,
 			axl_error_new (-1, "Expected to find a document node not found <child2>", NULL, (axlError **) ptr2);
 
 			/* stop iterating */
-			return false;
+			return axl_false;
 		}
 		break;
 	case 3:
@@ -4488,7 +4488,7 @@ int  test_01b_show_node_found2 (axlNode * node,
 			axl_error_new (-1, "Expected to find a document node not found <child3>", NULL, (axlError **) ptr2);
 
 			/* stop iterating */
-			return false;
+			return axl_false;
 		}
 		break;
 	case 4:
@@ -4498,7 +4498,7 @@ int  test_01b_show_node_found2 (axlNode * node,
 			axl_error_new (-1, "Expected to find a document node not found <child4>", NULL, (axlError **) ptr2);
 
 			/* stop iterating */
-			return false;
+			return axl_false;
 		}
 		break;
 	case 5:
@@ -4508,7 +4508,7 @@ int  test_01b_show_node_found2 (axlNode * node,
 			axl_error_new (-1, "Expected to find a document node not found <child5>", NULL, (axlError **) ptr2);
 
 			/* stop iterating */
-			return false;
+			return axl_false;
 		}
 		break;
 	case 6:
@@ -4518,7 +4518,7 @@ int  test_01b_show_node_found2 (axlNode * node,
 			axl_error_new (-1, "Expected to find a document node not found <a>", NULL, (axlError **) ptr2);
 
 			/* stop iterating */
-			return false;
+			return axl_false;
 		}
 		break;
 	case 7:
@@ -4528,7 +4528,7 @@ int  test_01b_show_node_found2 (axlNode * node,
 			axl_error_new (-1, "Expected to find a document node not found <b>", NULL, (axlError **) ptr2);
 
 			/* stop iterating */
-			return false;
+			return axl_false;
 		}
 		break;
 	case 8:
@@ -4538,7 +4538,7 @@ int  test_01b_show_node_found2 (axlNode * node,
 			axl_error_new (-1, "Expected to find a document node not found <c>", NULL, (axlError **) ptr2);
 
 			/* stop iterating */
-			return false;
+			return axl_false;
 		}
 		break;
 	case 9:
@@ -4548,7 +4548,7 @@ int  test_01b_show_node_found2 (axlNode * node,
 			axl_error_new (-1, "Expected to find a document node not found <f>", NULL, (axlError **) ptr2);
 
 			/* stop iterating */
-			return false;
+			return axl_false;
 		}
 		break;
 	case 10:
@@ -4558,7 +4558,7 @@ int  test_01b_show_node_found2 (axlNode * node,
 			axl_error_new (-1, "Expected to find a document node not found <g>", NULL, (axlError **) ptr2);
 
 			/* stop iterating */
-			return false;
+			return axl_false;
 		}
 		break;
 	case 11:
@@ -4568,7 +4568,7 @@ int  test_01b_show_node_found2 (axlNode * node,
 			axl_error_new (-1, "Expected to find a document node not found <d>", NULL, (axlError **) ptr2);
 
 			/* stop iterating */
-			return false;
+			return axl_false;
 		}
 		break;
 	case 12:
@@ -4578,7 +4578,7 @@ int  test_01b_show_node_found2 (axlNode * node,
 			axl_error_new (-1, "Expected to find a document node not found <e>", NULL, (axlError **) ptr2);
 
 			/* stop iterating */
-			return false;
+			return axl_false;
 		}
 		break;
 	}
@@ -4587,7 +4587,7 @@ int  test_01b_show_node_found2 (axlNode * node,
 	(*iterator)++;
 
 	/* keep iterating */
-	return true;
+	return axl_true;
 }
 
 
@@ -4597,10 +4597,10 @@ int  test_01b_show_node_found2 (axlNode * node,
  * @brief Axl stream boundary checks.
  * 
  * 
- * @return false if the function fails to parse the
- * document. true if the test was properly executed.
+ * @return axl_false if the function fails to parse the
+ * document. axl_true if the test was properly executed.
  */
-int  test_01b (axlError ** error)  
+axl_bool test_01b (axlError ** error)  
 {
 	axlDoc   * doc;
 	axlNode  * node;
@@ -4609,52 +4609,52 @@ int  test_01b (axlError ** error)
 	/* parse document */
 	doc = axl_doc_parse_from_file ("test_01b.xml", error);
 	if (doc == NULL) 
-		return false;
+		return axl_false;
 
 	/* get document root */
 	node = axl_doc_get_root (doc);
 	if (! NODE_CMP_NAME (node, "document")) {
 		axl_error_new (-1, "Expected to find root <document>, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* get first child node */
 	node = axl_node_get_first_child (node);
 	if (! NODE_CMP_NAME (node, "child1")) {
 		axl_error_new (-1, "Expected to find child node <child1>, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* get sibling node */
 	node = axl_node_get_next (node);
 	if (! NODE_CMP_NAME (node, "child2")) {
 		axl_error_new (-1, "Expected to find child node <child2>, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* now iterate over all nodes inside the document */
 	test_01b_id = 0;
 	if (! axl_doc_iterate_full (doc, DEEP_ITERATION, test_01b_show_node_found, &test_01b_id, error))
-		return false;
+		return axl_false;
 
 	/* now iterate over all nodes inside (wide mode) the document */
 	test_01b_id = 0;
 	if (! axl_doc_iterate_full (doc, WIDE_ITERATION, test_01b_show_node_found2, &test_01b_id, error))
-		return false; 
+		return axl_false; 
 
 	/* test ok */
 	axl_doc_free (doc);
-	return true;
+	return axl_true;
 }
 
 /** 
  * @brief Axl stream boundary checks.
  * 
  * 
- * @return false if the function fails to parse the
- * document. true if the test was properly executed.
+ * @return axl_false if the function fails to parse the
+ * document. axl_true if the test was properly executed.
  */
-int  test_01c (axlError ** error)  
+axl_bool test_01c (axlError ** error)  
 {
 	axlDoc   * doc;
 	axlNode  * node;
@@ -4663,13 +4663,13 @@ int  test_01c (axlError ** error)
 	/* parse document (uses the same xml document as test_01b) */
 	doc = axl_doc_parse_from_file ("test_01b.xml", error);
 	if (doc == NULL) 
-		return false;
+		return axl_false;
 
 	/* get document root */
 	node = axl_doc_get_root (doc);
 	if (! NODE_CMP_NAME (node, "document")) {
 		axl_error_new (-1, "Expected to find root <document>, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* get first child */
@@ -4677,118 +4677,118 @@ int  test_01c (axlError ** error)
 	
 	if (! NODE_CMP_NAME (node, "child1")) {
 		axl_error_new (-1, "Expected to find <child1>, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* check parent */
 	parent = axl_node_get_parent (node);
 	if (! NODE_CMP_NAME (parent, "document")) {
 		axl_error_new (-1, "Expected to find parent <document>, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 	
 	node = axl_node_get_next (node);
 	if (! NODE_CMP_NAME (node, "child2")) {
 		axl_error_new (-1, "Expected to find <child2>, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* check parent */
 	parent = axl_node_get_parent (node);
 	if (! NODE_CMP_NAME (parent, "document")) {
 		axl_error_new (-1, "Expected to find parent <document>, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	node = axl_node_get_next (node);
 	if (! NODE_CMP_NAME (node, "child3")) {
 		axl_error_new (-1, "Expected to find <child3>, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 	/* check parent */
 	parent = axl_node_get_parent (node);
 	if (! NODE_CMP_NAME (parent, "document")) {
 		axl_error_new (-1, "Expected to find parent <document>, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	node = axl_node_get_next (node);
 	if (! NODE_CMP_NAME (node, "child4")) {
 		axl_error_new (-1, "Expected to find <child4>, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 	/* check parent */
 	parent = axl_node_get_parent (node);
 	if (! NODE_CMP_NAME (parent, "document")) {
 		axl_error_new (-1, "Expected to find parent <document>, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	node = axl_node_get_next (node);
 	if (! NODE_CMP_NAME (node, "child5")) {
 		axl_error_new (-1, "Expected to find <child5>, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 	/* check parent */
 	parent = axl_node_get_parent (node);
 	if (! NODE_CMP_NAME (parent, "document")) {
 		axl_error_new (-1, "Expected to find parent <document>, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	if (axl_node_get_next (node) != NULL) {
 		axl_error_new (-1, "Expected to find NULL value while calling to axl_node_get_next, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	node = axl_node_get_previous (node);
 	if (! NODE_CMP_NAME (node, "child4")) {
 		axl_error_new (-1, "Expected to find <child4>, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 	/* check parent */
 	if (! NODE_CMP_NAME (parent, "document")) {
 		axl_error_new (-1, "Expected to find parent <document>, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	node = axl_node_get_previous (node);
 	if (! NODE_CMP_NAME (node, "child3")) {
 		axl_error_new (-1, "Expected to find <child3>, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 	/* check parent */
 	if (! NODE_CMP_NAME (parent, "document")) {
 		axl_error_new (-1, "Expected to find parent <document>, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	node = axl_node_get_previous (node);
 	if (! NODE_CMP_NAME (node, "child2")) {
 		axl_error_new (-1, "Expected to find <child2>, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 	/* check parent */
  	if (! NODE_CMP_NAME (parent, "document")) {
 		axl_error_new (-1, "Expected to find parent <document>, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	node = axl_node_get_previous (node);
 	if (! NODE_CMP_NAME (node, "child1")) {
 		axl_error_new (-1, "Expected to find <child1>, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 	/* check parent */
 	parent = axl_node_get_parent (node);
 	if (! NODE_CMP_NAME (parent, "document")) {
 		axl_error_new (-1, "Expected to find parent <document>, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	if (axl_node_get_previous (node) != NULL) {
 		axl_error_new (-1, "Expected to find NULL value while calling to axl_node_get_next, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* check next called and previous called api */
@@ -4800,41 +4800,41 @@ int  test_01c (axlError ** error)
 	node = axl_node_get_next_called (node, "child5");
 	if (! NODE_CMP_NAME (node, "child5")) {
 		axl_error_new (-1, "Expected to find <child5> node while calling to axl_node_get_next_called, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 	
 	/* check next empty */
 	if (axl_node_get_next_called (node, "child5") != NULL) {
 		axl_error_new (-1, "Expected to find empty node following to <child5> node while calling to axl_node_get_next_called, but it was found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* get <child1> */
 	node = axl_node_get_previous_called (node, "child1");
 	if (! NODE_CMP_NAME (node, "child1")) {
 		axl_error_new (-1, "Expected to find <child1> node while calling to axl_node_get_previous_called, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* check next empty */
 	if (axl_node_get_previous_called (node, "child1") != NULL) {
 		axl_error_new (-1, "Expected to find empty node following to <child1> node while calling to axl_node_get_previous_called, but it was found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* free document */
 	axl_doc_free (doc);
 
-	return true;
+	return axl_true;
 }
 
 /** 
  * @brief Axl node nth access.
  * 
- * @return false if the function fails to parse the
- * document. true if the test was properly executed.
+ * @return axl_false if the function fails to parse the
+ * document. axl_true if the test was properly executed.
  */
-int  test_01d (axlError ** error)  
+axl_bool test_01d (axlError ** error)  
 {
 	axlDoc   * doc;
 	axlNode  * node;
@@ -4843,7 +4843,7 @@ int  test_01d (axlError ** error)
 	/* parse document */
 	doc = axl_doc_parse_from_file ("test_01d.xml", error);
 	if (doc == NULL) 
-		return false;
+		return axl_false;
 
 	/* get document root */
 	node = axl_doc_get_root (doc);
@@ -4852,35 +4852,35 @@ int  test_01d (axlError ** error)
 	child = axl_node_get_child_nth (node, 0);
 	if (! NODE_CMP_NAME (child, "child1")) {
 		axl_error_new (-1, "Expected to find node <child1> at 0, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* get the node at the 1 position */
 	child = axl_node_get_child_nth (node, 1);
 	if (! NODE_CMP_NAME (child, "child2")) {
 		axl_error_new (-1, "Expected to find node <child2> at 1, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* get the node at the 2 position */
 	child = axl_node_get_child_nth (node, 2);
 	if (! NODE_CMP_NAME (child, "child3")) {
 		axl_error_new (-1, "Expected to find node <child3> at 2, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* get the node at the 3 position */
 	child = axl_node_get_child_nth (node, 3);
 	if (! NODE_CMP_NAME (child, "child4")) {
 		axl_error_new (-1, "Expected to find node <child4> at 3, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* get the node at the 4 position */
 	child = axl_node_get_child_nth (node, 4);
 	if (! NODE_CMP_NAME (child, "child5")) {
 		axl_error_new (-1, "Expected to find node <child5> at 4, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* now with <child3> childs *> */
@@ -4890,49 +4890,49 @@ int  test_01d (axlError ** error)
 	child = axl_node_get_child_nth (node, 0);
 	if (! NODE_CMP_NAME (child, "a")) {
 		axl_error_new (-1, "Expected to find node <a> at 0, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* get the node at the 1 position */
 	child = axl_node_get_child_nth (node, 1);
 	if (! NODE_CMP_NAME (child, "b")) {
 		axl_error_new (-1, "Expected to find node <b> at 1, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 	   
 	/* get the node at the 2 position */
 	child = axl_node_get_child_nth (node, 2);
 	if (! NODE_CMP_NAME (child, "c")) {
 		axl_error_new (-1, "Expected to find node <c> at 2, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* get the node at the 3 position */
 	child = axl_node_get_child_nth (node, 3);
 	if (! NODE_CMP_NAME (child, "f")) {
 		axl_error_new (-1, "Expected to find node <f> at 3, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* get the node at the 4 position */
 	child = axl_node_get_child_nth (node, 4);
 	if (! NODE_CMP_NAME (child, "g")) {
 		axl_error_new (-1, "Expected to find node <g> at 4, but it wasn't found", NULL, error);
-		return false;
+		return axl_false;
 	}
 
 	/* test ok */
 	axl_doc_free (doc);
-	return true;
+	return axl_true;
 }
 
 /** 
  * @brief Check parsing document with huge node content.
  * 
- * @return false if the function fails to parse the
- * document. true if the test was properly executed.
+ * @return axl_false if the function fails to parse the
+ * document. axl_true if the test was properly executed.
  */
-int  test_01e (axlError ** error)  
+axl_bool test_01e (axlError ** error)  
 {
 	axlDoc         * doc;
 	axlNode        * node;
@@ -4942,7 +4942,7 @@ int  test_01e (axlError ** error)
 	/* parse document */
 	doc = axl_doc_parse_from_file ("test_01e.xml", error);
 	if (doc == NULL) 
-		return false;
+		return axl_false;
 	
 	/* get root node */
 	node    = axl_doc_get_root (doc);
@@ -4951,16 +4951,16 @@ int  test_01e (axlError ** error)
 	/* free document */
 	axl_doc_free (doc);
 
-	return true;
+	return axl_true;
 } 
 
 /** 
  * @brief Check parsing document xml:space attribute.
  * 
- * @return false if the function fails to parse the document. true if
+ * @return axl_false if the function fails to parse the document. axl_true if
  * the test was properly executed.
  */
-int  test_01f (axlError ** error)  
+axl_bool test_01f (axlError ** error)  
 {
 	axlDoc         * doc;
 	axlNode        * node;
@@ -4970,7 +4970,7 @@ int  test_01f (axlError ** error)
 	/* parse document */
 	doc = axl_doc_parse_from_file ("test_01f.xml", error);
 	if (doc == NULL) 
-		return false;
+		return axl_false;
 	
 	/* get root node */
 	node    = axl_doc_get_root (doc);
@@ -4980,7 +4980,7 @@ int  test_01f (axlError ** error)
 		printf ("found content '%s' but expected '%s'...\n", content, "     ");
 		axl_error_new (-1, "Expected to find content not found", NULL, error);
 		axl_free (doc);
-		return false;
+		return axl_false;
 	}
 	
 	/* free document */
@@ -4989,7 +4989,7 @@ int  test_01f (axlError ** error)
 	/* parse document */
 	doc = axl_doc_parse_from_file ("test_01f2.xml", error);
 	if (doc == NULL) 
-		return false;
+		return axl_false;
 	
 	/* get node <content/id> */
 	node    = axl_doc_get_root (doc);
@@ -5000,7 +5000,7 @@ int  test_01f (axlError ** error)
 		printf ("found content '%s' but expected '%s'...\n", content, "   ");
 		axl_error_new (-1, "Expected to find content not found", NULL, error);
 		axl_free (doc);
-		return false;
+		return axl_false;
 	}
 
 	/* get node <content/id2> */
@@ -5012,22 +5012,22 @@ int  test_01f (axlError ** error)
 		printf ("found content '%s' but expected '%s'...\n", content, "");
 		axl_error_new (-1, "Expected to find content not found", NULL, error);
 		axl_free (doc);
-		return false;
+		return axl_false;
 	}
 	
 	/* free document */
 	axl_doc_free (doc);
 
-	return true;
+	return axl_true;
 } 
 
 /** 
  * @brief Test current libaxl list implementation.
  * 
  * 
- * @return true if it works properly or false if not.
+ * @return axl_true if it works properly or axl_false if not.
  */
-int  test_01_01 () 
+axl_bool test_01_01 () 
 {
 	axlList * list;
 	int       value;
@@ -5042,12 +5042,12 @@ int  test_01_01 ()
 	if (axl_list_length (list) != 0) {
 		printf ("Bad length returned by the list (%d != 0)\n",
 			axl_list_length (list));
-		return false;
+		return axl_false;
 	}
 
 	if (! axl_list_is_empty (list)) {
 		printf ("Expected to find empty list just after list created\n");
-		return false;
+		return axl_false;
 	} /* end if */
 	
 	/* add data */
@@ -5055,26 +5055,26 @@ int  test_01_01 ()
 	if (axl_list_length (list) != 1) {
 		printf ("Bad length returned by the list (%d != 1)\n",
 			axl_list_length (list));
-		return false;
+		return axl_false;
 	}
 
 	if (axl_list_is_empty (list)) {
 		printf ("Expected to find a non-empty list just after items added\n");
-		return false;
+		return axl_false;
 	} /* end if */
 	
 	axl_list_add (list, "test 2");
 	if (axl_list_length (list) != 2) {
 		printf ("Bad length returned by the list (%d != 2)\n",
 			axl_list_length (list));
-		return false;
+		return axl_false;
 	}
 
 	axl_list_add (list, "test 3");
 	if (axl_list_length (list) != 3) {
 		printf ("Bad length returned by the list (%d != 3)\n",
 			axl_list_length (list));
-		return false;
+		return axl_false;
 	}
 
 	/* remove data */
@@ -5082,19 +5082,19 @@ int  test_01_01 ()
 	if (axl_list_length (list) != 2) {
 		printf ("Bad length returned by the list, seems that remove doesn't work (%d != 2)\n",
 			axl_list_length (list));
-		return false;
+		return axl_false;
 	}
 
 	axl_list_remove (list, "test 2");
 	if (axl_list_length (list) != 1) {
 		printf ("Bad length returned by the list, seems that remove doesn't work\n");
-		return false;
+		return axl_false;
 	}
 
 	axl_list_remove (list, "test 3");
 	if (axl_list_length (list) != 0) {
 		printf ("Bad length returned by the list, seems that remove doesn't work\n");
-		return false;
+		return axl_false;
 	}
 
 	/* add data again */
@@ -5102,38 +5102,38 @@ int  test_01_01 ()
 	axl_list_add (list, "test 5");
 	if (axl_list_length (list) != 2) {
 		printf ("Bad length returned by the list, seems that remove doesn't work\n");
-		return false;
+		return axl_false;
 	}
 	
 	axl_list_remove (list, "test 1");
 	if (axl_list_length (list) != 2) {
 		printf ("Bad length returned by the list, seems that remove doesn't work\n");
-		return false;
+		return axl_false;
 	}
 
 	if (! axl_list_exists (list, "test 5")) {
 		printf ("Exist function have failed\n");
-		return false;
+		return axl_false;
 	}
 
 	if (! axl_list_exists (list, "test 4")) {
 		printf ("Exist function have failed\n");
-		return false;
+		return axl_false;
 	}
 	
 	if (axl_list_exists (list, "test 1")) {
 		printf ("Exist function have failed\n");
-		return false;
+		return axl_false;
 	}
 
 	if (! axl_list_exists_at (list, "test 4", 0)) {
 		printf ("\"Exists at\" functionality seems to not work (0)\n");
-		return false;
+		return axl_false;
 	}
 
 	if (! axl_list_exists_at (list, "test 5", 1)) {
 		printf ("\"Exists at\" functionality seems to not work (1)\n");
-		return false;
+		return axl_false;
 	}
 
 	axl_list_free (list);
@@ -5152,37 +5152,37 @@ int  test_01_01 ()
 
 	if (! axl_list_exists_at (list, "test 0", 0)) {
 		printf ("\"Exists at\" functionality seems to not work (0)\n");
-		return false;
+		return axl_false;
 	}
 
 	if (! axl_list_exists_at (list, "test 1", 1)) {
 		printf ("\"Exists at\" functionality seems to not work (1)\n");
-		return false;
+		return axl_false;
 	}
 
 	if (! axl_list_exists_at (list, "test 2", 2)) {
 		printf ("\"Exists at\" functionality seems to not work (2)\n");
-		return false;
+		return axl_false;
 	}
 
 	if (! axl_list_exists_at (list, "test 3", 3)) {
 		printf ("\"Exists at\" functionality seems to not work (3)\n");
-		return false;
+		return axl_false;
 	}
 
 	if (! axl_list_exists_at (list, "test 4", 4)) {
 		printf ("\"Exists at\" functionality seems to not work (4)\n");
-		return false;
+		return axl_false;
 	}
 
 	if (! axl_list_exists_at (list, "test 5", 5)) {
 		printf ("\"Exists at\" functionality seems to not work (5)\n");
-		return false;
+		return axl_false;
 	}
 
 	if (! axl_list_exists_at (list, "test 6", 6)) {
 		printf ("\"Exists at\" functionality seems to not work (6)\n");
-		return false;
+		return axl_false;
 	}
 
 	/* free the list */
@@ -5197,7 +5197,7 @@ int  test_01_01 ()
 
 	if (axl_list_length (list) != 4) {
 		printf ("Expected to find 4 items inside an integer list");
-		return false;
+		return axl_false;
 	}
 
 	/* remove one item */
@@ -5205,7 +5205,7 @@ int  test_01_01 ()
 
 	if (axl_list_length (list) != 3) {
 		printf ("Expected to find 3 items inside an integer list");
-		return false;
+		return axl_false;
 	}
 
 	/* remove one item */
@@ -5213,7 +5213,7 @@ int  test_01_01 ()
 
 	if (axl_list_length (list) != 3) {
 		printf ("Expected to find 3 items inside an integer list");
-		return false;
+		return axl_false;
 	}
 
 	/* remove one item */
@@ -5221,7 +5221,7 @@ int  test_01_01 ()
 
 	if (axl_list_length (list) != 2) {
 		printf ("Expected to find 2 items inside an integer list");
-		return false;
+		return axl_false;
 	}
 
 	/* remove one item */
@@ -5229,7 +5229,7 @@ int  test_01_01 ()
 
 	if (axl_list_length (list) != 1) {
 		printf ("Expected to find 1 items inside an integer list");
-		return false;
+		return axl_false;
 	}
 
 	/* remove one item */
@@ -5237,7 +5237,7 @@ int  test_01_01 ()
 
 	if (axl_list_length (list) != 0) {
 		printf ("Expected to find 0 items inside an integer list");
-		return false;
+		return axl_false;
 	}
 	axl_list_free (list);
 
@@ -5259,7 +5259,7 @@ int  test_01_01 ()
 	
 	if (axl_list_length (list) != 11) {
 		printf ("Expected to find 11 element, but found: %d\n", axl_list_length (list));
-		return false;
+		return axl_false;
 	}
 
 	/* remove the third element */
@@ -5267,7 +5267,7 @@ int  test_01_01 ()
 	
 	if (axl_list_length (list) != 10) {
 		printf ("Expected to find 10 element, but found: %d\n", axl_list_length (list));
-		return false;
+		return axl_false;
 	}
 
 	/* remove the third element */
@@ -5275,7 +5275,7 @@ int  test_01_01 ()
 	
 	if (axl_list_length (list) != 9) {
 		printf ("Expected to find 9 element, but found: %d\n", axl_list_length (list));
-		return false;
+		return axl_false;
 	}
 
 	/* free the list */
@@ -5290,7 +5290,7 @@ int  test_01_01 ()
 	
 	if (axl_list_length (list) != 4) {
 		printf ("Expected to find 4 element, but found: %d\n", axl_list_length (list));
-		return false;
+		return axl_false;
 	}
 
 	/* remove */
@@ -5298,7 +5298,7 @@ int  test_01_01 ()
 	
 	if (axl_list_length (list) != 3) {
 		printf ("Expected to find 3 element, but found: %d\n", axl_list_length (list));
-		return false;
+		return axl_false;
 	}
 	
 	/* free the list */
@@ -5313,14 +5313,14 @@ int  test_01_01 ()
 	
 	if (axl_list_length (list) != 4) {
 		printf ("Expected to find 4 element, but found: %d\n", axl_list_length (list));
-		return false;
+		return axl_false;
 	}
 
 	axl_list_remove (list, INT_TO_PTR(10));
 
 	if (axl_list_length (list) != 3) {
 		printf ("Expected to find 3 element, but found: %d\n", axl_list_length (list));
-		return false;
+		return axl_false;
 	}
 
 	/* free the list */
@@ -5335,7 +5335,7 @@ int  test_01_01 ()
 	
 	if (axl_list_length (list) != 4) {
 		printf ("Expected to find 4 element, but found: %d\n", axl_list_length (list));
-		return false;
+		return axl_false;
 	}
 
 	/* remove */
@@ -5346,7 +5346,7 @@ int  test_01_01 ()
 
 	if (axl_list_length (list) != 2) {
 		printf ("Expected to find 2 element, but found: %d\n", axl_list_length (list));
-		return false;
+		return axl_false;
 	}
 	
 	/* free the list */
@@ -5375,7 +5375,7 @@ int  test_01_01 ()
 	}
 	if (axl_list_length (list) != 0) {
 		printf ("Expected to find 0 length list..\n");
-		return false;
+		return axl_false;
 	}
 
 	axl_list_free (list);
@@ -5387,25 +5387,25 @@ int  test_01_01 ()
 	axl_list_add (list, INT_TO_PTR (1));
 	if (axl_list_length (list) != 1) {
 		printf ("Expected to find 1 length length..\n");
-		return false;
+		return axl_false;
 	}
 
 	axl_list_add (list, INT_TO_PTR (2));
 	if (axl_list_length (list) != 2) {
 		printf ("Expected to find 2 length length..\n");
-		return false;
+		return axl_false;
 	}
 
 	axl_list_unlink (list, INT_TO_PTR (1));
 	if (axl_list_length (list) != 1) {
 		printf ("Expected to find 1 length length..\n");
-		return false;
+		return axl_false;
 	}
 
 	axl_list_unlink (list, INT_TO_PTR (2));
 	if (axl_list_length (list) != 0) {
 		printf ("Expected to find 0 length length..\n");
-		return false;
+		return axl_false;
 	}
 
 	axl_list_free (list);
@@ -5429,7 +5429,7 @@ int  test_01_01 ()
 	if (axl_list_length (list) != 4) {
 		printf ("Expected to find a 4 item list...but found: %d..\n",
 			axl_list_length (list));
-		return false;
+		return axl_false;
 	}
 
 	/* remove items */
@@ -5438,7 +5438,7 @@ int  test_01_01 ()
 	if (axl_list_length (list) != 3) {
 		printf ("Expected to find a 3 item list...but found: %d..\n",
 			axl_list_length (list));
-		return false;
+		return axl_false;
 	}
 
 	/* remove items */
@@ -5449,15 +5449,15 @@ int  test_01_01 ()
 	if (axl_list_length (list) != 0) {
 		printf ("Expected to find a 0 item list...but found: %d..\n",
 			axl_list_length (list));
-		return false;
+		return axl_false;
 	}
 
 	axl_list_free (list);
 
-	return true;
+	return axl_true;
 }
 
-int  test_01_02_foreach (axlPointer stack_data, 
+axl_bool test_01_02_foreach (axlPointer stack_data, 
 			 axlPointer user_data, 
 			 axlPointer user_data2)
 {
@@ -5465,17 +5465,17 @@ int  test_01_02_foreach (axlPointer stack_data,
 
 	if ((*iterator == 0) && axl_cmp ((char*) stack_data, "test 3")) {
 		(*iterator)++;
-		return false;
+		return axl_false;
 	} else if ((*iterator == 1) && axl_cmp ((char*) stack_data, "test 2")) {
 		(*iterator)++;
-		return false;
+		return axl_false;
 	} else if ((*iterator == 2) && axl_cmp ((char*) stack_data, "test 1")) {
 		(*iterator)++;
-		return false;
+		return axl_false;
 	}
 	
-	/* return true to stop operations */
-	return true;
+	/* return axl_true to stop operations */
+	return axl_true;
 }
 
 /** 
@@ -5483,10 +5483,10 @@ int  test_01_02_foreach (axlPointer stack_data,
  * based on the axlList.
  * 
  * 
- * @return true if the stack works properly, otherwise false
+ * @return axl_true if the stack works properly, otherwise axl_false
  * is returned.
  */
-int  test_01_02 () 
+axl_bool test_01_02 () 
 {
 	axlStack * stack;
 	char     * value;
@@ -5504,49 +5504,49 @@ int  test_01_02 ()
 
 	if (iterator != 3) {
 		printf ("Wrong value expected while using the foreach function\n");
-		return false;
+		return axl_false;
 	}
 
 	if (axl_stack_size (stack) != 3) {
 		printf ("Wrong stack size expected ..\n");
-		return false;
+		return axl_false;
 	}
 	
 	value = axl_stack_pop (stack);
 	if (! axl_stream_cmp (value, "test 3", 6)) {
 		printf ("Wrong pop value returned (%s != %s)..\n", value, "test 3");
-		return false;
+		return axl_false;
 	}
 
 	value = axl_stack_pop (stack);
 	if (! axl_stream_cmp (value, "test 2", 6)) {
 		printf ("Wrong pop value returned (%s != %s)..\n", value, "test 2");
-		return false;
+		return axl_false;
 	}
 
 	value = axl_stack_pop (stack);
 	if (! axl_stream_cmp (value, "test 1", 6)) {
 		printf ("Wrong pop value returned (%s != %s)..\n", value, "test 1");
-		return false;
+		return axl_false;
 	}
 
 	if (axl_stack_size (stack) != 0) {
 		printf ("Wrong stack size before operating..\n");
-		return false;
+		return axl_false;
 	}
 
 	if (! axl_stack_is_empty (stack)) {
 		printf ("Wrong stack emptyness value received..\n");
-		return false;
+		return axl_false;
 	}
 
 	/* destroy the stack */
 	axl_stack_free (stack);
 
-	return true;
+	return axl_true;
 }
 
-int  test_01_03_vargs (const char * format, ...)
+axl_bool test_01_03_vargs (const char * format, ...)
 {
 	va_list args;
 
@@ -5554,23 +5554,23 @@ int  test_01_03_vargs (const char * format, ...)
 
 	/* get the result */
 	if (axl_stream_vprintf_len (format, args) != 8)
-		return false;
+		return axl_false;
 
 	va_end (args);
 	va_start (args, format);
 
 	if (axl_stream_vprintf_len (format, args) != 8)
-		return false;
+		return axl_false;
 
 	va_end (args);
 	va_start (args, format);
 
 	if (axl_stream_vprintf_len (format, args) != 8)
-		return false;
+		return axl_false;
 
 	va_end (args);
 
-	return true;
+	return axl_true;
 }
 
 /** 
@@ -5578,10 +5578,10 @@ int  test_01_03_vargs (const char * format, ...)
  * @brief Checks some internal functions that the library provides to
  * manage strings.
  *
- * @return The function must return true if everything is
- * ok. Otherwise false is returned.
+ * @return The function must return axl_true if everything is
+ * ok. Otherwise axl_false is returned.
  */
-int  test_01_03 () 
+axl_bool test_01_03 () 
 {
 	char  * string;
 	char ** result;
@@ -5594,33 +5594,33 @@ int  test_01_03 ()
 	result = axl_stream_split ("value/value1/value3/value4", 1, "/");
 	if (result == NULL) {
 		printf ("Something have failed while using splitting functions\n");
-		return false;
+		return axl_false;
 	}
 
 	if (axl_stream_strv_num (result) != 4) {
 		printf ("Something have failed while getting current number of pieces inside the split result (%d != %d)\n", 
 			axl_stream_strv_num (result),4);
-		return false;
+		return axl_false;
 	}
 	
 	if (! axl_cmp (result[0], "value")) {
 		printf ("Failed to get the first element: (%s != %s)\n", result[0], "value");
-		return false;
+		return axl_false;
 	}
 
 	if (! axl_cmp (result[1], "value1")) {
 		printf ("Failed to get the second element: (%s != %s)\n", result[1], "value1");
-		return false;
+		return axl_false;
 	}
 
 	if (! axl_cmp (result[2], "value3")) {
 		printf ("Failed to get the third element (%s != %s)\n", result[2], "value3");
-		return false;
+		return axl_false;
 	}
 
 	if (! axl_cmp (result[3], "value4")) {
 		printf ("Failed to get the fourth element (%s != %s)\n", result[3], "value4");
-		return false;
+		return axl_false;
 	}
 
 	/* release memory used */
@@ -5629,33 +5629,33 @@ int  test_01_03 ()
 	result = axl_stream_split ("value1, value2/ value3* ", 3, ", ", "/ ", "* ");
 	if (result == NULL) {
 		printf ("Something have failed while using splitting functions (2)\n");
-		return false;
+		return axl_false;
 	}
 
 	if (axl_stream_strv_num (result) != 4) {
 		printf ("Something have failed while getting current number of pieces inside the split result (%d != %d) (2)\n", 
 			axl_stream_strv_num (result), 4);
-		return false;
+		return axl_false;
 	}
 
 	if (! axl_cmp (result[0], "value1")) {
 		printf ("Failed to get the second element: (%s != %s)\n", result[0], "value1");
-		return false;
+		return axl_false;
 	}
 
 	if (! axl_cmp (result[1], "value2")) {
 		printf ("Failed to get the third element (%s != %s)\n", result[1], "value2");
-		return false;
+		return axl_false;
 	}
 
 	if (! axl_cmp (result[2], "value3")) {
 		printf ("Failed to get the fourth element (%s != %s)\n", result[2], "value3");
-		return false;
+		return axl_false;
 	}
 
 	if (! axl_cmp (result[3], "")) {
 		printf ("Failed to get the fourth element ('%s' != '%s')\n", result[3], "");
-		return false;
+		return axl_false;
 	}
 
 	
@@ -5667,13 +5667,13 @@ int  test_01_03 ()
 	result = axl_stream_split ("///", 1, "/");
 	if (result == NULL) {
 		printf ("Something have failed while using splitting functions (3)\n");
-		return false;
+		return axl_false;
 	}
 
 	if (axl_stream_strv_num (result) != 4) {
 		printf ("Something have failed while getting current number of pieces inside the split result (%d != %d) (3)\n", 
 			axl_stream_strv_num (result), 4);
-		return false;
+		return axl_false;
 	}
 
 	/* release memory used */
@@ -5689,7 +5689,7 @@ int  test_01_03 ()
 	if (! axl_cmp (join, "some test AND some test AND some test")) {
 		printf ("Join operation failed, expected different values '%s' != '%s'",
 			join, "some test AND some test AND some test");
-		return false;
+		return axl_false;
 	}
 	axl_free (join);
 	axl_stream_freev (result);
@@ -5703,7 +5703,7 @@ int  test_01_03 ()
 	if (! axl_cmp (join, "some test")) {
 		printf ("Join operation failed, expected different values '%s' != '%s'",
 			join, "some test");
-		return false;
+		return axl_false;
 	}
 	axl_free (join);
 	axl_stream_freev (result);
@@ -5717,7 +5717,7 @@ int  test_01_03 ()
 	if (! axl_cmp (join, "some test AND some test AND some test AND")) {
 		printf ("Join operation failed, expected different values '%s' != '%s'",
 			join, "some test AND some test AND some test AND");
-		return false;
+		return axl_false;
 	}
 	axl_free (join);
 	axl_stream_freev (result);
@@ -5726,7 +5726,7 @@ int  test_01_03 ()
 	if (! axl_cmp (axl_stream_to_upper (string), "AXBCA")) {
 		/* report error found */
 		printf ("failed to upper case letters\n");
-		return false;
+		return axl_false;
 	}
 	axl_free (string);
 
@@ -5734,7 +5734,7 @@ int  test_01_03 ()
 	if (! axl_cmp (axl_stream_to_lower (string), "axbca")) {
 		/* report error found */
 		printf ("failed to lower case letters, result found: %s != %s\n", string, "axbca");
-		return false;
+		return axl_false;
 	}
 	axl_free (string);
 
@@ -5745,7 +5745,7 @@ int  test_01_03 ()
 	if (! axl_cmp (string, "value")) {
 		printf ("failed to trim the string received, expected '%s' == '%s'\n", 
 			string, "value");
-		return false;
+		return axl_false;
 	}
 
 	/* release memory */
@@ -5756,221 +5756,221 @@ int  test_01_03 ()
 	if (trimmed != 7) {
 		printf ("failed, expected to find a trimmed size of 7 but found %d (%s)\n", 
 			trimmed, string);
-		return false;
+		return axl_false;
 	}
 
 	/* check axl_stream_vprintf_len implementation */
 	if (axl_stream_printf_len (NULL, NULL) != 0) {
 		printf ("failed, expected to find an string value of 0, but it wasn't found\n");
-		return false;
+		return axl_false;
 	} /* end if */
 
 	if (axl_stream_printf_len (" this is a test", NULL) != 16) {
 		printf ("failed, expected to find an string value of 16, but it wasn't found\n");
-		return false;
+		return axl_false;
 	}
 
 	if (axl_stream_printf_len (" this %% is a %% test", NULL) != 20) {
 		printf ("failed, expected to find an string value of 20, but it wasn't found\n");
-		return false;
+		return axl_false;
 	}
 
 	if (axl_stream_printf_len ("", NULL) != 1) {
 		printf ("failed, expected to find an string value of 1, but it wasn't found\n");
-		return false;
+		return axl_false;
 	}
 
 	if (axl_stream_printf_len ("%%", NULL) != 2) {
 		printf ("failed, expected to find an string value of 2, but it wasn't found\n");
-		return false;
+		return axl_false;
 	}
 
 	if (axl_stream_printf_len ("\"", NULL) != 2) {
 		printf ("failed, expected to find an string value of 2, but it wasn't found\n");
-		return false;
+		return axl_false;
 	}
 
 	if (axl_stream_printf_len ("\"", NULL) != 2) {
 		printf ("failed, expected to find an string value of 2, but it wasn't found\n");
-		return false;
+		return axl_false;
 	}
 
 	if (axl_stream_printf_len (" this is a test \r \t \n  asdf", NULL) != 28) {
 		printf ("failed, expected to find an string value of 28, but it wasn't found\n");
-		return false;
+		return axl_false;
 	} /* end if */
 
 	res = axl_stream_printf_len ("%s", "This is a test");
 	if ( res != 15) {
 		printf ("failed, expected to find an string value of 15, but it was found (%d)\n", res);
-		return false;
+		return axl_false;
 	}
 
 	res = axl_stream_printf_len (" adfasdf %s asdfasdf", "This is a test");
 	if ( res != 33) {
 		printf ("failed, expected to find an string value of 33, but it was found (%d)\n", res);
-		return false;
+		return axl_false;
 	}
 
 	res = axl_stream_printf_len (" adfasdf %s asdfasdf %s", "This is a test", "fk2");
 	if ( res != 37) {
 		printf ("failed, expected to find an string value of 37, but it was found (%d)\n", res);
-		return false;
+		return axl_false;
 	}
 
 	res = axl_stream_printf_len ("%% adfasdf %s asdfasdf %s", "This is a test", "fk2");
 	if ( res != 38) {
 		printf ("failed, expected to find an string value of 38, but it was found (%d)\n", res);
-		return false;
+		return axl_false;
 	}
 
 	res = axl_stream_printf_len ("%d", 1);
 	if ( res != 2) {
 		printf ("failed, expected to find an string value of 2, but it was found (%d)\n", res);
-		return false;
+		return axl_false;
 	}
 
 	res = axl_stream_printf_len ("%d", 10);
 	if ( res != 3) {
 		printf ("failed, expected to find an string value of 3, but it was found (%d)\n", res);
-		return false;
+		return axl_false;
 	}
 
 	res = axl_stream_printf_len ("%d", -1);
 	if ( res != 3) {
 		printf ("failed, expected to find an string value of 3, but it was found (%d)\n", res);
-		return false;
+		return axl_false;
 	}
 
 	res = axl_stream_printf_len ("%d", -10);
 	if ( res != 4) {
 		printf ("failed, expected to find an string value of 4, but it was found (%d)\n", res);
-		return false;
+		return axl_false;
 	}
 
 	res = axl_stream_printf_len ("%d", -100);
 	if ( res != 5) {
 		printf ("failed, expected to find an string value of 5, but it was found (%d)\n", res);
-		return false;
+		return axl_false;
 	}
 
 	res = axl_stream_printf_len ("%d", -10012);
 	if ( res != 7) {
 		printf ("failed, expected to find an string value of 7, but it was found (%d)\n", res);
-		return false;
+		return axl_false;
 	}
 
 	res = axl_stream_printf_len ("This is a number %d", -10012);
 	if ( res != 24) {
 		printf ("failed, expected to find an string value of 24, but it was found (%d)\n", res);
-		return false;
+		return axl_false;
 	}
 
 	res = axl_stream_printf_len ("This is a number %d with content ", -10012);
 	if ( res != 38) {
 		printf ("failed, expected to find an string value of 38, but it was found (%d)\n", res);
-		return false;
+		return axl_false;
 	}
 
 	res = axl_stream_printf_len ("This is a number %d with content %s", -10012, "This more content");
 	if ( res != 55) {
 		printf ("failed, expected to find an string value of 55, but it was found (%d)\n", res);
-		return false;
+		return axl_false;
 	}
 
 	res = axl_stream_printf_len ("%c", 1);
 	if ( res != 2) {
 		printf ("failed, expected to find an string value of 2, but it was found (%d)\n", res);
-		return false;
+		return axl_false;
 	}
 
 	res = axl_stream_printf_len (" %c ", 1);
 	if ( res != 4) {
 		printf ("failed, expected to find an string value of 4, but it was found (%d)\n", res);
-		return false;
+		return axl_false;
 	}
 
 	res = axl_stream_printf_len ("\x0D");
 	if ( res != 2) {
 		printf ("failed, expected to find an string value of 2, but it was found (%d)\n", res);
-		return false;
+		return axl_false;
 	}
 
 	res = axl_stream_printf_len ("\x0D\x0A");
 	if ( res != 3) {
 		printf ("failed, expected to find an string value of 3, but it was found (%d)\n", res);
-		return false;
+		return axl_false;
 	}
 
 	res = axl_stream_printf_len ("%ld", 182);
 	if ( res != 4) {
 		printf ("failed, expected to find an string value of 4, but it was found (%d)\n", res);
-		return false;
+		return axl_false;
 	}
 
 	res = axl_stream_printf_len ("%lu", (unsigned long int) 182);
 	if ( res != 4) {
 		printf ("failed, expected to find an string value of 4, but it was found (%d)\n", res);
-		return false;
+		return axl_false;
 	}
 
 	res = axl_stream_printf_len ("%6d", 182);
 	if ( res != 7) {
 		printf ("failed (%%6d), expected to find an string value of 7, but it was found (%d)\n", res);
-		return false;
+		return axl_false;
 	} 
 
 	res = axl_stream_printf_len ("%f", 182.0);
 	if ( res != 11) {
 		printf ("failed (%%f,182), expected to find an string value of 11, but it was found (%d)\n", res);
-		return false;
+		return axl_false;
 	} 
 
 	res = axl_stream_printf_len ("%.2f", 18228.0);
 	if ( res != 9) {
 		printf ("failed (%%.2f), expected to find an string value of 7, but it was found (%d)\n", res);
-		return false;
+		return axl_false;
 	} 
 
 	res = axl_stream_printf_len ("%8.2f", 182);
 	if ( res != 9) {
 		printf ("failed (%%8.2f), expected to find an string value of 12, but it was found (%d)\n", res);
-		return false;
+		return axl_false;
 	} 
 
 	res = axl_stream_printf_len ("%.5f", 182.10);
 	if ( res != 10) {
 		printf ("failed (%%.5f), expected to find an string value of 10, but it was found (%d)\n", res);
-		return false;
+		return axl_false;
 	} 
 
 	res = axl_stream_printf_len ("%g", (double) 182.23);
 	if ( res != 7) {
 		printf ("failed (%%g,182.23), expected to find an string value of 7, but it was found (%d)\n", res);
-		return false;
+		return axl_false;
 	} 
 
 	res = axl_stream_printf_len ("%g", 182.39);
 	if ( res != 7) {
 		printf ("failed (%%g,182.39), expected to find an string value of 7, but it was found (%d)\n", res);
-		return false;
+		return axl_false;
 	} 
 
 	res = axl_stream_printf_len ("%g", 182.1);
 	if ( res != 6) {
 		printf ("failed (%%g,182.1), expected to find an string value of 6, but it was found (%d)\n", res);
-		return false;
+		return axl_false;
 	} 
 
 	res = axl_stream_printf_len ("%g", 182.102);
 	if ( res != 8) {
 		printf ("failed (%%g,182.1), expected to find an string value of 6, but it was found (%d)\n", res);
-		return false;
+		return axl_false;
 	} 
 
 	if (! test_01_03_vargs ("%g", 182.102)) {
 		printf ("failed to reuse vargs..\n");
-		return false;
+		return axl_false;
 	}
 	
 
@@ -5980,139 +5980,139 @@ int  test_01_03 ()
 	/* case cmp comparisions */
 	if (! axl_stream_casecmp ("Content-Type: ", "Content-Type: ", 14)) {
 		printf ("Expected to find equal comparision for case insensitive check..\n");
-		return false;
+		return axl_false;
 	}
 	
 	if (! axl_stream_casecmp ("CONTENT-Type: ", "Content-Type: ", 14)) {
 		printf ("Expected to find equal comparision for case insensitive check..\n");
-		return false;
+		return axl_false;
 	}
 
 	if (! axl_stream_casecmp ("CONTENT-Type: ", "Content-TYPE: ", 14)) {
 		printf ("Expected to find equal comparision for case insensitive check..\n");
-		return false;
+		return axl_false;
 	}
 
 	if (! axl_stream_casecmp ("CoNtENT-type: ", "Content-TYPE: ", 14)) {
 		printf ("Expected to find equal comparision for case insensitive check..\n");
-		return false;
+		return axl_false;
 	}
 
 	/* check axl_casecmp */
 	if (! axl_casecmp ("Content-Type: ", "Content-Type: ")) {
 		printf ("Expected to find equal comparision for case insensitive check..\n");
-		return false;
+		return axl_false;
 	}
 	
 	if (! axl_casecmp ("CONTENT-Type: ", "Content-Type: ")) {
 		printf ("Expected to find equal comparision for case insensitive check..\n");
-		return false;
+		return axl_false;
 	}
 
 	if (! axl_casecmp ("CONTENT-Type: ", "Content-TYPE: ")) {
 		printf ("Expected to find equal comparision for case insensitive check..\n");
-		return false;
+		return axl_false;
 	}
 
 	if (! axl_casecmp ("CoNtENT-type: ", "Content-TYPE: ")) {
 		printf ("Expected to find equal comparision for case insensitive check..\n");
-		return false;
+		return axl_false;
 	}
 
 	/* check with additional content not scanned */
 	if (! axl_stream_casecmp ("Content-Type: ", "Content-Type: asdf", 14)) {
 		printf ("Expected to find equal comparision for case insensitive check..\n");
-		return false;
+		return axl_false;
 	}
 	
 	if (! axl_stream_casecmp ("CONTENT-Type: ", "Content-Type: asdf", 14)) {
 		printf ("Expected to find equal comparision for case insensitive check..\n");
-		return false;
+		return axl_false;
 	}
 
 	if (! axl_stream_casecmp ("CONTENT-Type: ", "Content-TYPE: qwer12343", 14)) {
 		printf ("Expected to find equal comparision for case insensitive check..\n");
-		return false;
+		return axl_false;
 	}
 
 	if (! axl_stream_casecmp ("CoNtENT-type: ", "Content-TYPE: 23141234", 14)) {
 		printf ("Expected to find equal comparision for case insensitive check..\n");
-		return false;
+		return axl_false;
 	}
 
 	/* check axl_casecmp */
 	if (axl_casecmp ("Content-Type: ", "Content-Type: 12321")) {
 		printf ("Expected to not find equal comparision for case insensitive check..\n");
-		return false;
+		return axl_false;
 	}
 	
 	if (axl_casecmp ("CONTENT-Type: ", "Content-Type: awdf21")) {
 		printf ("Expected to not find equal comparision for case insensitive check..\n");
-		return false;
+		return axl_false;
 	}
 
 	if (axl_casecmp ("CONTENT-Type: ", "Content-TYPE: adsfasdf")) {
 		printf ("Expected to not find equal comparision for case insensitive check..\n");
-		return false;
+		return axl_false;
 	}
 
 	if (axl_casecmp ("CoNtENT-type: ", "Content-TYPE: asdf21")) {
 		printf ("Expected to not find equal comparision for case insensitive check..\n");
-		return false;
+		return axl_false;
 	}
 
 	/* check remove function */
 	string = axl_strdup ("iso-8859-15");
-	axl_stream_remove (string, "-", false);
+	axl_stream_remove (string, "-", axl_false);
 	if (! axl_cmp (string, "iso885915")) {
 		printf ("Expected %s value but found %s...\n", 
 			string, "iso885915");
-		return false;
+		return axl_false;
 	} /* end if */
 	axl_free (string);
 
 	string = axl_strdup ("iso885915");
-	axl_stream_remove (string, "-", false);
+	axl_stream_remove (string, "-", axl_false);
 	if (! axl_cmp (string, "iso885915")) {
 		printf ("Expected %s value but found %s...\n", 
 			string, "iso885915");
-		return false;
+		return axl_false;
 	} /* end if */
 	axl_free (string);
 
 	string = axl_strdup ("--iso885915---");
-	axl_stream_remove (string, "-", false);
+	axl_stream_remove (string, "-", axl_false);
 	if (! axl_cmp (string, "iso885915")) {
 		printf ("Expected %s value but found %s...\n", 
 			"iso885915", string);
-		return false;
+		return axl_false;
 	} /* end if */
 	axl_free (string);
 
 	string = axl_strdup_printf ("-----");
-	axl_stream_remove (string, "-", false);
+	axl_stream_remove (string, "-", axl_false);
 	if (! axl_cmp (string, "")) {
 		printf ("Expected %s value but found %s...\n", 
 			"", string);
-		return false;
+		return axl_false;
 	} /* end if */
 	axl_free (string);
 
 	string = axl_strdup_printf ("iso-8859---------15");
-	axl_stream_remove (string, "-", false);
+	axl_stream_remove (string, "-", axl_false);
 	if (! axl_cmp (string, "iso885915")) {
 		printf ("Expected %s value but found %s...\n", 
 			"iso885915", string);
-		return false;
+		return axl_false;
 	} /* end if */
 	axl_free (string);
 
 	string = axl_strdup_printf ("iso-8859---------15");
-	axl_stream_remove (string, "-", true);
+	axl_stream_remove (string, "-", axl_true);
 	if (! axl_cmp (string, "iso8859---------15")) {
 		printf ("Expected %s value but found %s...\n", 
 			"iso8859---------15", string);
-		return false;
+		return axl_false;
 	} /* end if */
 	axl_free (string);
 
@@ -6123,32 +6123,32 @@ int  test_01_03 ()
 	if (res  != strlen (string)) {
 		printf ("ERROR(1): expected to find string length %d but found %d..\n",
 			res, (int) strlen (string));
-		return false;
+		return axl_false;
 	}
 
 	if (res != 21) {
 		printf ("ERROR(2): expected to find string length %d but found %d..\n",
 			res, 21);
-		return false;
+		return axl_false;
 	}
 	/* check string termination */
 	if (string [21] != '\0') {
 		printf ("ERROR(2.1): expected string termination at position %d..\n", 21);
-		return false;
+		return axl_false;
 	}
 
 	/* check real size and returned value */
 	if (real_size != res) {
 		printf ("ERROR(2.2): expected to find same value returned as real size (%d != %d) but it wasn't found..\n",
 			real_size, res);
-		return false;
+		return axl_false;
 	}
 
 	/* check content */
 	if (! axl_cmp (string, "SEQ 10 1203020 4096\x0D\x0A")) {
 		printf ("ERROR: expected to find '%s' but found '%s'..\n",
 			string, "SEQ 10 1203020 4096\x0D\x0A");
-		return false;
+		return axl_false;
 	}
 
 	/* check printf buffer */
@@ -6159,33 +6159,33 @@ int  test_01_03 ()
 	if (res  != strlen (string)) {
 		printf ("ERROR(3): expected to find string length %d but found %d..\n",
 			res, (int) strlen (string));
-		return false;
+		return axl_false;
 	}
 
 	if (res != 70) {
 		printf ("ERROR(4): expected to find string length %d but found %d..\n",
 			res, 21);
-		return false;
+		return axl_false;
 	}
 
 	/* check string termination */
 	if (string [70] != '\0') {
 		printf ("ERROR: expected string termination at position %d..\n", 21);
-		return false;
+		return axl_false;
 	}
 
 	/* check real size and returned value */
 	if (real_size != res) {
 		printf ("ERROR: expected to find same value returned as real size (%d != %d) but it wasn't found..\n",
 			real_size, res);
-		return false;
+		return axl_false;
 	}
 
 	/* check content */
 	if (! axl_cmp (string, "SEQ ###############################################3 10 1203020 4096\x0D\x0A")) {
 		printf ("ERROR: expected to find '%s' but found '%s'..\n",
 			string, "SEQ ###############################################3 10 1203020 4096\x0D\x0A");
-		return false;
+		return axl_false;
 	}
 
 	/* check printf buffer */
@@ -6195,32 +6195,32 @@ int  test_01_03 ()
 
 	if (res != strlen (string)) {
 	        printf ("ERROR(5): expected to find string length %d but found %d..\n", res, (int) strlen (string));
-		return false;
+		return axl_false;
 	}
 
 	if (res != 96) {
 		printf ("ERROR(6): expected to find string length %d but found %d..\n", res, 96);
-		return false;
+		return axl_false;
 	}
 
 	/* check string termination */
 	if (string [96] != '\0') {
 		printf ("ERROR: expected string termination at position %d..\n", 21);
-		return false;
+		return axl_false;
 	}
 
 	/* check real size and returned value */
 	if (real_size != res) {
 		printf ("ERROR: expected to find same value returned as real size (%d != %d) but it wasn't found..\n",
 			real_size, res);
-		return false;
+		return axl_false;
 	}
 
 	/* check content */
 	if (! axl_cmp (string, "SEQ ############################################asdfasdfasdfasdfasdfasdfas###3 10 1203020 4096\x0D\x0A")) {
 		printf ("ERROR: expected to find '%s' but found '%s'..\n",
 			string, "SEQ ############################################asdfasdfasdfasdfasdfasdfas###3 10 1203020 4096\x0D\x0A");
-		return false;
+		return axl_false;
 	}
 
 	/* check printf buffer */
@@ -6231,32 +6231,32 @@ int  test_01_03 ()
 
 	if (res != strlen (string)) {
 	        printf ("ERROR(7): expected to find string length %d but found %d (1)..\n", res, (int) strlen (string));
-		return false;
+		return axl_false;
 	}
 
 	if (res != 99) {
 		printf ("ERROR(8): expected to find string length %d but found %d (2)..\n", res, 99);
-		return false;
+		return axl_false;
 	}
 
 	/* check string termination */
 	if (string [99] != '\0') {
 		printf ("ERROR: expected string termination at position %d..\n", 21);
-		return false;
+		return axl_false;
 	}
 
 	/* check real size and returned value */
 	if (real_size != res) {
 		printf ("ERROR: expected to find same value returned as real size (%d != %d) but it wasn't found..\n",
 			real_size, res);
-		return false;
+		return axl_false;
 	}
 
 	/* check content */
 	if (! axl_cmp (string, "SEQ ###@@@#########################################asdfasdfasdfasdfasdfasdfas###3 10 1203020 4096\x0D\x0A")) {
 		printf ("ERROR: expected to find '%s' but found '%s'..\n",
 			string, "SEQ ###@@@#########################################asdfasdfasdfasdfasdfasdfas###3 10 1203020 4096\x0D\x0A");
-		return false;
+		return axl_false;
 	}
 
 	/* check printf buffer (out of space situation) */
@@ -6268,44 +6268,44 @@ int  test_01_03 ()
 
 	if (res != strlen (string)) {
 	        printf ("ERROR(9): expected to find string length %d but found %d (1)..\n", res, (int) strlen (string));
-		return false;
+		return axl_false;
 	}
 
 	if (res != 99) {
 		printf ("ERROR(10): expected to find string length %d but found %d (2)..\n", res, 99);
-		return false;
+		return axl_false;
 	}
 
 	/* check string termination */
 	if (string [99] != '\0') {
 		printf ("ERROR: expected string termination at position %d..\n", 21);
-		return false;
+		return axl_false;
 	}
 
 	/* check real size and returned value */
 	if (real_size != 126) {
 		printf ("ERROR: expected to find same value returned as real size (%d != %d) but it wasn't found..\n",
 			real_size, 126);
-		return false;
+		return axl_false;
 	}
 
 	/* check content */
 	if (! axl_cmp (string, "SEQ ###@@@##fffasdklfjasdlfkjasdlfkjadf#######################################asdfasdfasdfasdfasdfa")) {
 		printf ("ERROR: expected to find '%s' but found '%s'..\n",
 			string, "SEQ ###@@@##fffasdklfjasdlfkjasdlfkjadf#######################################asdfasdfasdfasdfasdfa");
-		return false;
+		return axl_false;
 	}
 
 	axl_free (string);
 
 
-	return true;
+	return axl_true;
 }
 
 /** 
  * @brief Intensive axl list implementation.
  */
-int  test_01_04 () {
+axl_bool test_01_04 () {
 	int             iterator = 0;
 	int             value;
 	axlList       * list;
@@ -6334,7 +6334,7 @@ int  test_01_04 () {
 		/* check value */
 		if (value != iterator) {
 			printf ("Values miss match: %d != %d\n", value, iterator);
-			return false;
+			return axl_false;
 		}
 
 		/* get the next */
@@ -6356,7 +6356,7 @@ int  test_01_04 () {
 		/* check value */
 		if (value != iterator) {
 			printf ("Values miss match (2): %d != %d\n", value, iterator);
-			return false;
+			return axl_false;
 		}
 
 		/* remove */
@@ -6370,7 +6370,7 @@ int  test_01_04 () {
 			/* check value */
 			if (value != (iterator + 1)) {
 				printf ("Values miss match (3): %d != %d\n", value, iterator + 1);
-				return false;
+				return axl_false;
 			}
 		}
 
@@ -6381,7 +6381,7 @@ int  test_01_04 () {
 
 	if (axl_list_length (list) != 0) {
 		printf ("List lengths mismatch: %d != 0\n", axl_list_length (list));
-		return false;
+		return axl_false;
 	}
 
 	/* free cursor */
@@ -6390,35 +6390,35 @@ int  test_01_04 () {
 	/* release the list */
 	axl_list_free (list);
 	
-	/* true */
-	return true;
+	/* axl_true */
+	return axl_true;
 }
 
 /** 
  * @brief Checks error reporting functions.
  * 
  * 
- * @return \ref true if ok, \ref false on rainy days.
+ * @return \ref axl_true if ok, \ref axl_false on rainy days.
  */
-int  test_01_05 () 
+axl_bool test_01_05 () 
 {
 	axlError * error = NULL;
 
 	if (! axl_error_was_ok (error)) {
 		printf ("Error: expected to find ok on a non-initialized error\n");
-		return false;
+		return axl_false;
 	}
 
 	axl_error_new (-1, "An error to report", NULL, &error);
 
 	if (axl_error_was_ok (error)) {
 		printf ("Error: expected to find error reported on an initialized error\n");
-		return false;
+		return axl_false;
 	}
 
 	axl_error_free (error);
 
-	return true;
+	return axl_true;
 }
 
 int lookups = 0;
@@ -6440,9 +6440,9 @@ void test_02_02_check_key (axlHash * hash, char * key)
 /** 
  * @brief Test current libaxl hash implementation.
  *
- * @return true if it works properly or false if not.
+ * @return axl_true if it works properly or axl_false if not.
  */
-int  test_02_02 () 
+axl_bool test_02_02 () 
 {
 	axlHash     * hash;
 	int           iterator;
@@ -7400,21 +7400,21 @@ int  test_02_02 ()
 	value = (const char *) axl_hash_get (hash, INT_TO_PTR (-1));
 	if (! axl_cmp (value, "menos uno")) {
 		printf ("Expected to find %s but found %s\n", "menos uno", value);
-		return false;
+		return axl_false;
 	}
 
 	/* check values stored */
 	value = (const char *) axl_hash_get (hash, INT_TO_PTR (8));
 	if (! axl_cmp (value, "ocho")) {
 		printf ("Expected to find %s but found %s\n", "ocho", value);
-		return false;
+		return axl_false;
 	}
 
 	/* free hash */
 	axl_hash_free (hash);
 
 	/* terminated test */
-	return true;
+	return axl_true;
 }
 
 axlPointer test_02_01_copy_key (axlPointer key, axlDestroyFunc key_destroy, axlPointer data, axlDestroyFunc data_destroy)
@@ -7438,9 +7438,9 @@ axlPointer test_02_01_copy_value (axlPointer key, axlDestroyFunc key_destroy, ax
  * @brief Checks normal hash operations.
  * 
  * 
- * @return \ref true if it was ok.
+ * @return \ref axl_true if it was ok.
  */
-int  test_02_01 () 
+axl_bool test_02_01 () 
 {
 	axlHash    * hash;
 	axlHash    * hash2;
@@ -7452,7 +7452,7 @@ int  test_02_01 ()
 	/* perform operations on empty state */
 	if (axl_hash_exists (hash, "value")) {
 		printf ("Found that the hash returns that item exist but it is empty\n");
-		return false;
+		return axl_false;
 	}
 
 	/* perform a remove operation */
@@ -7462,7 +7462,7 @@ int  test_02_01 ()
 	data = axl_hash_get (hash, "value");
 	if (data != NULL) {
 		printf ("Found that the hash returns that item exist but it is empty\n");
-		return false;
+		return axl_false;
 	}
 
 	/* add items to the hash */
@@ -7490,15 +7490,15 @@ int  test_02_01 ()
 	/* destroy the hash2 */
 	axl_hash_free (hash2);
 
-	return true;
+	return axl_true;
 }
 
 /** 
  * @brief Test current libaxl hash implementation.
  *
- * @return true if it works properly or false if not.
+ * @return axl_true if it works properly or axl_false if not.
  */
-int  test_02_03 () 
+axl_bool test_02_03 () 
 {
 	axlHash * hash;
 
@@ -7521,16 +7521,16 @@ int  test_02_03 ()
 	if (axl_hash_items (hash) != 1) {
 		printf ("ERROR: expected to find a hash size of 1 but found: %d\n",
 			axl_hash_items (hash));
-		return false;
+		return axl_false;
 	}
 
 	/* free the hash */
 	axl_hash_free (hash);
 
-	return true;
+	return axl_true;
 }
 
-int  test_02_03a ()
+axl_bool test_02_03a ()
 {
 	axlHash * hash;
 
@@ -7547,52 +7547,52 @@ int  test_02_03a ()
 	/* remove */
 	if (axl_hash_remove (hash, INT_TO_PTR (10321))) {
 		printf ("ERROR: expected to not find a true result from removing an item that do not exists..");
-		return false;
+		return axl_false;
 	}
 
 	if (! axl_hash_remove (hash, INT_TO_PTR (10320))) {
 		printf ("ERROR: expected to find a true result from removing an item that do not exists..");
-		return false;
+		return axl_false;
 	}
 
 	if (axl_hash_remove (hash, INT_TO_PTR (10320))) {
 		printf ("ERROR: expected to NOT find a true result from removing an item that do not exists..");
-		return false;
+		return axl_false;
 	}
 
 	if (! axl_hash_remove (hash, INT_TO_PTR (1048))) {
 		printf ("ERROR: expected to find a true result from removing an item that do not exists..");
-		return false;
+		return axl_false;
 	}
 
 	if (axl_hash_remove (hash, INT_TO_PTR (1048))) {
 		printf ("ERROR: expected to NOT find a true result from removing an item that do not exists..");
-		return false;
+		return axl_false;
 	}
 
 	if (! axl_hash_remove (hash, INT_TO_PTR (1032))) {
 		printf ("ERROR: expected to find a true result from removing an item that do not exists..");
-		return false;
+		return axl_false;
 	}
 
 	if (axl_hash_remove (hash, INT_TO_PTR (1032))) {
 		printf ("ERROR: expected to NOT find a true result from removing an item that do not exists..");
-		return false;
+		return axl_false;
 	}
 
 	if (! axl_hash_remove (hash, INT_TO_PTR (10))) {
 		printf ("ERROR: expected to find a true result from removing an item that do not exists..");
-		return false;
+		return axl_false;
 	}
 
 	if (axl_hash_remove (hash, INT_TO_PTR (10))) {
 		printf ("ERROR: expected to NOT find a true result from removing an item that do not exists..");
-		return false;
+		return axl_false;
 	}
 
 	axl_hash_free (hash);
 
-	return true;
+	return axl_true;
 }
 
 void show_item_test_02_04 (axlPointer key, axlPointer data)
@@ -7600,7 +7600,7 @@ void show_item_test_02_04 (axlPointer key, axlPointer data)
 	__axl_log ("hash-test", AXL_LEVEL_DEBUG, "  %s -> %s", (char *) key, (char *) data);
 }
 
-int  test_02_04 () 
+axl_bool test_02_04 () 
 {
 	axlHash * hash;
 	
@@ -7650,11 +7650,11 @@ int  test_02_04 ()
 
 	axl_hash_free (hash);
 
-	return true;
+	return axl_true;
 
 }
 
-int  test_02_05 ()
+axl_bool test_02_05 ()
 {
 	axlHash       * hash;
 	axlHashCursor * cursor;
@@ -7713,7 +7713,7 @@ int  test_02_05 ()
 			printf ("error: supposed to find key and value equal (%s==%s), but not found..\n",
 				(char*)axl_hash_cursor_get_key (cursor),
 				(char*)axl_hash_cursor_get_value (cursor));
-			return false;
+			return axl_false;
 		} /* end if */
 
 		/* get next */
@@ -7723,13 +7723,13 @@ int  test_02_05 ()
 
 		if (iterator == 38) {
 			printf ("error: found more items than actually expected..\n");
-			return false;
+			return axl_false;
 		}
 	} /* end while */
 
 	if (iterator != 37) {
 		printf ("error: found more items than actually expected..\n");
-		return false;
+		return axl_false;
 	}
 
 	iterator = 0;
@@ -7741,7 +7741,7 @@ int  test_02_05 ()
 			printf ("error: supposed to find key and value equal (%s==%s), but not found..\n",
 				(char*)axl_hash_cursor_get_key (cursor),
 				(char*)axl_hash_cursor_get_value (cursor));
-			return false;
+			return axl_false;
 		} /* end if */
 
 		iterator++;
@@ -7749,7 +7749,7 @@ int  test_02_05 ()
 		if (iterator < 37) {
 			if (! axl_hash_cursor_has_next (cursor)) {
 				printf ("error: expected to find next node on iterator (%d)\n", iterator);
-				return false;
+				return axl_false;
 			} /* end if */
 		} /* end if */
 
@@ -7758,32 +7758,32 @@ int  test_02_05 ()
 
 		if (iterator == 38) {
 			printf ("error: found more items than actually expected..\n");
-			return false;
+			return axl_false;
 		}
 	} /* end while */
 
 	if (iterator != 37) {
 		printf ("error: found different count of items than actually expected (%d != 37)..\n", iterator);
-		return false;
+		return axl_false;
 	}
 
 	/* check last api */
 	axl_hash_cursor_last (cursor);
 	if (! axl_hash_cursor_has_item (cursor)) {
 		printf ("error: expected to find last element defined..\n");
-		return false;
+		return axl_false;
 	}
 
 	/* check last */
 	if (! axl_cmp ("flint", axl_hash_cursor_get_key (cursor))) {
 		printf ("error: expected to find last element \"flint\"=\"%s\"\n", (char*) axl_hash_cursor_get_key (cursor));
-		return false;
+		return axl_false;
 	}
 
 
 	if (axl_hash_cursor_has_next (cursor)) {
 		printf ("error: expected to not find next element defined..\n");
-		return false;
+		return axl_false;
 	} /* end if */
 
 	axl_hash_cursor_first (cursor);
@@ -7794,7 +7794,7 @@ int  test_02_05 ()
 			printf ("error: supposed to find key and value equal (%s==%s), but not found..\n",
 				(char*)axl_hash_cursor_get_key (cursor),
 				(char*)axl_hash_cursor_get_value (cursor));
-			return false;
+			return axl_false;
 		} /* end if */
 
 		/* get value */
@@ -7804,14 +7804,14 @@ int  test_02_05 ()
 		/* check key to exists */
 		if (! axl_hash_exists (axl_hash_cursor_hash (cursor), key)) {
 			printf ("error: expected to find key defined=<%s>\n", key);
-			return false;
+			return axl_false;
 		}
 
 		/* check value to exists */
 		if (! axl_cmp (axl_hash_get (axl_hash_cursor_hash (cursor), key), value)) {
 			printf ("error: expected to find value not found: <%s>!=<%s>\n", 
 				value, (char*) axl_hash_get (axl_hash_cursor_hash (cursor), key));
-			return false;
+			return axl_false;
 		} /* end if */
 		
 
@@ -7823,7 +7823,7 @@ int  test_02_05 ()
 	if (axl_hash_items (hash) != 0) {
 		printf ("error: expected to find hash with 0 size (but found: %d)\n",
 			axl_hash_items (hash));
-		return false;
+		return axl_false;
 	} /* end if */
 
 	/* free cursor */
@@ -7849,119 +7849,119 @@ int  test_02_05 ()
 
 	if (iterator != 1) {
 		printf ("Expected to find only one iteration inside the hash but the limit was found\n");
-		return false;
+		return axl_false;
 	}
 
 	axl_hash_free (hash);
 	axl_hash_cursor_free (cursor);
 
 	/* test ok */
-	return true;
+	return axl_true;
 }
 
 /** 
  * @brief Allows to check current binary stack used by the library.
  * 
  * 
- * @return true if tests are ok.
+ * @return axl_true if tests are ok.
  */
-int  test_02_06 ()
+axl_bool test_02_06 ()
 {
-	int              value;
+	axl_bool         value;
 	axlBinaryStack * bstack;
 	int              iterator;
 
 	/* create a bstack */
 	bstack = axl_binary_stack_new ();
 
-	/* push 10 true values */
-	axl_binary_stack_push (bstack, true);
-	axl_binary_stack_push (bstack, true);
-	axl_binary_stack_push (bstack, true);
-	axl_binary_stack_push (bstack, true);
-	axl_binary_stack_push (bstack, true);
+	/* push 10 axl_true values */
+	axl_binary_stack_push (bstack, axl_true);
+	axl_binary_stack_push (bstack, axl_true);
+	axl_binary_stack_push (bstack, axl_true);
+	axl_binary_stack_push (bstack, axl_true);
+	axl_binary_stack_push (bstack, axl_true);
 
-	axl_binary_stack_push (bstack, true);
-	axl_binary_stack_push (bstack, true);
-	axl_binary_stack_push (bstack, true);
-	axl_binary_stack_push (bstack, true);
-	axl_binary_stack_push (bstack, true);
+	axl_binary_stack_push (bstack, axl_true);
+	axl_binary_stack_push (bstack, axl_true);
+	axl_binary_stack_push (bstack, axl_true);
+	axl_binary_stack_push (bstack, axl_true);
+	axl_binary_stack_push (bstack, axl_true);
 
 	/* check count */
 	if (axl_binary_stack_size (bstack) != 10) {
 		printf ("Expected to find %d items but found: %d", 
 			10, axl_binary_stack_size (bstack));
-		return false;
+		return axl_false;
 	} /* end if */
 
 	/* push values */
 
-	axl_binary_stack_push (bstack, false);
-	axl_binary_stack_push (bstack, true);
-	axl_binary_stack_push (bstack, true);
+	axl_binary_stack_push (bstack, axl_false);
+	axl_binary_stack_push (bstack, axl_true);
+	axl_binary_stack_push (bstack, axl_true);
 
-	axl_binary_stack_push (bstack, true);
-	axl_binary_stack_push (bstack, false);
-	axl_binary_stack_push (bstack, false);
+	axl_binary_stack_push (bstack, axl_true);
+	axl_binary_stack_push (bstack, axl_false);
+	axl_binary_stack_push (bstack, axl_false);
 
 	/* check count */
 	if (axl_binary_stack_size (bstack) != 16) {
 		printf ("Expected to find %d items but found: %d\n", 
 			16, axl_binary_stack_size (bstack));
-		return false;
+		return axl_false;
 	} /* end if */
 
 	/* pop data */
 	value = axl_binary_stack_pop (bstack);
-	if (value != false) {
-		printf ("Expected to find %d, but found %d (1)\n", false, value);
-		return false;
+	if (value != axl_false) {
+		printf ("Expected to find %d, but found %d (1)\n", axl_false, value);
+		return axl_false;
 	}
 
 	value = axl_binary_stack_pop (bstack);
-	if (value != false) {
-		printf ("Expected to find %d, but found %d (2)\n", false, value);
-		return false;
+	if (value != axl_false) {
+		printf ("Expected to find %d, but found %d (2)\n", axl_false, value);
+		return axl_false;
 	}
 
 	value = axl_binary_stack_pop (bstack);
-	if (value != true) {
-		printf ("Expected to find %d, but found %d (3)\n", true, value);
-		return false;
+	if (value != axl_true) {
+		printf ("Expected to find %d, but found %d (3)\n", axl_true, value);
+		return axl_false;
 	}
 
 	value = axl_binary_stack_pop (bstack);
-	if (value != true) {
-		printf ("Expected to find %d, but found %d (4)\n", true, value);
-		return false;
+	if (value != axl_true) {
+		printf ("Expected to find %d, but found %d (4)\n", axl_true, value);
+		return axl_false;
 	}
 
 	value = axl_binary_stack_pop (bstack);
-	if (value != true) {
-		printf ("Expected to find %d, but found %d (5)\n", true, value);
-		return false;
+	if (value != axl_true) {
+		printf ("Expected to find %d, but found %d (5)\n", axl_true, value);
+		return axl_false;
 	}
 
 	value = axl_binary_stack_pop (bstack);
-	if (value != false) {
-		printf ("Expected to find %d, but found %d (6)\n", false, value);
-		return false;
+	if (value != axl_false) {
+		printf ("Expected to find %d, but found %d (6)\n", axl_false, value);
+		return axl_false;
 	}
 
 	/* check count */
 	if (axl_binary_stack_size (bstack) != 10) {
 		printf ("Expected to find %d items but found: %d\n", 
 			10, axl_binary_stack_size (bstack));
-		return false;
+		return axl_false;
 	} /* end if */
 
 	iterator = 0;
 	while (iterator < 10) {
 		/* get the value */
 		value    = axl_binary_stack_pop (bstack);
-		if (value != true) {
-			printf ("Expected to find %d, but found %d (3)\n", true, value);
-			return false;
+		if (value != axl_true) {
+			printf ("Expected to find %d, but found %d (3)\n", axl_true, value);
+			return axl_false;
 		}  /* end if */
 
 		iterator++;
@@ -7971,13 +7971,13 @@ int  test_02_06 ()
 	if (axl_binary_stack_size (bstack) != 0) {
 		printf ("Expected to find %d items but found: %d\n", 
 			0, axl_binary_stack_size (bstack));
-		return false;
+		return axl_false;
 	} /* end if */
 
 	/* free binary stack */
 	axl_binary_stack_free (bstack);
 
-	return true;
+	return axl_true;
 }
 
 /** 

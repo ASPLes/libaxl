@@ -445,7 +445,7 @@ void       axl_hash_insert_full (axlHash        * hash,
 		__axl_hash_create_node (hash->factory, node, key, key_destroy, data, data_destroy);
 
 		/* insert the node into the hash */
-		__axl_hash_insert_node (pos, hash, key, node, true);
+		__axl_hash_insert_node (pos, hash, key, node, axl_true);
 
 		return;
 	} 
@@ -511,7 +511,7 @@ void       axl_hash_insert_full (axlHash        * hash,
 			aux = node->next;
 
 			/* insert the node into the hash */
-			__axl_hash_insert_node (pos, hash, node->key, node, false);
+			__axl_hash_insert_node (pos, hash, node->key, node, axl_false);
 			
 			/* update the reference */
 			node = aux;
@@ -528,7 +528,7 @@ void       axl_hash_insert_full (axlHash        * hash,
 		__axl_hash_create_node (hash->factory, node, key, key_destroy, data, data_destroy);
 
 		/* insert the node into the hash as usual */
-		__axl_hash_insert_node (pos, hash, key, node, true);
+		__axl_hash_insert_node (pos, hash, key, node, axl_true);
 	} else {
 		/* don't create a node, replace previous content and use new content */
 		if (node->key_destroy != NULL) {
@@ -553,22 +553,22 @@ void       axl_hash_insert_full (axlHash        * hash,
  * @internal Function that supports axl_hash_remove and
  * axl_hash_delete.
  *
- * The function returns true if an item was removed due to the call
+ * The function returns axl_true if an item was removed due to the call
  * done.
  */
-int             __axl_hash_remove_common       (axlHash    * hash,
-						axlPointer   key,
-						int          remove)
+axl_bool            __axl_hash_remove_common       (axlHash    * hash,
+						    axlPointer   key,
+						    axl_bool     remove)
 {
 	axlHashNode * node;
 	axlHashNode * aux;
 	int           pos;
 
-	axl_return_val_if_fail (hash, false);
+	axl_return_val_if_fail (hash, axl_false);
 	
 	/* do not perform any operation if the hash is empty */
 	if (hash->hash_size == 0)
-		return false;
+		return axl_false;
 	
 	/* get the node at the provided position */
 	pos  = (hash->hash (key)) % hash->hash_size;
@@ -576,7 +576,7 @@ int             __axl_hash_remove_common       (axlHash    * hash,
 
 	/* node not found */
 	if (node == NULL)
-		return false;
+		return axl_false;
 
 	/* check for equal keys */
 	if (hash->equal (node->key, key) == 0) {
@@ -601,7 +601,7 @@ int             __axl_hash_remove_common       (axlHash    * hash,
 
 		/* element destroyed, nothing more to do around
 		 * here */
-		return true;
+		return axl_true;
 	}
 
 	/* seems we have more nodes */
@@ -624,7 +624,7 @@ int             __axl_hash_remove_common       (axlHash    * hash,
 	}  /* end */
 	
 	/* no item was found on the hash */
-	return false;
+	return axl_false;
 }
 
 /** 
@@ -642,16 +642,16 @@ int             __axl_hash_remove_common       (axlHash    * hash,
  *
  * @param key The key to lookup to be removed. 
  *
- * @return The function returns true if the item was removed,
- * otherwise false is returned. If the function returns true, it means
+ * @return The function returns axl_true if the item was removed,
+ * otherwise axl_false is returned. If the function returns axl_true, it means
  * the object was stored in the hash before calling to remove it.
  */
-int             axl_hash_remove       (axlHash    * hash,
-				       axlPointer   key)
+axl_bool            axl_hash_remove       (axlHash    * hash,
+					   axlPointer   key)
 {
 	/* call common implementation deleting data with destroy
 	 * functions defined */
-	return __axl_hash_remove_common (hash, key, true);
+	return __axl_hash_remove_common (hash, key, axl_true);
 }
 
 /** 
@@ -669,17 +669,17 @@ int             axl_hash_remove       (axlHash    * hash,
  *
  * @param key The key to lookup to be removed. 
  *
- * @return The function returns true if the item was removed
- * (deallocation functions aren't called), otherwise false is
- * returned. If the function returns true, it means the object was
+ * @return The function returns axl_true if the item was removed
+ * (deallocation functions aren't called), otherwise axl_false is
+ * returned. If the function returns axl_true, it means the object was
  * stored in the hash before calling to remove.
  */
-int             axl_hash_delete       (axlHash    * hash,
-				       axlPointer   key)
+axl_bool            axl_hash_delete       (axlHash    * hash,
+					   axlPointer   key)
 {
 	/* call common implementation, without calling destroy
 	 * functions defined */
-	return __axl_hash_remove_common (hash, key, false);
+	return __axl_hash_remove_common (hash, key, axl_false);
 }
 
 /** 
@@ -799,9 +799,9 @@ void __axl_hash_foreach (axlHash             * hash,
  * The function provided (<b>func</b>) will be called passing in the
  * item found, and the data provided (third argument). 
  * 
- * Because the \ref axlHashForeachFunc function is used, \ref true must be
+ * Because the \ref axlHashForeachFunc function is used, \ref axl_true must be
  * returned to stop the foreach process. In the case all items must be
- * visited, \ref false must be returned in any case.
+ * visited, \ref axl_false must be returned in any case.
  * 
  * @param hash The hash table where the iteration process will take
  * place.
@@ -942,7 +942,7 @@ void            axl_hash_foreach4     (axlHash              * hash,
  * much the behaviour that we could get using the following:
  * \code
  * // just compare if the provided key returns some value 
- * int  value = (axl_hash_get (hash, "key2") != NULL);
+ * axl_bool value = (axl_hash_get (hash, "key2") != NULL);
  * \endcode
  *
  * However it could happen that the value associated to the key, which
@@ -954,10 +954,10 @@ void            axl_hash_foreach4     (axlHash              * hash,
  * @param hash The hash table to check for a key value.
  * @param key The key to check for its existance.
  * 
- * @return true if the key is found, otherwise false is returned.
+ * @return axl_true if the key is found, otherwise axl_false is returned.
  */
-int             axl_hash_exists       (axlHash    * hash,
-				       axlPointer   key)
+axl_bool            axl_hash_exists       (axlHash    * hash,
+					   axlPointer   key)
 {
 	/* check if the hash is provided without loggin an error */
 	return (__axl_hash_internal_lookup (hash, key) != NULL);
@@ -966,13 +966,13 @@ int             axl_hash_exists       (axlHash    * hash,
 /** 
  * @internal function for axl_hash_copy.
  */
-int  __axl_hash_copy_foreach (axlPointer key,       
-			      axlPointer data, 
-			      /* user defined pointers */
-			      axlPointer user_data,  /* hash       */
-			      axlPointer user_data2, /* result     */
-			      axlPointer user_data3, /* key_copy   */
-			      axlPointer user_data4) /* value_copy */
+axl_bool __axl_hash_copy_foreach (axlPointer key,       
+				  axlPointer data, 
+				  /* user defined pointers */
+				  axlPointer user_data,  /* hash       */
+				  axlPointer user_data2, /* result     */
+				  axlPointer user_data3, /* key_copy   */
+				  axlPointer user_data4) /* value_copy */
 {
 	/* get a reference to the received data */
 	axlHash          * hash       = user_data;
@@ -1003,7 +1003,7 @@ int  __axl_hash_copy_foreach (axlPointer key,
 			      value_copy (node->key, node->key_destroy, node->data, node->data_destroy), node->data_destroy);
 	
 	/* make the foreach process to continue until the last element */
-	return false;
+	return axl_false;
 }
 
 /** 
@@ -1248,7 +1248,7 @@ void       axl_hash_free        (axlHash *  hash)
  */
 
 /* init the cursor */
-void __axl_hash_cursor_init (axlHashCursor * cursor, int  first)
+void __axl_hash_cursor_init (axlHashCursor * cursor, axl_bool first)
 {
 	/* pointer to a hash node (basic atom holding key and value) */
 	axlHashNode   * node = NULL;
@@ -1373,7 +1373,7 @@ axlHashCursor * axl_hash_cursor_new      (axlHash * hash)
 	cursor->hash    = hash;
 
 	/* init the cursor */
-	__axl_hash_cursor_init (cursor, true);
+	__axl_hash_cursor_init (cursor, axl_true);
 
 	/* return cursor */
 	return cursor;
@@ -1390,7 +1390,7 @@ void            axl_hash_cursor_first    (axlHashCursor * cursor)
 	axl_return_if_fail (cursor);
 
 	/* init the cursor at the initial state */
-	__axl_hash_cursor_init (cursor, true);
+	__axl_hash_cursor_init (cursor, axl_true);
 
 	return;
 }
@@ -1408,7 +1408,7 @@ void            axl_hash_cursor_last     (axlHashCursor * cursor)
 
 	/* init the cursor at the initial state, selecting the last
 	 * node */
-	__axl_hash_cursor_init (cursor, false);
+	__axl_hash_cursor_init (cursor, axl_false);
 
 	return;
 }
@@ -1479,18 +1479,18 @@ void            axl_hash_cursor_next     (axlHashCursor * cursor)
  * @param cursor The cursor that is required to return if there are
  * next items.
  * 
- * @return \ref true if more items are found, otherwise \ref false is
+ * @return \ref axl_true if more items are found, otherwise \ref axl_false is
  * returned.
  */
-int             axl_hash_cursor_has_next (axlHashCursor * cursor)
+axl_bool            axl_hash_cursor_has_next (axlHashCursor * cursor)
 {
 	int iterator;
-	axl_return_val_if_fail (cursor, false);
+	axl_return_val_if_fail (cursor, axl_false);
 
 	/* check basic case */
 	if (cursor->node != NULL && cursor->node->next != NULL) {
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "next is defined..");
-		return true;
+		return axl_true;
 	}
 
 	/* seems next is null, see in other positions  */
@@ -1498,13 +1498,13 @@ int             axl_hash_cursor_has_next (axlHashCursor * cursor)
 	while (iterator < cursor->hash->hash_size) {
 		/* check the table at the current position */
 		if (cursor->hash->table[iterator] != NULL)
-			return true;
+			return axl_true;
 			
 		/* node not found, go next position */
 		iterator++;
 	} /* end while */
 
-	return false;
+	return axl_false;
 }
 
 /** 
@@ -1513,14 +1513,14 @@ int             axl_hash_cursor_has_next (axlHashCursor * cursor)
  * @param cursor The cursor pointing to a particular element inside
  * the hash (or not).
  * 
- * @return \ref true if the hash that is iterated can return data at
- * the current position, otherwise \ref false is returned.
+ * @return \ref axl_true if the hash that is iterated can return data at
+ * the current position, otherwise \ref axl_false is returned.
  */
-int             axl_hash_cursor_has_item    (axlHashCursor * cursor)
+axl_bool            axl_hash_cursor_has_item    (axlHashCursor * cursor)
 {
-	axl_return_val_if_fail (cursor, false);
+	axl_return_val_if_fail (cursor, axl_false);
 
-	/* return true if there are a item selected */
+	/* return axl_true if there are a item selected */
 	return (cursor->node != NULL);
 }
 

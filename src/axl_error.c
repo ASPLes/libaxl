@@ -233,18 +233,18 @@ void   axl_error_report   (axlError ** _error, int code, char * format, ...)
  * 
  * @param _error The error that is being checked.
  * 
- * @return \ref true if the error reference doesn't contains an
- * "ERROR" (an error wasn't reported), otherwise, \ref false is
+ * @return \ref axl_true if the error reference doesn't contains an
+ * "ERROR" (an error wasn't reported), otherwise, \ref axl_false is
  * returned.
  */
-int    axl_error_was_ok   (axlError * _error)
+axl_bool   axl_error_was_ok   (axlError * _error)
 {
 	/* check if it was ok */
 	if (_error == NULL || _error->error == NULL || (_error->defined != -346715))
-		return true;
+		return axl_true;
 	
 	/* axl error is defined */
-	return false;
+	return axl_false;
 }
 
 /** 

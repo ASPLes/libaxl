@@ -177,34 +177,34 @@ axlPointer axl_stack_peek (axlStack * stack)
  * @internal Common support function for foreach over an stack for all
  * foreach functions defined.
  */
-int        __axl_stack_foreach_common (axlStack         * stack, 
-				       axlStackForeach2   func,
-				       axlStackForeach3   func3,
-				       axlPointer         user_data, 
-				       axlPointer         user_data2,
-				       axlPointer         user_data3)
+axl_bool       __axl_stack_foreach_common (axlStack         * stack, 
+					   axlStackForeach2   func,
+					   axlStackForeach3   func3,
+					   axlPointer         user_data, 
+					   axlPointer         user_data2,
+					   axlPointer         user_data3)
 {
 	int iterator;
 
-	axl_return_val_if_fail (stack, false);
+	axl_return_val_if_fail (stack, axl_false);
 
 	/* for each item inside the stack */
 	iterator = 0;
 	while (iterator < stack->items) {
 		/* call fo the function and check returning value  */
 		if (func != NULL && func (stack->stack [stack->items - iterator - 1],  user_data,  user_data2))
-			return false;
+			return axl_false;
 
 		/* call fo the function and check returning value  */
 		if (func3 != NULL && func3 (stack->stack [stack->items - iterator - 1],  user_data,  user_data2, user_data3))
-			return false;
+			return axl_false;
 
 		/* update the iterator */
 		iterator ++;
 	}
 
 	/* iteration performed completely */
-	return true;
+	return axl_true;
 }
 
 /** 
@@ -232,15 +232,15 @@ int        __axl_stack_foreach_common (axlStack         * stack,
  * @param user_data2 User defined pointer to be passed to the function
  * provided.
  * 
- * @return \ref true if the foreach process was performed completely
- * through all items inside the stack or \ref false if not. The
- * function will also return \ref false to indicate a failure the
+ * @return \ref axl_true if the foreach process was performed completely
+ * through all items inside the stack or \ref axl_false if not. The
+ * function will also return \ref axl_false to indicate a failure the
  * stack and func parameters are null.
  */
-int        axl_stack_foreach (axlStack         * stack, 
-			      axlStackForeach2   func,
-			      axlPointer         user_data, 
-			      axlPointer         user_data2)
+axl_bool       axl_stack_foreach (axlStack         * stack, 
+				  axlStackForeach2   func,
+				  axlPointer         user_data, 
+				  axlPointer         user_data2)
 {
 	/* call to common function */
 	return __axl_stack_foreach_common (stack, func, NULL, user_data, user_data2, NULL);
@@ -275,16 +275,16 @@ int        axl_stack_foreach (axlStack         * stack,
  * @param user_data3 User defined pointer to be passed to the function
  * provided.
  * 
- * @return \ref true if the foreach process was performed completely
- * through all items inside the stack or \ref false if not. The
- * function will also return \ref false to indicate a failure the
+ * @return \ref axl_true if the foreach process was performed completely
+ * through all items inside the stack or \ref axl_false if not. The
+ * function will also return \ref axl_false to indicate a failure the
  * stack and func parameters are null.
  */
-int        axl_stack_foreach3 (axlStack         * stack, 
-			       axlStackForeach3   func,
-			       axlPointer         user_data,
-			       axlPointer         user_data2,
-			       axlPointer         user_data3)
+axl_bool       axl_stack_foreach3 (axlStack         * stack, 
+				   axlStackForeach3   func,
+				   axlPointer         user_data,
+				   axlPointer         user_data2,
+				   axlPointer         user_data3)
 {
 	/* call to common function */
 	return __axl_stack_foreach_common (stack, NULL, func, user_data, user_data2, user_data3);
@@ -312,11 +312,11 @@ int        axl_stack_size (axlStack * stack)
  * 
  * @param stack The stack to check.
  * 
- * @return \ref true if the stack is empty or false if not.
+ * @return \ref axl_true if the stack is empty or axl_false if not.
  */
-int        axl_stack_is_empty (axlStack * stack)
+axl_bool       axl_stack_is_empty (axlStack * stack)
 {
-	axl_return_val_if_fail (stack, false);
+	axl_return_val_if_fail (stack, axl_false);
 	
 	/* return if there are stored items in the stack */
 	return (stack->items == 0);
@@ -354,8 +354,8 @@ void       axl_stack_free (axlStack * stack)
 /* @} */
 
 typedef struct _axlBinaryStackNode {
-	int  count;
-	int  state;
+	int      count;
+	axl_bool state;
 } axlBinaryStackNode;
 
 
@@ -379,8 +379,8 @@ struct _axlBinaryStack {
  * @brief Allows to create a compact binary state stack.
  * 
  * To stack is designed to store boolean values in an efficient
- * way. In idea behind this structure is that storing 10 boolean true
- * values only holds a node, with the true value and the count of
+ * way. In idea behind this structure is that storing 10 boolean axl_true
+ * values only holds a node, with the axl_true value and the count of
  * items that previously was signaled with the same value. 
  *
  * The intention is to compact a binary succession of data into a list
@@ -414,7 +414,7 @@ axlBinaryStack * axl_binary_stack_new ()
  *
  * @param state The state to push into the queue.
  */
-void             axl_binary_stack_push (axlBinaryStack * bstack, int  state)
+void             axl_binary_stack_push (axlBinaryStack * bstack, axl_bool state)
 {
 	axlBinaryStackNode * node;
 
@@ -500,20 +500,20 @@ void             axl_binary_stack_push_the_same (axlBinaryStack * bstack)
  * 
  * @return The next value stored in the stack. You must check if the
  * stack is empty before calling to this function since you won't be
- * able to differenciate a false value stored from a false value
+ * able to differenciate a axl_false value stored from a axl_false value
  * returned by an error.
  */
-int              axl_binary_stack_pop  (axlBinaryStack * bstack)
+axl_bool             axl_binary_stack_pop  (axlBinaryStack * bstack)
 {
-	axlBinaryStackNode * node;
-	int                  state;
-	axl_return_val_if_fail (bstack, false);
+	axlBinaryStackNode     * node;
+	axl_bool                 state;
+	axl_return_val_if_fail (bstack, axl_false);
 
 	/* get last value */
 	node = bstack->last; 
 	if (node == NULL) {
-		/* return false because the stack is empty */
-		return false;
+		/* return axl_false because the stack is empty */
+		return axl_false;
 	} /* end if */
 
 	/* check if there are more than 1 item, that is, at least
@@ -562,7 +562,7 @@ int              axl_binary_stack_pop  (axlBinaryStack * bstack)
 	} /* end if */
 
 	/* this shouldn't be reached */
-	return false;
+	return axl_false;
 }
 
 /** 
@@ -575,9 +575,9 @@ int              axl_binary_stack_pop  (axlBinaryStack * bstack)
  * at least one value, otherwise the returned value is not
  * reliable. See \ref axl_binary_stack_is_empty to avoid calling to this function.
  */
-int              axl_binary_stack_peek (axlBinaryStack * bstack)
+axl_bool             axl_binary_stack_peek (axlBinaryStack * bstack)
 {
-	axl_return_val_if_fail (bstack, false);
+	axl_return_val_if_fail (bstack, axl_false);
 
 	/* return current state */
 	return (bstack->last && bstack->last->state);
@@ -589,12 +589,12 @@ int              axl_binary_stack_peek (axlBinaryStack * bstack)
  * 
  * @param bstack The binary stack to check.
  * 
- * @return true if the binary stack is empty, otherwise false is
+ * @return axl_true if the binary stack is empty, otherwise axl_false is
  * returned.
  */
-int              axl_binary_stack_is_empty (axlBinaryStack * bstack)
+axl_bool             axl_binary_stack_is_empty (axlBinaryStack * bstack)
 {
-	axl_return_val_if_fail (bstack, false);
+	axl_return_val_if_fail (bstack, axl_false);
 
 	/* return current emptyness status */
 	return (bstack->last == NULL && axl_stack_is_empty (bstack->stack));

@@ -66,8 +66,8 @@ void      axl_node_set_name_from_factory    (axlNode * node,
 					     char * name);
 
 axlNode * axl_node_copy                     (axlNode * node,
-					     int       copy_attributes,
-					     int       copy_childs);
+					     axl_bool  copy_attributes,
+					     axl_bool  copy_childs);
 
 axlDoc  * axl_node_get_doc                  (axlNode * node);
 
@@ -99,7 +99,7 @@ void      axl_node_set_attribute_from_factory  (axlFactory * factory,
  */
 #define HAS_ATTR(node,attr) axl_node_has_attribute(node,attr)
 
-int       axl_node_has_attribute            (axlNode    * node, 
+axl_bool  axl_node_has_attribute            (axlNode    * node, 
 					     const char * attribute);
 
 void      axl_node_remove_attribute         (axlNode    * node,
@@ -168,11 +168,11 @@ const char    * axl_node_get_attribute_value_trimmed (axlNode    * node,
  */
 #define HAS_ATTR_VALUE(node, attr,value) (axl_node_has_attribute_value (node, attr, value))
 
-int       axl_node_has_attribute_value       (axlNode    * node, 
-					      const char * attribute, 
-					      const char * value);
+axl_bool      axl_node_has_attribute_value       (axlNode    * node, 
+						  const char * attribute, 
+						  const char * value);
 
-int       axl_node_has_attributes (axlNode * node);
+axl_bool      axl_node_has_attributes (axlNode * node);
 
 /**
  * @}
@@ -191,9 +191,9 @@ void            axl_node_attr_cursor_first     (axlAttrCursor * cursor);
 
 void            axl_node_attr_cursor_next      (axlAttrCursor * cursor);
 
-int             axl_node_attr_cursor_has_next  (axlAttrCursor * cursor);
+axl_bool        axl_node_attr_cursor_has_next  (axlAttrCursor * cursor);
 
-int             axl_node_attr_cursor_has_item  (axlAttrCursor * cursor);
+axl_bool        axl_node_attr_cursor_has_item  (axlAttrCursor * cursor);
 
 const char *    axl_node_attr_cursor_get_key   (axlAttrCursor * cursor);
 
@@ -228,7 +228,7 @@ void      axl_node_annotate_data_full            (axlNode       * node,
 
 axlPointer axl_node_annotate_get                 (axlNode       * node,
 						  const char    * key,
-						  int             lookup_in_parent);
+						  axl_bool        lookup_in_parent);
 
 void       axl_node_annotate_int                 (axlNode * node,
 						  const char    * key,
@@ -243,16 +243,16 @@ void       axl_node_annotate_double              (axlNode    * node,
 						 double       double_value);
 
 int        axl_node_annotate_get_int             (axlNode     * node,
-						 const char  * key,
-						 int           lookup_in_parent);
+						 const char   * key,
+						 axl_bool       lookup_in_parent);
 
 char *     axl_node_annotate_get_string          (axlNode       * node,
-						 const char    * key,
-						 int             lookup_in_parent);
+						 const char     * key,
+						 axl_bool         lookup_in_parent);
 
-double     axl_node_annotate_get_double          (axlNode       * node,
+double     axl_node_annotate_get_double          (axlNode      * node,
 						 const char    * key,
-						 int             lookup_in_parent);
+						 axl_bool        lookup_in_parent);
 
 /**
  * @}
@@ -309,18 +309,18 @@ void      axl_node_set_child_after    (axlNode * reference,
 
 void      axl_node_replace            (axlNode * node, 
 				       axlNode * new_node,
-				       int       dealloc);
+				       axl_bool  dealloc);
 
 void      axl_node_remove             (axlNode * node,
-				       int       dealloc);
+				       axl_bool  dealloc);
 
 void      axl_node_deattach           (axlNode * node);
 				       
 
 void      axl_node_set_is_empty       (axlNode  * node, 
-				       int        empty);
+				       axl_bool   empty);
 
-int       axl_node_is_empty           (axlNode * node);
+axl_bool      axl_node_is_empty           (axlNode * node);
 
 const char    * axl_node_get_content  (axlNode * node, 
 				       int  * content_size);
@@ -360,9 +360,9 @@ void      axl_node_set_comment        (axlNode * node,
 				       char * comment,
 				       int    comment_size);
 
-void      axl_node_set_have_childs    (axlNode * node, int      childs);
+void      axl_node_set_have_childs    (axlNode * node, axl_bool childs);
 
-int       axl_node_have_childs        (axlNode * node);
+axl_bool  axl_node_have_childs        (axlNode * node);
 
 axlNode * axl_node_get_child_called   (axlNode * parent, char * name);
 
@@ -374,13 +374,13 @@ int       axl_node_get_child_num      (axlNode * parent);
 
 axlList * axl_node_get_childs         (axlNode * node);
 
-int       axl_node_are_equal          (axlNode * node, axlNode * node2);
+axl_bool  axl_node_are_equal          (axlNode * node, axlNode * node2);
 
 void      axl_node_add_pi_target            (axlNode * node, 
 					     char * target, 
 					     char * content);
 
-int       axl_node_has_pi_target            (axlNode * node, 
+axl_bool  axl_node_has_pi_target            (axlNode * node, 
 					     char * pi_target);
 
 char    * axl_node_get_pi_target_content    (axlNode * node, 
@@ -391,35 +391,35 @@ axlList * axl_node_get_pi_target_list       (axlNode * node);
 void      axl_node_transfer_childs          (axlNode * old_parent, 
 					     axlNode * new_parent);
 
-int       axl_node_dump                    (axlNode  * node, 
+axl_bool  axl_node_dump                    (axlNode  * node, 
 					    char    ** content, 
 					    int      * size);
 
-int       axl_node_dump_pretty             (axlNode  * node,
+axl_bool  axl_node_dump_pretty             (axlNode  * node,
 					    char    ** content,
 					    int      * size,
 					    int        tabular);
 
-int       axl_node_dump_to_file            (axlNode  * node,
+axl_bool  axl_node_dump_to_file            (axlNode  * node,
 					    char     * file_path);
 
-int       axl_node_dump_pretty_to_file     (axlNode  * node,
+axl_bool  axl_node_dump_pretty_to_file     (axlNode  * node,
 					    char     * file_path,
 					    int        tabular);
 
 int       axl_node_get_flat_size            (axlNode * node,
-					     int       pretty_print,
+					     axl_bool  pretty_print,
 					     int       level,
 					     int       tabular);
 
 int       axl_node_dump_at                  (axlNode * node,
 					     char    * content,
 					     int       desp,
-					     int       pretty_print,
+					     axl_bool  pretty_print,
 					     int       level,
 					     int       tabular);
 
-int       axl_node_has_invalid_chars        (const char * content,
+axl_bool  axl_node_has_invalid_chars        (const char * content,
 					     int    content_size,
 					     int  * added_size);
 
@@ -429,7 +429,7 @@ char    * axl_node_content_copy_and_escape (const char * content,
 
 void      axl_node_free            (axlNode * node);
 
-void      axl_node_free_full       (axlNode * node, int  also_childs);
+void      axl_node_free_full       (axlNode * node, axl_bool also_childs);
 
 /* @} */
 
@@ -483,21 +483,21 @@ axlItem     * axl_item_copy            (axlItem * item,
 					axlNode * set_parent);
 
 void          axl_item_remove          (axlItem * item,
-					int       dealloc);
+					axl_bool  dealloc);
 
 void          axl_item_replace         (axlItem * item, 
 					axlItem * new_item,
-					int       dealloc);
+					axl_bool  dealloc);
 
 void          axl_item_transfer_childs_after (axlNode * old_parent,
 					      axlItem * item_ref);
 
-int           axl_item_are_equal      (axlItem * item,
+axl_bool      axl_item_are_equal      (axlItem * item,
 				       axlItem * item2,
-				       int       trimmed);
+				       axl_bool      trimmed);
 
 void          axl_item_free           (axlItem * item,
-				       int       dealloc);
+				       axl_bool      dealloc);
 
 axlFactory     * axl_item_factory_create ();
 

@@ -35,12 +35,12 @@ int main (int argc, char ** argv)
 
 	encoding          = (char *) argv[3];
 	tolower_encoding  = axl_stream_to_lower_copy (encoding);
-	axl_stream_remove (tolower_encoding, "-", false);
-	axl_stream_remove (tolower_encoding, ".", false);
+	axl_stream_remove (tolower_encoding, "-", axl_false);
+	axl_stream_remove (tolower_encoding, ".", axl_false);
 
 	toupper_encoding  = axl_stream_to_upper_copy (encoding);
-	axl_stream_remove (toupper_encoding, "-", false);
-	axl_stream_remove (toupper_encoding, ".", false);
+	axl_stream_remove (toupper_encoding, "-", axl_false);
+	axl_stream_remove (toupper_encoding, ".", axl_false);
 
 	/* open output */
 	string_aux = axl_strdup_printf ("axl_babel_%s.c", tolower_encoding);

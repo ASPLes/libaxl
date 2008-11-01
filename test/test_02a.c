@@ -27,13 +27,13 @@ int main (int argc, char ** argv)
 	dtd = axl_dtd_parse_from_file ("fact.dtd", &error);
 	if (dtd == NULL) {
 		printf ("Unable to parse DTD file, error was: %s\n", axl_error_get (error));
-		return false;
+		return axl_false;
 	}
 
 	/* perform DTD validation */
 	if (! axl_dtd_validate (doc, dtd, &error)) {
 		printf ("Unable to validate file, error was: %s\n", axl_error_get (error));
-		return false;
+		return axl_false;
 	}
 
 	/* release the document */
@@ -44,5 +44,5 @@ int main (int argc, char ** argv)
 	/* cleanup axl library */
 	axl_end ();
 
-	return AXL_TRUE;
+	return axl_true;
 }

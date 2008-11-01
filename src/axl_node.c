@@ -99,7 +99,7 @@ struct _axlNodeAttr {
 	 * @internal Flags the attribute pair to be considered from a
 	 * factory.
 	 */
-	int           from_factory;
+	axl_bool          from_factory;
 
 	/** 
 	 * @internal Next attribute.
@@ -185,24 +185,24 @@ void __axl_node_free_attr_list (axlNodeAttr * attr)
  * @return \ref true if both lists are equal, otherwise \ref false is
  * returned.
  */
-int  __axl_node_attr_list_is_equal (axlNodeAttr * attr, axlNodeAttr * attr2)
+axl_bool __axl_node_attr_list_is_equal (axlNodeAttr * attr, axlNodeAttr * attr2)
 {
 	axlNodeAttr * attrAux;
-	int           found;
+	axl_bool      found;
 
 	/* for each attribute found in the attribute list, check it on
 	 * the second list */
 	while (attr != NULL) {
 		
 		attrAux = attr2;
-		found   = false;
+		found   = axl_false;
 		while (attrAux != NULL) {
 			
 			/* check attribute */
 			if (axl_cmp (attrAux->attribute, attr->attribute) &&
 			    axl_cmp (attrAux->value, attr->value)) {
 				/* attribute found, break the loop */
-				found = true;
+				found = axl_true;
 				break;
 			}
 
@@ -213,7 +213,7 @@ int  __axl_node_attr_list_is_equal (axlNodeAttr * attr, axlNodeAttr * attr2)
 		
 		/* check if the attribute was found */
 		if (! found )
-			return false;
+			return axl_false;
 
 		/* get the next */
 		attr = attr->next;
@@ -222,7 +222,7 @@ int  __axl_node_attr_list_is_equal (axlNodeAttr * attr, axlNodeAttr * attr2)
 
 	/* all attributes was found, including its values, so, the
 	 * list is equal */
-	return true;
+	return axl_true;
 }
 
 typedef enum {
@@ -357,7 +357,7 @@ char * __axl_node_content_copy_and_escape (const char * content,
 	int    iterator  = 0;
 	int    iterator2 = 0;
 	char * result;
-	axl_return_val_if_fail (content, false);
+	axl_return_val_if_fail (content, axl_false);
 
 	/* allocate the memory to be returned */
 	result = axl_new (char, content_size + additional_size + 1);
@@ -435,7 +435,7 @@ char * __axl_node_content_translate_defaults (char * content,
 	int    iterator  = 0;
 	int    iterator2 = 0;
 	
-	axl_return_val_if_fail (content, false);
+	axl_return_val_if_fail (content, axl_false);
 
 	/* iterate over all content defined */
 	while (iterator < (*content_size)) {
@@ -862,9 +862,9 @@ axlPointer __axl_node_copy_value (axlPointer key, axlDestroyFunc key_destroy,
  * @return A newly created node copy or null if it fails. The function
  * will fail if the node reference provided is null.
  */
-axlNode * axl_node_copy                     (axlNode * node,
-					     int       copy_attributes,
-					     int       copy_childs)
+axlNode * axl_node_copy                     (axlNode   * node,
+					     axl_bool    copy_attributes,
+					     axl_bool    copy_childs)
 {
 	axlNode * result;
 	axlItem * child;
@@ -1000,7 +1000,7 @@ void      __axl_node_set_attribute      (axlFactory * factory,
 					 axlNode    * node, 
 					 char       * attribute, 
 					 char       * value, 
-					 int          from_factory)
+					 axl_bool     from_factory)
 {
 	axlNodeAttr * attr;
 	axlNodeAttr * next;
@@ -1158,7 +1158,7 @@ void      axl_node_set_attribute      (axlNode    * node,
 	}
 
 	/* insert the attribute */
-	__axl_node_set_attribute (NULL, node, _attr, _value, false);
+	__axl_node_set_attribute (NULL, node, _attr, _value, axl_false);
 	return;
 }
 
@@ -1186,7 +1186,7 @@ void      axl_node_set_attribute_ref  (axlNode * node, char * attribute, char * 
 	axl_return_if_fail (value);
 
 	/* insert the attribute */
-	__axl_node_set_attribute (NULL, node, attribute, value, false);
+	__axl_node_set_attribute (NULL, node, attribute, value, axl_false);
 
 	return;
 }
@@ -1209,7 +1209,7 @@ void      axl_node_set_attribute_from_factory  (axlFactory * factory,
 						char       * value)
 {
 	/* insert the attribute */
-	__axl_node_set_attribute (factory, node, attribute, value, true);
+	__axl_node_set_attribute (factory, node, attribute, value, axl_true);
 
 	return;
 }
@@ -1226,16 +1226,16 @@ void      axl_node_set_attribute_from_factory  (axlFactory * factory,
  * @return A \ref true if the attribute value is set, otherwise
  * \ref false is returned.
  */
-int           axl_node_has_attribute      (axlNode * node, const char * attribute)
+axl_bool          axl_node_has_attribute      (axlNode * node, const char * attribute)
 {
 	axlNodeAttr * attr;
 
-	axl_return_val_if_fail (node, false);
-	axl_return_val_if_fail (attribute, false);
+	axl_return_val_if_fail (node,      axl_false);
+	axl_return_val_if_fail (attribute, axl_false);
 
 	/* check for empty hash */
 	if (node->attributes == NULL)
-		return false;
+		return axl_false;
 
 	if (node->attr_num <= 10) {
 		/* linked configuration */
@@ -1243,14 +1243,14 @@ int           axl_node_has_attribute      (axlNode * node, const char * attribut
 		while (attr != NULL) {
 			/* check that the attribute is equal */
 			if (axl_cmp (attr->attribute, attribute))
-				return true;
+				return axl_true;
 
 			/* get the next attribute */
 			attr = attr->next;
 		} /* end while */
 
 		/* attribute not found */
-		return false;
+		return axl_false;
 	} /* end if */
 
 	/* hashed configuration */
@@ -1369,9 +1369,9 @@ int       axl_node_num_attributes           (axlNode    * node)
  * is returned. The function also returns \ref false if a null
  * reference for the node is provided.
  */
-int       axl_node_has_attributes (axlNode * node)
+axl_bool      axl_node_has_attributes (axlNode * node)
 {
-	axl_return_val_if_fail (node, false);
+	axl_return_val_if_fail (node, axl_false);
 
 	/* return if the attributes reference is configured */
 	return (node->attributes != NULL);
@@ -1543,13 +1543,13 @@ const char    * axl_node_get_attribute_value_trimmed (axlNode    * node,
  * @return \ref true if the node has the attribute with the provided
  * value.
  */
-int  axl_node_has_attribute_value       (axlNode    * node, 
-					 const char * attribute, 
-					 const char * value)
+axl_bool axl_node_has_attribute_value       (axlNode    * node, 
+					     const char * attribute, 
+					     const char * value)
 {
-	axl_return_val_if_fail (node, false);
-	axl_return_val_if_fail (attribute, false);
-	axl_return_val_if_fail (value, false);
+	axl_return_val_if_fail (node,      axl_false);
+	axl_return_val_if_fail (attribute, axl_false);
+	axl_return_val_if_fail (value,     axl_false);
 
 	/* return if the attribute value found is the same */
 	return axl_cmp (axl_node_get_attribute_value (node, attribute), value);
@@ -1683,8 +1683,8 @@ void      axl_node_annotate_data_full            (axlNode       * node,
  * configuration (lookup_in_parent and lookup_in_doc).
  */
 axlPointer axl_node_annotate_get                 (axlNode     * node,
-						 const char  * key,
-						 int           lookup_in_parent)
+						  const char  * key,
+						  axl_bool      lookup_in_parent)
 {
 	axlPointer   result = NULL;
 	axlNode    * parent;
@@ -1980,8 +1980,8 @@ void       axl_node_annotate_double              (axlNode    * node,
  * function returns 0.
  */
 int        axl_node_annotate_get_int             (axlNode    * node,
-						 const char * key,
-						 int          lookup_in_parent)
+						  const char * key,
+						  axl_bool     lookup_in_parent)
 {
 	AnnotateNodeData * data;
 	
@@ -2028,8 +2028,8 @@ int        axl_node_annotate_get_int             (axlNode    * node,
  * function returns NULL.
  */
 char *     axl_node_annotate_get_string          (axlNode    * node,
-						 const char * key,
-						 int          lookup_in_parent)
+						  const char * key,
+						  axl_bool     lookup_in_parent)
 {
 	AnnotateNodeData * data;
 	
@@ -2076,8 +2076,8 @@ char *     axl_node_annotate_get_string          (axlNode    * node,
  * function returns 0.0.
  */
 double     axl_node_annotate_get_double          (axlNode    * node,
-						 const char * key,
-						 int          lookup_in_parent)
+						  const char * key,
+						  axl_bool     lookup_in_parent)
 {
 	AnnotateNodeData * data;
 	
@@ -2131,7 +2131,7 @@ double     axl_node_annotate_get_double          (axlNode    * node,
  * @param empty The value for emptyness to be used. false will
  * mean that the node is not empty.
  */
-void      axl_node_set_is_empty (axlNode * node, int      empty)
+void      axl_node_set_is_empty (axlNode * node, axl_bool empty)
 {
 	axlItem * child;
 	axlItem * aux;
@@ -2165,7 +2165,7 @@ void      axl_node_set_is_empty (axlNode * node, int      empty)
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found item content and item CDATA..");
 
 			/* remove the node */
-			axl_item_remove (child, true);
+			axl_item_remove (child, axl_true);
 
 			/* count each item removed */
 			removed++;
@@ -2578,10 +2578,10 @@ axlNode * axl_node_get_last_child     (axlNode * node)
  * @return \ref true if the node is empty or \ref false if
  * not.
  */
-int           axl_node_is_empty        (axlNode * node)
+axl_bool          axl_node_is_empty        (axlNode * node)
 {
 	axlItem * child;
-	axl_return_val_if_fail (node, false);
+	axl_return_val_if_fail (node, axl_false);
 
 	/* get the first child */
 	child = node->first;
@@ -2593,7 +2593,7 @@ int           axl_node_is_empty        (axlNode * node)
 		    axl_item_get_type (child) == ITEM_CDATA) {
 
 			/* the node has content */
-			return false;
+			return axl_false;
 			
 		} /* end if */
 
@@ -2602,7 +2602,7 @@ int           axl_node_is_empty        (axlNode * node)
 
 	} /* end while */
 
-	return true;
+	return axl_true;
 }
 
 /** 
@@ -2790,8 +2790,8 @@ void __axl_node_set_content_common_ref (axlFactory * factory,
 					axlNode    * node, 
 					char       * content, 
 					int          content_size, 
-					int          from_factory,
-					int          cdata)
+					axl_bool     from_factory,
+					axl_bool     cdata)
 {
 	
 	axlNodeContent * itemContent;
@@ -2872,7 +2872,7 @@ void      axl_node_set_content_ref    (axlNode * node,
 
 	/* call to set content without signaling that the content
 	 * wasn't allocated by a factory. */
-	__axl_node_set_content_common_ref (NULL, node, content, content_size, false, false);
+	__axl_node_set_content_common_ref (NULL, node, content, content_size, axl_false, axl_false);
 	
 	/* job done */
 	return;	
@@ -2890,7 +2890,7 @@ void      axl_node_set_content_from_factory (axlFactory * factory,
 {
 	/* call to set content without signaling that the content was
 	 * allocated by a factory. */
-	__axl_node_set_content_common_ref (factory, node, content, content_size, true, false);
+	__axl_node_set_content_common_ref (factory, node, content, content_size, axl_true, axl_false);
 	
 	/* job done */
 	return;
@@ -2934,7 +2934,7 @@ void      axl_node_set_cdata_content  (axlNode * node,
 
 	/* call to set node content */	
 	content = axl_strdup (content);
-	__axl_node_set_content_common_ref (NULL, node, content, content_size, false, true);
+	__axl_node_set_content_common_ref (NULL, node, content, content_size, axl_false, axl_true);
 
 	return;
 }
@@ -2952,7 +2952,7 @@ void      axl_node_set_cdata_content_from_factory (axlFactory * factory,
 {
 	/* call to set content without signaling that the content was
 	 * allocated by a factory. */
-	__axl_node_set_content_common_ref (factory, node, content, content_size, true, true);
+	__axl_node_set_content_common_ref (factory, node, content, content_size, axl_true, axl_true);
 	
 	/* job done */
 	return;	
@@ -3271,9 +3271,9 @@ void      axl_node_set_child_after    (axlNode * reference,
  *
  * @param dealloc Signal if the previous node must be deallocated.
  */
-void      axl_node_replace             (axlNode * node, 
-					axlNode * new_node,
-					int       dealloc)
+void      axl_node_replace             (axlNode   * node, 
+					axlNode   * new_node,
+					axl_bool    dealloc)
 {
 	axlItem * p_item;
 
@@ -3336,8 +3336,8 @@ void      axl_node_replace             (axlNode * node,
  * @param dealloc \ref true to not only unlink relations but also
  * remove the node.
  */
-void      axl_node_remove             (axlNode * node,
-				       int       dealloc)
+void      axl_node_remove             (axlNode  * node,
+				       axl_bool   dealloc)
 {
 	axlItem * item;
 	axl_return_if_fail (node);
@@ -3420,7 +3420,7 @@ void axl_node_deattach (axlNode * node)
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "deattaching node..");
 
 	/* call to remove */
-	axl_node_remove (node, false);
+	axl_node_remove (node, axl_false);
 
 	return;
 }
@@ -3436,7 +3436,7 @@ void axl_node_deattach (axlNode * node)
  * @param childs The child configuration, true to notify that the
  * node have childs, otherwise, false is returned.
  */
-void      axl_node_set_have_childs (axlNode * node, int      childs)
+void      axl_node_set_have_childs (axlNode * node, axl_bool childs)
 {
 	/* do nothing */
 	return;
@@ -3456,17 +3456,17 @@ void      axl_node_set_have_childs (axlNode * node, int      childs)
  * @return An \ref true if the \ref axlNode have childs or \ref
  * false if not.
  */
-int           axl_node_have_childs        (axlNode * node)
+axl_bool          axl_node_have_childs        (axlNode * node)
 {
 	axlItem * item;
 
-	axl_return_val_if_fail (node, false);
+	axl_return_val_if_fail (node, axl_false);
 
 	item = node->first;
 	while (item != NULL) {
 		/* check item type */
 		if (axl_item_get_type (item) == ITEM_NODE)
-			return true;
+			return axl_true;
 
 		/* go to the next */
 		item = item->next;
@@ -3475,7 +3475,7 @@ int           axl_node_have_childs        (axlNode * node)
 
 	/* return false because no item was found with ITEM_NODE
 	 * type */
-	return false;
+	return axl_false;
 }
 
 /** 
@@ -3486,11 +3486,11 @@ int           axl_node_have_childs        (axlNode * node)
  * 
  * @return 
  */
-int           axl_node_have_childs_aux        (axlNode * node)
+axl_bool          axl_node_have_childs_aux        (axlNode * node)
 {
 	axlItem * item;
 
-	axl_return_val_if_fail (node, false);
+	axl_return_val_if_fail (node, axl_false);
 
 	item = node->first;
 	while (item != NULL) {
@@ -3498,7 +3498,7 @@ int           axl_node_have_childs_aux        (axlNode * node)
 		if (axl_item_get_type (item) == ITEM_NODE || 
 		    axl_item_get_type (item) == ITEM_PI || 
 		    axl_item_get_type (item) == ITEM_COMMENT)
-			return true;
+			return axl_true;
 
 		/* go to the next */
 		item = item->next;
@@ -3507,7 +3507,7 @@ int           axl_node_have_childs_aux        (axlNode * node)
 
 	/* return false because no item was found with ITEM_NODE
 	 * type */
-	return false;
+	return axl_false;
 }
 
 /** 
@@ -3757,27 +3757,27 @@ axlList * axl_node_get_childs         (axlNode * node)
 	return result;
 }
 
-int  __axl_node_are_equal_attr (axlPointer key, 
-				axlPointer value, 
-				axlPointer user_data, 
-				axlPointer user_data2)
+axl_bool __axl_node_are_equal_attr (axlPointer key, 
+				    axlPointer value, 
+				    axlPointer user_data, 
+				    axlPointer user_data2)
 {
 	char                * value2;
-	int                 * result = user_data2;
+	axl_bool                * result = user_data2;
 	
 	/* get the attr value and compare it with data */
 	value2 = axl_hash_get ((axlHash *) user_data, (char *) key);
 
 	if (! axl_cmp ((char *) value, value2)) {
 		/* flag that node attributes aren't equal */
-		(* result) = false;
+		(* result) = axl_false;
 
 		/* stop foreach */
-		return true;
+		return axl_true;
 	}
 			
 	/* make the process to continue */
-	return false;
+	return axl_false;
 }
 
 /** 
@@ -3792,39 +3792,39 @@ int  __axl_node_are_equal_attr (axlPointer key,
  * 
  * @return true if both nodes are equivalent or false if not.
  */
-int           axl_node_are_equal          (axlNode * node, axlNode * node2)
+axl_bool          axl_node_are_equal          (axlNode * node, axlNode * node2)
 {
-	int  result;
+	axl_bool result;
 	
-	axl_return_val_if_fail (node,  false);
-	axl_return_val_if_fail (node2, false);
+	axl_return_val_if_fail (node,  axl_false);
+	axl_return_val_if_fail (node2, axl_false);
 
 	/* check document root name */
 	if (! axl_cmp (axl_node_get_name (node), axl_node_get_name (node2))) {
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "node names aren't equal <%s> != <%s>",
 			   node->name, node2->name);
-		return false;
+		return axl_false;
 	}
 
 	/* check empty ness configuration */
 	if (axl_node_is_empty (node) != axl_node_is_empty (node2)) {
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "emptyness configuration differs <%s> != <%s>",
 			   node->name, node2->name);
-		return false;
+		return axl_false;
 	}
 	
 	/* check childs configuration */
 	if (axl_node_have_childs (node) != axl_node_have_childs (node2)) {
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "childs configuration differs <%s> != <%s>",
 			   node->name, node2->name);
-		return false;
+		return axl_false;
 	}
 
 	/* check childs number */
 	if (axl_node_get_child_num (node) != axl_node_get_child_num (node2)) {
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "child number differs <%s>(%d) != <%s>(%d)",
 			   node->name, axl_node_get_child_num (node), node2->name, axl_node_get_child_num (node2));
-		return false;
+		return axl_false;
 	}
 
 	/* check attribute values */
@@ -3834,11 +3834,11 @@ int           axl_node_are_equal          (axlNode * node, axlNode * node2)
 		if (node->attr_num != node2->attr_num) {
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "both nodes have different number of attributes (%d != %d)",
 				   node->attr_num, node2->attr_num);
-			return false;
+			return axl_false;
 		}
 
 		/* now both hashes */
-		result = true;
+		result = axl_true;
 		if (node->attr_num <= 10) {
 			/* check both list are equal */
 			result = __axl_node_attr_list_is_equal ((axlNodeAttr *) node->attributes, (axlNodeAttr *) node2->attributes);
@@ -3851,25 +3851,25 @@ int           axl_node_are_equal          (axlNode * node, axlNode * node2)
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "node attributes differs <%s> != <%s>",
 				   node->name, node2->name);
 			/* attribute missmatch */
-			return false;
+			return axl_false;
 		}
 	} else {
 		if (node->attributes == NULL && node2->attributes != NULL) {
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "node <%s> has no attributes but <%s> has",
 				   axl_node_get_name (node), axl_node_get_name (node2));
-			return false;
+			return axl_false;
 		}
 
 		if (node2->attributes == NULL && node->attributes != NULL) {
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "node <%s> has no attributes but <%s> has",
 				   axl_node_get_name (node2), axl_node_get_name (node));
-			return false;
+			return axl_false;
 		}
 
 	} /* end if */
 
 	/* both nodes seems to be equal */
-	return true;
+	return axl_true;
 }
 
 /** 
@@ -3922,14 +3922,14 @@ void      axl_node_add_pi_target            (axlNode * node,
  * @return true is the processing instruction is defined,
  * otherwise false is returned.
  */
-int           axl_node_has_pi_target            (axlNode * node, 
-						 char * pi_target)
+axl_bool          axl_node_has_pi_target            (axlNode * node, 
+						     char    * pi_target)
 {
 	axlPI   * pi;
 	axlItem * item;
 	
-	axl_return_val_if_fail (node,      false);
-	axl_return_val_if_fail (pi_target, false);
+	axl_return_val_if_fail (node,      axl_false);
+	axl_return_val_if_fail (pi_target, axl_false);
 
 	/* assume the pi target doesn't exist if it is not
 	 * initialized */
@@ -3943,7 +3943,7 @@ int           axl_node_has_pi_target            (axlNode * node,
 
 			/* only check the first ocurrency */
 			if (axl_cmp (axl_pi_get_name (pi), pi_target))
-				return true;
+				return axl_true;
 		} /* end if */
 
 		/* get the next item */
@@ -3951,7 +3951,7 @@ int           axl_node_has_pi_target            (axlNode * node,
 
 	} /* end while */
 
-	return false;
+	return axl_false;
 }
 
 /** 
@@ -3971,8 +3971,8 @@ char    * axl_node_get_pi_target_content    (axlNode * node,
 	axlPI   * pi;
 	axlItem * item;
 	
-	axl_return_val_if_fail (node,      false);
-	axl_return_val_if_fail (pi_target, false);
+	axl_return_val_if_fail (node,      axl_false);
+	axl_return_val_if_fail (pi_target, axl_false);
 
 	/* assume the pi target doesn't exist if it is not
 	 * initialized */
@@ -4044,15 +4044,15 @@ void      axl_node_transfer_childs          (axlNode * old_parent,
 /** 
  * @internal Implementation for the public API provided to dump node content.
  */
-int  __axl_node_dump_common (axlNode * node, char ** content, int * size, int  pretty_print, int level, int tabular)
+axl_bool __axl_node_dump_common (axlNode * node, char ** content, int * size, axl_bool pretty_print, int level, int tabular)
 {
 	int    _size;
 	int    index;
 	char * result;
 
 	/* check refererences received */
-	axl_return_val_if_fail (node, false);
-	axl_return_val_if_fail (content, false);
+	axl_return_val_if_fail (node,    axl_false);
+	axl_return_val_if_fail (content, axl_false);
 
 	/* get dump size */
 	_size = axl_node_get_flat_size (node, pretty_print, level, tabular);
@@ -4073,7 +4073,7 @@ int  __axl_node_dump_common (axlNode * node, char ** content, int * size, int  p
 			*size = -1;
 		*content      = NULL;
 		
-		return false;
+		return axl_false;
 	} /* end if */
 
 	/* fill the size */
@@ -4082,7 +4082,7 @@ int  __axl_node_dump_common (axlNode * node, char ** content, int * size, int  p
 	*content      = result;
 
 	/* return content */
-	return true;
+	return axl_true;
 }
 
 /** 
@@ -4099,12 +4099,12 @@ int  __axl_node_dump_common (axlNode * node, char ** content, int * size, int  p
  * @return The function returns \ref true if the dump operation was
  * performed. Otherwise \ref false is returned.
  */
-int       axl_node_dump                    (axlNode  * node, 
-					    char    ** content, 
-					    int      * size)
+axl_bool      axl_node_dump                    (axlNode  * node, 
+						char    ** content, 
+						int      * size)
 {
 	/* use common implementation for all functions */
-	return __axl_node_dump_common (node, content, size, false, 0, 0);
+	return __axl_node_dump_common (node, content, size, axl_false, 0, 0);
 }
 
 /** 
@@ -4124,13 +4124,13 @@ int       axl_node_dump                    (axlNode  * node,
  * @return true if the dump operation was properly done, otherwise
  * false is returned.
  */
-int       axl_node_dump_pretty             (axlNode  * node,
-					    char    ** content,
-					    int      * size,
-					    int        tabular)
+axl_bool      axl_node_dump_pretty             (axlNode  * node,
+						char    ** content,
+						int      * size,
+						int        tabular)
 {
 	/* use common implementation for all functions */
-	return __axl_node_dump_common (node, content, size, true, 0, tabular);
+	return __axl_node_dump_common (node, content, size, axl_true, 0, tabular);
 }
 
 /** 
@@ -4145,8 +4145,8 @@ int       axl_node_dump_pretty             (axlNode  * node,
  * @return \ref true if the dump operation was done, otherwise \ref false is
  * returned.
  */
-int       axl_node_dump_to_file            (axlNode  * node,
-					    char     * file_path)
+axl_bool      axl_node_dump_to_file            (axlNode  * node,
+						char     * file_path)
 {
 	char * content;
 	int    size;
@@ -4154,8 +4154,8 @@ int       axl_node_dump_to_file            (axlNode  * node,
 	int    written;
 
 	/* use common implementation for all functions */
-	if (!  __axl_node_dump_common (node, &content, &size, true, 0, 0))
-		return false;
+	if (!  __axl_node_dump_common (node, &content, &size, axl_true, 0, 0))
+		return axl_false;
 
 	/* open the file and check */
 #if defined(AXL_OS_WIN32) && ! defined(__GNUC__)
@@ -4166,7 +4166,7 @@ int       axl_node_dump_to_file            (axlNode  * node,
 		/* failed to open the file to dump the content */
 		axl_free (content);
 
-		return false;
+		return axl_false;
 	}
 
 	/* dump the content */
@@ -4202,9 +4202,9 @@ int       axl_node_dump_to_file            (axlNode  * node,
  * @return \ref true if the dump operation was done, otherwise \ref false is
  * returned.
  */
-int       axl_node_dump_pretty_to_file     (axlNode  * node,
-					    char     * file_path,
-					    int        tabular)
+axl_bool      axl_node_dump_pretty_to_file     (axlNode  * node,
+						char     * file_path,
+						int        tabular)
 {
 	char * content;
 	int    size;
@@ -4212,8 +4212,8 @@ int       axl_node_dump_pretty_to_file     (axlNode  * node,
 	int    written;
 
 	/* use common implementation for all functions */
-	if (!  __axl_node_dump_common (node, &content, &size, true, 0, tabular))
-		return false;
+	if (!  __axl_node_dump_common (node, &content, &size, axl_true, 0, tabular))
+		return axl_false;
 
 	/* open the file and check */
 #if defined(AXL_OS_WIN32) && ! defined(__GNUC__)
@@ -4224,7 +4224,7 @@ int       axl_node_dump_pretty_to_file     (axlNode  * node,
 		/* failed to open the file to dump the content */
 		axl_free (content);
 
-		return false;
+		return axl_false;
 	}
 
 	/* dump the content */
@@ -4304,7 +4304,7 @@ axlList * axl_node_get_pi_target_list       (axlNode * node)
 	axlList * result = NULL;
 	axlItem * item;
 	
-	axl_return_val_if_fail (node,      false);
+	axl_return_val_if_fail (node, axl_false);
 
 	/* assume the pi target doesn't exist if it is not
 	 * initialized */
@@ -4330,9 +4330,9 @@ axlList * axl_node_get_pi_target_list       (axlNode * node)
 	return result;
 }
 
-int  __axl_node_get_flat_size_attributes_foreach (axlPointer attr, 
-						  axlPointer value, 
-						  axlPointer user_data)
+axl_bool __axl_node_get_flat_size_attributes_foreach (axlPointer attr, 
+						      axlPointer value, 
+						      axlPointer user_data)
 {
 	int * length = user_data;
 
@@ -4340,7 +4340,7 @@ int  __axl_node_get_flat_size_attributes_foreach (axlPointer attr,
 	(*length) += 4 + strlen ((char*) attr) + strlen ((char*) value);
 
 	/* make the process to continue */
-	return false;
+	return axl_false;
 }
 
 /** 
@@ -4398,13 +4398,13 @@ int __axl_node_get_flat_size_attributes (axlNode * node)
  * 
  * @return The stream size or -1 if fails.
  */
-int       axl_node_get_flat_size            (axlNode * node, int  pretty_print, int level, int tabular)
+int       axl_node_get_flat_size            (axlNode * node, axl_bool pretty_print, int level, int tabular)
 {
 	int              result    = 0;
 	axlItem        * item;
 	axlNodeContent * content;
-	int              is_empty;
-	int              have_childs;
+	axl_bool         is_empty;
+	axl_bool         have_childs;
 
 	axl_return_val_if_fail (node, -1);
 
@@ -4523,16 +4523,16 @@ int       axl_node_get_flat_size            (axlNode * node, int  pretty_print, 
 	return result;
 }
 
-int  __axl_node_dump_attributes_at_foreach (axlPointer key, 
-					    axlPointer value, 
-					    axlPointer user_data,
-					    axlPointer user_data2)
+axl_bool __axl_node_dump_attributes_at_foreach (axlPointer key, 
+						axlPointer value, 
+						axlPointer user_data,
+						axlPointer user_data2)
 {
-	char * content    = user_data;
-	int  * _desp      = user_data2;
-	int    terminator = false;
-	int    desp       = (*_desp);
-	int    length;
+	char      * content    = user_data;
+	int       * _desp      = user_data2;
+	axl_bool    terminator = axl_false;
+	int         desp       = (*_desp);
+	int         length;
 
 	memcpy (content + desp, " ", 1);
 	desp += 1;
@@ -4547,7 +4547,7 @@ int  __axl_node_dump_attributes_at_foreach (axlPointer key,
 		memcpy (content + desp, "='", 2);
 		desp += 2;
 	}else {
-		terminator = true;
+		terminator = axl_true;
 		memcpy (content + desp, "=\"", 2);
 		desp += 2;
 	}
@@ -4568,7 +4568,7 @@ int  __axl_node_dump_attributes_at_foreach (axlPointer key,
 	(*_desp) = desp;
 
 	/* make the process to continue */
-	return false;
+	return axl_false;
 }
 
 void __axl_node_dump_at_the_end (axlNodeAttr * attr, char * content, int * desp)
@@ -4646,7 +4646,7 @@ int __axl_node_dump_at_write_indent (char * content, int tabular, int level)
 }
 	
 /* dump content */
-int __axl_node_dump_items (axlItem * item, char * content, int level, int  pretty_print, int desp, int tabular)
+int __axl_node_dump_items (axlItem * item, char * content, int level, axl_bool pretty_print, int desp, int tabular)
 {
 
 	axlNodeContent * nodeContent;
@@ -4801,12 +4801,12 @@ int __axl_node_dump_items (axlItem * item, char * content, int level, int  prett
 int       axl_node_dump_at                  (axlNode * node,
 					     char    * content,
 					     int       desp,
-					     int       pretty_print,
+					     axl_bool  pretty_print,
 					     int       level,
 					     int       tabular)
 {
 	axlItem        * item;
-	int              have_childs;
+	axl_bool         have_childs;
 
 	axl_return_val_if_fail (node, -1);
 
@@ -4958,13 +4958,13 @@ int       axl_node_dump_at                  (axlNode * node,
  * @return true if the string contains non valid sequences that
  * must be escaped using entity references.
  */
-int       axl_node_has_invalid_chars        (const char * content,
-					     int          content_size,
-					     int        * added_size)
+axl_bool      axl_node_has_invalid_chars        (const char * content,
+						 int          content_size,
+						 int        * added_size)
 {
-	int      iterator = 0;
-	int      result   = false;
-	axl_return_val_if_fail (content, false);
+	int          iterator = 0;
+	axl_bool     result   = axl_false;
+	axl_return_val_if_fail (content, axl_false);
 
 	/* reset additional size value */
 	if (added_size != NULL)
@@ -4981,7 +4981,7 @@ int       axl_node_has_invalid_chars        (const char * content,
 		/* check for &apos; */
 		if (content [iterator] == '\'') {
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found invalid sequence='\\'");
-			result = true;
+			result = axl_true;
 			if (added_size != NULL)
 				(*added_size) += 5;
 		}
@@ -4989,7 +4989,7 @@ int       axl_node_has_invalid_chars        (const char * content,
 		/* check for &quot; */
 		if (content [iterator] == '"') {
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found invalid sequence='\"'");
-			result = true;
+			result = axl_true;
 			if (added_size != NULL)
 				(*added_size) += 5;
 		}
@@ -4997,7 +4997,7 @@ int       axl_node_has_invalid_chars        (const char * content,
 		/* check for &amp; */
 		if (content [iterator] == '&') {
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found invalid sequence='&'");
-			result = true;
+			result = axl_true;
 			if (added_size != NULL)
 				(*added_size) += 4;
 		}
@@ -5005,7 +5005,7 @@ int       axl_node_has_invalid_chars        (const char * content,
 		/* check for &gt; */
 		if (content [iterator] == '>') {
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found invalid sequence='>'");
-			result = true;
+			result = axl_true;
 			if (added_size != NULL)
 				(*added_size) += 3;
 		}
@@ -5013,7 +5013,7 @@ int       axl_node_has_invalid_chars        (const char * content,
 		/* check for &lt; */
 		if (content [iterator] == '<') {
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found invalid sequence='<'");
-			result = true;
+			result = axl_true;
 			if (added_size != NULL)
 				(*added_size) += 3;
 		}
@@ -5070,7 +5070,7 @@ char * axl_node_content_copy_and_escape (const char * content,
 	return __axl_node_content_copy_and_escape (content, content_size, additional_size);
 } 
 
-void __axl_node_free_internal (axlNode * node, int  also_childs)
+void __axl_node_free_internal (axlNode * node, axl_bool also_childs)
 {
 	axlItem * item;
 	axlItem * itemAux;
@@ -5101,7 +5101,7 @@ void __axl_node_free_internal (axlNode * node, int  also_childs)
 			itemAux = item->next;			
 
 			/* free the item */
-			axl_item_free (item, true);
+			axl_item_free (item, axl_true);
 			
 			/* update reference */
 			item = itemAux;
@@ -5141,7 +5141,7 @@ void axl_node_free (axlNode * node)
 	hash = node->annotate_data;
 
 	/* free internal content */
-	__axl_node_free_internal (node, true);
+	__axl_node_free_internal (node, axl_true);
 
 	/* free attributes */
 	if (! (node->conf & NODE_FROM_FACTORY))
@@ -5165,7 +5165,7 @@ void axl_node_free (axlNode * node)
  *
  * @param also_childs Signal the function to dealloc childs or not.
  */
-void      axl_node_free_full       (axlNode * node, int  also_childs)
+void      axl_node_free_full       (axlNode * node, axl_bool also_childs)
 {
 	axlHash * hash;
 	axl_return_if_fail (node);
@@ -5174,7 +5174,7 @@ void      axl_node_free_full       (axlNode * node, int  also_childs)
 	hash = node->annotate_data;
 
 	/* free node */
-	__axl_node_free_internal (node, false);
+	__axl_node_free_internal (node, axl_false);
 
 	/* free the node itself */
 	if (!(node->conf & NODE_FROM_FACTORY))
@@ -5353,13 +5353,13 @@ void                 axl_node_attr_cursor_next      (axlAttrCursor * cursor)
  *
  * @return \ref true if it has next element, otherwise \ref false.
  */
-int                  axl_node_attr_cursor_has_next  (axlAttrCursor * cursor)
+axl_bool                 axl_node_attr_cursor_has_next  (axlAttrCursor * cursor)
 {
-	axl_return_val_if_fail (cursor, false);
+	axl_return_val_if_fail (cursor, axl_false);
 
 	if (cursor->count != cursor->node->attr_num) {
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "Your cursor was created with another attribute configuration, renew it.");
-		return false;
+		return axl_false;
 	} /* end if */
 
 	if (cursor->count <= 10) {
@@ -5379,14 +5379,14 @@ int                  axl_node_attr_cursor_has_next  (axlAttrCursor * cursor)
  *
  * @return \ref true if it has item element, otherwise \ref false.
  */
-int                  axl_node_attr_cursor_has_item  (axlAttrCursor * cursor)
+axl_bool                 axl_node_attr_cursor_has_item  (axlAttrCursor * cursor)
 {
-	axl_return_val_if_fail (cursor, false);
+	axl_return_val_if_fail (cursor, axl_false);
 
 	/* check attribute configuration */
 	if (cursor->count != cursor->node->attr_num) {
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "Your cursor was created with another attribute configuration, renew it.");
-		return false;
+		return axl_false;
 	} /* end if */
 
 	if (cursor->count <= 10) {
@@ -5476,7 +5476,7 @@ void                 axl_node_attr_cursor_free      (axlAttrCursor * cursor)
  * @internal Function that helps axl_node_attr_foreach to iterate all
  * attributes.
  */
-int  __axl_node_attr_foreach_aux (axlPointer key, axlPointer data, axlPointer user_data, axlPointer user_data2, axlPointer user_data3)
+axl_bool __axl_node_attr_foreach_aux (axlPointer key, axlPointer data, axlPointer user_data, axlPointer user_data2, axlPointer user_data3)
 {
 	return ((axlNodeAttrForeachFunc) user_data) (key, data, user_data2, user_data3);
 }
@@ -5578,7 +5578,7 @@ axlItem     * axl_item_new             (AxlItemType type,
 	switch (axl_item_get_type (item)) {
 	case ITEM_NODE:
 		/* item the node */
-		node                 = axl_node_copy (item->data, true, true);
+		node                 = axl_node_copy (item->data, axl_true, axl_true);
 		node->holder         = item;
 		item->data           = node;
 		break;
@@ -6135,7 +6135,7 @@ axlItem * axl_item_copy (axlItem * item, axlNode * set_parent)
 	switch (axl_item_get_type (item)) {
 	case ITEM_NODE:
 		/* copy the node */
-		node                 = axl_node_copy (item->data, true, true);
+		node                 = axl_node_copy (item->data, axl_true, axl_true);
 		node->holder         = copy;
 		copy->data           = node;
 		break;
@@ -6178,8 +6178,8 @@ axlItem * axl_item_copy (axlItem * item, axlNode * set_parent)
  * @param dealloc Deallocs the memory used by the \ref axlItem
  * reference.
  */
-void          axl_item_remove          (axlItem * item,
-					int       dealloc)
+void          axl_item_remove          (axlItem   * item,
+					axl_bool    dealloc)
 {
 
 	/* free the item */
@@ -6206,7 +6206,7 @@ void          axl_item_remove          (axlItem * item,
 	item->previous = NULL;
 
 	if (dealloc) {
-		axl_item_free (item, true);
+		axl_item_free (item, axl_true);
 	} /* end if */
 
 	return;
@@ -6226,9 +6226,9 @@ void          axl_item_remove          (axlItem * item,
  * @param dealloc Signal to function to dealloc the memory hold the
  * the item replaced.
  */
-void          axl_item_replace        (axlItem * item, 
-				       axlItem * new_item,
-				       int       dealloc)
+void          axl_item_replace        (axlItem  * item, 
+				       axlItem  * new_item,
+				       axl_bool   dealloc)
 {
 	/* free the item */
 	axl_return_if_fail (item);
@@ -6263,7 +6263,7 @@ void          axl_item_replace        (axlItem * item,
 	new_item->doc    = item->doc;
 
 	if (dealloc) {
-		axl_item_free (item, true);
+		axl_item_free (item, axl_true);
 
 	} /* end if */
 
@@ -6367,9 +6367,9 @@ void          axl_item_transfer_childs_after (axlNode * old_parent,
  * information, otherwise \ref false is returned. If the function
  * receives a null value it will return false.
  */
-int           axl_item_are_equal      (axlItem * item,
-				       axlItem * item2,
-				       int       trimmed)
+axl_bool          axl_item_are_equal      (axlItem   * item,
+					   axlItem   * item2,
+					   axl_bool    trimmed)
 {
 	axlNodeContent * content;
 	axlNodeContent * content2;
@@ -6377,14 +6377,14 @@ int           axl_item_are_equal      (axlItem * item,
 	/* trim content */
 	char           * trim;
 	char           * trim2;
-	int              result;
+	axl_bool         result;
 	
-	axl_return_val_if_fail (item, false);
-	axl_return_val_if_fail (item2, false);
+	axl_return_val_if_fail (item, axl_false);
+	axl_return_val_if_fail (item2, axl_false);
 
 	/* basic type check */
 	if (axl_item_get_type (item) != axl_item_get_type (item2))
-		return false;
+		return axl_false;
 
 	/* according the type */
 	switch (axl_item_get_type (item)) {
@@ -6402,7 +6402,7 @@ int           axl_item_are_equal      (axlItem * item,
 		if (! trimmed) {
 			/* check first content length */
 			if (content->content_size != content2->content_size)
-				return false;
+				return axl_false;
 			
 			/* now check content value */
 			return axl_cmp (content->content, content2->content);
@@ -6433,7 +6433,7 @@ int           axl_item_are_equal      (axlItem * item,
 		break;
 	} /* end switch */
 
-	return false;
+	return axl_false;
 }
 
 /** 
@@ -6444,8 +6444,8 @@ int           axl_item_are_equal      (axlItem * item,
  *
  * @param dealloc true to also dealloc the value inside. 
  */
-void          axl_item_free           (axlItem * item,
-				       int       dealloc)
+void          axl_item_free           (axlItem  * item,
+				       axl_bool   dealloc)
 {
 	axl_return_if_fail (item);
 

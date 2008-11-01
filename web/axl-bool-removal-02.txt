@@ -1,0 +1,74 @@
+       #####################################
+       ####     Change notification     ####
+       #####################################
+
+    Change Id: axl-bool-removal-02
+ Project name: Axl library
+  Included in: 0.5.5
+       Status: NOTIFY
+       Author: Francis Brosnan Blázquez
+
+Motivation
+~~~~~~~~~~
+
+Previous change notification (axl-bool-removal-01) did not fully solve
+the problem that motivated the change. This is because, still taking
+the source code and compiling it with a C++ tool, leaves to having
+unexpected results with internal false and true values used.
+
+Change Description
+~~~~~~~~~~~~~~~~~~
+
+1) The library will have a boolean representation defined as
+   axl_bool. This type is fully compatible with bool type previously
+   defined until 0.5.3.
+
+2) "false" and "true" definitions are replaced by axl_false and
+   axl_true definitions. 
+
+3) All functions receiving or returning bool values now receive or
+   return axl_bool
+
+Solution to incompatibility
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+C users: In the case false and true definitions imported from Axl
+         Library are used, the must be replaced with axl_false and
+         axl_true. It is also possible to move the responsibility of
+         this definition to the application using Axl Library by
+         defining the following:
+
+         #define false ((int)0)
+         #define true  ((int)1)
+
+         However this is not recommended since this is in fact a
+         definition that causes interactions not only with C++
+         compiler but also with C compilers that may only support C99
+         standard.
+
+c++ users: they won't need to use wrappers around functions using bool
+           type from Axl Library for newly written code. For wrappers
+           already written, they will still work since the Axl Library
+           API is expecting int as in previous releases.
+
+           This change notification revision improves previous one by
+           allowing C++/C users to use axl_bool type and its static
+           values axl_false and axl_true with no problem.
+
+References
+~~~~~~~~~~
+[1] Axl library
+    http://xml.aspl.es
+
+[2] Axl library change notifications
+    http://xml.aspl.es/doc.html
+
+[3] Change notification definition
+    http://www.aspl.es/change/change-notification.txt
+
+[4] A discussion about int and bool type on Axl and Vortex API
+    http://lists.aspl.es/pipermail/vortex/2008-October/000712.html
+
+[5] An article about integer types
+    http://home.att.net/~jackklein/c/inttypes.html
+

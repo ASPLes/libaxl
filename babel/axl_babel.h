@@ -66,22 +66,22 @@ typedef struct _axlBabelTable {
 	unsigned char  buffer[6];
 } axlBabelTable;
 
-int         axl_babel_init (axlError ** error);
+axl_bool    axl_babel_init (axlError ** error);
 
 void        axl_babel_finish ();
 
-int         axl_babel_detect_codification (axlStream  * stream, 
+axl_bool    axl_babel_detect_codification (axlStream  * stream, 
 					   char      ** encoding,
 					   axlPointer   user_data,
 					   axlError  ** error);
 
-int         axl_babel_configure_encoding  (axlStream  * stream, 
+axl_bool    axl_babel_configure_encoding  (axlStream  * stream, 
 					   const char * encoding, 
 					   const char * detected, 
 					   axlPointer user_data, 
 					   axlError ** error);
 
-int         axl_babel_check_utf8_content  (const char * content,
+axl_bool    axl_babel_check_utf8_content  (const char * content,
 					   int          content_length,
 					   int        * index_error);
 

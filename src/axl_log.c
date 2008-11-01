@@ -48,20 +48,20 @@
  */
 
 /* console log */
-int      not_executed  = true;
-int      debug_enabled = false;
+axl_bool     not_executed  = axl_true;
+axl_bool     debug_enabled = axl_false;
 
 /* colored log */
-int      not_executed_color  = true;
-int      debug_color_enabled = false;
+axl_bool     not_executed_color  = axl_true;
+axl_bool     debug_color_enabled = axl_false;
 
 /** 
  * @brief Allows to check if the log reporting inside the system is
  * enabled.
  *
- * @return true if the log is enabled or false
+ * @return axl_true if the log is enabled or axl_false
  */
-int       axl_log_is_enabled () 
+axl_bool      axl_log_is_enabled () 
 {
 #if defined(AXL_OS_WIN32) && ! defined(__GNUC__)
 	int requiredSize;
@@ -74,7 +74,7 @@ int       axl_log_is_enabled ()
 #else
 		debug_enabled = (getenv ("AXL_DEBUG") != NULL);
 #endif
-		not_executed  = false;
+		not_executed  = axl_false;
 	}
 
 	/* return current value */
@@ -85,9 +85,9 @@ int       axl_log_is_enabled ()
  *
  * @brief Allows to get current log configuration, to use colors.
  * 
- * @return true if the color log is enabled or false
+ * @return axl_true if the color log is enabled or axl_false
  */
-int     axl_log_color_is_enabled ()
+axl_bool    axl_log_color_is_enabled ()
 {
 #if defined(AXL_OS_WIN32) && ! defined(__GNUC__)
 	int requiredSize;
@@ -100,7 +100,7 @@ int     axl_log_color_is_enabled ()
 #else
 		debug_color_enabled = (getenv ("AXL_DEBUG_COLOR") != NULL);
 #endif
-		not_executed_color  = false;
+		not_executed_color  = axl_false;
 	}
 
 	/* return current value */
@@ -111,13 +111,13 @@ int     axl_log_color_is_enabled ()
  * @brief Allows to control how to activate the log reporting to the
  * console from the axl core library.
  * 
- * @param value true to enable log to console, otherwise false is
+ * @param value axl_true to enable log to console, otherwise axl_false is
  * returned.
  */
-void     axl_log_enable (int  value)
+void     axl_log_enable (axl_bool value)
 {
 	/* activate debuging according to the variable */
-	not_executed  = false;
+	not_executed  = axl_false;
 	debug_enabled = value;
 	return;
 }
@@ -126,13 +126,13 @@ void     axl_log_enable (int  value)
  * @brief Allows to control how to activate the colog log reporting to
  * the console from the axl core library.
  * 
- * @param value true to enable log to console, otherwise false is
+ * @param value axl_true to enable log to console, otherwise axl_false is
  * returned.
  */
-void     axl_log_color_enable (int  value)
+void     axl_log_color_enable (axl_bool value)
 {
 	/* activate color debuging according to the variable */
-	not_executed_color  = false;
+	not_executed_color  = axl_false;
 	debug_color_enabled = value;
 	return;
 }
