@@ -70,13 +70,13 @@ void            axl_hash_insert_full  (axlHash        * hash,
 				       axlPointer       data,
 				       axlDestroyFunc   destroy_data);
 
-int             axl_hash_remove       (axlHash    * hash,
+axl_bool        axl_hash_remove       (axlHash    * hash,
 				       axlPointer   key);
 
-int             axl_hash_delete       (axlHash    * hash,
+axl_bool        axl_hash_delete       (axlHash    * hash,
 				       axlPointer   key);
 
-int             axl_hash_exists       (axlHash   * hash,
+axl_bool        axl_hash_exists       (axlHash   * hash,
 				       axlPointer  key);
 
 axlPointer      axl_hash_get          (axlHash * hash, 
@@ -130,9 +130,9 @@ void            axl_hash_cursor_last         (axlHashCursor * cursor);
 
 void            axl_hash_cursor_next         (axlHashCursor * cursor);
 
-int             axl_hash_cursor_has_next     (axlHashCursor * cursor);
+axl_bool        axl_hash_cursor_has_next     (axlHashCursor * cursor);
 
-int             axl_hash_cursor_has_item     (axlHashCursor * cursor);
+axl_bool        axl_hash_cursor_has_item     (axlHashCursor * cursor);
 
 void            axl_hash_cursor_remove       (axlHashCursor * cursor);
 

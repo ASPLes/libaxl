@@ -230,13 +230,13 @@ struct _axlDtd {
 	 * contains ID attribute declaration, making the DTD this
 	 * references. 
 	 */
-	int             haveIdDecl;
+	axl_bool       haveIdDecl;
 
 	/** 
 	 * @brief Flag that the dtd declaration have attributes which
 	 * are flaged as IDREF.
 	 */
-	int             haveIdRefDecl;
+	axl_bool      haveIdRefDecl;
 };
 
 /**
@@ -331,7 +331,7 @@ axlDtd * __axl_dtd_new ()
 	return dtd;
 }
 
-int  __queue_items (axlPointer data, axlPointer _stack)
+axl_bool __queue_items (axlPointer data, axlPointer _stack)
 {
 	axlStack * stack = _stack;
 
@@ -339,7 +339,7 @@ int  __queue_items (axlPointer data, axlPointer _stack)
 	axl_stack_push (stack, data);
 
 	/* return false to make the function to not stop */
-	return false;
+	return axl_false;
 }
 
 void __axl_dtd_queue_childs (axlStack * stack, axlNode * parent)
@@ -398,10 +398,10 @@ void __axl_dtd_queue_items (axlStack * stack, axlList * list)
  * @param dtd_element_child  The supposedd DTD child element.
  * 
  * @return true if the function can confirm that the parent-child
- * relation exists, false if not or it could be proved.
+ * relation exists, axl_false if not or it could be proved.
  */
-int      __axl_dtd_get_is_parent (axlDtdElement * dtd_element_parent,
-				  axlDtdElement * dtd_element_child)
+axl_bool     __axl_dtd_get_is_parent (axlDtdElement * dtd_element_parent,
+				      axlDtdElement * dtd_element_child)
 {
 	axlStack               * stack;
 	axlDtdElementListNode  * node;
@@ -410,7 +410,7 @@ int      __axl_dtd_get_is_parent (axlDtdElement * dtd_element_parent,
 	/* check for leaf nodes, that, by definition, could be a
 	 * parent of nothing. */
 	if (dtd_element_parent->list == NULL || dtd_element_parent->list->itemList == NULL) {
-		return false;
+		return axl_false;
 	}
 
 	/* prepare all elements inside the stack to be checked */
@@ -437,7 +437,7 @@ int      __axl_dtd_get_is_parent (axlDtdElement * dtd_element_parent,
 				 * specification makes a reference to
 				 * the child node. */
 				axl_stack_free (stack);
-				return true;
+				return axl_true;
 			}
 			break;
 		case AXL_ELEMENT_LIST:
@@ -461,7 +461,7 @@ int      __axl_dtd_get_is_parent (axlDtdElement * dtd_element_parent,
 	axl_stack_free (stack);
 	
 	/* either it isn't the parent or it can't be proved. */
-	return false;
+	return axl_false;
 }
 
 
@@ -474,7 +474,7 @@ int      __axl_dtd_get_is_parent (axlDtdElement * dtd_element_parent,
 axlDtdElement * __axl_dtd_get_new_root (axlDtd * dtd) 
 {
 	int             iterator;
-	int             change_detected;
+	axl_bool        change_detected;
 
 	axlDtdElement * dtd_element_aux;
 	axlDtdElement * dtd_element_the_root_is_on_fire;
@@ -485,7 +485,7 @@ axlDtdElement * __axl_dtd_get_new_root (axlDtd * dtd)
 	do {
 		/* check which is the top */
 		iterator        = 0;
-		change_detected = false;
+		change_detected = axl_false;
 		while (iterator < axl_list_length (dtd->elements)) {
 			
 			/* get the next reference */
@@ -497,7 +497,7 @@ axlDtdElement * __axl_dtd_get_new_root (axlDtd * dtd)
 				/* it seems that the new element is the root
 				 * one, update the reference */
 				dtd_element_the_root_is_on_fire = dtd_element_aux;
-				change_detected = true;
+				change_detected = axl_true;
 			}
 			
 			/* update inner loop iterator */
@@ -525,11 +525,11 @@ axlDtdElement * __axl_dtd_get_new_root (axlDtd * dtd)
  * @param element The axlDtdElement to be added to the give axlDtd
  * object.
  * 
- * @return true if the given axlDtdElement is compatible inside
- * the axlDtd declaration or false if a error is found.
+ * @return axl_true if the given axlDtdElement is compatible inside
+ * the axlDtd declaration or axl_false if a error is found.
  */
-int      __axl_dtd_add_element (axlDtd * dtd, axlDtdElement * element, 
-			    axlStream * stream, axlError ** error)
+axl_bool     __axl_dtd_add_element (axlDtd * dtd, axlDtdElement * element, 
+				    axlStream * stream, axlError ** error)
 {
 	int             iterator        = 0;
 	axlDtdElement * dtd_element_aux = NULL;
@@ -545,7 +545,7 @@ int      __axl_dtd_add_element (axlDtd * dtd, axlDtdElement * element,
 			axl_error_new (-1, "Find that an DTD element was defined twice (no more than one time is allowed)", 
 				       stream, error);
 			axl_stream_free (stream);
-			return false;
+			return axl_false;
 		}
 
 		/* update current iterator */
@@ -554,7 +554,7 @@ int      __axl_dtd_add_element (axlDtd * dtd, axlDtdElement * element,
 	
 	/* add the new DTD element to the list */
 	axl_list_add (dtd->elements, element);
-	return true;
+	return axl_true;
 }
 
 /** 
@@ -571,11 +571,11 @@ int      __axl_dtd_add_element (axlDtd * dtd, axlDtdElement * element,
  * adding the element and configuring current element list.
  *
  */
-int      __axl_dtd_element_content_particule_add (axlDtdElementList  * dtd_item_list, 
-						  char               * string_aux, 
-						  int                  chunk_matched, 
-						  axlStream          * stream, 
-						  axlError          **error)
+axl_bool     __axl_dtd_element_content_particule_add (axlDtdElementList  * dtd_item_list, 
+						      char               * string_aux, 
+						      int                  chunk_matched, 
+						      axlStream          * stream, 
+						      axlError          **error)
 {
 	axlDtdElementListNode * node;
 
@@ -615,7 +615,7 @@ int      __axl_dtd_element_content_particule_add (axlDtdElementList  * dtd_item_
 	}
 
 	/* return that all is ok */
-	return true;
+	return axl_true;
 }
 
 
@@ -751,8 +751,8 @@ void __axl_dtd_element_spec_update_chunk_matched (axlStream * stream,
  * repeat pattern was found 
  * 
  */
-int      __axl_dtd_element_spec_update_chunk_matched_for_cp_separator (axlStream * stream, 
-								   int * chunk_matched)
+axl_bool     __axl_dtd_element_spec_update_chunk_matched_for_cp_separator (axlStream * stream, 
+									   int * chunk_matched)
 {
 	/* consume previous white spaces */
 	AXL_CONSUME_SPACES (stream);
@@ -762,22 +762,22 @@ int      __axl_dtd_element_spec_update_chunk_matched_for_cp_separator (axlStream
 		/* flag that we have found a , (choice)
 		 * separator */
 		(*chunk_matched) = 1;
-		return true;
+		return axl_true;
 		
 	} else if (axl_stream_inspect (stream, "|", 1) > 0) {
 		/* flag that we have found a | (sequence)
 		 * separator */
 		(*chunk_matched) = 2;
-		return true;
+		return axl_true;
 
 	} else if (axl_stream_inspect (stream, ")", 1) > 0) {
 		/* flag that we have found a | (sequence)
 		 * separator */
 		(*chunk_matched) = 3;
-		return true;
+		return axl_true;
 	}
 	
-	return false;
+	return axl_false;
 }
 
 /** 
@@ -794,7 +794,7 @@ char * __axl_dtd_read_content_particule (axlStream  * stream,
 
 	/* read the spec particule stopping when a white space
 	 * or other character is found */
-	string_aux = axl_stream_get_until (stream, NULL, chunk_matched, true, 8, 
+	string_aux = axl_stream_get_until (stream, NULL, chunk_matched, axl_true, 8, 
 					   /* basic, default delimiters: 0, 1, 2, 3 */
 					   " ", ",", "|", ")",
 					   /* repetition configuration: 4, 5, 6 */
@@ -840,17 +840,17 @@ char * __axl_dtd_read_content_particule (axlStream  * stream,
  * @param error An optional \ref axlError, where errors will be
  * reported.
  * 
- * @return \ref true if the content spec was properly read or \ref
- * false if not.
+ * @return \ref axl_true if the content spec was properly read or \ref
+ * axl_false if not.
  */
-int      __axl_dtd_read_element_spec (axlStream * stream, axlDtdElement * dtd_element, axlError ** error)
+axl_bool     __axl_dtd_read_element_spec (axlStream * stream, axlDtdElement * dtd_element, axlError ** error)
 {
 	char              * string_aux;
-	int                 is_pcdata;
+	axl_bool            is_pcdata;
 	int                 chunk_matched = -1;
 	axlStack          * dtd_item_stack;
 	axlDtdElementList * dtd_item_list;
-	int                 is_empty;
+	axl_bool            is_empty;
 	
 	
 	/* create the stack used to control which is
@@ -882,7 +882,7 @@ int      __axl_dtd_read_element_spec (axlStream * stream, axlDtdElement * dtd_el
 			       stream, error);
 		axl_stack_free (dtd_item_stack);
 		axl_stream_free (stream);		
-		return false;
+		return axl_false;
 	}
 	
 	do {
@@ -921,7 +921,7 @@ int      __axl_dtd_read_element_spec (axlStream * stream, axlDtdElement * dtd_el
 		 * 8 -> "(" */
 		string_aux = __axl_dtd_read_content_particule (stream, &chunk_matched, dtd_item_stack, error);
 		if (string_aux == NULL)
-			return false;
+			return axl_false;
 		
 		/* check, and record, that the string read is
 		 * PCDATA */
@@ -963,7 +963,7 @@ int      __axl_dtd_read_element_spec (axlStream * stream, axlDtdElement * dtd_el
 		 * already detect that a white space was found and
 		 * consumes all white spaces found */
 		if (!__axl_dtd_element_content_particule_add (dtd_item_list, string_aux, chunk_matched, stream, error))
-			return false;
+			return axl_false;
 
 		if (chunk_matched == 4 || chunk_matched == 5 || chunk_matched == 6) {
 			/* found a repetition pattern */
@@ -972,7 +972,7 @@ int      __axl_dtd_read_element_spec (axlStream * stream, axlDtdElement * dtd_el
 					       stream, error);
 				axl_stack_free (dtd_item_stack);
 				axl_stream_free (stream);		
-				return false;
+				return axl_false;
 			}
 		}
 
@@ -985,7 +985,7 @@ int      __axl_dtd_read_element_spec (axlStream * stream, axlDtdElement * dtd_el
 					       stream, error);
 				axl_stack_free (dtd_item_stack);
 				axl_stream_free (stream);		
-				return false;
+				return axl_false;
 			}
 			dtd_item_list->type = SEQUENCE;
 			break;
@@ -995,7 +995,7 @@ int      __axl_dtd_read_element_spec (axlStream * stream, axlDtdElement * dtd_el
 					       stream, error);
 				axl_stack_free (dtd_item_stack);
 				axl_stream_free (stream);		
-				return false;
+				return axl_false;
 			}
 			dtd_item_list->type = CHOICE;
 			break;
@@ -1078,7 +1078,7 @@ int      __axl_dtd_read_element_spec (axlStream * stream, axlDtdElement * dtd_el
 
 
 	/* content spec readed properly */
-	return true;
+	return axl_true;
 }
 
 /** 
@@ -1155,11 +1155,11 @@ int __axl_dtd_parse_element_get_compulsory_num (axlDtdElementList * list)
  * @param error An axlError, optional, reference where error will be
  * reported.
  * 
- * @return true if the element was parsed properly, false if
+ * @return axl_true if the element was parsed properly, axl_false if
  * not. The stream associated will be unrefered and the axlError
  * provided will be filled if an error is found.
  */
-int      __axl_dtd_parse_element (axlDtd * dtd, axlStream * stream, axlError ** error)
+axl_bool     __axl_dtd_parse_element (axlDtd * dtd, axlStream * stream, axlError ** error)
 {
 	char              * string_aux;
 	int                 matched_chunk = -1;
@@ -1176,25 +1176,25 @@ int      __axl_dtd_parse_element (axlDtd * dtd, axlStream * stream, axlError ** 
 	if (! (axl_stream_inspect (stream, "<!ELEMENT", 9) > 0)) {
 		axl_error_new (-1, "Expected to receive a <!ELEMENT, but it wasn't found", stream, error);
 		axl_stream_free (stream);
-		return false;
+		return axl_false;
 	}
 
 	/* consume previous white spaces */
 	AXL_CONSUME_SPACES (stream);
 	
 	/* get the element name */
-	string_aux = axl_stream_get_until (stream, NULL, &matched_chunk, false, 3, ">", "(", " ", "<!ELEMENT");
+	string_aux = axl_stream_get_until (stream, NULL, &matched_chunk, axl_false, 3, ">", "(", " ", "<!ELEMENT");
 	if (string_aux == NULL) {
 		axl_error_new (-1, "Expected to receive a DTD element name for <!ELEMENT declaration, but not found", stream, error);
 		axl_stream_free (stream);
-		return false;
+		return axl_false;
 	}
 
 	/* check that the DTD have an element name and an element type */
 	if ((matched_chunk == 0) || (matched_chunk == 3)) {
 		axl_error_new (-1, "Found a DTD <!ELEMENT declaration, without content specification. Missing value, examples: EMPTY, ANY, (..)", stream, error);
 		axl_stream_free (stream);
-		return false;
+		return axl_false;
 	}
 
 	/* nullify internal stream content */
@@ -1232,12 +1232,12 @@ int      __axl_dtd_parse_element (axlDtd * dtd, axlStream * stream, axlError ** 
 		 * PcData */
 		element->type = ELEMENT_TYPE_CHILDREN;
 		if (!__axl_dtd_read_element_spec (stream, element, error))
-			return false;
+			return axl_false;
 	}
 
 	/* add element found */
 	if (! __axl_dtd_add_element (dtd, element, stream, error))
-		return false;
+		return axl_false;
 	
 	/* consume previous white spaces */
 	AXL_CONSUME_SPACES (stream);
@@ -1246,7 +1246,7 @@ int      __axl_dtd_parse_element (axlDtd * dtd, axlStream * stream, axlError ** 
 	if (! (axl_stream_inspect (stream, ">", 1))) {
 		axl_error_new (-1, "Unable to find last, > terminator for the DTD <!ELEMENT declaration", stream, error);
 		axl_stream_free (stream);
-		return false;
+		return axl_false;
 	}
 
 	/* now, count the number of obligatory elements, required for
@@ -1257,7 +1257,7 @@ int      __axl_dtd_parse_element (axlDtd * dtd, axlStream * stream, axlError ** 
 		   element->minimum_match);
 
 	/* element type declaration completely read */
-	return true;
+	return axl_true;
 }
 
 /** 
@@ -1303,17 +1303,17 @@ void axl_dtd_attribute_free (axlDtdAttribute * attribute)
 	return;
 }
 
-int  __find_attr_decl (axlPointer _element, axlPointer data)
+axl_bool __find_attr_decl (axlPointer _element, axlPointer data)
 {
 	axlDtdAttributeDecl * decl = _element;
 	char                * name = data;
 
 	/* check the name */
 	if (axl_cmp (decl->name, name))
-		return true;
+		return axl_true;
 
 	/* it is not the element */
-	return false;
+	return axl_false;
 }
 
 /** 
@@ -1340,15 +1340,15 @@ int  __find_attr_decl (axlPointer _element, axlPointer data)
  * @param error Optional reference to the axlError to report textual
  * diagnostic errors.
  *
- * @return The function return \ref false if some error while
+ * @return The function return \ref axl_false if some error while
  * resolving entity references was found. Otherwise the function
- * return true.
+ * return axl_true.
  */
-int  axl_dtd_check_entity_ref_and_expand (axlDtdEntityResolver   resolver, 
-					  axlPointer             data,
-					  axlStream            * stream, 
-					  const char           * prefix,
-					  axlError            ** error)
+axl_bool axl_dtd_check_entity_ref_and_expand (axlDtdEntityResolver   resolver, 
+					      axlPointer             data,
+					      axlStream            * stream, 
+					      const char           * prefix,
+					      axlError            ** error)
 					  
 {
 	char       * string_aux;
@@ -1358,14 +1358,14 @@ int  axl_dtd_check_entity_ref_and_expand (axlDtdEntityResolver   resolver,
 	/* check if we have an entity reference using the provided prefix */
 	index = axl_stream_get_index (stream);
 	if (! (axl_stream_inspect (stream, prefix, 1) > 0))
-		return true;
+		return axl_true;
 
 	/* get the entity reference until the end */
-	string_aux = axl_stream_get_until (stream, NULL, NULL, true, 1, ";");
+	string_aux = axl_stream_get_until (stream, NULL, NULL, axl_true, 1, ";");
 	if (string_aux == NULL) {
 		axl_error_new (-1, "null value received while expecting to find the entity reference to resolve.", stream, error);
 		axl_stream_free (stream);
-		return false;
+		return axl_false;
 	} /* end if */
 
 	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found entity reference: %s%s;...resolving", prefix, string_aux);
@@ -1374,7 +1374,7 @@ int  axl_dtd_check_entity_ref_and_expand (axlDtdEntityResolver   resolver,
 	new_value = (char *) resolver (string_aux, data);
 	if (new_value == NULL) {
 		axl_stream_move (stream, index);
-		return true;
+		return axl_true;
 	} /* end if */
 
 	/* accept content consumed */
@@ -1387,7 +1387,7 @@ int  axl_dtd_check_entity_ref_and_expand (axlDtdEntityResolver   resolver,
 	axl_stream_push (stream, new_value, strlen (new_value));
 	axl_free (new_value);
 	
-	return true;
+	return axl_true;
 }
 
 /** 
@@ -1433,7 +1433,7 @@ axlList * __axl_dtd_parse_enumvalues (const char * _enum_values)
  * @internal function used by \ref axl_dtd_attr_validation function to
  * lookup ATTLIST contraints flaged as unique ID.
  */
-int  __find_id_decl (axlPointer _element, axlPointer data)
+axl_bool __find_id_decl (axlPointer _element, axlPointer data)
 {
 	/* return the comparision */
 	return (((axlDtdAttributeDecl *) _element)->type == TOKENIZED_TYPE_ID);
@@ -1447,7 +1447,7 @@ int  __find_id_decl (axlPointer _element, axlPointer data)
  * Parse the <!ATTLIST decleration, registering it into the provided
  * dtd element.
  */
-int  __axl_dtd_parse_attlist (axlDtd * dtd, axlStream * stream, axlError ** error)
+axl_bool __axl_dtd_parse_attlist (axlDtd * dtd, axlStream * stream, axlError ** error)
 {
 	char                * string_aux    = NULL;
 	int                   matched_chunk = -1;
@@ -1464,11 +1464,11 @@ int  __axl_dtd_parse_attlist (axlDtd * dtd, axlStream * stream, axlError ** erro
 	AXL_CONSUME_SPACES (stream);
 
 	/* get the element name */
-	string_aux = axl_stream_get_until (stream, NULL, &matched_chunk, false, 1, " ");
+	string_aux = axl_stream_get_until (stream, NULL, &matched_chunk, axl_false, 1, " ");
 	if (string_aux == NULL) {
 		axl_error_new (-1, "Expected to receive a DTD attribute name for <!ATTLIST declaration, but not found", stream, error);
 		axl_stream_free (stream);
-		return false;
+		return axl_false;
 	}
 
 	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found dtd attr declaration for node: <%s>", string_aux);
@@ -1504,11 +1504,11 @@ int  __axl_dtd_parse_attlist (axlDtd * dtd, axlStream * stream, axlError ** erro
 			break;
 
 		/* get the attribute name the rules applies */
-		string_aux = axl_stream_get_until (stream, NULL, &matched_chunk, false, 1, " ");
+		string_aux = axl_stream_get_until (stream, NULL, &matched_chunk, axl_false, 1, " ");
 		if (string_aux == NULL) {
 			axl_error_new (-1, "Expected to receive an attribute name for <!ATTLIST declaration, but not found", stream, error);
 			axl_stream_free (stream);
-			return false;
+			return axl_false;
 		}
 
 		/* nully the string and store it new rule created */
@@ -1531,7 +1531,7 @@ int  __axl_dtd_parse_attlist (axlDtd * dtd, axlStream * stream, axlError ** erro
 		/* check for an entity reference and expand the stream
 		 * content with its resolution */
 		if (! axl_dtd_check_entity_ref_and_expand (__axl_dtd_entity_resolver, dtd, stream, "%", error))
-			return false;
+			return axl_false;
 
 		axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "about to check attr constraint type, stream status: '%s'",
 			 axl_stream_get_following (stream, 30));
@@ -1541,11 +1541,11 @@ int  __axl_dtd_parse_attlist (axlDtd * dtd, axlStream * stream, axlError ** erro
 			/* parse notation declaration */
 		}else if (axl_stream_inspect (stream, "(", 1) > 0) {
 			/* parse enum declaration */
-			string_aux = axl_stream_get_until (stream, NULL, &matched_chunk, true, 1, ")");
+			string_aux = axl_stream_get_until (stream, NULL, &matched_chunk, axl_true, 1, ")");
 			if (string_aux == NULL) {
 				axl_error_new (-1, "expected to find enum declaration but termination caracter ')' was not found", stream, error);
 				axl_stream_free (stream);
-				return false;
+				return axl_false;
 			} /* end if */
 			decl->type       = ENUMERATION_TYPE;
 			decl->enumvalues = __axl_dtd_parse_enumvalues (string_aux);
@@ -1559,13 +1559,13 @@ int  __axl_dtd_parse_attlist (axlDtd * dtd, axlStream * stream, axlError ** erro
 				decl->type = TOKENIZED_TYPE_IDREFS;
 
 				/* flag the dtd to have a IDREF declaration */
-				dtd->haveIdRefDecl = true;
+				dtd->haveIdRefDecl = axl_true;
 			} else if (axl_stream_inspect (stream, "IDREF", 5) > 0) {
 				/* notify type found */
 				decl->type = TOKENIZED_TYPE_IDREF;
 
 				/* flag the dtd to have a IDREF declaration */
-				dtd->haveIdRefDecl = true;
+				dtd->haveIdRefDecl = axl_true;
 				
 			} else if (axl_stream_inspect (stream, "ID", 2) > 0) {
 				
@@ -1573,7 +1573,7 @@ int  __axl_dtd_parse_attlist (axlDtd * dtd, axlStream * stream, axlError ** erro
 				decl->type      = TOKENIZED_TYPE_ID;
 
 				/* flag the dtd to have a ID declaration */
-				dtd->haveIdDecl = true;
+				dtd->haveIdDecl = axl_true;
 				
 			} else if (axl_stream_inspect (stream, "ENTITY", 6) > 0)
 				decl->type = TOKENIZED_TYPE_ENTITY;
@@ -1586,7 +1586,7 @@ int  __axl_dtd_parse_attlist (axlDtd * dtd, axlStream * stream, axlError ** erro
 			else {
 				axl_error_new (-1, "Unrecognied attr type declaration found, check your <!ATTLIST declaration", stream, error);
 				axl_stream_free (stream);
-				return false;
+				return axl_false;
 			} /* end if */
 		} /* end if */
 
@@ -1618,7 +1618,7 @@ int  __axl_dtd_parse_attlist (axlDtd * dtd, axlStream * stream, axlError ** erro
 				axl_error_new (-1, err_msg, stream, error);
 				axl_stream_free (stream);
 				axl_free (err_msg);
-				return false;
+				return axl_false;
 			} /* end if */
 		} /* end if */
 
@@ -1635,7 +1635,7 @@ int  __axl_dtd_parse_attlist (axlDtd * dtd, axlStream * stream, axlError ** erro
 				axl_error_new (-1, err_msg, stream, error);
 				axl_stream_free (stream);
 				axl_free (err_msg);
-				return false;
+				return axl_false;
 			} /* end if */
 			
 			/* check required and implied */
@@ -1645,7 +1645,7 @@ int  __axl_dtd_parse_attlist (axlDtd * dtd, axlStream * stream, axlError ** erro
 				axl_error_new (-1, err_msg, stream, error);
 				axl_stream_free (stream);
 				axl_free (err_msg);
-				return false;
+				return axl_false;
 			} /* end if */
 		} /* end if */
 
@@ -1656,10 +1656,10 @@ int  __axl_dtd_parse_attlist (axlDtd * dtd, axlStream * stream, axlError ** erro
 		string_aux = NULL;
 		if (axl_stream_inspect (stream, "\"", 1) > 0) {
 			/* get until */
-			string_aux = axl_stream_get_until (stream, NULL, NULL, true, 1, "\"");
+			string_aux = axl_stream_get_until (stream, NULL, NULL, axl_true, 1, "\"");
 		} else if (axl_stream_inspect (stream, "'", 1) > 0) {
 			/* get until */
-			string_aux = axl_stream_get_until (stream, NULL, NULL, true, 1, "\'");
+			string_aux = axl_stream_get_until (stream, NULL, NULL, axl_true, 1, "\'");
 		} /* end if */
 
 		/* check if default value was found */
@@ -1674,7 +1674,7 @@ int  __axl_dtd_parse_attlist (axlDtd * dtd, axlStream * stream, axlError ** erro
 						       "Configured a default value for an attribute list which only accepts a set of enum values that do not containt it.",
 						       stream, error);
 					axl_stream_free (stream);
-					return false;
+					return axl_false;
 				} /* end if */
 			} /* end if */
 
@@ -1688,7 +1688,7 @@ int  __axl_dtd_parse_attlist (axlDtd * dtd, axlStream * stream, axlError ** erro
 	} /* end while */
        	
 	/* properly parsed */
-	return true;
+	return axl_true;
 }
 
 /** 
@@ -1741,7 +1741,7 @@ void axl_dtd_entity_free (axlDtdEntity * entity)
  * Parses an entity definition from the current status of the stream
  * provided.
  */
-int  __axl_dtd_parse_entity (axlDtd * dtd, axlStream * stream, axlError ** error)
+axl_bool __axl_dtd_parse_entity (axlDtd * dtd, axlStream * stream, axlError ** error)
 {
 	char         * string_aux;
 	int            matched_chunk;
@@ -1758,7 +1758,7 @@ int  __axl_dtd_parse_entity (axlDtd * dtd, axlStream * stream, axlError ** error
 	if (! (axl_stream_inspect (stream, "<!ENTITY", 8) > 0)) {
 		axl_error_new (-1, "Expected to receive a <!ENTITY, but it wasn't found", stream, error);
 		axl_stream_free (stream);
-		return false;
+		return axl_false;
 	}
 
 	/* consume previous white spaces */
@@ -1767,7 +1767,7 @@ int  __axl_dtd_parse_entity (axlDtd * dtd, axlStream * stream, axlError ** error
 	/* create a new entity */
 	entity = axl_new (axlDtdEntity, 1);
 
-	/* set the entity and return true */
+	/* set the entity and return axl_true */
 	axl_list_add (dtd->entities, entity);
 
 	/* check for parameter entity definition */
@@ -1782,11 +1782,11 @@ int  __axl_dtd_parse_entity (axlDtd * dtd, axlStream * stream, axlError ** error
 		entity->type = GENERAL_ENTITY;
 
 	/* get the element name */
-	string_aux = axl_stream_get_until (stream, NULL, &matched_chunk, false, 1, " ");
+	string_aux = axl_stream_get_until (stream, NULL, &matched_chunk, axl_false, 1, " ");
 	if (string_aux == NULL) {
 		axl_error_new (-1, "Expected to receive a DTD entity name for <!ENTITY declaration, but not found", stream, error);
 		axl_stream_free (stream);
-		return false;
+		return axl_false;
 	}
 
 	/* set the name */
@@ -1811,13 +1811,13 @@ int  __axl_dtd_parse_entity (axlDtd * dtd, axlStream * stream, axlError ** error
 				axl_error_new (-2, "Expected to find entity value initiator (\") or ('), every entity value must start with them", 
 					       stream, error);
 				axl_stream_free (stream);
-				return false;
+				return axl_false;
 			}
 			/* knowing that ' was matched, now get the attribute value */
-			string_aux = axl_stream_get_until (stream, NULL, &matched_chunk, true, 1, "'");
+			string_aux = axl_stream_get_until (stream, NULL, &matched_chunk, axl_true, 1, "'");
 		}else {
 			/* knowhing that " was matched, now get the attribute value */
-			string_aux = axl_stream_get_until (stream, NULL, &matched_chunk, true, 1, "\"");
+			string_aux = axl_stream_get_until (stream, NULL, &matched_chunk, axl_true, 1, "\"");
 		}
 
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "entity value found: [%s]", string_aux);
@@ -1839,10 +1839,10 @@ int  __axl_dtd_parse_entity (axlDtd * dtd, axlStream * stream, axlError ** error
 		axl_error_new (-2, "Expected to find entity definition terminator (>), but it wasn't found", 
 			       stream, error);
 		axl_stream_free (stream);
-		return false;
+		return axl_false;
 	}
 
-	return true;
+	return axl_true;
 }
 
 
@@ -2025,28 +2025,28 @@ axlDtd   * axl_dtd_parse_from_file (const char * file_path,
  * parent have its childs configuration according to the values
  * expresed on the sequenced represented by the itemList.
  *
- * The function return true if the validation was ok, or false
+ * The function return axl_true if the validation was ok, or axl_false
  * if something have failed. It also creates an error, using the
  * optional axlError reference received.
  */
-int      __axl_dtd_validate_sequence (axlNode            * parent, 
-				      int                * child_position,
-				      axlDtdElementList  * itemList, 
-				      axlError          ** error,
-				      int                  try_match,
-				      int                  top_level)
+axl_bool     __axl_dtd_validate_sequence (axlNode            * parent, 
+					  int                * child_position,
+					  axlDtdElementList  * itemList, 
+					  axlError          ** error,
+					  axl_bool             try_match,
+					  axl_bool             top_level)
 {
 	int                      iterator        = 0;
 	int                      child_pos       = *child_position;
 	axlNode                * node;
 	axlDtdElementListNode  * itemNode;
-	int                      status          = false;
-	int                      one_matched;
+	axl_bool                 status          = axl_false;
+	axl_bool                 one_matched;
 	AxlDtdTimes              times;
 	
 
-	axl_return_val_if_fail (parent, false);
-	axl_return_val_if_fail (itemList, false);
+	axl_return_val_if_fail (parent, axl_false);
+	axl_return_val_if_fail (itemList, axl_false);
 
 
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "validating a sequence list: iterator=%d, item list count=%d, at child position=%d",
@@ -2060,7 +2060,7 @@ int      __axl_dtd_validate_sequence (axlNode            * parent,
 		
 		/* get the item node specification */
 		itemNode    = axl_dtd_item_list_get_node (itemList, iterator);
-		one_matched = false;
+		one_matched = axl_false;
 		times       = axl_dtd_item_node_get_repeat (itemNode);
 
 		do {
@@ -2088,20 +2088,20 @@ int      __axl_dtd_validate_sequence (axlNode            * parent,
 				    ((iterator + 1) == axl_dtd_item_list_count (itemList))) {
 					*child_position = child_pos;
 					__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "sequence validated with child position (III): %d", child_pos);
-					return true;
+					return axl_true;
 				}
 				
 				/* check that the reset of the
 				 * specification item is optional,
 				 * including the one used */
-				status = true;
+				status = axl_true;
 				do {
 					if (times != ZERO_OR_MANY &&
 					    times != ZERO_OR_ONE) {
 
 						__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found item, inside the DTD item list, that is not optional: %d (repeat value: %d)", 
 							   iterator, times);
-						status = false;
+						status = axl_false;
 						break;
 					}
 
@@ -2117,7 +2117,7 @@ int      __axl_dtd_validate_sequence (axlNode            * parent,
 
 					__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "sequence validated with child position (II): %d", child_pos);
 
-					return true;
+					return axl_true;
 				}
 				
 				/* check if a try match is being runned */
@@ -2128,7 +2128,7 @@ int      __axl_dtd_validate_sequence (axlNode            * parent,
 
 				__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found that no nodes left to satisfy DTD validation operation");
 				*child_position = child_pos;
-				return false;
+				return axl_false;
 			}
 
 			/* check node type */
@@ -2139,7 +2139,7 @@ int      __axl_dtd_validate_sequence (axlNode            * parent,
 
 				/* element list found, validate its content */
 				if (! __axl_dtd_validate_item_list (axl_dtd_item_node_get_list (itemNode),
-								    parent, &child_pos, error, false)) {
+								    parent, &child_pos, error, axl_false)) {
 					__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "sub item list validation have failed (not critical)");
 					/* check if we are the top
 					 * level list and the itemNode
@@ -2151,7 +2151,7 @@ int      __axl_dtd_validate_sequence (axlNode            * parent,
 					}
 
 					*child_position = child_pos;
-					return false;
+					return axl_false;
 				}
 
 				__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "validated item list, child position after: %d",
@@ -2175,7 +2175,7 @@ int      __axl_dtd_validate_sequence (axlNode            * parent,
 
 			/* check previous status */
 			if ((times == ONE_AND_ONLY_ONE) || 
-			    (times == ONE_OR_MANY && one_matched == false)) {
+			    (times == ONE_OR_MANY && one_matched == axl_false)) {
 				if (! status) {
 					/* only report an upper level
 					 * error if we are not running
@@ -2192,7 +2192,7 @@ int      __axl_dtd_validate_sequence (axlNode            * parent,
 					}
 					/* return that a match wasn't possible */
 					*child_position = child_pos;
-					return false;			
+					return axl_false;			
 				}
 			}
 
@@ -2219,11 +2219,11 @@ int      __axl_dtd_validate_sequence (axlNode            * parent,
 				 * previous matches was ok, it seems
 				 * we have reached the next
 				 * items. Just break the loop */
-				if (status == false && one_matched == true) 
+				if (status == axl_false && one_matched == axl_true) 
 					break;
 
 				child_pos++;
-				one_matched = true;
+				one_matched = axl_true;
 				continue; /* don't break the loop */
 			}
 
@@ -2234,15 +2234,15 @@ int      __axl_dtd_validate_sequence (axlNode            * parent,
 				 * character. In that case, move the
 				 * index to the following value. If
 				 * not, just break the loop. */
-				if (status == true)
+				if (status == axl_true)
 					child_pos++;
 				break;
 			}
 
 			/* zero or many items to match */
 			if (times == ZERO_OR_MANY) {
-				if (status == true) {
-					one_matched = true;
+				if (status == axl_true) {
+					one_matched = axl_true;
 					child_pos++;
 					continue;
 				}
@@ -2251,7 +2251,7 @@ int      __axl_dtd_validate_sequence (axlNode            * parent,
 
 
 			/* until break the loop */
-		}while (true);
+		}while (axl_true);
 
 		/* update iterator index */
 		iterator++;
@@ -2276,7 +2276,7 @@ int      __axl_dtd_validate_sequence (axlNode            * parent,
 		}
 		/* return that the match wasn't possible */
 		*child_position = child_pos;
-		return false;
+		return axl_false;
 	}
 
 	/* return that the sequence has been validated */
@@ -2284,7 +2284,7 @@ int      __axl_dtd_validate_sequence (axlNode            * parent,
 
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "sequence validated with child position (I): %d", child_pos);
 
-	return true;
+	return axl_true;
 }
 
 /** 
@@ -2292,17 +2292,19 @@ int      __axl_dtd_validate_sequence (axlNode            * parent,
  * 
  * Internal support function to validate the choice list.
  */
-int      __axl_dtd_validate_choice (axlNode * parent, int * child_position, 
-				    axlDtdElementList * itemList, 
-				    axlError  ** error,
-				    int      try_match, int      top_level)
+axl_bool     __axl_dtd_validate_choice (axlNode             * parent, 
+					int                 * child_position, 
+					axlDtdElementList   * itemList, 
+					axlError           ** error,
+					axl_bool              try_match, 
+					axl_bool              top_level)
 {
 	axlNode               * node;
 	axlDtdElementListNode * itemNode;
 	int                     iterator;
-	int                     status;
+	axl_bool                status;
 	AxlDtdTimes             times;
-	int                     one_match;
+	axl_bool                one_match;
 
 	
 	if (*child_position < axl_node_get_child_num (parent)) {
@@ -2316,7 +2318,7 @@ int      __axl_dtd_validate_choice (axlNode * parent, int * child_position,
 			axl_error_new (-1, "Unable to match choice list, it seems that the are not enough childs to validate the choice list",
 				       NULL, error);
 		}
-		return false;
+		return axl_false;
 	}
 
 	iterator = 0; 
@@ -2327,7 +2329,7 @@ int      __axl_dtd_validate_choice (axlNode * parent, int * child_position,
 
 		if (axl_dtd_item_node_get_type (itemNode) == AXL_ELEMENT_NODE) {
 			/* reset match configuration */
-			one_match = false;
+			one_match = axl_false;
 		repeat_for_node:
 			/* a node was found */
 			status    = NODE_CMP_NAME (node, axl_dtd_item_node_get_value (itemNode));
@@ -2344,7 +2346,7 @@ int      __axl_dtd_validate_choice (axlNode * parent, int * child_position,
 					 * only one configuration,
 					 * just return that the choice
 					 * list was matched */
-					return true;
+					return axl_true;
 				}
 				if (times == ONE_OR_MANY || times == ZERO_OR_MANY) {
 					/* because the node was matched, but the repetition
@@ -2355,10 +2357,10 @@ int      __axl_dtd_validate_choice (axlNode * parent, int * child_position,
 						/* because we already matched at least one item, 
 						 * we can assume that the itemNode was successfully 
 						 * matched for both cases (*) and (+). */
-						return true;
+						return axl_true;
 					}
 					/* flag the one match */
-					one_match = true;
+					one_match = axl_true;
 					
 					/* if the node reference is
 					 * not NULL, try to match the
@@ -2371,16 +2373,16 @@ int      __axl_dtd_validate_choice (axlNode * parent, int * child_position,
 			 * previously, at least, one node for
 			 * one-to-many and zero-to-many pattern */
 			if ((times == ONE_OR_MANY || times == ZERO_OR_MANY) && one_match) {
-				return true;
+				return axl_true;
 			}
 
 		} else if (axl_dtd_item_node_get_type (itemNode) == AXL_ELEMENT_LIST) {
 			/* an element list was found, call to validate it */
 			/* element list found, validate its content */
 			if (__axl_dtd_validate_item_list (axl_dtd_item_node_get_list (itemNode),
-							  parent, child_position, error, false)) {
+							  parent, child_position, error, axl_false)) {
 				/* item list matched */
-				return true;
+				return axl_true;
 			}
 		}
 
@@ -2393,7 +2395,7 @@ int      __axl_dtd_validate_choice (axlNode * parent, int * child_position,
 		axl_error_new (-1, "Unable to match choice list, after checking all posibilities, choice list wasn't validated", 
 			       NULL, error);
 	}
-	return false;
+	return axl_false;
 }
 
 /** 
@@ -2415,19 +2417,19 @@ int      __axl_dtd_validate_choice (axlNode * parent, int * child_position,
  * @param error An optional axlError reference containing the error
  * textual diagnostic if found.
  * 
- * @return true if the validation was ok, otherwise false is
+ * @return axl_true if the validation was ok, otherwise axl_false is
  * returned.
  */
-int      __axl_dtd_validate_item_list (axlDtdElementList  * itemList,
-				       axlNode            * parent, 
-				       int                * child_position,
-				       axlError          ** error,
-				       int                  top_level)
+axl_bool     __axl_dtd_validate_item_list (axlDtdElementList  * itemList,
+					   axlNode            * parent, 
+					   int                * child_position,
+					   axlError          ** error,
+					   axl_bool             top_level)
 {
-	int      temp_child_pos;
-	int      caller_child_pos;
-	int      status;
-	int      already_matched;
+	int          temp_child_pos;
+	int          caller_child_pos;
+	axl_bool     status;
+	axl_bool     already_matched;
 
 
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "validating an item list with repeat pattern: %d, at %d, top level=%d",
@@ -2446,8 +2448,8 @@ int      __axl_dtd_validate_item_list (axlDtdElementList  * itemList,
 			/* it is a choice, so the item list specifies
 			 * the nodes that could appear */
 			if (!__axl_dtd_validate_sequence (parent, child_position, itemList, error, 
-							  false, top_level)) {
-				return false;
+							  axl_false, top_level)) {
+				return axl_false;
 			}
 		}else {
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "using a CHOICE form");
@@ -2455,8 +2457,8 @@ int      __axl_dtd_validate_item_list (axlDtdElementList  * itemList,
 			 * specification represents the nodes, in the
 			 * order they must appear */
 			if (!__axl_dtd_validate_choice (parent, child_position, itemList, error,
-							false, top_level)) {
-				return false;
+							axl_false, top_level)) {
+				return axl_false;
 			}
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "choice list was properly validated");
 		}
@@ -2477,7 +2479,7 @@ int      __axl_dtd_validate_item_list (axlDtdElementList  * itemList,
 			 * pattern allow to not match */
 			temp_child_pos = *child_position;
 			if (!__axl_dtd_validate_sequence (parent, child_position, itemList, error, 
-							  true, top_level)) {
+							  axl_true, top_level)) {
 				/* check that the match wasn't
 				 * produced, at any level */
 				if (temp_child_pos != *child_position) {
@@ -2485,10 +2487,10 @@ int      __axl_dtd_validate_item_list (axlDtdElementList  * itemList,
 						   temp_child_pos, *child_position);
 					axl_error_new (-1, "Found an DTD item list definition, that should be matched entirely or not, zero or one time, but it was matched partially",
 						       NULL, error);
-					return false;
+					return axl_false;
 				}
 
-				return false;
+				return axl_false;
 			}
 			
 		}else {
@@ -2498,7 +2500,7 @@ int      __axl_dtd_validate_item_list (axlDtdElementList  * itemList,
 			 * specification represents the nodes, in the
 			 * order they must appear */
 			__axl_dtd_validate_choice (parent, child_position, itemList, error,
-						   true, top_level);
+						   axl_true, top_level);
 		}
 		break;
 	case ZERO_OR_MANY:
@@ -2513,7 +2515,7 @@ int      __axl_dtd_validate_item_list (axlDtdElementList  * itemList,
 			do {
 				temp_child_pos = *child_position;
 				status         = __axl_dtd_validate_sequence (parent, child_position, itemList, error, 
-									      true, top_level);
+									      axl_true, top_level);
 
 				__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "sequence match status=%d", status);
 				if (! status) {
@@ -2525,7 +2527,7 @@ int      __axl_dtd_validate_item_list (axlDtdElementList  * itemList,
 							   temp_child_pos, *child_position);
 						axl_error_new (-1, "Found an DTD item list definition, that should be matched entirely or not, zero or many times, but it was matched partially",
 							       NULL, error);
-						return false;
+						return axl_false;
 					}
 				}
 			}while (status);
@@ -2537,7 +2539,7 @@ int      __axl_dtd_validate_item_list (axlDtdElementList  * itemList,
 			 * order they must appear */
 			do {
 				status = __axl_dtd_validate_choice (parent, child_position, itemList, error,
-								    true, top_level);
+								    axl_true, top_level);
 			}while (status);
 		}
 		break;
@@ -2551,7 +2553,7 @@ int      __axl_dtd_validate_item_list (axlDtdElementList  * itemList,
 
 			/* one this case, several matches must be
 			 * tried, until the validation fails */
-			already_matched = false;
+			already_matched = axl_false;
 			do {
 				temp_child_pos = *child_position;
 				/* try to match the one or many
@@ -2571,11 +2573,11 @@ int      __axl_dtd_validate_item_list (axlDtdElementList  * itemList,
 						axl_error_new (-1, 
 							       "Found an DTD item list definition, that should be matched entirely or not, one or many times, but it was matched partially",
 							       NULL, error);
-						return false;
+						return axl_false;
 					}
 				}else {
 					/* set that we have matched, at least, one item */
-					already_matched = true;
+					already_matched = axl_true;
 				}
 
 				
@@ -2587,7 +2589,7 @@ int      __axl_dtd_validate_item_list (axlDtdElementList  * itemList,
 			/* it is a sequence, so, item list
 			 * specification represents the nodes, in the
 			 * order they must appear */
-			already_matched = false;
+			already_matched = axl_false;
 			do {
 				/* the next choice matching is done
 				 * according to the value stored in
@@ -2598,7 +2600,7 @@ int      __axl_dtd_validate_item_list (axlDtdElementList  * itemList,
 				 * that next matched are not required
 				 * to be successful ones */
 				if (status)
-					already_matched = true;
+					already_matched = axl_true;
 			}while (status);
 		}
 		break;
@@ -2607,7 +2609,7 @@ int      __axl_dtd_validate_item_list (axlDtdElementList  * itemList,
 #define INTERNAL_ERROR_01 "critical error reached a place that shows the dtd parser is not properly defining the repetition pattern for the current itemList."
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, INTERNAL_ERROR_01);
 		axl_error_new (-1, INTERNAL_ERROR_01, NULL, error);
-		return false;
+		return axl_false;
 	}
 
 
@@ -2625,12 +2627,12 @@ int      __axl_dtd_validate_item_list (axlDtdElementList  * itemList,
 				   (*child_position), axl_node_get_name (parent), axl_node_get_child_num (parent));
 			axl_error_new (-1, "Found that the validation process didn't cover all nodes, while using a choice list. This means that the xml document have more content than the DTD spec",
 				       NULL, error);
-			return false;
+			return axl_false;
 		}
 	}
 	
 	/* element type children validated */
-	return true;       
+	return axl_true;       
 }
 
 /** 
@@ -2639,10 +2641,10 @@ int      __axl_dtd_validate_item_list (axlDtdElementList  * itemList,
  * Support function validate parent nodes which are element type
  * children ones.
  */
-int      __axl_dtd_validate_element_type_children (axlDtdElement  * element, 
-						   axlNode        * parent, 
-						   int              top_level,
-						   axlError      ** error)
+axl_bool     __axl_dtd_validate_element_type_children (axlDtdElement  * element, 
+						       axlNode        * parent, 
+						       axl_bool         top_level,
+						       axlError      ** error)
 {
 	axlDtdElementList * itemList;
 	int                 child_pos = 0;
@@ -2660,7 +2662,7 @@ int      __axl_dtd_validate_element_type_children (axlDtdElement  * element,
 					     element->minimum_match);
 		axl_error_new (-1, err_msg, NULL, error);
 		axl_free (err_msg);
-		return false;
+		return axl_false;
 	}
 
 	/* validate the item list, starting from the child 0 */
@@ -2675,23 +2677,23 @@ int      __axl_dtd_validate_element_type_children (axlDtdElement  * element,
 		if (child_pos < axl_node_get_child_num (parent)) {
 			axl_error_new (-1, "Found that the validation process didn't cover all nodes. All xml child nodes inside the parent wasn't covered. This means that the xml document have more content than the DTD spec.",
 				       NULL, error);
-			return false;
+			return axl_false;
 		}
 		/* seems that the minimum match */
-		return true;
+		return axl_true;
 	}
 
-	return false;
+	return axl_false;
 }
 
 /** 
  * @internal
  * Internal support function to validate #PCDATA nodes.
  */
-int      __axl_dtd_validate_element_type_pcdata (axlDtdElement  * element, 
-						 axlNode        * parent, 
-						 axlStack       * stack, 
-						 axlError      ** error)
+axl_bool     __axl_dtd_validate_element_type_pcdata (axlDtdElement  * element, 
+						     axlNode        * parent, 
+						     axlStack       * stack, 
+						     axlError      ** error)
 {
 	/* check for childs */
 	if (axl_node_have_childs (parent)) {
@@ -2700,11 +2702,11 @@ int      __axl_dtd_validate_element_type_pcdata (axlDtdElement  * element,
 		axl_error_new (-1, 
 			       "Found a node for which its espeficiation makes it to be a node with only data and no childs, and it currently contains childs",
 			       NULL, error);
-		return false;
+		return axl_false;
 	}
-
+	
 	/* return that the validation was ok */
-	return true;
+	return axl_true;
 }
 
 /** 
@@ -2712,10 +2714,10 @@ int      __axl_dtd_validate_element_type_pcdata (axlDtdElement  * element,
  * 
  * Support function to validate empty nodes.
  */
-int      __axl_dtd_validate_element_type_empty (axlDtdElement  * element,
-						axlNode        * parent,
-						axlStack       * stack,
-						axlError      ** error)
+axl_bool     __axl_dtd_validate_element_type_empty (axlDtdElement  * element,
+						    axlNode        * parent,
+						    axlStack       * stack,
+						    axlError      ** error)
 {
 	char * err_msg;
 
@@ -2726,7 +2728,7 @@ int      __axl_dtd_validate_element_type_empty (axlDtdElement  * element,
 			axl_node_get_name (parent));
 		axl_error_new (-1, err_msg, NULL, error);
 		axl_free (err_msg);
-		return false;
+		return axl_false;
 	}
 
 	/* check the node doesn't have childs */
@@ -2736,14 +2738,14 @@ int      __axl_dtd_validate_element_type_empty (axlDtdElement  * element,
 			axl_node_get_name (parent));
 		axl_error_new (-1, err_msg, NULL, error);
 		axl_free (err_msg);
-		return false;
+		return axl_false;
 	}
 	
 	/* return that the validation was ok */
-	return true;
+	return axl_true;
 }
 
-int  __axl_dtd_attr_validate_foreach (const char * key, const char * value, axlPointer data, axlPointer data2)
+axl_bool __axl_dtd_attr_validate_foreach (const char * key, const char * value, axlPointer data, axlPointer data2)
 {
 	axlDtdAttribute     * attribute = data;
 	axlError           ** error     = data2;
@@ -2762,8 +2764,8 @@ int  __axl_dtd_attr_validate_foreach (const char * key, const char * value, axlP
 		/* free the cursor and the error message */
 		axl_free (err_msg);
 
-		/* return true here because we want to stop the process */
-		return true;
+		/* return axl_true here because we want to stop the process */
+		return axl_true;
 		
 	} /* end if */
 
@@ -2782,17 +2784,17 @@ int  __axl_dtd_attr_validate_foreach (const char * key, const char * value, axlP
 			
 			/* free the cursor and the error message */
 			axl_free (err_msg);
-			return true;
+			return axl_true;
 		}
 	} else {
 		/* not supported yet */
 	}
 
-	/* return false to continue with the process */
-	return false;
+	/* return axl_false to continue with the process */
+	return axl_false;
 }
 
-int  __axl_dtd_attr_validate_required (axlPointer element, axlPointer data)
+axl_bool __axl_dtd_attr_validate_required (axlPointer element, axlPointer data)
 {
 	axlNode             * node = data;
 	axlDtdAttributeDecl * decl = element;
@@ -2807,9 +2809,9 @@ int  __axl_dtd_attr_validate_required (axlPointer element, axlPointer data)
 		break;
 	} /* end switch */
 
-	/* return false for this because it is not obligatory
+	/* return axl_false for this because it is not obligatory
 	 * to have the attribute defined. */
-	return false;
+	return axl_false;
 }
 
 /** 
@@ -2823,9 +2825,9 @@ int  __axl_dtd_attr_validate_required (axlPointer element, axlPointer data)
  * @param error A reference to the axlError where the textual
  * diagnostic error will be reported.
  * 
- * @return true if the node is validated, false if not.
+ * @return axl_true if the node is validated, axl_false if not.
  */
-int  axl_dtd_attr_validate (axlNode * node, axlDtd * dtd, axlError ** error, axlHash * id_validation, axlList * idref_validation)
+axl_bool axl_dtd_attr_validate (axlNode * node, axlDtd * dtd, axlError ** error, axlHash * id_validation, axlList * idref_validation)
 {
 	axlDtdAttribute     * attribute;
 	axlDtdAttributeDecl * decl;
@@ -2836,7 +2838,7 @@ int  axl_dtd_attr_validate (axlNode * node, axlDtd * dtd, axlError ** error, axl
 	/* find attribute contraints for the node */
 	attribute = axl_dtd_get_attr (dtd, axl_node_get_name (node));
 	if (attribute == NULL)
-		return true;
+		return axl_true;
 
 	/* we have an especification, run it */
 
@@ -2848,7 +2850,7 @@ int  axl_dtd_attr_validate (axlNode * node, axlDtd * dtd, axlError ** error, axl
 		/* reconfigure error returned */
 		if (error != NULL)
 			*error = _error;
-		return false;
+		return axl_false;
 	} /* end if */
 		
 	
@@ -2864,7 +2866,7 @@ int  axl_dtd_attr_validate (axlNode * node, axlDtd * dtd, axlError ** error, axl
 						     decl->name, attribute->name);
 		axl_error_new (-1, err_msg, NULL, error);
 		axl_free (err_msg);
-		return false;
+		return axl_false;
 	} /* end if */
 
 	/* check declarations */
@@ -2889,7 +2891,7 @@ int  axl_dtd_attr_validate (axlNode * node, axlDtd * dtd, axlError ** error, axl
 							     decl->name, attribute->name);
 				axl_error_new (-1, err_msg, NULL, error);
 				axl_free (err_msg);
-				return false;
+				return axl_false;
 			} /* end if */
 			
 			/* seems the attribute was not used, nice!, store it */
@@ -2929,14 +2931,14 @@ int  axl_dtd_attr_validate (axlNode * node, axlDtd * dtd, axlError ** error, axl
 
 	axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "attributes validated for node=<%s>", attribute->name);
 	
-	return true;
+	return axl_true;
 }
 
 /** 
  * @internal Function used by axl_dtd_validate_references to ensure
  * that all references found point to a valid reference defined.
  */
-int  __axl_dtd_reference_check (axlPointer _element, axlPointer data)
+axl_bool __axl_dtd_reference_check (axlPointer _element, axlPointer data)
 {
 #if defined(SHOW_DEBUG_LOG)
 	const char * value = _element;
@@ -2952,7 +2954,7 @@ int  __axl_dtd_reference_check (axlPointer _element, axlPointer data)
  * attribute) to unique references (defined by ID attributes).
  *
  */
-int  axl_dtd_validate_references (axlHash * id_validation, axlList * idref_validation, axlError ** error)
+axl_bool axl_dtd_validate_references (axlHash * id_validation, axlList * idref_validation, axlError ** error)
 {
 	char * reference;
 	char * err_msg;
@@ -2960,7 +2962,7 @@ int  axl_dtd_validate_references (axlHash * id_validation, axlList * idref_valid
 	/* if no empty at the valiadtion reference list, means not
 	 * reference was done, so there is no room for errors */
 	if (idref_validation == NULL) 
-		return true;
+		return axl_true;
 	
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "id_validation reference: 0x%x", id_validation);
 
@@ -2975,11 +2977,11 @@ int  axl_dtd_validate_references (axlHash * id_validation, axlList * idref_valid
 		axl_error_new (-1, err_msg, NULL, error);
 		axl_free (err_msg);
 
-		return false;
+		return axl_false;
 	} /* end if */
 	
 	/* validation ok */
-	return true;
+	return axl_true;
 }
 
 /** 
@@ -3005,10 +3007,10 @@ int  axl_dtd_validate_references (axlHash * id_validation, axlList * idref_valid
  * @param error An optional reference to a \ref axlError object where
  * validation errors are reported.
  *
- * @return true if the document is valid, false if not.
+ * @return axl_true if the document is valid, axl_false if not.
  */
-int            axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
-					axlError ** error)
+axl_bool           axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
+					    axlError ** error)
 {
 	axlNode            * parent;
 	axlStack           * stack;
@@ -3016,13 +3018,13 @@ int            axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 	axlList            * idref_validation = NULL;
 	
 	axlDtdElement      * element;
-	int                  top_level;
+	axl_bool             top_level;
 	char               * err_msg;
-	int                  result;
+	axl_bool             result;
 	
 	/* perform some checkings */
-	axl_return_val_if_fail (doc, false);
-	axl_return_val_if_fail (dtd, false);
+	axl_return_val_if_fail (doc, axl_false);
+	axl_return_val_if_fail (dtd, axl_false);
 
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "starting DTD validation");
 
@@ -3041,7 +3043,7 @@ int            axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 						     axl_dtd_get_element_name (element));
 			axl_error_new (-1, err_msg, NULL, error);
 			axl_free (err_msg);
-			return false;
+			return axl_false;
 
 		} /* end if */
 	} /* end if */
@@ -3052,7 +3054,7 @@ int            axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 					     axl_node_get_name (parent));
 		axl_error_new (-1, err_msg, NULL, error);
 		axl_free (err_msg);
-		return false;
+		return axl_false;
 	} /* end if */
 
 	/* check if the dtd contains a Id declaration */
@@ -3089,7 +3091,7 @@ int            axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 	
 
 	/* set that the only top level node is the first one */
-	top_level = true;
+	top_level = axl_true;
 
 	do {
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "doing a DTD iteration: <%s>...",
@@ -3105,7 +3107,7 @@ int            axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 
 			/* free the list */
 			axl_list_free (idref_validation);
-			return false;
+			return axl_false;
 		}
 
 		/* reach this position, the <parent> reference contains
@@ -3135,7 +3137,7 @@ int            axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 				
 				/* free the list */
 				axl_list_free (idref_validation);
-				return false;
+				return axl_false;
 			}
 			break;
 		case ELEMENT_TYPE_CHILDREN:
@@ -3152,7 +3154,7 @@ int            axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 				/* free the list */
 				axl_list_free (idref_validation);
 				
-				return false;
+				return axl_false;
 			}
 			break;
 		case ELEMENT_TYPE_EMPTY:
@@ -3170,7 +3172,7 @@ int            axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 				/* free the list */
 				axl_list_free (idref_validation);
 
-				return false;
+				return axl_false;
 			}
 			break;
 		case ELEMENT_TYPE_ANY:
@@ -3237,12 +3239,12 @@ int            axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 
 				/* free the stack */
 				axl_stack_free (stack);
-				return false;
+				return axl_false;
 			} /* end if */
 		} /* end if */
 
 		/* set the top level status */
-		top_level = false;
+		top_level = axl_false;
 		
 		/* until the stack is empty */
 	}while (parent != NULL);
@@ -3272,16 +3274,16 @@ int            axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
  * @param dtd First reference to compare.
  * @param dtd2 Second reference to compare.
  *
- * @return true if both references represent the same document. If
+ * @return axl_true if both references represent the same document. If
  * some of the references received are NULL the function returns
- * false.
+ * axl_false.
  *
  * NOTE: The function does not have the ability to perform a smart
  * equal operation like detecting DTD that are semantically
  * equivalent. It only checks internal structure. 
  */
-int                  axl_dtd_are_equal        (axlDtd * dtd,
-					       axlDtd * dtd2)
+axl_bool                 axl_dtd_are_equal        (axlDtd * dtd,
+						   axlDtd * dtd2)
 {
 	int iterator;
 	int iterator2;
@@ -3294,21 +3296,21 @@ int                  axl_dtd_are_equal        (axlDtd * dtd,
 
 	/* check references received */
 	if (dtd == NULL)
-		return false;
+		return axl_false;
 	if (dtd2 == NULL)
-		return false;
+		return axl_false;
 
 	/* check each rule inside both documents */
 	if (axl_list_length (dtd->entities) != axl_list_length (dtd2->entities))
-		return false;
+		return axl_false;
 	if (axl_list_length (dtd->elements) != axl_list_length (dtd2->elements))
-		return false;
+		return axl_false;
 	if (axl_list_length (dtd->attributes) != axl_list_length (dtd2->attributes))
-		return false;
+		return axl_false;
 	if (dtd->haveIdRefDecl != dtd2->haveIdRefDecl)
-		return false;
+		return axl_false;
 	if (dtd->haveIdDecl != dtd2->haveIdDecl)
-		return false;
+		return axl_false;
 
 	/* now check inner elements (ENTITIES) */
 	iterator = 0;
@@ -3319,28 +3321,28 @@ int                  axl_dtd_are_equal        (axlDtd * dtd,
 
 		/* check types */
 		if (entity->type != entity2->type)
-			return false;
+			return axl_false;
 
 		/* check names */
 		if (! axl_cmp (entity->name, entity2->name)) 
-			return false;
+			return axl_false;
 
 		/* check content */
 		if (! axl_cmp (entity->content, entity2->content))
-			return false;
+			return axl_false;
 
 		/* check external data */
 		if (entity->data == NULL && entity2->data != NULL)
-			return false;
+			return axl_false;
 		if (entity->data != NULL && entity2->data == NULL)
-			return false;
+			return axl_false;
 		if (entity->data != NULL && entity2->data != NULL) {
 			if (! axl_cmp (entity->data->system_literal, entity2->data->system_literal))
-				return false;
+				return axl_false;
 			if (! axl_cmp (entity->data->public_literal, entity2->data->public_literal))
-				return false;
+				return axl_false;
 			if (! axl_cmp (entity->data->ndata, entity2->data->ndata))
-				return false;
+				return axl_false;
 		} /* end if */
 
 		/* next iterator */
@@ -3356,28 +3358,28 @@ int                  axl_dtd_are_equal        (axlDtd * dtd,
 
 		/* check types */
 		if (element->type != element2->type)
-			return false;
+			return axl_false;
 
 		/* minimum match */
 		if (element->minimum_match != element2->minimum_match)
-			return false;
+			return axl_false;
 
 		/* check names */
 		if (! axl_cmp (element->name, element2->name)) 
-			return false;
+			return axl_false;
 
 		/* check element list */
 		if (element->list == NULL && element2->list != NULL)
-			return false;
+			return axl_false;
 		if (element->list != NULL && element2->list == NULL)
-			return false;
+			return axl_false;
 		if (element->list != NULL && element2->list != NULL) {
 
 			/* check internal values */
 			if (element->list->type != element2->list->type)
-				return false;
+				return axl_false;
 			if (element->list->times != element2->list->times)
-				return false;
+				return axl_false;
 
 			iterator2 = 0;
 			while (iterator2 < axl_list_length (element->list->itemList)) {
@@ -3387,9 +3389,9 @@ int                  axl_dtd_are_equal        (axlDtd * dtd,
 				node2 = axl_list_get_nth (element2->list->itemList, iterator2);
 
 				if (node->type != node->type)
-					return false;
+					return axl_false;
 				if (node->times != node2->times)
-					return false;
+					return axl_false;
 				
 				/* next value */
 				iterator2++;
@@ -3411,18 +3413,18 @@ int                  axl_dtd_are_equal        (axlDtd * dtd,
 
 		/* check names */
 		if (! axl_cmp (attribute->name, attribute2->name)) 
-			return false;
+			return axl_false;
 
 		/* check values */
 		if (attribute->list == NULL && attribute2->list != NULL)
-			return false;
+			return axl_false;
 		if (attribute->list != NULL && attribute2->list == NULL)
-			return false;
+			return axl_false;
 		if (attribute->list != NULL && attribute2->list != NULL) {
 
 			/* check list length */
 			if (axl_list_length (attribute->list) != axl_list_length (attribute2->list))
-				return false;
+				return axl_false;
 
 			/* check internal values */
 			iterator2 = 0;
@@ -3433,25 +3435,25 @@ int                  axl_dtd_are_equal        (axlDtd * dtd,
 				attr_decl2  = axl_list_get_nth (attribute2->list, iterator2);
 
 				if (attr_decl->type != attr_decl2->type)
-					return false;
+					return axl_false;
 				if (attr_decl->defaults != attr_decl2->defaults)
-					return false;
+					return axl_false;
 				if (! axl_cmp (attr_decl->name, attr_decl2->name))
-					return false;
+					return axl_false;
 				
 				if (attr_decl->enumvalues == NULL && attr_decl2->enumvalues != NULL)
-					return false;
+					return axl_false;
 				if (attr_decl->enumvalues != NULL && attr_decl2->enumvalues == NULL)
-					return false;
+					return axl_false;
 				if (attr_decl->enumvalues != NULL && attr_decl2->enumvalues != NULL) {
 					if (axl_list_length (attr_decl->enumvalues) != axl_list_length (attr_decl2->enumvalues))
-						return false;
+						return axl_false;
 					iterator3 = 0;
 					while (iterator3 < axl_list_length (attr_decl->enumvalues)) {
 						/* check values */
 						if (! axl_cmp (axl_list_get_nth (attr_decl->enumvalues, iterator3),
 							       axl_list_get_nth (attr_decl2->enumvalues, iterator3)))
-							return false;
+							return axl_false;
 
 						/* next value */
 						iterator3++;
@@ -3469,7 +3471,7 @@ int                  axl_dtd_are_equal        (axlDtd * dtd,
 		iterator++;
 	} /* end while */
 
-	return true;
+	return axl_true;
 	
 }
 
@@ -3505,17 +3507,17 @@ axlDtdElement  * axl_dtd_get_root        (axlDtd * dtd)
  * @internal function used by \ref axl_dtd_get_element to perform node
  * lookups.
  */
-int  __find_dtd_element (axlPointer _element, axlPointer data)
+axl_bool __find_dtd_element (axlPointer _element, axlPointer data)
 {
 	axlDtdElement * element = _element;
 	char          * name    = data;
 
 	/* check the name */
 	if (axl_cmp (element->name, name))
-		return true;
+		return axl_true;
 
 	/* it is not the element */
-	return false;
+	return axl_false;
 }
 
 /** 
@@ -3545,17 +3547,17 @@ axlDtdElement      * axl_dtd_get_element      (axlDtd * dtd, const char * name)
  * @internal function used by \ref axl_dtd_get_attr to perform node
  * lookups.
  */
-int  __find_dtd_attr (axlPointer _element, axlPointer data)
+axl_bool __find_dtd_attr (axlPointer _element, axlPointer data)
 {
 	axlDtdAttribute * attr = _element;
 	char            * name = data;
 
 	/* check the name */
 	if (axl_cmp (attr->name, name))
-		return true;
+		return axl_true;
 
 	/* it is not the element */
-	return false;
+	return axl_false;
 }
 
 /** 
@@ -3664,18 +3666,18 @@ axlDtdElementList  * axl_dtd_get_item_list    (axlDtdElement * element)
  * @param dtd The DTD document where the operation will be performed.
  * @param element The \ref axlDtdElement to check.
  * 
- * @return \ref true if the dtd element is a top level element or
- * \ref false if not. The function returns \ref false if the
+ * @return \ref axl_true if the dtd element is a top level element or
+ * \ref axl_false if not. The function returns \ref axl_false if the
  * provided reference is NULL.
  */
-int                     axl_dtd_element_is_toplevel (axlDtd * dtd, axlDtdElement * element)
+axl_bool                    axl_dtd_element_is_toplevel (axlDtd * dtd, axlDtdElement * element)
 {
 	/* support several top level definitions */
 	int             iterator;
 	axlDtdElement * dtd_element_aux;
 
-	axl_return_val_if_fail (dtd,     false);
-	axl_return_val_if_fail (element, false);
+	axl_return_val_if_fail (dtd,     axl_false);
+	axl_return_val_if_fail (element, axl_false);
 
 	/* check which is the top */
 	iterator        = 0;
@@ -3687,7 +3689,7 @@ int                     axl_dtd_element_is_toplevel (axlDtd * dtd, axlDtdElement
 		/* check which is the top */
 		if (__axl_dtd_get_is_parent (dtd_element_aux, element)) {
 			/* the element provided have a parent */
-			return false;
+			return axl_false;
 		}
 			
 		/* update inner loop iterator */
@@ -3695,7 +3697,7 @@ int                     axl_dtd_element_is_toplevel (axlDtd * dtd, axlDtdElement
 	} /* while end */
 
 	/* return that the provided node doesn't have a parent node */
-	return true;
+	return axl_true;
 }
 
 /** 
@@ -3914,12 +3916,12 @@ axlDtdEntity * __axl_dtd_entity_lookup (axlDtd            * dtd,
  *
  * @param type The entity type to lookup.
  * 
- * @return true if an entity is found named as provided with the type
- * provided. Othewise, false is returned.
+ * @return axl_true if an entity is found named as provided with the type
+ * provided. Othewise, axl_false is returned.
  */
-int                  axl_dtd_entity_exists    (axlDtd            * dtd, 
-					       const char        * name,
-					       axlDtdEntityType    type)
+axl_bool                 axl_dtd_entity_exists    (axlDtd            * dtd, 
+						   const char        * name,
+						   axlDtdEntityType    type)
 {
 	/* return if the entity exists */
 	return (__axl_dtd_entity_lookup (dtd, name, type) != NULL);

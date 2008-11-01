@@ -50,7 +50,7 @@ BEGIN_C_DECLS
 
 axlDoc  * axl_doc_create                   (const char     * version, 
 					    const char     * encoding,
-					    int    standalone);
+					    axl_bool   standalone);
 
 axlDoc  * axl_doc_parse                    (const char * entity, 
 					    int entity_size, 
@@ -62,28 +62,28 @@ axlDoc  * axl_doc_parse_strings            (axlError ** error,
 axlDoc  * axl_doc_parse_from_file          (const char * file_path,
 					    axlError  ** error);
 
-int       axl_doc_dump                     (axlDoc  * doc, 
+axl_bool  axl_doc_dump                     (axlDoc  * doc, 
 					    char   ** content, 
 					    int     * size);
 
-int       axl_doc_dump_pretty              (axlDoc  * doc,
+axl_bool  axl_doc_dump_pretty              (axlDoc  * doc,
 					    char   ** content,
 					    int     * size,
 					    int       tabular);
 
-int       axl_doc_dump_to_file             (axlDoc  * doc,
+axl_bool  axl_doc_dump_to_file             (axlDoc  * doc,
 					    char    * file_path);
 
-int       axl_doc_dump_pretty_to_file      (axlDoc  * doc,
+axl_bool  axl_doc_dump_pretty_to_file      (axlDoc  * doc,
 					    char    * file_path,
 					    int       tabular);
 
 int       axl_doc_get_flat_size            (axlDoc * doc);
 
-int       axl_doc_are_equal                (axlDoc * doc, 
+axl_bool  axl_doc_are_equal                (axlDoc * doc, 
 					    axlDoc * doc2);
 
-int       axl_doc_are_equal_trimmed        (axlDoc * doc,
+axl_bool  axl_doc_are_equal_trimmed        (axlDoc * doc,
 					    axlDoc * doc2);
 
 axlNode * axl_doc_get_root                 (axlDoc * doc);
@@ -118,7 +118,7 @@ const char * axl_doc_get_content_at        (axlDoc     * doc,
 
 const char * axl_doc_get_encoding          (axlDoc * doc);
 
-int       axl_doc_get_standalone           (axlDoc * doc);
+axl_bool  axl_doc_get_standalone           (axlDoc * doc);
 
 void      axl_doc_free                     (axlDoc * doc);
 
@@ -131,7 +131,7 @@ void      axl_doc_add_pi_target            (axlDoc * doc,
 					    char * target, 
 					    char * content);
 
-int       axl_doc_has_pi_target            (axlDoc * doc, 
+axl_bool  axl_doc_has_pi_target            (axlDoc * doc, 
 					    char * pi_target);
 
 char    * axl_doc_get_pi_target_content    (axlDoc * doc, 
@@ -144,7 +144,7 @@ axlPI   * axl_pi_create                    (char * name,
 
 axlPI   * axl_pi_copy                      (axlPI  * pi);
 
-int       axl_pi_are_equal                 (axlPI  * pi, 
+axl_bool  axl_pi_are_equal                 (axlPI  * pi, 
 					    axlPI * pi2);
 
 char    * axl_pi_get_name                  (axlPI  * pi);
@@ -155,18 +155,18 @@ void      axl_pi_free                      (axlPI  * pi);
 
 int       axl_pi_get_size                  (axlPI  * pi);
 
-int       axl_doc_iterate                  (axlDoc           * doc,
+axl_bool  axl_doc_iterate                  (axlDoc           * doc,
 					    AxlIterationMode   mode,
 					    axlIterationFunc   func,
 					    axlPointer         ptr);
 
-int       axl_doc_iterate_full             (axlDoc           * doc,
+axl_bool  axl_doc_iterate_full             (axlDoc           * doc,
 					    AxlIterationMode   mode,
 					    axlIterationFunc2  func,
 					    axlPointer         ptr,
 					    axlPointer         ptr2);
 
-int       axl_doc_iterate_full_from        (axlDoc           * doc,
+axl_bool  axl_doc_iterate_full_from        (axlDoc           * doc,
 					    axlNode          * starting_from,
 					    AxlIterationMode   mode,
 					    axlIterationFunc2  func,
@@ -175,11 +175,11 @@ int       axl_doc_iterate_full_from        (axlDoc           * doc,
 
 /* private API starts from here, do not use this API */
 
-int   axl_doc_consume_comments             (axlDoc    * doc,
+axl_bool  axl_doc_consume_comments             (axlDoc    * doc,
 					    axlStream * stream, 
 					    axlError ** error);
 
-int   axl_doc_consume_pi                   (axlDoc     * doc, 
+axl_bool  axl_doc_consume_pi                   (axlDoc     * doc, 
 					    axlNode    * node,
 					    axlStream  * stream, 
 					    axlError  ** error);

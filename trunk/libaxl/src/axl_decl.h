@@ -599,7 +599,7 @@ typedef struct _axlPI        axlPI;
  *     printf ("Parse error: code=%d, message=%s\n", 
  *             axl_error_get_code (error), axl_error_get (error));
  *     axl_error_free (error);
- *     return false;
+ *     return axl_false;
  * }
  *
  * // beyond this point, it is not required to do
@@ -617,13 +617,13 @@ typedef struct _axlError  axlError;
 typedef struct _axlStream axlStream;
 
 /** 
- * @brief (DEPRECATED use \ref true) Type definition to represent a
+ * @brief (DEPRECATED use \ref axl_true) Type definition to represent a
  * boolean true value, that is equal to 1.
  */
 #define AXL_TRUE  (1)
 
 /** 
- * @brief (DEPRECATED use \ref false) Type definition to represent a
+ * @brief (DEPRECATED use \ref axl_false) Type definition to represent a
  * boolean false value, that is equal to 0.
  */
 #define AXL_FALSE (0)
@@ -633,8 +633,8 @@ typedef struct _axlStream axlStream;
  * concept (TRUE / FALSE states) (DEPRECATED).
  *
  * This is mainly used to emphasize that some integer values that
- * returns some function must be considered to be \ref true or \ref
- * false, that represents the boolean TRUE and FALSE values.
+ * returns some function must be considered to be \ref axl_true or \ref
+ * axl_false, that represents the boolean TRUE and FALSE values.
  *
  * This allows to perform boolean comparations using structure
  * controls like if, while, but also making a differenciation about
@@ -642,26 +642,26 @@ typedef struct _axlStream axlStream;
  *
  * You are also allowed to use <b>bool</b> as boolean type definition.
  */
-typedef char aboolean;
+typedef int aboolean;
 
 /**
- * @internal
- * 
- * Internal definition to retain compatibility with programs that
- * define the bool value but the compiler doesn't provide it.
+ * @brief Bool definition for the Axl library. This type built on top
+ * of <b>int</b> is used along with \ref axl_false and \ref axl_true
+ * to model those API functions and attributes that returns or receive
+ * a boolean state. 
  */
-#if !defined(__cplusplus) && !defined(__bool_true_false_are_defined)
+typedef int axl_bool;
+
 /** 
  * @brief Common definition to have false value (which is defined to 0
- * integer value). See \ref axl_manual_boolean_type "how boolean type is handled on axl library".
+ * integer value).
  */
-#define false (0)
+#define axl_false ((int)0)
 /** 
  * @brief Common definition to have true value (which is defined to 1
- * integer value). See \ref axl_manual_boolean_type "how boolean type is handled on axl library".
+ * integer value).
  */
-#define true  (1)
-#endif /* __cplusplus */
+#define axl_true  ((int)1)
 
 /** 
  * @brief Pointer to any structure definition. It should be required
@@ -896,10 +896,10 @@ axl_stream_consume_white_spaces (stream)
  * 
  * @param str The string to check for emptyness.
  * 
- * @return Returns true if the string is empty and false if
+ * @return Returns axl_true if the string is empty and axl_false if
  * not.
  */
-#define AXL_IS_STR_EMPTY(str) (((str == NULL) || strlen (str) == 0) ? true : false)
+#define AXL_IS_STR_EMPTY(str) (((str == NULL) || strlen (str) == 0) ? axl_true : axl_false)
 
 /** 
  * @internal
@@ -925,12 +925,12 @@ axl_stream_consume_white_spaces (stream)
 i = 0;\
 while (s1 [i] != 0 && s2 [i] != 0) {\
      if (s1 [i] != s2 [i])\
-	return false;\
+	return axl_false;\
      i++;\
      if (i == size)\
-	return true;\
+	return axl_true;\
 }\
-return false
+return axl_false
 
 /** 
  * @brief Allows to configure how is performed the iteration other the xml document.
@@ -975,8 +975,8 @@ typedef enum {
  * (\ref axl_doc_iterate).
  *
  * The function returns a boolean value to signal the library to stop
- * iterating over the XML structure if \ref false is returned. So, to
- * continue the iteration, you must always return \ref true.
+ * iterating over the XML structure if \ref axl_false is returned. So, to
+ * continue the iteration, you must always return \ref axl_true.
  * 
  * @param node The node found inside the document.
  *
@@ -996,10 +996,10 @@ typedef enum {
  * @param ptr A user defined pointer that the user provided at \ref
  * axl_doc_iterate.
  * 
- * @return The callback must return \ref false (0) in the case the iteration
- * must be stopped. Otherwise, \ref true (1) must be returned. 
+ * @return The callback must return axl_false in the case the iteration
+ * must be stopped. Otherwise, axl_true must be returned.
  */
-typedef int (*axlIterationFunc) (axlNode * node, axlNode * parent, axlDoc * doc, int * was_removed, axlPointer ptr);
+typedef axl_bool (*axlIterationFunc) (axlNode * node, axlNode * parent, axlDoc * doc, axl_bool * was_removed, axlPointer ptr);
 
 /** 
  * @brief Axl iteration function definition (with two user defined
@@ -1015,9 +1015,9 @@ typedef int (*axlIterationFunc) (axlNode * node, axlNode * parent, axlDoc * doc,
  * optional user defined pointer provided at the function calling
  * (\ref axl_doc_iterate_full).
  *
- * The function returns a boolean value to signal the library to stop
- * iterating over the XML structure if \ref false is returned. So, to
- * continue the iteration, you must always return \ref true.
+ * The function returns a axl_boolean value to signal the library to stop
+ * iterating over the XML structure if \ref axl_false is returned. So, to
+ * continue the iteration, you must always return \ref axl_true.
  * 
  * @param node The node found inside the document.
  *
@@ -1040,10 +1040,10 @@ typedef int (*axlIterationFunc) (axlNode * node, axlNode * parent, axlDoc * doc,
  * @param ptr2 Second user defined pointer that the user provided at
  * \ref axl_doc_iterate_full.
  * 
- * @return The callback must return \ref false in the case the iteration
- * must be stopped. Otherwise, \ref true must be returned.
+ * @return The callback must return axl_false in the case the iteration
+ * must be stopped. Otherwise, axl_true must be returned.
  */
-typedef int (*axlIterationFunc2) (axlNode * node, axlNode * parent, axlDoc * doc, int * was_removed, axlPointer ptr, axlPointer ptr2);
+typedef axl_bool (*axlIterationFunc2) (axlNode * node, axlNode * parent, axlDoc * doc, axl_bool * was_removed, axlPointer ptr, axlPointer ptr2);
 
 /** 
  * @brief Defines a signature for a set of function that are used to
@@ -1070,10 +1070,10 @@ typedef axlPointer (*axlDuplicateFunc) (axlPointer ptr);
  * @param data A pointer to a user defined data that is received at
  * the lookup function and passed to this handler.
  * 
- * @return The function should return \ref true (found). Otherwise, \ref false
+ * @return The function should return axl_true (found). Otherwise, axl_false
  * must be returned to keep on searching.
  */
-typedef int (*axlLookupFunc) (axlPointer ptr, axlPointer data);
+typedef axl_bool (*axlLookupFunc) (axlPointer ptr, axlPointer data);
 
 /** 
  * @brief Hashing function used by the axl hash module to implement
@@ -1097,19 +1097,19 @@ typedef unsigned int (*axlHashFunc) (axlPointer key);
  * 
  * The function receives the item found (key and data values) as well
  * as a user defined pointer also defined at \ref
- * axl_hash_foreach. The function must return \ref true (<i>"item
+ * axl_hash_foreach. The function must return \ref axl_true (<i>"item
  * found"</i>) to make the search to stop. In the case a full
  * iteration over all items inside the hash is required, the function
- * must always return \ref false.
+ * must always return \ref axl_false.
  * 
  * @param key The key for the item stored.
  * @param data The data associated to the key found
  * @param user_data User defined data that was provided to the axl_hash_foreach function.
  * 
- * @return \ref true to make the foreach process to stop. \ref false
+ * @return \ref axl_true to make the foreach process to stop. \ref axl_false
  * to make the process to continue.
  */
-typedef int (* axlHashForeachFunc) (axlPointer key, axlPointer data, axlPointer user_data);
+typedef axl_bool (* axlHashForeachFunc) (axlPointer key, axlPointer data, axlPointer user_data);
 
 /** 
  * @brief Foreach function signature used to represent the set of
@@ -1117,20 +1117,20 @@ typedef int (* axlHashForeachFunc) (axlPointer key, axlPointer data, axlPointer 
  * 
  * The function receives the item found (key and data values) as well
  * as two user defined pointers also defined at \ref
- * axl_hash_foreach2. The function must return \ref true (<i>"item
+ * axl_hash_foreach2. The function must return \ref axl_true (<i>"item
  * found"</i>) to make the search to stop. In the case a full
  * iteration over all items inside the hash is required, the function
- * must always return \ref false.
+ * must always return \ref axl_false.
  * 
  * @param key The key for the item stored.
  * @param data The data associated to the key found
  * @param user_data User defined data that was provided to the axl_hash_foreach2 function.
  * @param user_data2 Second User defined data that was provided to the axl_hash_foreach2 function.
  * 
- * @return \ref true to make the foreach process to stop. \ref false
+ * @return \ref axl_true to make the foreach process to stop. \ref axl_false
  * to make the process to continue.
  */
-typedef int (* axlHashForeachFunc2) (axlPointer key, axlPointer data, axlPointer user_data, axlPointer user_data2);
+typedef axl_bool (* axlHashForeachFunc2) (axlPointer key, axlPointer data, axlPointer user_data, axlPointer user_data2);
 
 /** 
  * @brief Foreach function signature used to represent the set of
@@ -1138,10 +1138,10 @@ typedef int (* axlHashForeachFunc2) (axlPointer key, axlPointer data, axlPointer
  * 
  * The function receives the item found (key and data values) as well
  * as tree user defined pointers also defined at \ref
- * axl_hash_foreach3. The function must return \ref true (<i>"item
+ * axl_hash_foreach3. The function must return \ref axl_true (<i>"item
  * found"</i>) to make the search to stop. In the case a full
  * iteration over all items inside the hash is required, the function
- * must always return \ref false.
+ * must always return \ref axl_false.
  * 
  * @param key The key for the item stored.
  *
@@ -1156,10 +1156,10 @@ typedef int (* axlHashForeachFunc2) (axlPointer key, axlPointer data, axlPointer
  * @param user_data3 Third User defined data that was provided to the
  * axl_hash_foreach3 function.
  * 
- * @return \ref true to make the foreach process to stop. \ref false
+ * @return \ref axl_true to make the foreach process to stop. \ref axl_false
  * to make the process to continue.
  */
-typedef int (* axlHashForeachFunc3) (axlPointer key, axlPointer data, axlPointer user_data, axlPointer user_data2, axlPointer user_data3);
+typedef axl_bool (* axlHashForeachFunc3) (axlPointer key, axlPointer data, axlPointer user_data, axlPointer user_data2, axlPointer user_data3);
 
 /**
  * @brief Foreach function signature used to represent the set of
@@ -1167,10 +1167,10 @@ typedef int (* axlHashForeachFunc3) (axlPointer key, axlPointer data, axlPointer
  * 
  * The function receives the item found (key and data values) as well
  * as tree user defined pointers also defined at \ref
- * axl_hash_foreach4. The function must return \ref true (<i>"item
+ * axl_hash_foreach4. The function must return \ref axl_true (<i>"item
  * found"</i>) to make the search to stop. In the case a full
  * iteration over all items inside the hash is required, the function
- * must always return \ref false.
+ * must always return \ref axl_false.
  * 
  * @param key The key for the item stored.
  *
@@ -1188,10 +1188,10 @@ typedef int (* axlHashForeachFunc3) (axlPointer key, axlPointer data, axlPointer
  * @param user_data4 Forth User defined data that was provided to the
  * axl_hash_foreach4 function.
  * 
- * @return \ref true to make the foreach process to stop. \ref false
+ * @return \ref axl_true to make the foreach process to stop. \ref axl_false
  * to make the process to continue.
  */
-typedef int (* axlHashForeachFunc4) (axlPointer key, axlPointer data, axlPointer user_data, axlPointer user_data2, axlPointer user_data3, axlPointer user_data4);
+typedef axl_bool (* axlHashForeachFunc4) (axlPointer key, axlPointer data, axlPointer user_data, axlPointer user_data2, axlPointer user_data3, axlPointer user_data4);
 
 /** 
  * @brief Function handler definition for to allowing copying items at
@@ -1239,10 +1239,10 @@ typedef axlPointer (*axlHashItemCopy) (axlPointer key, axlDestroyFunc key_destro
  * @param user_data2 A second reference to a user defined pointer
  * passed to \ref axl_stack_foreach.
  * 
- * @return \ref true to make the foreach process to stop. \ref false
+ * @return \ref axl_true to make the foreach process to stop. \ref axl_false
  * to make the process to continue.
  */
-typedef int (* axlStackForeach2) (axlPointer stack_data, axlPointer user_data, axlPointer user_data2);
+typedef axl_bool (* axlStackForeach2) (axlPointer stack_data, axlPointer user_data, axlPointer user_data2);
 
 /** 
  * @brief Foreach function handler used at \ref axl_stack_foreach3
@@ -1263,10 +1263,10 @@ typedef int (* axlStackForeach2) (axlPointer stack_data, axlPointer user_data, a
  * @param user_data3 Third reference to a user defined pointer passed
  * to \ref axl_stack_foreach3.
  * 
- * @return \ref true to make the foreach process to stop. \ref false
+ * @return \ref axl_true to make the foreach process to stop. \ref axl_false
  * to make the process to continue.
  */
-typedef int (* axlStackForeach3) (axlPointer stack_data, axlPointer user_data, axlPointer user_data2, axlPointer user_data3);
+typedef axl_bool (* axlStackForeach3) (axlPointer stack_data, axlPointer user_data, axlPointer user_data2, axlPointer user_data3);
 
 /** 
  * @brief Foreach function used by \ref axl_node_attr_foreach function.
@@ -1282,10 +1282,10 @@ typedef int (* axlStackForeach3) (axlPointer stack_data, axlPointer user_data, a
  * axl_node_attr_foreach.
  *
  * @return The foreach function can stop the process at a particular
- * attribute by returning \ref true ("item found"). To iterate all
- * attributes return \ref false.
+ * attribute by returning \ref axl_true ("item found"). To iterate all
+ * attributes return \ref axl_false.
  */
-typedef int (* axlNodeAttrForeachFunc) (const char * key, const char * value, axlPointer data, axlPointer data2);
+typedef axl_bool (* axlNodeAttrForeachFunc) (const char * key, const char * value, axlPointer data, axlPointer data2);
 
 /** 
  * @brief Entity resolver function used by the library to translate
@@ -1317,11 +1317,11 @@ typedef const char * (* axlDtdEntityResolver) (const char * entityName, axlPoint
  * @param user_data A reference to user-defined data. This value was
  * configured at \ref axl_doc_set_detect_codification_func.
  * 
- * @return true if the detection was implemented properly, otherse
- * false is returned. The handler could return true and no
+ * @return axl_true if the detection was implemented properly, otherse
+ * axl_false is returned. The handler could return axl_true and no
  * codification be clearly detected.
  */
-typedef int (* axlDocDetectCodification) (axlStream * stream, char ** detected, axlPointer user_data, axlError ** error);
+typedef axl_bool (* axlDocDetectCodification) (axlStream * stream, char ** detected, axlPointer user_data, axlError ** error);
 
 /** 
  * @brief Handler definition for the set of functions that allows to
@@ -1340,10 +1340,10 @@ typedef int (* axlDocDetectCodification) (axlStream * stream, char ** detected, 
  * @param error An optional error that will be filled in the case an
  * error is found.
  * 
- * @return true if the configuration operation was done, otherwise
- * false is returned.
+ * @return axl_true if the configuration operation was done, otherwise
+ * axl_false is returned.
  */
-typedef int (* axlDocConfigureCodification) (axlStream * stream, const char * encoding, const char * detected_encoding, axlPointer user_data, axlError ** error);
+typedef axl_bool (* axlDocConfigureCodification) (axlStream * stream, const char * encoding, const char * detected_encoding, axlPointer user_data, axlError ** error);
 
 /* @} */
 #endif

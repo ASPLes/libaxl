@@ -76,10 +76,10 @@
  * @param error An optional reference to an axlError where failure
  * will be notified.
  * 
- * @return true if the init operation was properly implemented,
- * otherwise false is returned.
+ * @return axl_true if the init operation was properly implemented,
+ * otherwise axl_false is returned.
  */
-int         axl_babel_init (axlError ** error)
+axl_bool        axl_babel_init (axlError ** error)
 {
 	/* call to configure babel */
 	axl_doc_set_detect_codification_func    (axl_babel_detect_codification, NULL);
@@ -87,7 +87,7 @@ int         axl_babel_init (axlError ** error)
 
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "configure axl-babel handlers..");
 
-	return true;
+	return axl_true;
 }
 
 /** 
@@ -118,19 +118,19 @@ void        axl_babel_finish ()
  *
  * @param error The reference where errors will be reported.
  * 
- * @return true if the codification detection was performed properly,
- * otherwise false is returned if an error is found.
+ * @return axl_true if the codification detection was performed properly,
+ * otherwise axl_false is returned if an error is found.
  */
-int  axl_babel_detect_codification (axlStream  * stream, 
-				    char      ** encoding,
-				    axlPointer   user_data,
-				    axlError  ** error)
+axl_bool axl_babel_detect_codification (axlStream  * stream, 
+					char      ** encoding,
+					axlPointer   user_data,
+					axlError  ** error)
 {
 	/* check basic case where the stream have no content to
 	 * parse */
 	if (axl_stream_get_size (stream) < 4) {
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "unable to detect codification, stream received doesn't have enough content to parse");
-		return false;
+		return axl_false;
 	} /* end if */
 
 	/* clear encoding */
@@ -154,7 +154,7 @@ int  axl_babel_detect_codification (axlStream  * stream,
 
 		/* found utf-8 encoding, install associated filter */
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "utf-8 BOM mark found, assuming utf-8 content");
-		return true;
+		return axl_true;
 	} /* end if */
 
 	/* check UTF-16 (little-endian) BOM: FF FE */
@@ -169,7 +169,7 @@ int  axl_babel_detect_codification (axlStream  * stream,
 
 		/* found utf-16 encoding, install associated filter */
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "utf-16 BOM mark found, assuming utf-16 content");
-		return true;
+		return axl_true;
 	}
 
 	/* check UTF-32 (little-endian) BOM: FF FE 00 00 */
@@ -186,7 +186,7 @@ int  axl_babel_detect_codification (axlStream  * stream,
 
 		/* found utf-16 encoding, install associated filter */
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "utf-32 BOM mark found, assuming utf-8 content");
-		return true;
+		return axl_true;
 	} /* end if */
 
 	/* NO BOM MARK SECTION */
@@ -201,7 +201,7 @@ int  axl_babel_detect_codification (axlStream  * stream,
 		
 		/* found utf-16 encoding, install associated filter */
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found utf-8, iso 646, ascii or something similiar without mark, assuming utf-8 until encoding declaration..");
-		return true;
+		return axl_true;
 	} /* end if */
 
 	/* check last case where an utf-8 document could be found without xml header */
@@ -215,7 +215,7 @@ int  axl_babel_detect_codification (axlStream  * stream,
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, 
 		   "unable to detect encoding format, failed to detect encoding format");
 	axl_error_new (-1, "unable to detect encoding format, failed to detect encoding format", NULL, error);
-	return false;
+	return axl_false;
 	
 }
 
@@ -346,13 +346,13 @@ int axl_babel_utf8_check (const char  * source,
  * @param error An optional error that will be filled in the case an
  * error is found.
  * 
- * @return true if the operation was completed, otherwise false is
+ * @return axl_true if the operation was completed, otherwise axl_false is
  * returned.
  */
-int  axl_babel_configure_encoding (axlStream  * stream, 
-				   const char * encoding, 
-				   const char * detected, 
-				   axlPointer user_data, axlError ** error)
+axl_bool axl_babel_configure_encoding (axlStream  * stream, 
+				       const char * encoding, 
+				       const char * detected, 
+				       axlPointer user_data, axlError ** error)
 {
 	axlBabelTable * table = NULL;
 
@@ -432,8 +432,8 @@ int  axl_babel_configure_encoding (axlStream  * stream,
 		
 		/* install checker without table */
 		if (! axl_stream_setup_check (stream, encoding, axl_babel_utf8_check, NULL, error)) 
-			return false; 
-		return true;
+			return axl_false; 
+		return axl_true;
 	} /* end if */
 	
 	if (table == NULL) {
@@ -442,16 +442,16 @@ int  axl_babel_configure_encoding (axlStream  * stream,
 			   encoding ? encoding : "",
 			   detected ? detected : "");
 		
-		return true;
+		return axl_true;
 	} /* end if */
 	
 	/* associate to the stream */
-	axl_stream_link_full (stream, table, axl_free, true);
+	axl_stream_link_full (stream, table, axl_free, axl_true);
 	
 	if (! axl_stream_setup_decode (stream, encoding, axl_babel_single_to_utf8, table, error))
-		return false; 
+		return axl_false; 
 	
-	return true;
+	return axl_true;
 }
 
 /** 
@@ -466,13 +466,13 @@ int  axl_babel_configure_encoding (axlStream  * stream,
  * @param index_error Optional reference where will be reported the
  * index position that caused the error.
  *
- * @return true if the content provided is all in utf-8 otherwise
- * false is returned. In the case index_error or error is defined and
+ * @return axl_true if the content provided is all in utf-8 otherwise
+ * axl_false is returned. In the case index_error or error is defined and
  * an error is found, they are defined to the appropriate value.
  */
-int         axl_babel_check_utf8_content  (const char  * content,
-					   int           content_length,
-					   int         * index_error)
+axl_bool        axl_babel_check_utf8_content  (const char  * content,
+					       int           content_length,
+					       int         * index_error)
 {
 	int           iterator = 0;
 	unsigned char value;
@@ -481,8 +481,8 @@ int         axl_babel_check_utf8_content  (const char  * content,
 	if (index_error)
 		*index_error = 0;
 
-	axl_return_val_if_fail (content, false);
-	axl_return_val_if_fail (content_length >= -1, false);
+	axl_return_val_if_fail (content, axl_false);
+	axl_return_val_if_fail (content_length >= -1, axl_false);
 
 	/* check and calculate content */
 	if (content_length == -1)
@@ -514,7 +514,7 @@ int         axl_babel_check_utf8_content  (const char  * content,
 			/* found error */
 			if (index_error)
 				*index_error = iterator;
-			return false;
+			return axl_false;
 		} /* end if */
 			
 		/* utf with 3 octects */
@@ -536,7 +536,7 @@ int         axl_babel_check_utf8_content  (const char  * content,
 			/* found error */
 			if (index_error)
 				*index_error = iterator;
-			return false;
+			return axl_false;
 		} 
 
 		/* utf with 2 octects */
@@ -553,7 +553,7 @@ int         axl_babel_check_utf8_content  (const char  * content,
 			/* found error */
 			if (index_error)
 				*index_error = iterator;
-			return false;
+			return axl_false;
 		} 
 
 		if (value <= 127 ) {
@@ -566,12 +566,12 @@ int         axl_babel_check_utf8_content  (const char  * content,
 		/* found error */
 		if (index_error)
 			*index_error = iterator;
-		return false;
+		return axl_false;
 
 
 	} /* end while */
 
-	return true;
+	return axl_true;
 }
 
 /** 

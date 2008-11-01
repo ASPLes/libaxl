@@ -48,14 +48,14 @@ BEGIN_C_DECLS
  * @{
  */
 
-int  axl_ns_doc_validate (axlDoc * doc, axlError ** error);
+axl_bool axl_ns_doc_validate      (axlDoc * doc, axlError ** error);
 
-int  axl_ns_doc_node_check (axlNode    * node, 
-			    const char * ns_prefix, 
-			    const char * ns);
+axl_bool axl_ns_doc_node_check    (axlNode    * node, 
+				   const char * ns_prefix, 
+				   const char * ns);
 
-int  axl_ns_doc_check_default (axlNode    * node, 
-			       const char * ns);
+axl_bool axl_ns_doc_check_default (axlNode    * node, 
+				   const char * ns);
 
 /** 
  * @brief Convenience macro that allows to call \ref

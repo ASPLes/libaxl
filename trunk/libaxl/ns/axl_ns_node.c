@@ -83,21 +83,21 @@
  * @param name The node name to be checked (without namespace
  * prefixes).
  * 
- * @return \ref true if the node name is the one expected, binded by
- * the namespace declaration, otherwise \ref false is returned. The
- * function returns \ref false in the of some paremeter is provided
+ * @return \ref axl_true if the node name is the one expected, binded by
+ * the namespace declaration, otherwise \ref axl_false is returned. The
+ * function returns \ref axl_false in the of some paremeter is provided
  * null.
  */
-int  axl_ns_node_cmp (axlNode    * node, 
+axl_bool axl_ns_node_cmp (axlNode    * node, 
 		      const char * ns, 
 		      const char * name)
 {
 	int    position;
 	char * _name;
 
-	axl_return_val_if_fail (node, false);
-	axl_return_val_if_fail (ns, false);
-	axl_return_val_if_fail (name, false);
+	axl_return_val_if_fail (node, axl_false);
+	axl_return_val_if_fail (ns, axl_false);
+	axl_return_val_if_fail (name, axl_false);
 
 	/* check the name is namespace prefixed */
 	if (axl_ns_node_is_prefixed (node, &position)) {
@@ -110,7 +110,7 @@ int  axl_ns_node_cmp (axlNode    * node,
 		if (! axl_ns_doc_node_check (node, _name, ns)) {
 			/* restore the value */
 			_name[position] = ':';
-			return false;
+			return axl_false;
 		}
 
 		/* restore the value */
@@ -123,7 +123,7 @@ int  axl_ns_node_cmp (axlNode    * node,
 	/* look for the default namespace */
 	if (! axl_ns_doc_check_default (node, ns)) {
 		/* default namespace for the current node doesn't match */
-		return false;
+		return axl_false;
 	}
 	
 	/* default namespace match, check the node name */
@@ -321,19 +321,19 @@ axlNode * axl_ns_node_get_previous_called (axlNode    * node,
  * @param node The node to be checked to have a name prefixed.
  *
  * @param position Optional variable where the position of the ":"
- * inside the xml node name is returned. On \ref false, the value is
+ * inside the xml node name is returned. On \ref axl_false, the value is
  * configured to -1.
  * 
- * @return \ref true if the node is prefixed, otherwise \ref false is
- * returned. The function also returns \ref false if the node
+ * @return \ref axl_true if the node is prefixed, otherwise \ref axl_false is
+ * returned. The function also returns \ref axl_false if the node
  * reference received is NULL.
  */
-int  axl_ns_node_is_prefixed  (axlNode * node, int * position)
+axl_bool axl_ns_node_is_prefixed  (axlNode * node, int * position)
 {
 	int          iterator = 0;
 	const char * name;
 
-	axl_return_val_if_fail (node, false);
+	axl_return_val_if_fail (node, axl_false);
 
 	/* configure default position */
 	if (position)
@@ -349,15 +349,15 @@ int  axl_ns_node_is_prefixed  (axlNode * node, int * position)
 			if (position)
 				*position = iterator;
 
-			return true;
+			return axl_true;
 		} /* end if */
 
 		/* go to the next character */
 		iterator++;
 	} /* end while */
 	
-	/* reached this point, false must be returned */
-	return false;
+	/* reached this point, axl_false must be returned */
+	return axl_false;
 }
 
 /**

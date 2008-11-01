@@ -48,11 +48,11 @@ at <axl@lists.aspl.es>."
 /** 
  * @internal Controls if messages must be send to the console log.
  */
-int         console_enabled        = true;
-int         console_debug          = false;
-int         console_debug2         = false;
-int         console_debug3         = false;
-int         console_color_debug    = false;
+axl_bool        console_enabled        = axl_true;
+axl_bool        console_debug          = axl_false;
+axl_bool        console_debug2         = axl_false;
+axl_bool        console_debug3         = axl_false;
+axl_bool        console_color_debug    = axl_false;
 int         axl_knife_pid          = -1;
 
 /** 
@@ -333,7 +333,7 @@ void axl_knife_introduce_indentation (int level)
 	return;
 }
 
-int  axl_knife_htmlize_iterator_node (FILE * fstream, axlNode * node, int level)
+axl_bool axl_knife_htmlize_iterator_node (FILE * fstream, axlNode * node, int level)
 {
 	
 	axlItem       * item;
@@ -451,10 +451,10 @@ int  axl_knife_htmlize_iterator_node (FILE * fstream, axlNode * node, int level)
 	} /* end if */
 
 	/* don't stop iteration */
-	return true;
+	return axl_true;
 }
 
-int  axl_knife_htmlize (axlDoc * doc)
+axl_bool axl_knife_htmlize (axlDoc * doc)
 {
 	FILE       * fstream = stdout;
 
@@ -468,7 +468,7 @@ int  axl_knife_htmlize (axlDoc * doc)
 		if (fstream == NULL) {
 			error ("unable to open output document: %s, errno=%d:%s", exarg_get_string ("output"),
 			       errno, strerror (errno));
-			return false;
+			return axl_false;
 		} /* end if */
 	} /* end if */
 
@@ -477,10 +477,10 @@ int  axl_knife_htmlize (axlDoc * doc)
 	axl_knife_htmlize_iterator_node (fstream, axl_doc_get_root (doc), 1);
 	fprintf (fstream, "</pre>\n");
 
-	return true;
+	return axl_true;
 }
 
-int  axl_knife_dtd_to_c ()
+axl_bool axl_knife_dtd_to_c ()
 {
 	
 	/* check the document received is a DTD */
@@ -500,7 +500,7 @@ int  axl_knife_dtd_to_c ()
 		error ("unable to translate document into C, found invalid DTD: %s",
 		       axl_error_get (err));
 		axl_error_free (err);
-		return false;
+		return axl_false;
 	} /* end if */
 	
 	/* free dtd document */
@@ -516,7 +516,7 @@ int  axl_knife_dtd_to_c ()
 		if (fstream == NULL) {
 			error ("unable to open output document: %s, errno=%d:%s", exarg_get_string ("output"),
 			       errno, strerror (errno));
-			return false;
+			return axl_false;
 		} /* end if */
 	} /* end if */
 	
@@ -524,7 +524,7 @@ int  axl_knife_dtd_to_c ()
 	line_length = 0;
 	do {
 		/* get next */
-		ref = axl_stream_get_until_zero (stream, NULL, &chunk_matched, true, 1, "\n", NULL);
+		ref = axl_stream_get_until_zero (stream, NULL, &chunk_matched, axl_true, 1, "\n", NULL);
 
 		/* get lenght and update */
 		max = ref ? strlen (ref) : 0;
@@ -556,7 +556,7 @@ int  axl_knife_dtd_to_c ()
 	fprintf (fstream, "#define %s \"\\n\\\n", file);
 	do {
 		/* get next */
-		ref      = axl_stream_get_until_zero (stream, NULL, &chunk_matched, true, 1, "\n", NULL);
+		ref      = axl_stream_get_until_zero (stream, NULL, &chunk_matched, axl_true, 1, "\n", NULL);
 		if (ref != NULL) {
 			iterator = 0;
 			while (iterator < strlen (ref)) {
@@ -590,7 +590,7 @@ int  axl_knife_dtd_to_c ()
 	if (exarg_is_defined ("output"))
 		fclose (fstream);
 
-	return true;
+	return axl_true;
 }
 
 /** 
@@ -600,18 +600,18 @@ int  axl_knife_dtd_to_c ()
  * @param basefile The base file to check.
  * @param compare The compare file to check
  * 
- * @return true if the modification time is newer than compare,
- * otherwise false is returned.
+ * @return axl_true if the modification time is newer than compare,
+ * otherwise axl_false is returned.
  */
-int  axl_knife_check_if_newer (const char * basefile, const char * compare)
+axl_bool axl_knife_check_if_newer (const char * basefile, const char * compare)
 {
 	struct stat stat1, stat2;
 	
 	/* get stats from both files */
 	if (stat (basefile, &stat1) != 0)
-		return false;
+		return axl_false;
 	if (stat (compare, &stat2) != 0)
-		return false;
+		return axl_false;
 
 	/* return value comparation */
 	return stat1.st_mtime > stat2.st_mtime;
@@ -708,8 +708,8 @@ int main (int argc, char ** argv)
 
 	/* check color to activate both logs */
 	if (exarg_is_defined ("enable-log-color")) {
-		axl_log_enable (true);
-		axl_log_color_enable (true);
+		axl_log_enable (axl_true);
+		axl_log_color_enable (axl_true);
 	}
 
 	/* check to load a document */
@@ -762,63 +762,63 @@ int main (int argc, char ** argv)
  * @param test The set of test to be performed. Separate each test
  * with "|" to perform several test at the same time.
  * 
- * @return true if all test returns true. Otherwise false is returned.
+ * @return axl_true if all test returns axl_true. Otherwise axl_false is returned.
  */
-int    axl_knife_file_test (const char * path, FileTest test)
+axl_bool   axl_knife_file_test (const char * path, FileTest test)
 {
-	int  result = false;
+	axl_bool result = axl_false;
 	struct stat file_info;
 
 	/* perform common checks */
-	axl_return_val_if_fail (path, false);
+	axl_return_val_if_fail (path, axl_false);
 
 	/* call to get status */
 	result = (stat (path, &file_info) == 0);
 	if (! result) {
 		/* check that it is requesting for not file exists */
 		if (errno == ENOENT && (test & FILE_EXISTS) == FILE_EXISTS)
-			return false;
+			return axl_false;
 
 		error ("filed to check test on %s, stat call has failed (result=%d, error=%s)", path, result, strerror (errno));
-		return false;
+		return axl_false;
 	} /* end if */
 
 	/* check for file exists */
 	if ((test & FILE_EXISTS) == FILE_EXISTS) {
 		/* check result */
-		if (result == false)
-			return false;
+		if (result == axl_false)
+			return axl_false;
 		
 		/* reached this point the file exists */
-		result = true;
+		result = axl_true;
 	}
 
 	/* check if the file is a link */
 	if ((test & FILE_IS_LINK) == FILE_IS_LINK) {
 		if (! S_ISLNK (file_info.st_mode))
-			return false;
+			return axl_false;
 
 		/* reached this point the file is link */
-		result = true;
+		result = axl_true;
 	}
 
 	/* check if the file is a regular */
 	if ((test & FILE_IS_REGULAR) == FILE_IS_REGULAR) {
 		if (! S_ISREG (file_info.st_mode))
-			return false;
+			return axl_false;
 
 		/* reached this point the file is link */
-		result = true;
+		result = axl_true;
 	}
 
 	/* check if the file is a directory */
 	if ((test & FILE_IS_DIR) == FILE_IS_DIR) {
 		if (! S_ISDIR (file_info.st_mode)) {
-			return false;
+			return axl_false;
 		}
 
 		/* reached this point the file is link */
-		result = true;
+		result = axl_true;
 	}
 
 	/* return current result */

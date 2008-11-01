@@ -85,10 +85,10 @@ void __axl_ns_free_table (axlNsTable * table)
 } /* end __axl_ns_free_table */
 
 /* check and install all ns declerations found on this node */
-int  __axl_ns_node_check_and_install_ns_decls (axlNode * node, axlAttrCursor * cursor, axlError ** error)
+axl_bool __axl_ns_node_check_and_install_ns_decls (axlNode * node, axlAttrCursor * cursor, axlError ** error)
 {
 	const char    * attr;
-	int             default_found = false;
+	axl_bool        default_found = axl_false;
 	axlNsTable    * ns_table = NULL;
 
 	/* for each attribute installed on the node */
@@ -122,9 +122,9 @@ int  __axl_ns_node_check_and_install_ns_decls (axlNode * node, axlAttrCursor * c
 				axl_node_attr_cursor_free (cursor);
 				
 				axl_error_new (-1, "Found that the document defines several default xmlns declarations at the same node", NULL, error);
-				return false;
+				return axl_false;
 			} /* end if */
-			default_found = true;
+			default_found = axl_true;
 			
 			/* copy the default namespace */
 			ns_table->defaultNs = axl_node_attr_cursor_get_value (cursor);
@@ -149,7 +149,7 @@ int  __axl_ns_node_check_and_install_ns_decls (axlNode * node, axlAttrCursor * c
 			
 			axl_error_new (-1, "Found that the document already declares the same prefix for the same node several times",
 				       NULL, error);
-			return false;
+			return axl_false;
 		} /* end if */
 		
 		/* install it in the current ns hash table */
@@ -161,7 +161,7 @@ int  __axl_ns_node_check_and_install_ns_decls (axlNode * node, axlAttrCursor * c
 	} /* end while */
 
 	/* all declarations done */
-	return true;
+	return axl_true;
 	
 } /* end __axl_ns_node_check_and_install_ns_decls */
 
@@ -169,11 +169,11 @@ int  __axl_ns_node_check_and_install_ns_decls (axlNode * node, axlAttrCursor * c
  * @internal Function that validates the node against current status
  * of the namespace support.
  */
-int  __axl_ns_node_validate (axlNode * node, axlError ** error)
+axl_bool __axl_ns_node_validate (axlNode * node, axlError ** error)
 {
 	int          iterator = 0;
 	char       * name;
-	int          found    = false;
+	axl_bool     found    = axl_false;
 	axlNsTable * ns_table;
 	axlNode    * parent;
 	axlNode    * child;
@@ -192,7 +192,7 @@ int  __axl_ns_node_validate (axlNode * node, axlError ** error)
 		 * node (cursor is dellocated by this function on
 		 * error) */
 		if (! __axl_ns_node_check_and_install_ns_decls (node, cursor, error))
-			return false;
+			return axl_false;
 
 	} /* end if */
 
@@ -208,7 +208,7 @@ int  __axl_ns_node_validate (axlNode * node, axlError ** error)
 			name[iterator] = 0;
 
 			/* namespace node found */
-			found = true;
+			found = axl_true;
 			break;
 		}
 
@@ -222,7 +222,7 @@ int  __axl_ns_node_validate (axlNode * node, axlError ** error)
 		parent = node;
 		while (parent != NULL) {
 			/* try to get the ns table having the prefix declaration */
-			ns_table = axl_node_annotate_get (parent, NS_TABLE, false);
+			ns_table = axl_node_annotate_get (parent, NS_TABLE, axl_false);
 
 			/* check the namespace */
 			if (ns_table != NULL && axl_hash_exists (ns_table->table, name)) {
@@ -244,7 +244,7 @@ int  __axl_ns_node_validate (axlNode * node, axlError ** error)
 			
 				axl_error_new (-1, "Found prefix declaration for which a namespace binding wasn't found in the node or any parent (xmlns:prefix='ns')",
 					       NULL, error);
-				return false;
+				return axl_false;
 			} /* end if */
 		} /* end while */
 	} /* end if */
@@ -267,7 +267,7 @@ int  __axl_ns_node_validate (axlNode * node, axlError ** error)
 			
 			/* check if the node name uses a namespace scope declaration
 			 * (prefix:name) */
-			found    = false;
+			found    = axl_false;
 			iterator = 0;
 			while (name[iterator] != 0) {
 				if (name[iterator] == ':') {
@@ -275,7 +275,7 @@ int  __axl_ns_node_validate (axlNode * node, axlError ** error)
 					name[iterator] = 0;
 					
 					/* namespace node found */
-					found = true;
+					found = axl_true;
 					break;
 				}
 				
@@ -287,7 +287,7 @@ int  __axl_ns_node_validate (axlNode * node, axlError ** error)
 				parent = node;
 				while (parent != NULL) {
 					/* try to get the ns table having the prefix declaration */
-					ns_table = axl_node_annotate_get (parent, NS_TABLE, false);
+					ns_table = axl_node_annotate_get (parent, NS_TABLE, axl_false);
 					
 					/* check the namespace */
 					if (ns_table != NULL && axl_hash_exists (ns_table->table, name)) {
@@ -309,7 +309,7 @@ int  __axl_ns_node_validate (axlNode * node, axlError ** error)
 						
 						axl_error_new (-1, "Found prefix declaration, for an attribute, for which a namespace binding wasn't found in the node or any parent (xmlns:prefix='ns')",
 							       NULL, error);
-						return false;
+						return axl_false;
 					} /* end if */
 				} /* end while */
 			} /* end if */
@@ -329,14 +329,14 @@ int  __axl_ns_node_validate (axlNode * node, axlError ** error)
 	while (child != NULL) {
 		/* check childs */
 		if (! __axl_ns_node_validate (child, error))
-			return false;
+			return axl_false;
 
 		/* go next child node */
 		child = axl_node_get_next (child);
 	} /* end while */
 
-	/* return true, if reached this place */
-	return true;
+	/* return axl_true, if reached this place */
+	return axl_true;
 }
 
 /** 
@@ -416,33 +416,33 @@ int  __axl_ns_node_validate (axlNode * node, axlError ** error)
  *
  * <i><b>NOTE:</b> providing a document without content (at least one
  * root node configured), will cause the function to return \ref
- * true.</i>
+ * axl_true.</i>
  * 
  * @param doc The document that is being required to be checked
  * against the XML Namespaces 1.0 rules.
  *
  * @param error An optional variable where errors will be reported. If
- * the function returns \ref false, you can call to \ref axl_error_get
+ * the function returns \ref axl_false, you can call to \ref axl_error_get
  * to get a textual diagnostic.
  * 
- * @return \ref true if the document is namespace-valid, otherwise,
- * \ref false is returned.
+ * @return \ref axl_true if the document is namespace-valid, otherwise,
+ * \ref axl_false is returned.
  */
-int  axl_ns_doc_validate (axlDoc * doc, axlError ** error)
+axl_bool axl_ns_doc_validate (axlDoc * doc, axlError ** error)
 {
 	axlNode * node;
 
 	/* check references */
 	if (doc == NULL) {
 		axl_error_new (-1, "Document provided is a null reference", NULL, error);
-		return false;
+		return axl_false;
 	} /* end if */
 
 	/* get root document */
 	node = axl_doc_get_root (doc);
 	if (node == NULL) {
-		/* document has no nodes, return true */
-		return true;
+		/* document has no nodes, return axl_true */
+		return axl_true;
 	} /* end if */
  
 	/* call to produce and validate namespace content */
@@ -462,13 +462,13 @@ int  axl_ns_doc_validate (axlDoc * doc, axlError ** error)
  *
  * @param ns The namespace that must be bound the prefix.
  * 
- * @return true if the prefix is bound to the namespace provided,
+ * @return axl_true if the prefix is bound to the namespace provided,
  * using the node as reference for all declarations found inside the
  * particular node (or its parents).
  */
-int  axl_ns_doc_node_check (axlNode    * node, 
-			    const char * ns_prefix, 
-			    const char * ns)
+axl_bool axl_ns_doc_node_check (axlNode    * node, 
+				const char * ns_prefix, 
+				const char * ns)
 {
 	axlNode    * parent   = node;
 	axlNsTable * ns_table = NULL;
@@ -477,7 +477,7 @@ int  axl_ns_doc_node_check (axlNode    * node,
 	 * provided, do: */
 	while (parent != NULL) {
 		/* try to get the ns table having the prefix declaration */
-		ns_table = axl_node_annotate_get (parent, NS_TABLE, false);
+		ns_table = axl_node_annotate_get (parent, NS_TABLE, axl_false);
 		
 		/* check the namespace */
 		if (ns_table != NULL && axl_hash_exists (ns_table->table, (axlPointer) ns_prefix)) {
@@ -490,8 +490,8 @@ int  axl_ns_doc_node_check (axlNode    * node,
 
 	} /* end while */	
 
-	/* reached this point, return false */
-	return false;
+	/* reached this point, return axl_false */
+	return axl_false;
 }
 
 /** 
@@ -503,11 +503,11 @@ int  axl_ns_doc_node_check (axlNode    * node,
  *
  * @param ns The namespace that is provided to match.
  * 
- * @return \ref true if the node has as default namespace the value
- * received. Otherwise \ref false is returned.
+ * @return \ref axl_true if the node has as default namespace the value
+ * received. Otherwise \ref axl_false is returned.
  */
-int  axl_ns_doc_check_default (axlNode    * node, 
-			       const char * ns)
+axl_bool axl_ns_doc_check_default (axlNode    * node, 
+				   const char * ns)
 {
 	axlNode    * parent   = node;
 	axlNsTable * ns_table = NULL;
@@ -516,7 +516,7 @@ int  axl_ns_doc_check_default (axlNode    * node,
 	 * provided, do: */
 	while (parent != NULL) {
 		/* try to get the ns table having the prefix declaration */
-		ns_table = axl_node_annotate_get (parent, NS_TABLE, false);
+		ns_table = axl_node_annotate_get (parent, NS_TABLE, axl_false);
 		
 		/* check the namespace */
 		if (ns_table != NULL && ns_table->defaultNs != NULL) {
@@ -529,8 +529,8 @@ int  axl_ns_doc_check_default (axlNode    * node,
 
 	} /* end while */	
 
-	/* reached this point, return false */
-	return false;
+	/* reached this point, return axl_false */
+	return axl_false;
 }
 
 /**

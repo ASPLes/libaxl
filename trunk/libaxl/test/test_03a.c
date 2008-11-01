@@ -4,17 +4,17 @@
 /* the lookup function  */
 int lookups = 0;
 
-int  __find_item (axlPointer _element, axlPointer data)
+axl_bool __find_item (axlPointer _element, axlPointer data)
 {
 	char * value = _element;
 	char * name  = data;
 
         /* check the name  */
         if (axl_cmp (value, name))
-                return true;
+                return axl_true;
 
         /* it is not the element */
-        return false;
+        return axl_false;
 }
 
 void test_01_check_key (axlList * list, char * key)
@@ -35,9 +35,9 @@ void test_01_check_key (axlList * list, char * key)
 /** 
  * @brief Test current libaxl hash implementation.
  *
- * @return true if it works properly or false if not.
+ * @return axl_true if it works properly or false if not.
  */
-int  test_01 () 
+axl_bool test_01 () 
 {
 	axlList * list;
 	int       iterator;
@@ -985,7 +985,7 @@ int  test_01 ()
 	axl_list_free (list);
 
 	/* terminated test */
-	return true;
+	return axl_true;
 }
 
 /** 

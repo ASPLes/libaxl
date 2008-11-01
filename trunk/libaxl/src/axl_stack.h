@@ -58,12 +58,12 @@ axlPointer axl_stack_pop  (axlStack * stack);
 
 axlPointer axl_stack_peek (axlStack * stack);
 
-int        axl_stack_foreach (axlStack         * stack, 
+axl_bool   axl_stack_foreach (axlStack         * stack, 
 			      axlStackForeach2   func,
 			      axlPointer         user_data, 
 			      axlPointer         user_data2);
 
-int        axl_stack_foreach3 (axlStack         * stack, 
+axl_bool   axl_stack_foreach3 (axlStack         * stack, 
 			       axlStackForeach3   func,
 			       axlPointer         user_data,
 			       axlPointer         user_data2,
@@ -71,21 +71,21 @@ int        axl_stack_foreach3 (axlStack         * stack,
 
 int        axl_stack_size (axlStack * stack);
 
-int        axl_stack_is_empty (axlStack * stack);
+axl_bool   axl_stack_is_empty (axlStack * stack);
 
 void       axl_stack_free (axlStack * stack);
 
 axlBinaryStack * axl_binary_stack_new ();
 
-void             axl_binary_stack_push          (axlBinaryStack * bstack, int  status);
+void             axl_binary_stack_push          (axlBinaryStack * bstack, axl_bool status);
 
 void             axl_binary_stack_push_the_same (axlBinaryStack * bstack);
 
-int              axl_binary_stack_pop  (axlBinaryStack * bstack);
+axl_bool         axl_binary_stack_pop  (axlBinaryStack * bstack);
 
-int              axl_binary_stack_peek (axlBinaryStack * bstack);
+axl_bool         axl_binary_stack_peek (axlBinaryStack * bstack);
 
-int              axl_binary_stack_is_empty (axlBinaryStack * bstack);
+axl_bool         axl_binary_stack_is_empty (axlBinaryStack * bstack);
 
 int              axl_binary_stack_size     (axlBinaryStack * bstack);
 

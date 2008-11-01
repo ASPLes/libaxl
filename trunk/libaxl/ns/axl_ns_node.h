@@ -48,9 +48,9 @@ BEGIN_C_DECLS
  * @{
  */
 
-int       axl_ns_node_cmp          (axlNode * node, 
-				    const char * ns, 
-				    const char * name);
+axl_bool      axl_ns_node_cmp          (axlNode * node, 
+					const char * ns, 
+					const char * name);
 
 axlNode * axl_ns_node_find_called  (axlNode    * parent,
 				    const char * ns,
@@ -80,8 +80,8 @@ axlNode * axl_ns_node_get_previous_called (axlNode    * node,
  */
 #define AXL_IS_PREFIXED(node) (axl_ns_node_is_prefixed(node, NULL))
 
-int  axl_ns_node_is_prefixed  (axlNode * node, 
-			       int     * position);
+axl_bool axl_ns_node_is_prefixed  (axlNode * node, 
+				   int     * position);
 
 /**
  * @}
