@@ -338,7 +338,7 @@ axl_bool __queue_items (axlPointer data, axlPointer _stack)
 	/* queue the data */
 	axl_stack_push (stack, data);
 
-	/* return false to make the function to not stop */
+	/* return axl_false to make the function to not stop */
 	return axl_false;
 }
 
@@ -397,8 +397,8 @@ void __axl_dtd_queue_items (axlStack * stack, axlList * list)
  * @param dtd_element_parent The supposed DTD parent element.
  * @param dtd_element_child  The supposedd DTD child element.
  * 
- * @return true if the function can confirm that the parent-child
- * relation exists, axl_false if not or it could be proved.
+ * @return \ref axl_true if the function can confirm that the parent-child
+ * relation exists, \ref axl_false if not or it could be proved.
  */
 axl_bool     __axl_dtd_get_is_parent (axlDtdElement * dtd_element_parent,
 				      axlDtdElement * dtd_element_child)

@@ -76,7 +76,7 @@ axlNode * axl_ns_node_get_previous_called (axlNode    * node,
  * 
  * @param node The node to check.
  * 
- * @return \ref true if prefixed, otherwise \ref false is returned.
+ * @return \ref axl_true if prefixed, otherwise \ref axl_false is returned.
  */
 #define AXL_IS_PREFIXED(node) (axl_ns_node_is_prefixed(node, NULL))
 

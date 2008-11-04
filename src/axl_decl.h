@@ -617,14 +617,12 @@ typedef struct _axlError  axlError;
 typedef struct _axlStream axlStream;
 
 /** 
- * @brief (DEPRECATED use \ref axl_true) Type definition to represent a
- * boolean true value, that is equal to 1.
+ * @brief (DEPRECATED use \ref axl_true) Type definition to represent a boolean true value, that is equal to 1.
  */
 #define AXL_TRUE  (1)
 
 /** 
- * @brief (DEPRECATED use \ref axl_false) Type definition to represent a
- * boolean false value, that is equal to 0.
+ * @brief (DEPRECATED use \ref axl_false) Type definition to represent a* boolean false value, that is equal to 0.
  */
 #define AXL_FALSE (0)
 
@@ -653,13 +651,11 @@ typedef int aboolean;
 typedef int axl_bool;
 
 /** 
- * @brief Common definition to have false value (which is defined to 0
- * integer value).
+ * @brief Common definition to have false (\ref axl_false) value (which is defined to 0 integer value).
  */
 #define axl_false ((int)0)
 /** 
- * @brief Common definition to have true value (which is defined to 1
- * integer value).
+ * @brief Common definition to have true (\ref axl_true) value (which is defined to 1 integer value).
  */
 #define axl_true  ((int)1)
 
