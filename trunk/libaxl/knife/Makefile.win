@@ -7,7 +7,7 @@ PROGRAM = axl-knife.exe
 
 LIBS     = -Wall -g -L../src -laxl -L"../ns" -laxl-ns -L"../babel" -laxl-babel
 
-INCS =  -I"." -I"../src" -I"../ns" -DAXL_NS_SUPPORT -I"../babel"  -D__COMPILING_AXL_KNIFE__
+INCS =  -I"." -I"../src" -I"../ns" -DAXL_NS_SUPPORT -I"../babel" -D__axl_disable_broken_bool_def__    -D__COMPILING_AXL_KNIFE__
 
 CFLAGS   = $(INCS) -DVERSION=\""$(AXL_VERSION)"\" -Wall -g
 

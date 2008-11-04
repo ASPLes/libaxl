@@ -619,12 +619,12 @@ typedef struct _axlStream axlStream;
 /** 
  * @brief (DEPRECATED use \ref axl_true) Type definition to represent a boolean true value, that is equal to 1.
  */
-#define AXL_TRUE  (1)
+#define AXL_TRUE  (axl_true)
 
 /** 
  * @brief (DEPRECATED use \ref axl_false) Type definition to represent a* boolean false value, that is equal to 0.
  */
-#define AXL_FALSE (0)
+#define AXL_FALSE (axl_false)
 
 /** 
  * @brief Alias declaration to bind the <i>int</i> to the <b>boolean</b>
@@ -658,6 +658,45 @@ typedef int axl_bool;
  * @brief Common definition to have true (\ref axl_true) value (which is defined to 1 integer value).
  */
 #define axl_true  ((int)1)
+
+/**
+ * @brief Boolean, deprecated, compatibility mode provided for those
+ * applications and libraries built on top of Axl Library or any
+ * library on top of it (like Vortex Library) to support people from C
+ * user space using bool type definition and its corresponding values
+ * false and true as they was available before 0.5.5 release.
+ *
+ * Definitions provided by this compatibility mode are:
+ *
+ * - \ref bool
+ * - \ref true
+ * - \ref false
+ */
+#if !defined(__cplusplus) && !defined(__bool_true_false_are_defined) && !defined(__axl_disable_broken_bool_def__)
+/**
+ * @brief <b>DEPRECATED:</b> boolean definition provided to support
+ * applications and libraries using this type as defined by Axl
+ * Library before 0.5.5 release. Do use this for newly written code.
+ */
+typedef int bool;
+
+/**
+ * @brief <b>DEPRECATED:</b> boolean false definition provided to
+ * support applications and libraries using this type as defined by
+ * Axl Library before 0.5.5 release. Do use this for newly written
+ * code.
+ */ 
+#define false axl_false
+
+/**
+ * @brief <b>DEPRECATED:</b> boolean true definition provided to
+ * support applications and libraries using this type as defined by
+ * Axl Library before 0.5.5 release. Do use this for newly written
+ * code.
+ */ 
+#define true axl_true
+#endif
+
 
 /** 
  * @brief Pointer to any structure definition. It should be required

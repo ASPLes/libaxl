@@ -9,7 +9,7 @@ LIBS     = -Wall -g -L../src -laxl -L"../ns" -laxl-ns -L"../babel" -laxl-babel
 
 INCS =  -I"." -I"../src" -I"../ns" -DAXL_NS_SUPPORT -I"../babel" 
 
-CFLAGS   = $(INCS) -DVERSION=\""$(AXL_VERSION)"\" -Wall -g
+CFLAGS   = $(INCS) -DVERSION=\""$(AXL_VERSION)"\" -Wall -g -D__axl_disable_broken_bool_def__  
 
 .PHONY: all all-before all-after clean clean-custom
 
