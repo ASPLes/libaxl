@@ -43,7 +43,7 @@ BABEL = -DAXL_BABEL_SUPPORT
 BABEL_LIB = ../babel/libaxl-babel.la
 endif
 
-INCLUDES = -I../src/ -I../ns -I../babel -Wall $(LOG) $(NS) $(BABEL) -DVERSION=\""$(AXL_VERSION)"\" 
+INCLUDES = -I../src/ -I../ns -I../babel -Wall $(LOG) $(NS) $(BABEL) -DVERSION=\""$(AXL_VERSION)"\" -D__axl_disable_broken_bool_def__ 
 
 # replace with bin_PROGRAMS to check performance
 bin_PROGRAMS = test_01 test_01a test_02a test_03a

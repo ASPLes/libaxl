@@ -12,7 +12,7 @@ NS = -DAXL_NS_SUPPORT
 NS_LIB = ../ns/libaxl-ns.la
 endif
 
-INCLUDES = -I../src/ -I../ns -Wall $(LOG) $(NS) -DVERSION=\"$(AXL_VERSION)\" -D__COMPILING_AXL_KNIFE__
+INCLUDES = -I../src/ -I../ns -Wall $(LOG) $(NS) -DVERSION=\"$(AXL_VERSION)\" -D__COMPILING_AXL_KNIFE__ 	-D__axl_disable_broken_bool_def__ 
 
 # replace with bin_PROGRAMS to check performance
 bin_PROGRAMS = axl-knife
