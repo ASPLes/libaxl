@@ -246,8 +246,8 @@ struct _axlStream {
  *
  * @param appended_size The size for the appended content to be added.
  * 
- * @return axl_true if the requested padding and buffer size were
- * filled or false if end of file was reached. In that case the
+ * @return \ref axl_true if the requested padding and buffer size were
+ * filled or \ref axl_false if end of file was reached. In that case the
  * stream size is not updated.
  */
 axl_bool axl_stream_prebuffer (axlStream * stream)

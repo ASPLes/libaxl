@@ -182,7 +182,7 @@ void __axl_node_free_attr_list (axlNodeAttr * attr)
  * @param attr2 The second attribute pointing to the rest of the
  * attribute list.
  * 
- * @return \ref true if both lists are equal, otherwise \ref false is
+ * @return \ref axl_true if both lists are equal, otherwise \ref axl_false is
  * returned.
  */
 axl_bool __axl_node_attr_list_is_equal (axlNodeAttr * attr, axlNodeAttr * attr2)
@@ -847,7 +847,7 @@ axlPointer __axl_node_copy_value (axlPointer key, axlDestroyFunc key_destroy,
  * @brief Allows to perform a copy operation for the provided node.
  *
  * The function can perform a simple copy, without attributes and
- * childs, if both attributes are false. If the copy attributes and
+ * childs, if both attributes are axl_false. If the copy attributes and
  * copy childs are activated, childs copied will have attributes
  * copied.
  * 
@@ -1223,8 +1223,8 @@ void      axl_node_set_attribute_from_factory  (axlFactory * factory,
  *
  * @param attribute The attribute to check.
  * 
- * @return A \ref true if the attribute value is set, otherwise
- * \ref false is returned.
+ * @return A \ref axl_true if the attribute value is set, otherwise
+ * \ref axl_false is returned.
  */
 axl_bool          axl_node_has_attribute      (axlNode * node, const char * attribute)
 {
@@ -1365,8 +1365,8 @@ int       axl_node_num_attributes           (axlNode    * node)
  * 
  * @param node The node to be checked for attributes.
  * 
- * @return \ref true if the node has attributes, otherwise \ref false
- * is returned. The function also returns \ref false if a null
+ * @return \ref axl_true if the node has attributes, otherwise \ref axl_false
+ * is returned. The function also returns \ref axl_false if a null
  * reference for the node is provided.
  */
 axl_bool      axl_node_has_attributes (axlNode * node)
@@ -1540,7 +1540,7 @@ const char    * axl_node_get_attribute_value_trimmed (axlNode    * node,
  * @param attribute The attribute to be checked.
  * @param value The value to checked if the attribute is found.
  * 
- * @return \ref true if the node has the attribute with the provided
+ * @return \ref axl_true if the node has the attribute with the provided
  * value.
  */
 axl_bool axl_node_has_attribute_value       (axlNode    * node, 
@@ -2116,19 +2116,19 @@ double     axl_node_annotate_get_double          (axlNode    * node,
  *
  * A \ref axlNode is empty when it is known that the node doesn't have
  * any content inside it as a child element. If the node has content,
- * and the value provided to this function is \ref true, the function
+ * and the value provided to this function is \ref axl_true, the function
  * will deallocate the content inside.
  *
  * You can use this function to clear all the node content (\ref
  * ITEM_CONTENT and \ref ITEM_CDATA) found inside the node, as follows:
  * \code
  * // clear all content inside 
- * axl_node_set_is_empty (node, true);
+ * axl_node_set_is_empty (node, axl_true);
  * \endcode
  *
  * @param node The node to configure as empty.
  *
- * @param empty The value for emptyness to be used. false will
+ * @param empty The value for emptyness to be used. axl_false will
  * mean that the node is not empty.
  */
 void      axl_node_set_is_empty (axlNode * node, axl_bool empty)
@@ -2143,7 +2143,7 @@ void      axl_node_set_is_empty (axlNode * node, axl_bool empty)
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "received set to empty node=<%s> is_empty=\"%s\"",
 		   node->name, empty ? "true" : "false");
 
-	/* do no perform any operation if false is received */
+	/* do no perform any operation if axl_false is received */
 	if (! empty)
 		return;
 
@@ -2556,7 +2556,7 @@ axlNode * axl_node_get_last_child     (axlNode * node)
  * \endcode
  * 
  * If a node have content, this function will return \ref
- * false. The content must not be confused with the node childs. A
+ * axl_false. The content must not be confused with the node childs. A
  * xml node (\ref axlNode) could be empty but have childs at the same
  * time (\ref axl_node_have_childs).
  *
@@ -2575,7 +2575,7 @@ axlNode * axl_node_get_last_child     (axlNode * node)
  * 
  * @param node The node to check for its empty status. 
  * 
- * @return \ref true if the node is empty or \ref false if
+ * @return \ref axl_true if the node is empty or \ref axl_false if
  * not.
  */
 axl_bool          axl_node_is_empty        (axlNode * node)
@@ -3333,7 +3333,7 @@ void      axl_node_replace             (axlNode   * node,
  * 
  * @param node The node to remove.
  *
- * @param dealloc \ref true to not only unlink relations but also
+ * @param dealloc \ref axl_true to not only unlink relations but also
  * remove the node.
  */
 void      axl_node_remove             (axlNode  * node,
@@ -3433,8 +3433,8 @@ void axl_node_deattach (axlNode * node)
  * 
  * @param node The node to configure.
  *
- * @param childs The child configuration, true to notify that the
- * node have childs, otherwise, false is returned.
+ * @param childs The child configuration, axl_true to notify that the
+ * node have childs, otherwise, axl_false is returned.
  */
 void      axl_node_set_have_childs (axlNode * node, axl_bool childs)
 {
@@ -3453,8 +3453,8 @@ void      axl_node_set_have_childs (axlNode * node, axl_bool childs)
  * 
  * @param node The \ref axlNode reference.
  * 
- * @return An \ref true if the \ref axlNode have childs or \ref
- * false if not.
+ * @return An \ref axl_true if the \ref axlNode have childs or \ref
+ * axl_false if not.
  */
 axl_bool          axl_node_have_childs        (axlNode * node)
 {
@@ -3473,7 +3473,7 @@ axl_bool          axl_node_have_childs        (axlNode * node)
 
 	} /* end while */
 
-	/* return false because no item was found with ITEM_NODE
+	/* return axl_false because no item was found with ITEM_NODE
 	 * type */
 	return axl_false;
 }
@@ -3505,7 +3505,7 @@ axl_bool          axl_node_have_childs_aux        (axlNode * node)
 
 	} /* end while */
 
-	/* return false because no item was found with ITEM_NODE
+	/* return axl_false because no item was found with ITEM_NODE
 	 * type */
 	return axl_false;
 }
@@ -3790,7 +3790,7 @@ axl_bool __axl_node_are_equal_attr (axlPointer key,
  * @param node The node to check.
  * @param node2 The second node to check.
  * 
- * @return true if both nodes are equivalent or false if not.
+ * @return axl_true if both nodes are equivalent or axl_false if not.
  */
 axl_bool          axl_node_are_equal          (axlNode * node, axlNode * node2)
 {
@@ -3919,8 +3919,8 @@ void      axl_node_add_pi_target            (axlNode * node,
  *
  * @param pi_target The process instruction name.
  * 
- * @return true is the processing instruction is defined,
- * otherwise false is returned.
+ * @return axl_true is the processing instruction is defined,
+ * otherwise axl_false is returned.
  */
 axl_bool          axl_node_has_pi_target            (axlNode * node, 
 						     char    * pi_target)
@@ -4096,8 +4096,8 @@ axl_bool __axl_node_dump_common (axlNode * node, char ** content, int * size, ax
  * @param size The reference where the document content size will be
  * returned. 
  *
- * @return The function returns \ref true if the dump operation was
- * performed. Otherwise \ref false is returned.
+ * @return The function returns \ref axl_true if the dump operation was
+ * performed. Otherwise \ref axl_false is returned.
  */
 axl_bool      axl_node_dump                    (axlNode  * node, 
 						char    ** content, 
@@ -4121,8 +4121,8 @@ axl_bool      axl_node_dump                    (axlNode  * node,
  * 
  * @param tabular How many spaces to be placed at each level.
  * 
- * @return true if the dump operation was properly done, otherwise
- * false is returned.
+ * @return axl_true if the dump operation was properly done, otherwise
+ * axl_false is returned.
  */
 axl_bool      axl_node_dump_pretty             (axlNode  * node,
 						char    ** content,
@@ -4142,7 +4142,7 @@ axl_bool      axl_node_dump_pretty             (axlNode  * node,
  *
  * @param file_path File path where place the result.
  * 
- * @return \ref true if the dump operation was done, otherwise \ref false is
+ * @return \ref axl_true if the dump operation was done, otherwise \ref axl_false is
  * returned.
  */
 axl_bool      axl_node_dump_to_file            (axlNode  * node,
@@ -4199,7 +4199,7 @@ axl_bool      axl_node_dump_to_file            (axlNode  * node,
  *
  * @param tabular How many spaces to be placed at each level.
  * 
- * @return \ref true if the dump operation was done, otherwise \ref false is
+ * @return \ref axl_true if the dump operation was done, otherwise \ref axl_false is
  * returned.
  */
 axl_bool      axl_node_dump_pretty_to_file     (axlNode  * node,
@@ -4955,7 +4955,7 @@ int       axl_node_dump_at                  (axlNode * node,
  * references. This parameter is optional, so passing a NULL value is
  * allowed.
  * 
- * @return true if the string contains non valid sequences that
+ * @return axl_true if the string contains non valid sequences that
  * must be escaped using entity references.
  */
 axl_bool      axl_node_has_invalid_chars        (const char * content,
@@ -5351,7 +5351,7 @@ void                 axl_node_attr_cursor_next      (axlAttrCursor * cursor)
  * 
  * @param cursor The cursor to be configured.
  *
- * @return \ref true if it has next element, otherwise \ref false.
+ * @return \ref axl_true if it has next element, otherwise \ref axl_false.
  */
 axl_bool                 axl_node_attr_cursor_has_next  (axlAttrCursor * cursor)
 {
@@ -5377,7 +5377,7 @@ axl_bool                 axl_node_attr_cursor_has_next  (axlAttrCursor * cursor)
  * 
  * @param cursor The cursor that is being queried.
  *
- * @return \ref true if it has item element, otherwise \ref false.
+ * @return \ref axl_true if it has item element, otherwise \ref axl_false.
  */
 axl_bool                 axl_node_attr_cursor_has_item  (axlAttrCursor * cursor)
 {
@@ -6363,9 +6363,9 @@ void          axl_item_transfer_childs_after (axlNode * old_parent,
  * element (\ref ITEM_CONTENT, \ref ITEM_CDATA, \ref ITEM_COMMENT and
  * \ref ITEM_REF).
  *
- * @return \ref true if the both items represents the same
- * information, otherwise \ref false is returned. If the function
- * receives a null value it will return false.
+ * @return \ref axl_true if the both items represents the same
+ * information, otherwise \ref axl_false is returned. If the function
+ * receives a null value it will return axl_false.
  */
 axl_bool          axl_item_are_equal      (axlItem   * item,
 					   axlItem   * item2,
@@ -6442,7 +6442,7 @@ axl_bool          axl_item_are_equal      (axlItem   * item,
  * 
  * @param item The item to dealloc.
  *
- * @param dealloc true to also dealloc the value inside. 
+ * @param dealloc \ref axl_true to also dealloc the value inside. 
  */
 void          axl_item_free           (axlItem  * item,
 				       axl_bool   dealloc)

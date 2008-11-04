@@ -94,8 +94,8 @@ void      axl_node_set_attribute_from_factory  (axlFactory * factory,
  * @param node The node being checked to have an attribute value.
  * @param attr The attribute that is being check to be present in the node provided.
  * 
- * @return \ref true if the node has the provided attribute, otherwise
- * \ref false is returned.
+ * @return \ref axl_true if the node has the provided attribute, otherwise
+ * \ref axl_false is returned.
  */
 #define HAS_ATTR(node,attr) axl_node_has_attribute(node,attr)
 
@@ -279,7 +279,7 @@ double     axl_node_annotate_get_double          (axlNode      * node,
  *
  * @param name The name to compare.
  * 
- * @return \ref true if names are equal or \ref false if not.
+ * @return \ref axl_true if names are equal or \ref axl_false if not.
  */
 #define NODE_CMP_NAME(node,name) (axl_cmp ((node != NULL) ? axl_node_get_name(node) : "><", (name != NULL) ? name : "<>"))
 

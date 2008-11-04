@@ -22,7 +22,7 @@ void test_01_check_key (GHashTable * hash, char * key)
 /** 
  * @brief Test current libaxl hash implementation.
  *
- * @return true if it works properly or false if not.
+ * @return axl_true if it works properly or axl_false if not.
  */
 gboolean test_01 () 
 {

@@ -457,7 +457,7 @@
  *    doc = axl_doc_parse_from_file ("large.xml", error);
  *    if (doc == NULL) {
  *        axl_error_free (error);
- *        return false;
+ *        return axl_false;
  *    }
  *
  *    // DO SOME WORK WITH THE DOCUMENT HERE
@@ -666,16 +666,16 @@
  *	// parse gmovil file (an af-arch xml chunk) 
  *	doc = axl_doc_parse_from_file ("channel.xml", error); 
  *	if (doc == NULL) 
- *		return false;
+ *		return axl_false;
  *
  *	// parse af-arch DTD 
  *	dtd = axl_dtd_parse_from_file ("channel.dtd", error);
  *	if (dtd == NULL)
- *		return false;
+ *		return axl_false;
  *
  *	// perform DTD validation 
  *	if (! axl_dtd_validate (doc, dtd, error)) {
- *		return false;
+ *		return axl_false;
  *	}
  *
  *	// free doc reference 
@@ -787,7 +787,7 @@
  *      printf ("Failed to start axl babel: %s...\n",
  *              axl_error_get (error));
  *      axl_error_free (error);
- *      return false;
+ *      return axl_false;
  * } 
  * \endcode
  * 
@@ -1051,8 +1051,8 @@
  *
  * However the API is provided for future usage.
  * 
- * @return The function returns true if it was properly
- * initialized or false if something fails.  if fails.
+ * @return The function returns \ref axl_true if it was properly
+ * initialized or \ref axl_false if something fails.  if fails.
  */
 axl_bool axl_init ()
 {
