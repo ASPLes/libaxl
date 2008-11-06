@@ -5,7 +5,7 @@ OBJ      = axl-knife.o exarg.o
 
 PROGRAM = axl-knife.exe 
 
-LIBS     = -Wall -g -L../src -laxl -L"../ns" -laxl-ns -L"../babel" -laxl-babel
+LIBS     = -Wall $(enable_gcc_debug) -L../src -laxl -L"../ns" -laxl-ns -L"../babel" -laxl-babel
 
 INCS =  -I"." -I"../src" -I"../ns" -DAXL_NS_SUPPORT -I"../babel" -D__axl_disable_broken_bool_def__    -D__COMPILING_AXL_KNIFE__
 
@@ -27,6 +27,7 @@ clean:
 
 $(PROGRAM): $(OBJ)
 	$(CC) -mconsole $(OBJ) -o $(PROGRAM) $(LIBS)
+	strip --strip-unneeded $(PROGRAM)
 
 links:
 	cp ../src/libaxl.dll .
