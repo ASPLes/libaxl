@@ -16,11 +16,11 @@ DLL        = $(axl_dll).dll
 IMPORT_DLL = $(DLL).a
 STATIC_LIB = $(axl_dll).a
 
-LIBS = -Wall -g --add-stdcall-alias $(search_lib_path) 
+LIBS = -Wall $(enable_gcc_debug) --add-stdcall-alias $(search_lib_path) 
 
 INCS = -I"."
 
-CFLAGS = $(INCS) -DVERSION=\""$(AXL_VERSION)"\" -Wall -g -D__axl_disable_broken_bool_def__  -DSHOW_DEBUG_LOG 
+CFLAGS = $(INCS) -DVERSION=\""$(AXL_VERSION)"\" -Wall -g -D__axl_disable_broken_bool_def__  $(enable_axl_log)
 
 RM = rm -f
 
@@ -44,6 +44,7 @@ $(DLL): $(OBJ)
 	$(CC) -m$(MODE) -shared -Wl,--out-implib,$(IMPORT_DLL) --export-all-symbols -lm \
 		  $(OBJ) -o $(DLL)        $(LIBS)
 	lib.exe /def:libaxl.def
+	strip --strip-unneeded $(DLL)
 
 %.o: %.c
 	$(CC) -c $< -o $@ $(CFLAGS)
