@@ -27,7 +27,7 @@ xml_files = test_41.iso-8859-8.xml test_41.iso-8859-7.xml  \
 xdl_files = test17.xdl test03.xdl test04.xdl test01.xdl test02.xdl 
 misc_files = Makefile.win test_01.vcproj
 
-EXTRA_DIST      = $(h_files) $(c_files) $(dtd_files) $(xml_files) $(misc_files)
+EXTRA_DIST      = $(h_files) $(c_files) $(dtd_files) $(xml_files) $(misc_files) $(xdl_files)
 
 if ENABLE_AXL_LOG
 LOG = -DSHOW_DEBUG_LOG

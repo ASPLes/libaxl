@@ -1,0 +1,96 @@
+          ########################################
+          #             Axl Library              #
+          #  The place where things makes sense  # 
+          #                0.5.5                 #
+          ########################################
+
+Advanced Software Production Line is proud to announce a new Axl
+Library release.
+
+Axl Library is an small and efficient XML toolkit, written in ANSI C,
+and released under the LGPL, that will allow you to produce efficient
+and clear code that interfaces with XML data.
+
+The library was produced to support XML requirements needed by
+software developed by Advanced Software Production Line, S.L.
+
+At this moment the library is being used by Vortex Library, Af-Arch,
+Turbulence, Shaper and Fovap.
+
+Resources
+~~~~~~~~~
+
+   Axl Homepage
+   [ http://www.aspl.es/xml ]
+
+   Advanced Software Production Line, S.L.
+   [ http://www.aspl.es ]
+
+This release in short
+~~~~~~~~~~~~~~~~~~~~~
+
+ Applying axl-bool-removal-02 [1] change notification to solve
+ problems found on axl-bool-removal-01 [2] change notification.
+
+ [1] axl-bool-removal-02
+    http://lists.aspl.es/pipermail/axl/2008-November/000095.html
+
+ [2] axl-bool-removal-01
+    http://lists.aspl.es/pipermail/axl/2008-October/000093.html
+
+Thanks to..
+~~~~~~~~~~~
+  Martin Huter (Collaborated on testing axl-bool-removal-02 change
+  notification).
+
+Change notifications
+~~~~~~~~~~~~~~~~~~~~
+ [1] axl-bool-removal-02
+    http://lists.aspl.es/pipermail/axl/2008-November/000095.html
+
+Changes from previous release 0.5.5
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* [fix] General modifications to Makefile.win files to use strip
+  command to reduce resulting library size on Microsoft Windows
+  platform.
+
+* [fix] Updated documentation and updated axl_decl.h header to include
+  old boolean definitions (bool type and false/true values) but only
+  available if the application importing the API did no define
+  __axl_disable_broken_bool_def__ and it is not a C++ user.
+
+* [fix] More library boolean cleanups. Removing all references to
+  false and true, replacing them with axl_false and axl_true.
+
+* [fix] Applying change notification axl-bool-removal-02. Added new
+  type (axl_bool) and its static values (axl_false and axl_true).
+
+About Advanced Software Production Line, S.L.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Advanced Software Production Line is leading the Af-Arch project: a
+  complete framework to develop distributed application to manage
+  enterprise process.
+
+  Af-Arch project uses Axl library to support its XML requirements
+  while exchanging data between nodes.
+
+  Advanced Software Production Line also provides GNU/Linux support
+  and consulting services to enable organization to introduce
+  GNU/Linux inside its process, making other platforms to interact
+  with GNU/Linux.
+
+  Contact us, using English or Spanish, to get commercial support
+  and/or XML based development services.
+
+  You can reach us:
+
+       http://www.aspl.es - info@aspl.es
+
+  We hope Axl Library help you. Enjoy Axl Library!
+
+--
+Francis Brosnan Blázquez           - francis@aspl.es
+Advanced Software Production Line  - http://www.aspl.es
+11th nov 2008, Madrid (Spain)
