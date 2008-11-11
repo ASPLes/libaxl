@@ -7,9 +7,9 @@
 Advanced Software Production Line is proud to announce a new Axl
 Library release.
 
-Axl Library is an small and efficient XML toolkit, written in ANSI C,
-and released under the LGPL, that will allow you to produce efficient
-and clear code that interfaces with XML data.
+Axl Library is a small and efficient XML toolkit, written in ANSI C
+and released under the LGPL. It allows to produce efficient and clear
+code that works with XML data.
 
 The library was produced to support XML requirements needed by
 software developed by Advanced Software Production Line, S.L.
@@ -29,7 +29,7 @@ Resources
 This release in short
 ~~~~~~~~~~~~~~~~~~~~~
 
- Applying axl-bool-removal-02 [1] change notification to solve
+ Applied axl-bool-removal-02 [1] change notification to solve
  problems found on axl-bool-removal-01 [2] change notification.
 
  [1] axl-bool-removal-02
@@ -69,17 +69,10 @@ Changes from previous release 0.5.5
 About Advanced Software Production Line, S.L.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  Advanced Software Production Line is leading the Af-Arch project: a
-  complete framework to develop distributed application to manage
-  enterprise process.
-
-  Af-Arch project uses Axl library to support its XML requirements
-  while exchanging data between nodes.
-
-  Advanced Software Production Line also provides GNU/Linux support
-  and consulting services to enable organization to introduce
-  GNU/Linux inside its process, making other platforms to interact
-  with GNU/Linux.
+  Advanced Software Production Line provides GNU/Linux support and
+  consulting services to enable organization to introduce GNU/Linux
+  into its process, making other platforms to properly interact with
+  GNU/Linux.
 
   Contact us, using English or Spanish, to get commercial support
   and/or XML based development services.
