@@ -3,6 +3,7 @@
        #####################################
 
     Change Id: axl-bool-removal-02
+     Replaces: axl-bool-removal-01 [6]
  Project name: Axl library
   Included in: 0.5.5
        Status: NOTIFY
@@ -11,43 +12,63 @@
 Motivation
 ~~~~~~~~~~
 
-Previous change notification (axl-bool-removal-01) did not fully solve
-the problem that motivated the change. This is because, still taking
-the source code and compiling it with a C++ tool, leaves to having
-unexpected results with internal false and true values used.
+Previous change notification (axl-bool-removal-01 [6]) did not fully
+solve the problem that motivated the change. This is because compiling
+Axl Library with a C++/C99 tool, may lead to having unexpected results
+with internal false and true values used by the library (and allowed
+by previous change notification).
+
+The modification presented in this change notification will cover
+these issues and will provide a way to applications already deployed
+with bool/false/true imported by Axl Library to still work.
 
 Change Description
 ~~~~~~~~~~~~~~~~~~
 
-1) The library will have a boolean representation defined as
-   axl_bool. This type is fully compatible with bool type previously
-   defined until 0.5.3.
+The following is not only the change description but also the way
+boolean types are used in Axl Library.
 
-2) "false" and "true" definitions are replaced by axl_false and
-   axl_true definitions. 
+1) For the internal Axl Library use, its components, tools and
+   regression test, the boolean type will be modeled as:
+  
+   - axl_bool (which is a type definition to int)
 
-3) All functions receiving or returning bool values now receive or
+   - axl_false (which represents the boolean false state). This value
+     replaces deprecated "false" declaration.
+
+   - axl_true  (which represents the boolean true state). This value
+     replaces deprecated "true" declaration.
+
+2) It is recommend that applications and libraries using Axl Library
+   API to use these definitions and to avoid using bool/false/true.
+
+3) For C users that do not define __axl_disable_broken_bool_def__, the
+   old boolean definition is still available, that is: bool/false/true
+   as they were defined in previous releases.
+
+4) All functions receiving or returning bool values now receive or
    return axl_bool
 
 Solution to incompatibility
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-C users: In the case false and true definitions imported from Axl
-         Library are used, the must be replaced with axl_false and
-         axl_true. It is also possible to move the responsibility of
-         this definition to the application using Axl Library by
-         defining the following:
+C users:   using Axl Library with no problem until now will have no
+~~~~~~~~   effect. Its code will still compile and run properly
+           without modification. The API is also binary compatible.
 
-         #define false ((int)0)
-         #define true  ((int)1)
+           For these users it is also provided a compiler directive
+           which disables actual boolean definition, which is
+           considered problematic. gcc users may use:
 
-         However this is not recommended since this is in fact a
-         definition that causes interactions not only with C++
-         compiler but also with C compilers that may only support C99
-         standard.
+           -D__axl_disable_broken_bool_def
+
+           In many cases this is not necessary. However, it is
+           recommended it you are building a library on top of Axl or
+           a product that may be used from C++ users or different C
+           compilers.
 
 c++ users: they won't need to use wrappers around functions using bool
-           type from Axl Library for newly written code. For wrappers
+~~~~~~~~~~ type from Axl Library for newly written code. For wrappers
            already written, they will still work since the Axl Library
            API is expecting int as in previous releases.
 
@@ -71,4 +92,6 @@ References
 
 [5] An article about integer types
     http://home.att.net/~jackklein/c/inttypes.html
+
+[6] http://lists.aspl.es/pipermail/axl/2008-October/000093.html
 
