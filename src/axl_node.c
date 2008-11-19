@@ -357,7 +357,7 @@ char * __axl_node_content_copy_and_escape (const char * content,
 	int    iterator  = 0;
 	int    iterator2 = 0;
 	char * result;
-	axl_return_val_if_fail (content, axl_false);
+	axl_return_val_if_fail (content, NULL);
 
 	/* allocate the memory to be returned */
 	result = axl_new (char, content_size + additional_size + 1);
@@ -435,7 +435,7 @@ char * __axl_node_content_translate_defaults (char * content,
 	int    iterator  = 0;
 	int    iterator2 = 0;
 	
-	axl_return_val_if_fail (content, axl_false);
+	axl_return_val_if_fail (content, NULL);
 
 	/* iterate over all content defined */
 	while (iterator < (*content_size)) {
@@ -3971,8 +3971,8 @@ char    * axl_node_get_pi_target_content    (axlNode * node,
 	axlPI   * pi;
 	axlItem * item;
 	
-	axl_return_val_if_fail (node,      axl_false);
-	axl_return_val_if_fail (pi_target, axl_false);
+	axl_return_val_if_fail (node,      NULL);
+	axl_return_val_if_fail (pi_target, NULL);
 
 	/* assume the pi target doesn't exist if it is not
 	 * initialized */
@@ -4304,7 +4304,7 @@ axlList * axl_node_get_pi_target_list       (axlNode * node)
 	axlList * result = NULL;
 	axlItem * item;
 	
-	axl_return_val_if_fail (node, axl_false);
+	axl_return_val_if_fail (node, NULL);
 
 	/* assume the pi target doesn't exist if it is not
 	 * initialized */

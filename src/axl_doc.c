@@ -1140,7 +1140,7 @@ axlDoc * __axl_doc_parse_common (const char * entity, int entity_size,
 			/* consume a possible comment and process instructions */
 			if (axl_stream_peek (stream, "<?", 2) > 0 || axl_stream_peek (stream, "<!--", 4) > 0) {
 				if (! axl_doc_consume_comments (doc, stream, error))
-					return axl_false;
+					return NULL;
 				
 				/* continue on the next index */
 				continue;
