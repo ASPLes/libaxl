@@ -2595,6 +2595,8 @@ char      * axl_stream_strdup_printf   (const char * chunk, ...)
  */
 char  * axl_stream_strdup_printfv    (const char * chunk, va_list args)
 {
+	/** IMPLEMENTATION NOTE: place update exarg_strdup_printfv
+	 * code in the case this code is updated **/
 
 #ifndef AXL_HAVE_VASPRINTF
 	int       size;
