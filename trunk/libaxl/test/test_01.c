@@ -5540,6 +5540,25 @@ axl_bool test_01_01 ()
 
 	axl_list_free (list);
 
+	list = axl_list_new (axl_list_always_return_1, NULL);
+	axl_list_append (list, INT_TO_PTR (0));
+
+	if (axl_list_length (list) != 1) {
+		printf ("Expected to find 1 items stored in the list.., but found: %d..\n",
+			axl_list_length (list));
+		return axl_false;
+	} /* end if */
+
+	axl_list_prepend (list, INT_TO_PTR (0));
+
+	if (axl_list_length (list) != 2) {
+		printf ("Expected to find 2 items stored in the list.., but found: %d..\n",
+			axl_list_length (list));
+		return axl_false;
+	} /* end if */
+	
+	axl_list_free (list);
+
 	return axl_true;
 }
 
