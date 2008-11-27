@@ -724,7 +724,6 @@ axlListNode * axl_list_internal_linear_lookup (axlList    * list,
 	axlListNode * node;
 
 	axl_return_val_if_fail (list, NULL);
-	axl_return_val_if_fail (pointer, NULL);
 
 	/* complex case */
 	node  = list->first_node;
@@ -759,7 +758,6 @@ axlListNode * axl_list_internal_linear_lookup_ptr (axlList    * list,
 	axlListNode * node;
 
 	axl_return_val_if_fail (list, NULL);
-	axl_return_val_if_fail (pointer, NULL);
 
 	/* complex case */
 	node  = list->first_node;
@@ -935,7 +933,6 @@ void     axl_list_common_remove (axlList * list, axlPointer pointer, axl_bool al
 	axlListNode * node;
 
 	axl_return_if_fail (list);
-	axl_return_if_fail (pointer);
 
 	/* complex case */
 	if (byPtr)
