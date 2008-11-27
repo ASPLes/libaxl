@@ -5454,6 +5454,92 @@ axl_bool test_01_01 ()
 
 	axl_list_free (list);
 
+	/* add and remove item 0 */
+	list = axl_list_new (axl_list_equal_int, NULL);
+	axl_list_append (list, INT_TO_PTR (0));
+	axl_list_append (list, INT_TO_PTR (0));
+	axl_list_append (list, INT_TO_PTR (0));
+	axl_list_append (list, INT_TO_PTR (0));
+	
+	if (axl_list_length (list) != 4) {
+		printf ("Expected to find 4 items stored in the list.., but found: %d..\n",
+			axl_list_length (list));
+		return axl_false;
+	} /* end if */
+
+	axl_list_remove (list, INT_TO_PTR (0));
+
+	if (axl_list_length (list) != 3) {
+		printf ("Expected to find 3 items stored in the list.., but found: %d..\n",
+			axl_list_length (list));
+		return axl_false;
+	} /* end if */
+
+	axl_list_remove_ptr (list, INT_TO_PTR (0));
+
+	if (axl_list_length (list) != 2) {
+		printf ("Expected to find 2 items stored in the list.., but found: %d..\n",
+			axl_list_length (list));
+		return axl_false;
+	} /* end if */
+
+	axl_list_remove_first (list);
+
+	if (axl_list_length (list) != 1) {
+		printf ("Expected to find 1 items stored in the list.., but found: %d..\n",
+			axl_list_length (list));
+		return axl_false;
+	} /* end if */
+
+	axl_list_remove_last (list);
+
+	if (axl_list_length (list) != 0) {
+		printf ("Expected to find 0 items stored in the list.., but found: %d..\n",
+			axl_list_length (list));
+		return axl_false;
+	} /* end if */
+
+	axl_list_free (list);
+
+	/* add and remove item 0 */
+	list = axl_list_new (axl_list_always_return_1, NULL);
+	axl_list_append (list, INT_TO_PTR (0));
+	axl_list_append (list, INT_TO_PTR (0));
+	axl_list_append (list, INT_TO_PTR (0));
+	axl_list_append (list, INT_TO_PTR (0));
+	
+	if (axl_list_length (list) != 4) {
+		printf ("Expected to find 4 items stored in the list.., but found: %d..\n",
+			axl_list_length (list));
+		return axl_false;
+	} /* end if */
+
+	axl_list_remove_ptr (list, INT_TO_PTR (0));
+
+	if (axl_list_length (list) != 3) {
+		printf ("Expected to find 3 items stored in the list.., but found: %d..\n",
+			axl_list_length (list));
+		return axl_false;
+	} /* end if */
+
+	axl_list_remove_first (list);
+
+	if (axl_list_length (list) != 2) {
+		printf ("Expected to find 2 items stored in the list.., but found: %d..\n",
+			axl_list_length (list));
+		return axl_false;
+	} /* end if */
+
+	axl_list_remove_last (list);
+
+	if (axl_list_length (list) != 1) {
+		printf ("Expected to find 1 items stored in the list.., but found: %d..\n",
+			axl_list_length (list));
+		return axl_false;
+	} /* end if */
+
+	axl_list_free (list);
+
 	return axl_true;
 }
 
