@@ -656,16 +656,20 @@ int main (int argc, char ** argv)
 	exarg_install_arg ("enable-log", "l", EXARG_NONE,
 			   "Allows to activate the console log debug.");
 
-	exarg_install_arg ("enable-log-color", "c", EXARG_NONE,
+	exarg_install_arg ("enable-log-color", "g", EXARG_NONE,
 			   "Activates the console logs and uses some ansi characters to colorify the log output. If this option is activated, it is implicitly activated the --enable-log");
 	
 	/* dtd-to-c options */
 	exarg_install_arg ("dtd-to-c", NULL, EXARG_NONE,
 			   "Creates a C header definition representing the DTD provided, suitable to be opened by libaxl");
 
+	exarg_install_arg ("check-xml", "c", EXARG_NONE,
+			   "Allows to check an xml document (if it is properly formated). Combine this option with --input");
+
 	/* add dependecies */
 	exarg_add_dependency ("htmlize", "input");
 	exarg_add_dependency ("dtd-to-c", "input");
+	exarg_add_dependency ("check-xml", "input");
 	
 	exarg_add_dependency ("ifnewer", "input");
 	exarg_add_dependency ("ifnewer", "output");
@@ -697,12 +701,12 @@ int main (int argc, char ** argv)
 
 	/* check parameters defined */
 	if (! exarg_is_defined ("htmlize") &&
+	    ! exarg_is_defined ("check-xml") &&
 	    ! exarg_is_defined ("dtd-to-c")) {
 		msg ("no action was defined..");
 		goto finish;
 	}
 		
-
 	/* parse log options */
 	axl_log_enable (exarg_is_defined ("enable-log"));
 
@@ -738,6 +742,10 @@ int main (int argc, char ** argv)
 		/* call to produce a C representation from the DTD
 		 * provided */
 		axl_knife_dtd_to_c ();
+	} else if (exarg_is_defined ("check-xml")) {
+		/* do nothing because if reached this code, document
+		 * was loadedd properly */
+		msg ("document is OK");
 	} /* end if */
 
 
