@@ -26,6 +26,170 @@
 
 #define test_41_iso_8859_15_value "Esto es una prueba: camión, españa, y la tabla de caráteres!\"#$%()*+,-./0123456789:;=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~ ¡¢£€¥Š§š©ª«¬­®¯°±²³Žµ¶·ž¹º»ŒœŸ¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ"
 
+/**
+ * @brief Storing arbitrary binary content inside CDATA declaration
+ * including ']]>'.
+ * 
+ * @param error The optional axlError to be used to report erros.
+ * 
+ * @return axl_true tests are ok, otherwise axl_false is returned.
+ */
+axl_bool test_42 (axlError ** error)
+{
+	axlDoc  * doc;
+	axlNode * node;
+	char    * content;
+	int       size;
+
+	/* parse example */
+	doc = axl_doc_parse_from_file ("test_42.xml", error);
+	if (doc == NULL) 
+		return axl_false;	
+
+	node    = axl_doc_get_root (doc);
+	content = axl_node_get_content_trans (node, NULL);
+
+	/* check content */
+	if (! axl_cmp ("this is an example ]]> more content", content)) {
+		printf ("Expected to find: '%s' but found '%s'\n",
+			"this is an example ]]> more content", content);
+		axl_error_report (error, -1, "Expected to find a particular content but different value was found (1)");
+		return axl_false;
+	}
+
+	axl_free (content);
+
+	/* free document */
+	axl_doc_free (doc);
+
+	/* parse example */
+	doc = axl_doc_parse_from_file ("test_42a.xml", error);
+	if (doc == NULL) 
+		return axl_false;	
+
+	node    = axl_doc_get_root (doc);
+	content = axl_node_get_content_trans (node, NULL);
+
+	/* check content */
+	if (! axl_cmp ("this is an example ]]> more content ]]> second piece", content)) {
+		printf ("Expected to find: '%s' but found '%s'\n",
+			"this is an example ]]> more content ]]> second piece", content);
+		axl_error_report (error, -1, "Expected to find a particular content but different value was found (2)");
+		return axl_false;
+	}
+
+	axl_free (content);
+
+	/* free document */
+	axl_doc_free (doc);
+	
+	doc  = axl_doc_parse ("<body />", 8, NULL);
+	node = axl_doc_get_root (doc);
+
+	/* set CDATA content */
+	axl_node_set_cdata_content (node, "This is a test ]]> with not valid content <![CDATA[..]]>", 56);
+	
+	/* dump content */
+	if (! axl_doc_dump (doc, &content, &size)) {
+		axl_error_report (error, -1, "Failed to perform dump operation after CDATA content configuration..");
+		return axl_false;
+	}
+
+	/* check dumped content */
+	if (! axl_cmp ("<?xml version='1.0' encoding='utf-8' ?><body><![CDATA[This is a test ]]>]]&gt;<![CDATA[ with not valid content &lt;![CDATA[..]]>]]&gt;<![CDATA[]]></body>",
+		       content)) {
+		printf ("Content found:    '%s'\n", content);
+		printf ("Content expected: '%s'\n", 
+			"<?xml version='1.0' ?><body><![CDATA[This is a test ]]>]]&gt;<![CDATA[ with not valid content &lt;![CDATA[..]]>]]&gt;<![CDATA[]]></body>");
+		axl_error_report (error, -1, "Expected to find a different value for xml dump content");
+		return axl_false;
+	} /* end if */
+
+	/* free content */
+	axl_free (content);
+
+	/* now dump the content into a document */
+	if (! axl_doc_dump_to_file (doc, "test_42c.xml")) {
+		axl_error_report (error, -1, "Expected proper dump operation to file but it failed");
+		return axl_false;
+	} /* end if */
+
+	/* free doc */
+	axl_doc_free (doc);
+
+	/* open the document */
+	doc = axl_doc_parse_from_file ("test_42c.xml", error);
+	if (doc == NULL) {
+		printf ("Expected to open dumped document for CDATA check..\n");
+		return axl_false;
+	}
+	
+	/* get document root */
+	node    = axl_doc_get_root (doc);
+	content = axl_node_get_content_trans (node, &size);
+
+	if (! axl_cmp ("This is a test ]]> with not valid content <![CDATA[..]]>", content)) {
+		printf ("Content found:    '%s'\n", content);
+		printf ("Content expected: '%s'\n", "This is a test ]]> with not valid content <![CDATA[..]]>");
+		axl_error_report (error, -1, "Expected to find different content in node found inside document dumped..");
+		return axl_false;
+	} /* end if */
+
+	/* free content */
+	axl_free (content);
+
+	/* free doc reference */
+	axl_doc_free (doc);
+
+	doc = axl_doc_parse_from_file ("test_42d.xml", error);
+	if (doc == NULL) {
+		printf ("Expected to properly open test document test_42d.xml..\n");
+		return axl_false;
+	} /* end if */
+
+	/* dump document */
+	if (! axl_doc_dump (doc, &content, &size)) {
+		printf ("Failed to dump document test_42d.xml..\n");
+		return axl_false;
+	} /* end if */
+
+	/* free document */
+	axl_doc_free (doc);
+
+	/* now create a document holding the content dumped */
+	doc = axl_doc_parse ("<body />", 8, error);
+	if (doc == NULL) {
+		printf ("Expected to find proper document parsing for <body />..\n");
+		return axl_false;
+	}
+
+	/* set content */
+	node = axl_doc_get_root (doc);
+	axl_node_set_cdata_content (node, content, size);
+
+	/* free content */
+	axl_free (content);
+
+	/* now dump content created */
+	if (! axl_doc_dump (doc, &content, &size)) {
+		printf ("Failed to dump document test_42d.xml..\n");
+		return axl_false;
+	} /* end if */
+
+	/* check content */
+	if (! axl_cmp (content, 
+		       "<?xml version='1.0' encoding='utf-8' ?><body><![CDATA[&lt;?xml version=&apos;1.0&apos; encoding=&apos;utf-8&apos; ?&gt;&lt;content&gt;&lt;full-name&gt;&lt;![CDATA[some data]]>]]&gt;<![CDATA[&lt;/full-name&gt;&lt;nick&gt;&lt;![CDATA[some data]]>]]&gt;<![CDATA[&lt;/nick&gt;&lt;value&gt;&lt;![CDATA[some data]]>]]&gt;<![CDATA[&lt;/value&gt;&lt;/content&gt;]]></body>")) {
+		axl_error_report (error, -1, "Expected to find different value after dump operation..\n");
+		return axl_false;
+	}
+
+	axl_free (content);
+	axl_doc_free (doc);
+
+
+	return axl_true;
+}
+
 /** 
  * @brief Extended encoding support.
  * 
@@ -8112,7 +8276,7 @@ int main (int argc, char ** argv)
 	}
 
 	/* DATA STRUCTURE TESTS */
-	if (test_01_01 ()) {
+	if (test_01_01 ()) {	
 		printf ("Test 01-01: LibAxl list implementation [   OK   ]\n");
 	}else {
 		printf ("Test 01-01 ##: LibAxl list implementation [ FAILED ]\n");
@@ -8634,6 +8798,15 @@ int main (int argc, char ** argv)
 		printf ("Test 41: Extended encoding support (through axl-babel)  [   OK   ]\n");
 	}else {
 		printf ("Test 41: Extended encoding support (through axl-babel)  [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}
+
+	if (test_42 (&error)) {
+		printf ("Test 42: Checking nested CDATA support (including ']]>', '<![CDATA[' or xml documents with '<![CDATA[..]]>' decls) [   OK   ]\n");
+	}else {
+		printf ("Test 42: Checking nested CDATA support CDATA declaration (including ']]>', '<![CDATA[' or xml documents with '<![CDATA[..]]>' decls) [ FAILED ]\n  (CODE: %d) %s\n",
 			axl_error_get_code (error), axl_error_get (error));
 		axl_error_free (error);
 		return -1;

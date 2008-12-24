@@ -352,7 +352,8 @@ int __axl_node_equal (axlPointer a, axlPointer b)
  */
 char * __axl_node_content_copy_and_escape (const char * content, 
 					   int          content_size, 
-					   int          additional_size)
+					   int          additional_size,
+					   axl_bool     cdata)
 {
 	int    iterator  = 0;
 	int    iterator2 = 0;
@@ -401,6 +402,20 @@ char * __axl_node_content_copy_and_escape (const char * content,
 			memcpy (result + iterator, "&lt;", 4);
 			iterator += 4;
 			iterator2++;
+			continue;
+		}
+
+		/* check for ]]> declaration */
+		if (content [iterator2] == ']' && content [iterator2 + 1] == ']' && content [iterator2 + 2] == '>') {
+			if (cdata) {
+				memcpy (result + iterator, "]]>]]&gt;<![CDATA[", 18);
+				iterator  += 18;
+				iterator2 +=3;
+			} else {
+				memcpy (result + iterator, "]]&gt;", 6);
+				iterator  += 6;
+				iterator2 += 3;
+			}
 			continue;
 		}
 
@@ -1136,7 +1151,8 @@ void      axl_node_set_attribute      (axlNode    * node,
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found attribute content with escapable, non-valid content");
 		_attr = __axl_node_content_copy_and_escape (attribute, 
 							    strlen (attribute),
-							    additional_size);
+							    additional_size,
+							    axl_false);
 	}else {
 
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "'%s' is a valid string..", attribute);
@@ -1150,7 +1166,8 @@ void      axl_node_set_attribute      (axlNode    * node,
 
 		_value = __axl_node_content_copy_and_escape (value, 
 							     strlen (value),
-							     additional_size);
+							     additional_size,
+							     axl_false);
 	}else {
 		
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "'%s' is a valid string..", value);
@@ -2762,7 +2779,8 @@ void      axl_node_set_content        (axlNode    * node,
 		/* copy content */
 		itemContent->content        = __axl_node_content_copy_and_escape (content, 
 										  content_size, 
-										  additional_size);
+										  additional_size,
+										  axl_false);
 		/* set node content size */
 		itemContent->content_size   = content_size + additional_size;
 	}else {
@@ -2786,12 +2804,12 @@ void      axl_node_set_content        (axlNode    * node,
  * @internal Common implementation for axl_node_set_content_ref and
  * axl_node_set_content_from_factory.
  */
-void __axl_node_set_content_common_ref (axlFactory * factory, 
-					axlNode    * node, 
-					char       * content, 
-					int          content_size, 
-					axl_bool     from_factory,
-					axl_bool     cdata)
+void __axl_node_set_content_common_ref (axlFactory     * factory, 
+					axlNode        * node, 
+					char           * content, 
+					int              content_size, 
+					axl_bool         from_factory,
+					axl_bool         cdata)
 {
 	
 	axlNodeContent * itemContent;
@@ -2913,6 +2931,11 @@ void      axl_node_set_content_from_factory (axlFactory * factory,
  * As an alternative, the XML node content could be stored enclosed as
  * a CDATA section: <![CDATA[..]]> allow to store "un-parsed"
  * characters, including those not allowed.
+ *
+ * NOTE: In the case content received includes a ]]> declaration, it
+ * is escaped. to allow it. This is provided not to allow nested CDATA
+ * declarations which is not allowed by XML 1.0 standard but to allow
+ * binary content to be stored that may include a ]]> declaration.
  * 
  * @param node The node where the CDATA will be stored.
  *
@@ -2921,10 +2944,13 @@ void      axl_node_set_content_from_factory (axlFactory * factory,
  * @param content_size The content size or -1 if required Axl to
  * figure out current sizes.
  */
-void      axl_node_set_cdata_content  (axlNode * node,
-				       char * content,
-				       int content_size)
+void      axl_node_set_cdata_content  (axlNode    * node,
+				       const char * content,
+				       int          content_size)
 {
+	char * copy;
+	int    additional_size = 0;
+
 	axl_return_if_fail (node);
 	axl_return_if_fail (content);
 
@@ -2932,9 +2958,21 @@ void      axl_node_set_cdata_content  (axlNode * node,
 	if (content_size == -1)
 		content_size = strlen (content);
 
-	/* call to set node content */	
-	content = axl_strdup (content);
-	__axl_node_set_content_common_ref (NULL, node, content, content_size, axl_false, axl_true);
+	if (axl_node_has_invalid_chars_cdata (content, content_size, &additional_size)) {
+		/* call to get escaped version */
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "CDATA found content to scape (content size: %d): '%s'",
+			   content_size, content);
+		copy          = __axl_node_content_copy_and_escape (content, content_size, additional_size, axl_true);
+		content_size += additional_size;
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "CDATA content escaped        (content size: %d): '%s'",
+			   content_size, copy);
+	} else {
+		/* call to set node content */	
+		copy = axl_strdup (content);
+	} /* end if */
+
+	/* set content */
+	__axl_node_set_content_common_ref (NULL, node, copy, content_size, axl_false, axl_true);
 
 	return;
 }
@@ -3115,6 +3153,63 @@ char    * axl_node_get_content_trim   (axlNode * node,
 	return "";
 }
 
+void axl_node_get_content_trans_count (axlItem * item, int * count, int *total_size)
+{
+	axlNodeContent * content;
+
+	/* reset counters received */
+	(*count)      = 0;
+	(*total_size) = 0;
+	while (item != NULL) {
+
+		/* check item time stored and increase counting */
+		if (axl_item_get_type (item) == ITEM_CONTENT || 
+		    axl_item_get_type (item) == ITEM_CDATA) {
+			/* found item */
+			(*count)++;
+
+			/* update totals */
+			content     = item->data;
+			(*total_size) += content->content_size;
+		}
+		
+		/* next item */
+		item = item->next;
+	} /* end while */
+	
+	return;
+}
+
+
+void axl_node_get_content_trans_copy (axlItem * item, char * result)
+{
+	axlNodeContent * content;
+	int              desp;
+
+	/* reset counters received */
+	desp = 0;
+	while (item != NULL) {
+
+		/* check item time stored and increase counting */
+		if (axl_item_get_type (item) == ITEM_CONTENT || 
+		    axl_item_get_type (item) == ITEM_CDATA) {
+			/* update totals */
+			content     = item->data;
+			
+			/* copy content */
+			memcpy (result + desp, content->content, content->content_size);
+
+			/* update iterator */
+			desp += content->content_size;
+		}
+		
+		/* next item */
+		item = item->next;
+	} /* end while */
+	
+	return;
+}
+
 /** 
  * @brief Allows to the get node content, performing a memory
  * allocation for the returned result, translating default entities
@@ -3132,16 +3227,48 @@ char    * axl_node_get_content_trim   (axlNode * node,
  */
 char    * axl_node_get_content_trans (axlNode * node, int * content_size)
 {
-	char * result;
-	int    _content_size = 0;
+	char    * result;
+	int       _content_size = 0;
+	int       count;
+	int       total_size;
 
-	/* get a copy for the node content, getting the node content
-	 * size. If the user don't provide a reference, use a local
-	 * one. */
-	if (content_size)
-		result = axl_node_get_content_copy (node, content_size);
-	else
-		result = axl_node_get_content_copy (node, &_content_size);
+	/* check received reference */
+	axl_return_val_if_fail (node, NULL);
+
+	/* check if the node has one item content inside the node or
+	 * several CDATA or content items */
+	axl_node_get_content_trans_count (node->first, &count, &total_size);
+
+	/* accoring to the number of items found */
+	switch (count) {
+	case 0:
+		/* report content size */
+		if (content_size)
+			*content_size = 0;
+		/* nothing found return */
+		return NULL;
+	case 1:
+		/* get a copy for the node content, getting the node
+		 * content size. If the user don't provide a
+		 * reference, use a local one. */
+		if (content_size)
+			result = axl_node_get_content_copy (node, content_size);
+		else
+			result = axl_node_get_content_copy (node, &_content_size);
+		break;
+	default:
+		/* if reached this place, only positive values from 2
+		 * up to N are found */
+		result = axl_new (char, total_size + 1);
+		if (content_size)
+			*content_size = total_size;
+		else
+			_content_size = total_size;
+		
+		/* now copy all content found */
+		axl_node_get_content_trans_copy (node->first, result);
+	}
+	
 
 	/* check result returned */
         if (result == NULL || strlen (result) == 0) {
@@ -4933,34 +5060,14 @@ int       axl_node_dump_at                  (axlNode * node,
 	return desp;
 }
 
-/** 
- * @brief Allows to check if the provided string have escape sequences
- * that must be defined by using the entity reference rather the value
- * itself.
- *
- * This function is useful in the sense it allows to know if a
- * particular content will contain elements not allowed by the XML 1.0
- * definition to be placed directly (like &, <, ;, ' and ").
- *
- * 
- *
- * @param content The content to check.
- *
- * @param content_size The size of the content to be checked. If -1 is
- * provided, the function will calculate the content length.
- *
- * @param added_size An integer reference where the additional size
- * variable will be added. This additional size will be the space
- * required to replace non-valid characters with entity
- * references. This parameter is optional, so passing a NULL value is
- * allowed.
- * 
- * @return axl_true if the string contains non valid sequences that
- * must be escaped using entity references.
+/**
+ * @internal Function used by axl_node_has_invalid_chars which also
+ * provides features for CDATA sections.
  */
-axl_bool      axl_node_has_invalid_chars        (const char * content,
-						 int          content_size,
-						 int        * added_size)
+axl_bool      axl_node_has_invalid_chars_internal        (const char * content,
+							  int          content_size,
+							  int        * added_size,
+							  axl_bool     cdata)
 {
 	int          iterator = 0;
 	axl_bool     result   = axl_false;
@@ -5018,6 +5125,25 @@ axl_bool      axl_node_has_invalid_chars        (const char * content,
 				(*added_size) += 3;
 		}
 
+		/* check for ]]> */
+		if (content [iterator] == ']' && content [iterator + 1] == ']' && content [iterator + 2] == '>') {
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found invalid sequence=']]>'");
+			result = axl_true;
+			if (cdata) {
+				/* inside CDATA section that is, we
+				 * have to escape this value and
+				 * reopen a new CDATA section to match
+				 * with the last terminator */
+				if (added_size != NULL)
+					(*added_size) += 15;
+			} else {
+				if (added_size != NULL)
+					(*added_size) += 3;
+			}
+			iterator += 3;
+			continue;
+		} /* end if */
+
 		/* update the iterator */
 		iterator++;
 	}
@@ -5027,6 +5153,72 @@ axl_bool      axl_node_has_invalid_chars        (const char * content,
 
 	/* return results */
 	return result;
+}
+
+/** 
+ * @brief Allows to check if the provided string have escape sequences
+ * that must be defined by using the entity reference rather the value
+ * itself.
+ *
+ * This function is useful in the sense it allows to know if a
+ * particular content will contain elements not allowed by the XML 1.0
+ * definition to be placed directly (like &, <, ;, ' and ").
+ *
+ * 
+ * @param content The content to check.
+ *
+ * @param content_size The size of the content to be checked. If -1 is
+ * provided, the function will calculate the content length.
+ *
+ * @param added_size An integer reference where the additional size
+ * variable will be added. This additional size will be the space
+ * required to replace non-valid characters with entity
+ * references. This parameter is optional, so passing a NULL value is
+ * allowed.
+ * 
+ * @return axl_true if the string contains non valid sequences that
+ * must be escaped using entity references.
+ */
+axl_bool      axl_node_has_invalid_chars        (const char * content,
+						 int          content_size,
+						 int        * added_size)
+{
+	/* call to internal implementation supposing this is for a
+	 * node without CDATA section */
+	return axl_node_has_invalid_chars_internal (content, content_size, added_size, axl_false);
+}
+
+/** 
+ * @brief Allows to check if the provided string have escape sequences
+ * that must be defined by using the entity reference rather the value
+ * itself, taking into consideration the content will be used for a
+ * <![CDATA[..]]> section.
+ *
+ * This function is useful in the sense it allows to know if a
+ * particular content will contain elements not allowed by the XML 1.0
+ * definition to be placed directly (like &, <, ;, ' and ").
+ *
+ * @param content The content to check.
+ *
+ * @param content_size The size of the content to be checked. If -1 is
+ * provided, the function will calculate the content length.
+ *
+ * @param added_size An integer reference where the additional size
+ * variable will be added. This additional size will be the space
+ * required to replace non-valid characters with entity
+ * references. This parameter is optional, so passing a NULL value is
+ * allowed.
+ * 
+ * @return axl_true if the string contains non valid sequences that
+ * must be escaped using entity references.
+ */
+axl_bool      axl_node_has_invalid_chars_cdata        (const char * content,
+						       int          content_size,
+						       int        * added_size)
+{
+	/* call to internal implementation supposing this is for a
+	 * node with CDATA section */
+	return axl_node_has_invalid_chars_internal (content, content_size, added_size, axl_true);
 }
 
 /** 
@@ -5067,7 +5259,50 @@ char * axl_node_content_copy_and_escape (const char * content,
 	axl_return_val_if_fail (content, NULL);
 	
 	/* call to the internal implementation */
-	return __axl_node_content_copy_and_escape (content, content_size, additional_size);
+	return __axl_node_content_copy_and_escape (content, content_size, additional_size, axl_false);
+} 
+
+/** 
+ * @brief Allows to perform a copy for the content provided, doing an
+ * xml character escaping for non allowed values (&, <, >, ' and ")
+ * taking into consideration the content will be placed inside a
+ * <![CDATA[..]]> declaration.
+ *
+ * This function must be used with \ref axl_node_has_invalid_chars_cdata to
+ * check if the content has escapable chars an to get the additional
+ * content that must be allocated by this function.
+ *
+ * Here is an example:
+ * \code
+ * char * content = "Some content with invalid chars & < >";
+ * int    additional_size;
+ * char * new_content
+ *
+ * if (axl_node_has_invalid_chars_cdata (content, strlen (content), &additional_size)) {
+ *      // found that the string has invalid chars, escape them
+ *      new_content = axl_node_content_copy_and_escape_cdate (content, strlen (content), additional_size);
+ * } 
+ *
+ * \endcode
+ * 
+ * @param content The content to be escaped. If this parameter is
+ * null, the function returns NULL.
+ * 
+ * @param content_size The content size for the first parameter.
+ *
+ * @param additional_size The additional size calculated from \ref axl_node_has_invalid_chars_cdata.
+ *
+ * @return A newly allocated string with all characters escaped. Use
+ * \ref axl_free to dealloc the result.
+ */
+char * axl_node_content_copy_and_escape_cdata (const char * content, 
+					       int          content_size, 
+					       int          additional_size)
+{
+	axl_return_val_if_fail (content, NULL);
+	
+	/* call to the internal implementation */
+	return __axl_node_content_copy_and_escape (content, content_size, additional_size, axl_true);
 } 
 
 void __axl_node_free_internal (axlNode * node, axl_bool also_childs)
