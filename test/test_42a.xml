@@ -1,0 +1,6 @@
+<body content='text/xml; charset=utf-8'
+      hold='1'
+      rid='1573'>
+<!-- the following stores: "this is an example ]]> more content ]]> second piece" -->
+<![CDATA[this is an example ]]>]]&gt;<![CDATA[ more content ]]>]]&gt;<![CDATA[ second piece]]>
+</body>

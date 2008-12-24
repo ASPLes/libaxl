@@ -347,14 +347,14 @@ void      axl_node_set_content_from_factory (axlFactory * factory,
 					     char       * content,
 					     int          content_size);
 
-void      axl_node_set_cdata_content  (axlNode * node,
-				       char * content,
-				       int content_size);
+void      axl_node_set_cdata_content  (axlNode    * node,
+				       const char * content,
+				       int          content_size);
 
-void      axl_node_set_cdata_content_from_factory (axlFactory * factory,
-						   axlNode    * node,
-						   char       * content,
-						   int          content_size);
+void      axl_node_set_cdata_content_from_factory (axlFactory  * factory,
+						   axlNode     * node,
+						   char        * content,
+						   int           content_size);
 
 void      axl_node_set_comment        (axlNode * node,
 				       char * comment,
@@ -423,9 +423,17 @@ axl_bool  axl_node_has_invalid_chars        (const char * content,
 					     int    content_size,
 					     int  * added_size);
 
-char    * axl_node_content_copy_and_escape (const char * content, 
-					    int          content_size, 
-					    int          additional_size);
+axl_bool  axl_node_has_invalid_chars_cdata  (const char * content,
+					     int          content_size,
+					     int        * added_size);
+
+char    * axl_node_content_copy_and_escape  (const char * content, 
+					     int          content_size, 
+					     int          additional_size);
+
+char * axl_node_content_copy_and_escape_cdata (const char * content, 
+					       int          content_size, 
+					       int          additional_size);
 
 void      axl_node_free            (axlNode * node);
 
