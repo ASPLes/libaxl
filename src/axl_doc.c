@@ -3161,7 +3161,6 @@ void     axl_doc_free         (axlDoc * doc)
 
 	/* free enconding allocated */
 	axl_free (doc->encoding);
-	axl_free (doc->detected_encoding);
 	axl_free (doc->encoding_found);
 	
 	/* free allocated version value */

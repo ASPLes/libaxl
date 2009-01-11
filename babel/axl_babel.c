@@ -141,9 +141,9 @@ axl_bool axl_babel_detect_codification (axlStream  * stream,
 	 * with the BOM mark configured */
 	
 	/* check UTF-8 BOM: EF BB BF */
-	if (axl_stream_inspect_code (stream, (char) 239, 0) &&
-	    axl_stream_inspect_code (stream, (char) 187, 1) &&
-	    axl_stream_inspect_code (stream, (char) 192, 2)) {
+	if (axl_stream_inspect_code (stream, 0xEF, 0) &&
+	    axl_stream_inspect_code (stream, 0xBB, 1) &&
+	    axl_stream_inspect_code (stream, 0xBF, 2)) {
 
 		/* configure encoding detected */
 		if (encoding)
@@ -158,8 +158,8 @@ axl_bool axl_babel_detect_codification (axlStream  * stream,
 	} /* end if */
 
 	/* check UTF-16 (little-endian) BOM: FF FE */
-	if (axl_stream_inspect_code (stream, (char) 255, 0) &&
-	    axl_stream_inspect_code (stream, (char) 254, 1)) {
+	if (axl_stream_inspect_code (stream, 0xFF, 0) &&
+	    axl_stream_inspect_code (stream, 0xFE, 1)) {
 		/* configure encoding detected */
 		if (encoding)
 			(*encoding) = "utf16";
@@ -173,10 +173,10 @@ axl_bool axl_babel_detect_codification (axlStream  * stream,
 	}
 
 	/* check UTF-32 (little-endian) BOM: FF FE 00 00 */
-	if (axl_stream_inspect_code (stream, (char) 255, 0) &&
-	    axl_stream_inspect_code (stream, (char) 254, 1) &&
-	    axl_stream_inspect_code (stream, (char) 0, 2) &&
-	    axl_stream_inspect_code (stream, (char) 0, 3)) {
+	if (axl_stream_inspect_code (stream, 0xFF, 0) &&
+	    axl_stream_inspect_code (stream, 0xFE, 1) &&
+	    axl_stream_inspect_code (stream, 0x00, 2) &&
+	    axl_stream_inspect_code (stream, 0x00, 3)) {
 		/* configure encoding detected */
 		if (encoding)
 			(*encoding) = "utf32";
@@ -192,10 +192,10 @@ axl_bool axl_babel_detect_codification (axlStream  * stream,
 	/* NO BOM MARK SECTION */
 
 	/* detect utf-8, iso 646, ascii,...*/
-	if (axl_stream_inspect_code (stream, (char) 60, 0) &&
-	    axl_stream_inspect_code (stream, (char) 63, 1) &&
-	    axl_stream_inspect_code (stream, (char) 120, 2) &&
-	    axl_stream_inspect_code (stream, (char) 109, 3)) {
+	if (axl_stream_inspect_code (stream, 0x3C, 0) &&
+	    axl_stream_inspect_code (stream, 0X3F, 1) &&
+	    axl_stream_inspect_code (stream, 0x78, 2) &&
+	    axl_stream_inspect_code (stream, 0x6D, 3)) {
 	assume_utf8:
 		/* no encoding detected we are not sure */ 
 		
@@ -205,9 +205,9 @@ axl_bool axl_babel_detect_codification (axlStream  * stream,
 	} /* end if */
 
 	/* check last case where an utf-8 document could be found without xml header */
-	if (axl_stream_inspect_code (stream, (char) 60, 0) &&
-	    ! axl_stream_inspect_code (stream, (char) 60, 1) &&
-	    ! axl_stream_inspect_code (stream, (char) 62, 1)) {
+	if (axl_stream_inspect_code (stream, 0x3C, 0) &&
+	  ! axl_stream_inspect_code (stream, 0x3C, 1) &&
+	  ! axl_stream_inspect_code (stream, 0x3E, 1)) {
 		goto assume_utf8;
 	}
 

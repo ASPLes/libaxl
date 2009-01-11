@@ -1347,7 +1347,8 @@ typedef const char * (* axlDtdEntityResolver) (const char * entityName, axlPoint
  *
  * @param detected A reference to the codification detected or NULL if
  * nothing clearly detected. For example (ascii, iso-8859) but still
- * not enough information.
+ * not enough information. Handler implementator must configure an
+ * static string for this value.
  *
  * @param user_data A reference to user-defined data. This value was
  * configured at \ref axl_doc_set_detect_codification_func.
