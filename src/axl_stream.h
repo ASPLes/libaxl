@@ -290,6 +290,16 @@ axl_bool    axl_stream_content_check       (axlStream   * stream,
  */
 #define     axl_freev  axl_stream_freev
 
+/**
+ * @brief Convenient interface to check if an string reference is NULL
+ * to return an static "undefined string". This is useful in the case
+ * string references are used on functions that can't handle NULL
+ * values.
+ *
+ * @param ref An string reference to check.
+ */
+#define     axl_check_undef(ref) (ref ? ref : "NULL")
+
 /* @} */
 
 END_C_DECLS
