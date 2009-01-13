@@ -1357,7 +1357,7 @@ typedef const char * (* axlDtdEntityResolver) (const char * entityName, axlPoint
  * axl_false is returned. The handler could return axl_true and no
  * codification be clearly detected.
  */
-typedef axl_bool (* axlDocDetectCodification) (axlStream * stream, char ** detected, axlPointer user_data, axlError ** error);
+typedef axl_bool (* axlDocDetectCodification) (axlStream * stream, const char ** detected, axlPointer user_data, axlError ** error);
 
 /** 
  * @brief Handler definition for the set of functions that allows to

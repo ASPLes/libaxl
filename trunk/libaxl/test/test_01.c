@@ -4079,7 +4079,7 @@ axl_bool test_03 (axlError ** error)
 	return axl_true;
 }
 
-axl_bool test_02_always_fail (axlStream * stream, char ** detected, axlPointer user_data, axlError ** error)
+axl_bool test_02_always_fail (axlStream * stream, const char ** detected, axlPointer user_data, axlError ** error)
 {
 	/* always return axl_false to check how behave the library */
 	return axl_false;
