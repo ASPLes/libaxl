@@ -121,10 +121,10 @@ void        axl_babel_finish ()
  * @return axl_true if the codification detection was performed properly,
  * otherwise axl_false is returned if an error is found.
  */
-axl_bool axl_babel_detect_codification (axlStream  * stream, 
-					char      ** encoding,
-					axlPointer   user_data,
-					axlError  ** error)
+axl_bool axl_babel_detect_codification (axlStream        * stream, 
+					const char      ** encoding,
+					axlPointer         user_data,
+					axlError        ** error)
 {
 	/* check basic case where the stream have no content to
 	 * parse */

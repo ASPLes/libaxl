@@ -321,19 +321,19 @@ struct _axlDoc {
 	 * @internal
 	 * @brief Current xml encoding document.
 	 */
-	char    * encoding;
+	char        * encoding;
 	/**
 	 * @internal
 	 * @brief Current entity encoding detected.
 	 */ 
-	char    * detected_encoding;
+	const char  * detected_encoding;
 	
 	/** 
 	 * @internal If the document was found in a different encoding
 	 * than utf-8, this variable will hold its associated value to
 	 * allow returning to the original encoding.
 	 */
-	char    * encoding_found;
+	char        * encoding_found;
 	
 	/** 
 	 * @internal

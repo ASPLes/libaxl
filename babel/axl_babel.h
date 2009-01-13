@@ -70,10 +70,10 @@ axl_bool    axl_babel_init (axlError ** error);
 
 void        axl_babel_finish ();
 
-axl_bool    axl_babel_detect_codification (axlStream  * stream, 
-					   char      ** encoding,
-					   axlPointer   user_data,
-					   axlError  ** error);
+axl_bool    axl_babel_detect_codification (axlStream   * stream, 
+					   const char ** encoding,
+					   axlPointer    user_data,
+					   axlError   ** error);
 
 axl_bool    axl_babel_configure_encoding  (axlStream  * stream, 
 					   const char * encoding, 
