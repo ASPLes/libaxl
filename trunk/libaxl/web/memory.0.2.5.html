@@ -10,12 +10,22 @@
 <div class="main-page">
 
 <div class="header-content">
-<img class="slogan" src="axl-slogan.png" />
-<a href="http://www.aspl.es"><img class="aspl-logo" src="aspl-logo.png" /></a>
-<pre class="pre-menu">
- <a href="index.html">&lt;home/> </a><a href="news.html">&lt;news/></a> <a href="doc.html">&lt;doc, support and downloads/></a> 
-</pre>
+<table class="table-logo">
+<tr><td><a href="http://www.aspl.es"><img alt="aspl-logo-02" src="axl-header-02.png" ></a></td><td><h1>Simple, easy to use XML toolkit: <br>Productive XML development</h1></td></tr>
+</table>
+<div class="menu">
+<ul>  
+ <li><a href="index.html">&lt;Home/></a></li>
+ <li><a href="news.html">&lt;News/></a></li>
+ <li><a href="doc.html">&lt;Doc, support and downloads/></a></li>
+ <li><a href="products.html">&lt;Products/></a></li>
+ <li><a href="about.html">&lt;About Axl/></a></li>
+</ul>
+</div>
 </div><!-- header-content -->
+<div class="header-sep"><img src="top-sep-bar.png" alt="header sep bar" ></div>
+
+<div class="report">
 <h2><img src="arrow.png" /> Axl memory usage report for 0.2.5 release</h2>
 
 <h3><img src="arrow.png" />1. Introduction</h3>
@@ -67,15 +77,15 @@ int main (int argc, char ** argv)
 	/* get current doc reference */
 	doc = axl_doc_parse_from_file ("large.xml", error);
 	if (doc == NULL)
-		return AXL_FALSE;
-
-	/* cleanup axl library */
-	axl_end ();
+		return -1;
 
 	/* release the document */
 	axl_doc_free (doc);
 
-	return AXL_TRUE;
+  	/* cleanup axl library */
+	axl_end ();
+
+	return 0;
 }
 </pre>
 
@@ -234,12 +244,36 @@ the produced by LibXML.</p>
 <div class="author">
 </div>
 
+</div> <!-- report -->
+<div class="bottom-sep"><img src="bottom-sep-bar.png" alt="bottom sep bar" ></div>
 <div class="footer">
+<div class="validation">
+ <p>
+    <a href="http://validator.w3.org/check?uri=referer"><img
+        src="http://www.w3.org/Icons/valid-html401"
+        alt="Valid HTML 4.01 Transitional" height="31" width="88"></a>
+  </p>
+ 
 <p>
-<!-- hhmts start -->Last modified: Sat Oct  7 09:42:14 CEST 2008 <!-- hhmts end -->
+ <a href="http://jigsaw.w3.org/css-validator/check/referer">
+  <img style="border:0;width:88px;height:31px"
+       src="http://jigsaw.w3.org/css-validator/images/vcss" 
+       alt="¡CSS Válido!">
+ </a>
 </p>
 </div>
-<div> <!-- main-page -->
+<p>
+Copyright (C) 2009 Advanced Software Production Line, S.L,<br>
+ASPL and its logo are also trademarks registered by
+ Advanced Software Production Line, S.L.<br>
+ Microsoft, Microsoft Windows, Linux, LibXML are also, or could be,
+ registered trademarks.<br>
+Some icons were borrowed from the <a href="http://www.tango-project.org">Tango Project site</a>.<br>
+
+<!-- hhmts start -->Last modified: Wed Jan 14 20:06:43 CET 2009 <!-- hhmts end -->
+</p>
+</div>
+</div> <!-- main-page -->
 <script src="http://www.google-analytics.com/urchin.js" type="text/javascript">
 </script>
 <script type="text/javascript">
