@@ -4,11 +4,12 @@ body {
   font-size:   small;
   color: #636363;
   text-align: justify;
+  background: #204a87 url("bg-bar.png") repeat-x;
 }
 
 h1, h2, h3 { 
-  color: #000090;
-  font-weight: normal;
+  color: #172e4b;
+  font-weight: bold;
   padding-top: 10px;
 }
 
@@ -29,17 +30,31 @@ a {
 }
 
 .main-page { 
-   margin-top: 10px;
-/*   border: 1px solid #000000; */
+   border-left: 2px solid #2e3436;
+   border-right: 2px solid #2e3436;
+   border-bottom: 2px solid #2e3436;
    position: absolute; left: 50%; top: 0%; z-index: 1;
-   margin-left: -300px;
-   width: 600px;
+   margin-left: -400px;
+   width: 800px;
+   background: white;
 }
 
+
 .header-content { 
-   border-bottom: 1px dotted #000090;
-   padding: 0px;
+/*   border-bottom: 1px dotted #000090; */
    margin: 0px;
+   background: #555753;
+   
+}
+
+.header-content .table-logo h1 { 
+  color: white;
+}
+
+img.header-sep { 
+/*  width: 100%; */
+  text-align: center;
+  padding: 0px;
 }
 
 .table-logo { 
@@ -51,13 +66,21 @@ a {
 }
 
 .table-logo td { 
-  padding: 0;
+  padding-top: 10px;
+  padding-left: 40px;
+  padding-right: 10px;
   margin: 0;
 }
 
 .table-logo a img { 
   border: 0px;
 }
+
+.table-logo h1 { 
+  font-weight: bold;  
+  font-size: 1.9em;
+} 
+
 .slogan { 
    border: 0;
    float: left;
@@ -71,6 +94,7 @@ a {
 .left-content { 
    width: 200px;
    float: left;
+   padding-left: 20px;
 }
 
 .left-content-25 { 
@@ -82,6 +106,10 @@ a {
 
 .left-content-25 img { 
    margin-left: 15px;
+}
+
+.menu { 
+  text-align: center;
 }
 
 .menu li { 
@@ -121,15 +149,17 @@ pre.code {
 }
 
 .right-content { 
-   padding-left: 10px;
-   width: 380px;
+   padding-left: 20px;
+   width: 540px;
    float: right;
+   padding-right: 20px;
 }
 
 .right-content-75 { 
-   padding-left: 10px;
-   width: 480px;
+   padding-left: 20px;
+   width: 660px;
    float: right;
+   padding-right: 20px;
 }
 
 ul.news { 
@@ -164,10 +194,12 @@ ul.news li.header-news {
 }
 
 .footer { 
-   margin-top: 20px;
-   border-top: 1px dotted #000090;
+/*   margin-top: 20px; */
+/*   border-top: 1px dotted #000090; */
    float: left;
    width: 100%;
+   color: white;
+   background: #172e4b;
 }
 
 .footer p { 
@@ -176,7 +208,7 @@ ul.news li.header-news {
    padding: 0;
    padding-top: 5px;
    font-size: 80%;
-   color: #888a85;
+/*   color: #888a85; */
 }
 
 .icons { 
