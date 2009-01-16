@@ -43,6 +43,53 @@ a {
   padding: 20px;
 }
 
+
+.top-tab { 
+  position: absolute;
+  top: 0;
+  left: 610px;
+  margin: 0px;
+  padding: 0px;
+  margin-top: -12px;
+  border: 0px;
+  border-collapse: collapse;
+}
+
+.top-tab a { 
+  font-weight: bold;
+}
+
+.top-tab tr { 
+  padding: 0px;
+  margin: 0px;
+  border: 0px;
+}
+
+.top-tab td { 
+  padding: 0px;
+  margin: 0px;
+  border: 0px;
+}
+
+.top-tab-0 { 
+  background: #555753 url("top-tab-0.png") no-repeat;
+  width: 40px;
+  height: 45px;
+  border: 0px;
+}
+
+.top-tab-1 { 
+  background: #555753 url("top-tab-1.png") repeat;
+  height: 45px;
+  border: 1px solid #000000;
+}
+
+.top-tab-2 { 
+  background: #555753 url("top-tab-2.png") no-repeat;
+  width: 40px;
+  height: 45px;
+}
+
 .header-content { 
 /*   border-bottom: 1px dotted #000090; */
    margin: 0px;
@@ -50,6 +97,7 @@ a {
    height: 155px;  
    padding: 0px;
    border-bottom: 2px solid #ffffff;
+   padding-top: 5px;
 }
 
 .header-content .table-logo h1 { 
