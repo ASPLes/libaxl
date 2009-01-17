@@ -93,11 +93,13 @@ a {
 .header-content { 
 /*   border-bottom: 1px dotted #000090; */
    margin: 0px;
-   background: #555753;
+   background: #555753;  
+/*   background: #555753 url("header-content-bg.png"); */
    height: 155px;  
    padding: 0px;
    border-bottom: 2px solid #ffffff;
    padding-top: 5px;
+ 
 }
 
 .header-content .table-logo h1 { 
