@@ -23,5 +23,6 @@ build_doc:
 	doxygen axl-doc.doxygen
 	cp axl.css html
 	cp main-page-logo.png html
+	cp aspl-logo.png html
 	cp body_back.gif html
 
