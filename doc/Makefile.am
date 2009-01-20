@@ -22,6 +22,7 @@ build_doc:
 	@echo "Generating module documentation..";
 	doxygen axl-doc.doxygen
 	cp axl.css html
+	cp bg.png html
 	cp main-page-logo.png html
 	cp aspl-logo.png html
 	cp body_back.gif html
