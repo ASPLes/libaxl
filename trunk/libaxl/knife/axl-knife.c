@@ -845,8 +845,8 @@ axl_bool   axl_knife_file_test (const char * path, FileTest test)
  * This manual includes information about operations that support the
  * tool and how to activate them:
  *
- *  \ref axl_knife_dtd_to_c
- *  \ref axl_knife_htmlize
+ *  - \ref axl_knife_dtd_to_c
+ *  - \ref axl_knife_htmlize
  * 
  * \section axl_knife_dtd_to_c Building a C inline representation from a DTD file
  *

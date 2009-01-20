@@ -36,9 +36,20 @@ a:hover {
 }
 
 .ads { 
-  text-align: center;
+  width: 100%;
+  height: 112px;
   border-top: 1px solid #172e4b;
   border-bottom: 1px solid #172e4b;
+  background: #c9c9c9;
+}
+
+.ads iframe { 
+  width: 802px;
+  height: 102px;
+  position: absolute;
+  top: 90px;
+  left: 200px;
+  background: #c9c9c9 url("bg.png");
 }
 
 .aspl-logo { 
@@ -220,7 +231,14 @@ div.xml-doc pre.fragment .keywordflow {
 }
 
 .lateral-ad { 
-  position: fixed;
+  position: absolute;
   left: 84%;
   top: 30%;
+  background: #c9c9c9 url("bg.png");
+}
+
+.lateral-ad iframe { 
+  width: 152px;
+  height: 420px; 
+  background: #c9c9c9 url("bg.png");
 }
