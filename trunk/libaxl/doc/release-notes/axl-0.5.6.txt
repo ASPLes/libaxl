@@ -1,0 +1,95 @@
+          ########################################
+          #             Axl Library              #
+          #           Bohemian like you          # 
+          #                0.5.6                 #
+          ########################################
+
+Advanced Software Production Line is proud to announce a new Axl
+Library release.
+
+Axl Library is a small and efficient XML toolkit, written in ANSI C
+and released under the LGPL. It allows to produce efficient and clear
+code that handle XML data.
+
+The library was produced to support XML requirements needed by
+software developed by Advanced Software Production Line, S.L.
+
+At this moment the library is being used by Vortex Library, Af-Arch,
+Turbulence, Shaper and Fovap.
+
+Resources
+~~~~~~~~~
+
+   Axl Homepage
+   [ http://www.aspl.es/xml ]
+
+   Advanced Software Production Line, S.L.
+   [ http://www.aspl.es ]
+
+This release in short
+~~~~~~~~~~~~~~~~~~~~~
+
+  Bug fix release. Added support to include any binary content based
+  on <![CDATA[]]> decls by doing some automatic replacements.
+
+Thanks to..
+~~~~~~~~~~~
+
+  Benoit Amiaux (reported and fixed BOM detection and other
+  compilation warnings).
+
+Changes from previous release 0.5.5
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* [new] Added nested <![CDATA[]]> support by doing some particular
+  entity substitutions. This will ensure that a xml document using
+  CDATA decl can hold any binary data. Added support functions for
+  additional operations around this feature. API added:
+
+    - axl_node_has_invalid_chars_cdata
+    - axl_node_content_copy_and_escape_cdata
+
+  Added regression test (test_42).
+
+* [fix] More regression test on axlList and NULL references.
+
+* [fix] Making axl_list_remove, axl_list_remove_ptr,
+  axl_list_remove_first and axl_list_remove_last to allow removing
+  NULL reference. Updated regression test to check new function.
+
+* [fix] Updating configure.ac to check requirements for exarg files
+  included inside axl-knife to avoid using va_copy (or its draft
+  version) __va_copy.
+
+* [fix] Applying patches provided by Benoit Amiaux to fix minor
+  compilation warnings and proper BOM utf-8 detection.
+
+libaxl/knife:
+* [new] Added new option to allow checking a xml document (--check-xml).
+
+* [fix] Fixing exarg_strdup_printfv to get it compiled
+  and working on windows. Updated associated projects
+  using libexarg files.
+
+
+About Advanced Software Production Line, S.L.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Advanced Software Production Line provides GNU/Linux support and
+  consulting services to enable organization to introduce GNU/Linux
+  into its process, making other platforms to properly interact with
+  it.
+
+  Contact us, using English or Spanish, to get commercial support
+  and/or XML based development services.
+
+  You can reach us:
+
+       http://www.aspl.es - info@aspl.es
+
+  We hope Axl Library help you. Enjoy Axl Library!
+
+--
+Francis Brosnan Blázquez           - francis@aspl.es
+Advanced Software Production Line  - http://www.aspl.es
+21th jan 2009, Madrid (Spain)
