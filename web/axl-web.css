@@ -335,3 +335,27 @@ ul.list {
 .features li { 
   padding-bottom: 5px;
 }
+
+.downloads { 
+  padding-left: 150px;
+  vertical-align: top;
+}
+
+.downloads td { 
+  width: 80px;
+  vertical-align: top;
+  padding-right: 20px;
+}
+
+.debian { 
+  padding-left: 50px;
+  vertical-align: top;
+}
+
+.debian td { 
+  padding-right: 30px;
+}
+
+.debian pre { 
+  font-size: 10pt;
+}
