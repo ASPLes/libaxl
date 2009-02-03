@@ -14,7 +14,6 @@ Description: Fast and efficient XML 1.0 implementation
  to be fast, efficient and small. This is the development
  package.
 
-
 Package: libaxl1
 Section: libs
 Architecture: any
