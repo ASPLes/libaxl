@@ -1142,6 +1142,12 @@ void      axl_node_set_attribute      (axlNode    * node,
 	axl_return_if_fail (attribute);
 	axl_return_if_fail (value);
 
+	/* check for empty attribute names */
+	if (attribute[0] == 0) {
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "skipping setting attribute with no name!");
+		return;
+	}
+
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "setting attribute: %s='%s'", attribute, value);
 
 	/* check attribute name */
