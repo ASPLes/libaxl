@@ -2044,6 +2044,22 @@ axl_bool test_22 (axlError ** error)
 		return axl_false;
 	} /* end if */
 
+	
+	/* check for empty attributes ( ='value') */
+	doc = axl_doc_parse_from_file ("test_22b.xml", NULL);
+	if (doc != NULL) {
+		axl_error_report (error, -1, "Expected to find a failure while loading a document with empty attributes");
+		return axl_false;
+	}
+
+	/* check for empty values associated to
+	 * attributes ( value=' this value ' ) */
+	doc = axl_doc_parse_from_file ("test_22c.xml", NULL);
+	if (doc != NULL) {
+		axl_error_report (error, -1, "Expected to find a failure while loading a document with empty attributes values");
+		return axl_false;
+	} /* end if */
+
 	return axl_true;
 }
 

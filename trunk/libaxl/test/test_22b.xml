@@ -1,0 +1,3 @@
+<document>
+  <test value="attribute" =' content' value2="attribute" />
+</document>

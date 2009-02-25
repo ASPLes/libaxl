@@ -916,13 +916,19 @@ axl_bool __axl_doc_parse_node (axlStream   * stream,
 		 */
 		string_aux = axl_stream_get_until (stream, NULL, NULL, axl_true, 1, "=");
 		if (string_aux != NULL) {
-
-			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "attribute found: [%s]", string_aux);
-
 			/* nullify internal reference to the stream:
 			 * now we have inside string_aux the attribute
 			 * name */
 			axl_stream_nullify (stream, LAST_CHUNK);
+
+			/* check for empty values at the attribute definition */
+			if (string_aux [0] == 0) {
+				axl_error_new (-5, "Expected to find an attribute name (but found an empty value)", stream, error);
+				axl_stream_free (stream);
+				return axl_false;
+			} /* end if */
+
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "attribute found: [%s]", string_aux);
 
 			/* remove next " and ' if defined */
 			/* flag the we are looking for a " */
