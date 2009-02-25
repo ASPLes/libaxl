@@ -2060,6 +2060,37 @@ axl_bool test_22 (axlError ** error)
 		return axl_false;
 	} /* end if */
 
+	doc = axl_doc_create (NULL, NULL, axl_true);
+	node = axl_node_create ("test");
+	axl_doc_set_root (doc, node);
+
+	/* configure attributes */
+	axl_node_set_attribute (node, "", "a value");
+
+	/* configure attribute */
+	axl_node_set_attribute (node, "", "");
+
+	/* configure attribute */
+	axl_node_set_attribute (node, "", "another value");
+
+	if (! axl_doc_dump_pretty_to_file (doc, "test_22-test.xml", 4)) {
+		axl_error_report (error, -1, "Expected to find proper dump after wrong attribute configuration..");
+		return axl_false;
+	} /* end if */
+
+	axl_doc_free (doc);
+
+	/* check for empty values associated to
+	 * attributes ( value=' this value ' ) */
+	doc = axl_doc_parse_from_file ("test_22-test.xml", NULL);
+	if (doc == NULL) {
+		axl_error_report (error, -1, "Expected to find proper document loading after wrong attribute configuration.");
+		return axl_false;
+	} /* end if */
+
+	/* free documnent */
+	axl_doc_free (doc);
+
 	return axl_true;
 }
 
