@@ -955,6 +955,13 @@ axl_bool __axl_doc_parse_node (axlStream   * stream,
 			 * only one reference to attribute value
 			 * inside string_aux2 */
 			axl_stream_nullify (stream, LAST_CHUNK);
+
+			if (axl_node_has_attribute (node, string_aux)) {
+				/* parse error */
+				axl_error_new (-3, "Unable to add attribute to node which already has this attribute. Duplicate attribute error.", stream, error);
+				axl_stream_free (stream);
+				return axl_false;
+			} /* end if */
 			
 			/* set a new attribute for the given node */
 			axl_node_set_attribute_from_factory (doc->attr_factory, node, string_aux, string_aux2);
