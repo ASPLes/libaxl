@@ -1477,20 +1477,6 @@ axl_bool test_26 (axlError ** error)
 
 	axl_doc_free (doc);
 
-	/* parse a namespace file that do not follow rules (declaring twice default namespace) */
-	doc = axl_doc_parse_from_file ("test_26d.xml", error);
-	if (doc == NULL)
-		return axl_false;
-
-	/* call to validate namespace */
-	if (axl_ns_doc_validate (doc, error)) {
-		axl_error_new (-1, "Expected to find ns validation error, but not found (test_26d)", NULL, error);
-		return axl_false;
-	}
-	axl_error_free (*error);
-
-	axl_doc_free (doc);
-
 	return axl_true;
 }
 
@@ -2050,6 +2036,13 @@ axl_bool test_22 (axlError ** error)
 	
 	/* free document */
 	axl_doc_free (doc);
+
+	/* check to parse a document with */
+	doc = axl_doc_parse_from_file ("test_22.xml", NULL);
+	if (doc != NULL) {
+		axl_error_report (error, -1, "Expected to find a failure while reading an xml document with duplicated attributes");
+		return axl_false;
+	} /* end if */
 
 	return axl_true;
 }
