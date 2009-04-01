@@ -243,7 +243,7 @@ typedef enum {
 	 * entity name, making this entity definition to be only
 	 * usable from a DTD definition).
 	 */
-	PARAMETER_ENTITY,
+	PARAMETER_ENTITY
 }axlDtdEntityType;
 
 /** 
