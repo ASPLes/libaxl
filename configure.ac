@@ -36,7 +36,8 @@ dnl         info@aspl.es - http://www.aspl.es/xml
 dnl
 AC_INIT(src/axl.h)
 
-AXL_VERSION=`cat VERSION`
+configure_dir=`dirname "$0"`
+AXL_VERSION=`cat $configure_dir/VERSION`
 AC_SUBST(AXL_VERSION)
 
 AC_CONFIG_AUX_DIR(.)

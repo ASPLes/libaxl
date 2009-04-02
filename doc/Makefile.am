@@ -6,7 +6,7 @@ bin_SCRIPTS = initial_build_doc
 
 help:
 	@echo 
-	@echo " Documentation not built!:"
+	@echo " Documentaticd on not built!:"
 	@echo " ~~~~~~~~~~~~~~~~~~~~~~~~~"
 	@echo " --> Doxygen documentation wasn't built because an stamp was detected: doc.stamp"
 	@echo " --> To regenerate or force doc building type make build_doc or remove doc.stamp";
@@ -21,9 +21,9 @@ initial_build_doc:
 build_doc:
 	@echo "Generating module documentation..";
 	doxygen axl-doc.doxygen
-	cp axl.css html
-	cp bg.png html
-	cp main-page-logo.png html
-	cp aspl-logo.png html
-	cp body_back.gif html
+	cp $(top_srcdir)/doc/axl.css html
+	cp $(top_srcdir)/doc/bg.png html
+	cp $(top_srcdir)/doc/main-page-logo.png html
+	cp $(top_srcdir)/doc/aspl-logo.png html
+	cp $(top_srcdir)/doc/body_back.gif html
 
