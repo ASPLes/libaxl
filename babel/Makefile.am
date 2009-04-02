@@ -39,7 +39,7 @@ libaxl_babelinclude_HEADERS = \
 	axl_babel_iso88598.h \
 	axl_babel_iso88599.h
 
-libaxl_babel_la_LIBADD  = ../src/libaxl.la	
+libaxl_babel_la_LIBADD  = $(top_builddir)/src/libaxl.la	
 
 libaxl_babel_la_LDFLAGS = -no-undefined -export-symbols-regex '^(axl|__axl|_axl).*'
 
@@ -66,12 +66,12 @@ refresh-tables: gen-table
 noinst_PROGRAMS = gen-codes gen-table read-codes
 
 gen_codes_SOURCES  = gen-codes.c
-gen_codes_LDADD   = ../src/libaxl.la 
+gen_codes_LDADD   = $(top_builddir)/src/libaxl.la 
 
 gen_table_SOURCES  = gen-table.c
-gen_table_LDADD   = ../src/libaxl.la 
+gen_table_LDADD   = $(top_builddir)/src/libaxl.la 
 
 read_codes_SOURCES = read-codes.c
-read_codes_LDADD   = ../src/libaxl.la 
+read_codes_LDADD   = $(top_builddir)/src/libaxl.la 
 
 
