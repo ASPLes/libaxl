@@ -1605,8 +1605,8 @@ axl_bool      axl_doc_dump_pretty              (axlDoc  * doc,
  * @return \ref axl_true if the dump operation was ok, otherwisde \ref
  * axl_false is returned.
  */
-axl_bool      axl_doc_dump_to_file             (axlDoc  * doc,
-						char    * file_path)
+axl_bool      axl_doc_dump_to_file             (axlDoc      * doc,
+						const char  * file_path)
 {
 	char * content = NULL;
 	int    size    = -1;
@@ -1677,9 +1677,9 @@ axl_bool      axl_doc_dump_to_file             (axlDoc  * doc,
  * @return \ref axl_true if the dump operation was ok, otherwisde \ref
  * axl_false is returned.
  */
-axl_bool      axl_doc_dump_pretty_to_file      (axlDoc  * doc,
-						char    * file_path,
-						int       tabular)
+axl_bool      axl_doc_dump_pretty_to_file      (axlDoc      * doc,
+						const char  * file_path,
+						int           tabular)
 {
 	char     * content = NULL;
 	int        size    = -1;
