@@ -71,12 +71,12 @@ axl_bool  axl_doc_dump_pretty              (axlDoc  * doc,
 					    int     * size,
 					    int       tabular);
 
-axl_bool  axl_doc_dump_to_file             (axlDoc  * doc,
-					    char    * file_path);
+axl_bool  axl_doc_dump_to_file             (axlDoc     * doc,
+					    const char * file_path);
 
-axl_bool  axl_doc_dump_pretty_to_file      (axlDoc  * doc,
-					    char    * file_path,
-					    int       tabular);
+axl_bool  axl_doc_dump_pretty_to_file      (axlDoc     * doc,
+					    const char * file_path,
+					    int          tabular);
 
 int       axl_doc_get_flat_size            (axlDoc * doc);
 
