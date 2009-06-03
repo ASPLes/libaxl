@@ -86,6 +86,11 @@ axl_bool  axl_doc_are_equal                (axlDoc * doc,
 axl_bool  axl_doc_are_equal_trimmed        (axlDoc * doc,
 					    axlDoc * doc2);
 
+axl_bool  axl_doc_are_equal_full           (axlDoc    * doc, 
+					    axlDoc    * doc2,
+					    axl_bool    trimmed,
+					    axlError ** error);
+
 axlNode * axl_doc_get_root                 (axlDoc * doc);
 
 void      axl_doc_set_root                 (axlDoc * doc, 

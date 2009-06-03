@@ -638,9 +638,14 @@ while (chunk [i] != 0 && (stream->stream + stream->stream_index) [i] != 0) {\
  * @brief Allows to perform an inspection of the given chunk on the
  * given stream.
  *
- * The <i>chunk</i> will be checked to apper inside the stream. This
- * means that, having the stream as its state, the chunk should be
- * found the very begining of the stream.
+ * The <i>chunk</i> will be checked to apper at the begining of the
+ * stream. This means that, having the current state of the stream,
+ * the chunk is checked to be found at the very begining of the
+ * stream.
+ *
+ * If the function succeed, an implict call to \ref axl_stream_accept
+ * is done. In the case you are only checking but no stream acceptance
+ * is required, use instead: \ref axl_stream_peek.
  * 
  * @param stream The \ref axlStream where the operation will be
  * performed.
