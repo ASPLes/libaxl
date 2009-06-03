@@ -3981,10 +3981,12 @@ axl_bool          axl_node_are_equal_full          (axlNode * node, axlNode * no
 
 		/* check the number of attributes that has the hash */
 		if (node->attr_num != node2->attr_num) {
-			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "both nodes have different number of attributes (%d != %d)",
-				   node->attr_num, node2->attr_num);
-			axl_error_report (error, -1, "both nodes have different number of attributes (%d != %d)",
-					  node->attr_num, node2->attr_num);
+			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "both nodes have different number of attributes (<%s>:%d != <%s>:%d)",
+				   node->name, node->attr_num, 
+				   node2->name, node2->attr_num);
+			axl_error_report (error, -1, "both nodes have different number of attributes (<%s>:%d != <%s>:%d)",
+				   node->name, node->attr_num, 
+				   node2->name, node2->attr_num);
 			return axl_false;
 		}
 
