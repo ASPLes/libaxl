@@ -3922,20 +3922,29 @@ axl_bool __axl_node_are_equal_attr (axlPointer key,
  * 
  * @param node The node to check.
  * @param node2 The second node to check.
+ * @param error Optional reference to an \ref axlError where the particular differ is reported.
  * 
  * @return axl_true if both nodes are equivalent or axl_false if not.
  */
-axl_bool          axl_node_are_equal          (axlNode * node, axlNode * node2)
+axl_bool          axl_node_are_equal_full          (axlNode * node, axlNode * node2, axlError ** error)
 {
 	axl_bool result;
 	
-	axl_return_val_if_fail (node,  axl_false);
-	axl_return_val_if_fail (node2, axl_false);
+	if (node == NULL) {
+		axl_error_report (error, -1, "Nodes differs because first node reference is NULL");
+		return axl_false;
+	} /* end if */
+	if (node2 == NULL) {
+		axl_error_report (error, -1, "Nodes differs because second node reference is NULL");
+		return axl_false;
+	} /* end if */
 
 	/* check document root name */
 	if (! axl_cmp (axl_node_get_name (node), axl_node_get_name (node2))) {
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "node names aren't equal <%s> != <%s>",
 			   node->name, node2->name);
+		axl_error_report (error, -1, "node names aren't equal <%s> != <%s>",
+				  node->name, node2->name);
 		return axl_false;
 	}
 
@@ -3943,6 +3952,9 @@ axl_bool          axl_node_are_equal          (axlNode * node, axlNode * node2)
 	if (axl_node_is_empty (node) != axl_node_is_empty (node2)) {
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "emptyness configuration differs <%s> != <%s>",
 			   node->name, node2->name);
+
+		axl_error_report (error, -1, "emptyness configuration differs <%s> != <%s>",
+				  node->name, node2->name);
 		return axl_false;
 	}
 	
@@ -3950,6 +3962,8 @@ axl_bool          axl_node_are_equal          (axlNode * node, axlNode * node2)
 	if (axl_node_have_childs (node) != axl_node_have_childs (node2)) {
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "childs configuration differs <%s> != <%s>",
 			   node->name, node2->name);
+		axl_error_report (error, -1, "childs configuration differs <%s> != <%s>",
+				  node->name, node2->name);
 		return axl_false;
 	}
 
@@ -3957,6 +3971,8 @@ axl_bool          axl_node_are_equal          (axlNode * node, axlNode * node2)
 	if (axl_node_get_child_num (node) != axl_node_get_child_num (node2)) {
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "child number differs <%s>(%d) != <%s>(%d)",
 			   node->name, axl_node_get_child_num (node), node2->name, axl_node_get_child_num (node2));
+		axl_error_report (error, -1, "childs configuration differs <%s> != <%s>",
+				  node->name, node2->name);
 		return axl_false;
 	}
 
@@ -3967,6 +3983,8 @@ axl_bool          axl_node_are_equal          (axlNode * node, axlNode * node2)
 		if (node->attr_num != node2->attr_num) {
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "both nodes have different number of attributes (%d != %d)",
 				   node->attr_num, node2->attr_num);
+			axl_error_report (error, -1, "both nodes have different number of attributes (%d != %d)",
+					  node->attr_num, node2->attr_num);
 			return axl_false;
 		}
 
@@ -3983,6 +4001,8 @@ axl_bool          axl_node_are_equal          (axlNode * node, axlNode * node2)
 		if (! result) {
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "node attributes differs <%s> != <%s>",
 				   node->name, node2->name);
+			axl_error_report (error, -1, "node attributes differs <%s> != <%s>",
+					  node->name, node2->name);
 			/* attribute missmatch */
 			return axl_false;
 		}
@@ -3990,12 +4010,16 @@ axl_bool          axl_node_are_equal          (axlNode * node, axlNode * node2)
 		if (node->attributes == NULL && node2->attributes != NULL) {
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "node <%s> has no attributes but <%s> has",
 				   axl_node_get_name (node), axl_node_get_name (node2));
+			axl_error_report (error, -1, "node <%s> has no attributes but <%s> has",
+					  axl_node_get_name (node), axl_node_get_name (node2));
 			return axl_false;
 		}
 
 		if (node2->attributes == NULL && node->attributes != NULL) {
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "node <%s> has no attributes but <%s> has",
 				   axl_node_get_name (node2), axl_node_get_name (node));
+			axl_error_report (error, -1, "node <%s> has no attributes but <%s> has",
+					  axl_node_get_name (node2), axl_node_get_name (node));
 			return axl_false;
 		}
 
@@ -4003,6 +4027,24 @@ axl_bool          axl_node_are_equal          (axlNode * node, axlNode * node2)
 
 	/* both nodes seems to be equal */
 	return axl_true;
+}
+
+/** 
+ * @brief Allows to check if the provided references represents two
+ * equivalent nodes.
+ *
+ * The function will check node name, node content and node attributes
+ * and its values.
+ * 
+ * @param node The node to check.
+ * @param node2 The second node to check.
+ * 
+ * @return axl_true if both nodes are equivalent or axl_false if not.
+ */
+axl_bool          axl_node_are_equal          (axlNode * node, axlNode * node2)
+{
+	/* use common implementation */
+	return axl_node_are_equal_full (node, node2, NULL);
 }
 
 /** 
@@ -6608,9 +6650,10 @@ void          axl_item_transfer_childs_after (axlNode * old_parent,
  * information, otherwise \ref axl_false is returned. If the function
  * receives a null value it will return axl_false.
  */
-axl_bool          axl_item_are_equal      (axlItem   * item,
-					   axlItem   * item2,
-					   axl_bool    trimmed)
+axl_bool          axl_item_are_equal_full      (axlItem    * item,
+						axlItem    * item2,
+						axl_bool     trimmed,
+						axlError  ** error)
 {
 	axlNodeContent * content;
 	axlNodeContent * content2;
@@ -6624,14 +6667,17 @@ axl_bool          axl_item_are_equal      (axlItem   * item,
 	axl_return_val_if_fail (item2, axl_false);
 
 	/* basic type check */
-	if (axl_item_get_type (item) != axl_item_get_type (item2))
+	if (axl_item_get_type (item) != axl_item_get_type (item2)) {
+		axl_error_report (error, -1, "Items types differs (%d != %d)", 
+				  axl_item_get_type (item), axl_item_get_type (item2));
 		return axl_false;
+	}
 
 	/* according the type */
 	switch (axl_item_get_type (item)) {
 	case ITEM_NODE:
 		/* check that both nodes are equal */
-		return axl_node_are_equal (item->data, item2->data);
+		return axl_node_are_equal_full (item->data, item2->data, error);
 	case ITEM_CONTENT:
 	case ITEM_CDATA:
 	case ITEM_COMMENT:
@@ -6642,8 +6688,14 @@ axl_bool          axl_item_are_equal      (axlItem   * item,
 
 		if (! trimmed) {
 			/* check first content length */
-			if (content->content_size != content2->content_size)
+			if (content->content_size != content2->content_size) {
+				axl_error_report (error, -1, "Items content size differs (%s:%d != %s:%d)", 
+						  content->content, 
+						  content->content_size, 
+						  content2->content,
+						  content2->content_size);
 				return axl_false;
+			}
 			
 			/* now check content value */
 			return axl_cmp (content->content, content2->content);
@@ -6659,10 +6711,14 @@ axl_bool          axl_item_are_equal      (axlItem   * item,
 			/* do the comparision */
 			result = axl_cmp (trim, trim2);
 
+			if (! result) {
+				axl_error_report (error, -1, "Trimmed content differs ('%s' != '%s')", trim, trim2);
+			} /* end if */
+
 			/* free data */
 			axl_free (trim);
 			axl_free (trim2);
-
+			
 			return result;
 
 		}
@@ -6673,8 +6729,32 @@ axl_bool          axl_item_are_equal      (axlItem   * item,
 		/* no case identified, not equal */
 		break;
 	} /* end switch */
-
+	
+	axl_error_report (error, -1, "Item type not found, unable to check");
 	return axl_false;
+}
+
+/** 
+ * @brief Allows to check if both items are equal, considering the
+ * item type and the content associated to the item type.
+ *
+ *
+ * @param item The first item to check.  @param item2 The second item
+ * to check with the first item.  @param trimmed This paramenter
+ * allows to configure how equal checking is performed for content
+ * element (\ref ITEM_CONTENT, \ref ITEM_CDATA, \ref ITEM_COMMENT and
+ * \ref ITEM_REF).
+ *
+ * @return \ref axl_true if the both items represents the same
+ * information, otherwise \ref axl_false is returned. If the function
+ * receives a null value it will return axl_false.
+ */
+axl_bool          axl_item_are_equal      (axlItem   * item,
+					   axlItem   * item2,
+					   axl_bool    trimmed)
+{
+	/* call to check if both items are equal */
+	return axl_item_are_equal_full (item, item2, trimmed, NULL);
 }
 
 /** 

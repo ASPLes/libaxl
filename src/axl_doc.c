@@ -1963,7 +1963,7 @@ axlDoc  * axl_doc_parse_strings            (axlError ** error,
  * Internal support function which checks the provided child and its
  * childs are equal.
  */
-axl_bool __axl_doc_are_equal (axlNode * node, axlNode * node2, axl_bool trimmed)
+axl_bool __axl_doc_are_equal (axlNode * node, axlNode * node2, axl_bool trimmed, axlError ** error)
 {
 	int       iterator;
 	int       length;
@@ -1983,6 +1983,7 @@ axl_bool __axl_doc_are_equal (axlNode * node, axlNode * node2, axl_bool trimmed)
 
 	if (length != length2) {
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "child number differs, documents aren't equal");
+		axl_error_report (error, -1,  "child number differs, documents aren't equal");
 		return axl_false;
 	}
 
@@ -1993,14 +1994,18 @@ axl_bool __axl_doc_are_equal (axlNode * node, axlNode * node2, axl_bool trimmed)
 	/* for each item child found in both nodes */
 	while (child != NULL && child2 != NULL) {
 		
-		if (child == NULL) 
+		if (child == NULL)  {
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "child from the first document is null..");
+			axl_error_report (error, -1, "child from the first document is null..");
+		}
 
-		if (child2 == NULL) 
+		if (child2 == NULL) {
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "child from the second document is null..");
+			axl_error_report (error, -1,  "child from the second document is null..");
+		}
 
 		/* check if these nodes are also equal */
-		if (! axl_item_are_equal (child, child2, trimmed)) {
+		if (! axl_item_are_equal_full (child, child2, trimmed, error)) {
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "items  aren't equal, document is not equal");
 			return axl_false;
 		}
@@ -2012,7 +2017,7 @@ axl_bool __axl_doc_are_equal (axlNode * node, axlNode * node2, axl_bool trimmed)
 			node  = axl_item_get_data (child);
 			node2 = axl_item_get_data (child2);
 
-			if (! __axl_doc_are_equal (node, node2, trimmed)) {
+			if (! __axl_doc_are_equal (node, node2, trimmed, error)) {
 				__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "nodes <%s> and <%s> aren't equal, document is not equal", 
 					   axl_node_get_name (node), axl_node_get_name (node2));
 				return axl_false;
@@ -2032,15 +2037,24 @@ axl_bool __axl_doc_are_equal (axlNode * node, axlNode * node2, axl_bool trimmed)
 /** 
  * @internal Common implementation for equal documents.
  */
-axl_bool      axl_doc_are_equal_common (axlDoc   * doc,
-					axlDoc   * doc2,
-					axl_bool   trimmed)
+axl_bool      axl_doc_are_equal_common (axlDoc    * doc,
+					axlDoc    * doc2,
+					axl_bool    trimmed,
+					axlError ** error)
 {
 	axlNode * node;
 	axlNode * node2;
 
-	axl_return_val_if_fail (doc, axl_false);
-	axl_return_val_if_fail (doc, axl_false);
+	/* check first reference */
+	if (doc == NULL) {
+		axl_error_report (error, -1, "Documents differs because first document reference is null");
+		return axl_false;
+	}
+	/* check second reference */
+	if (doc2 == NULL) {
+		axl_error_report (error, -1, "Documents differs because second document reference is null");
+		return axl_false;
+	}
 
 	/* first, check the document root */
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "checking that both documents are equal");
@@ -2055,7 +2069,7 @@ axl_bool      axl_doc_are_equal_common (axlDoc   * doc,
 	}
 
 	/* call to common implemenation, activating triming */
-	return __axl_doc_are_equal (node, node2, trimmed);
+	return __axl_doc_are_equal (node, node2, trimmed, error);
 }
 
 /** 
@@ -2082,7 +2096,7 @@ axl_bool      axl_doc_are_equal_trimmed        (axlDoc * doc,
 						axlDoc * doc2)
 {
 	/* call to common implemenation, activating triming */
-	return axl_doc_are_equal_common (doc, doc2, axl_true);
+	return axl_doc_are_equal_common (doc, doc2, axl_true, NULL);
 }
 
 /** 
@@ -2109,7 +2123,43 @@ axl_bool      axl_doc_are_equal                (axlDoc * doc,
 						axlDoc * doc2)
 {
 	/* call to common implemenation, activating triming */
-	return axl_doc_are_equal_common (doc, doc2, axl_true);
+	return axl_doc_are_equal_common (doc, doc2, axl_true, NULL);
+}
+
+/** 
+ * @brief Allows to check if the provided two references represents
+ * equivalent xml documents.
+ *
+ * There is an alternative document checking function (\ref
+ * axl_doc_are_equal_trimmed) which considered that content found
+ * inside a xml node is equal if they share the same information
+ * without considering white spaces found starting and ending both
+ * elements being checked.
+ *
+ * This function considers that two documents are equal only and only
+ * if all nodes, attributes and content found is exactly, byte by
+ * byte, as found in the other document.
+ * 
+ * @param doc The first XML document to check.
+ *
+ * @param doc2 The second XML document to check.
+ *
+ * @param trimmed Allows to configure if node content must be trimmed
+ * before checking them (\ref axl_doc_are_equal_trimmed).
+ *
+ * @param error An optional reference to an \ref axlError node where
+ * difference information will be reported.
+ * 
+ * @return axl_true if both documents represents the same document,
+ * axl_false if not.
+ */
+axl_bool      axl_doc_are_equal_full           (axlDoc    * doc, 
+						axlDoc    * doc2,
+						axl_bool    trimmed,
+						axlError ** error)
+{
+	/* call to common implemenation, activating triming */
+	return axl_doc_are_equal_common (doc, doc2, trimmed, error);
 }
 
 

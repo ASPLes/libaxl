@@ -376,6 +376,8 @@ axlList * axl_node_get_childs         (axlNode * node);
 
 axl_bool  axl_node_are_equal          (axlNode * node, axlNode * node2);
 
+axl_bool  axl_node_are_equal_full     (axlNode * node, axlNode * node2, axlError ** error);
+
 void      axl_node_add_pi_target            (axlNode * node, 
 					     char * target, 
 					     char * content);
@@ -503,6 +505,11 @@ void          axl_item_transfer_childs_after (axlNode * old_parent,
 axl_bool      axl_item_are_equal      (axlItem * item,
 				       axlItem * item2,
 				       axl_bool      trimmed);
+
+axl_bool      axl_item_are_equal_full (axlItem    * item,
+				       axlItem    * item2,
+				       axl_bool     trimmed,
+				       axlError  ** error);
 
 void          axl_item_free           (axlItem * item,
 				       axl_bool      dealloc);
