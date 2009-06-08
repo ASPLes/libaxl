@@ -437,17 +437,28 @@ char * __axl_node_content_copy_and_escape (const char * content,
  * values. Initially, this function only implements translation for
  * default recognized entities (&, <, >, ' and ").
  *
+ * @param content The string content having escaped XML declarations
+ * such \&gt; or \&lt; which should be
+ * translated into its corresponding utf-8 symbol (for example > and
+ * <).
+ *
+ * @param content_size A non-optional reference to an integer variable
+ * which will hold the new size of the string returned.
+ *
  * Because the pattern substitution applied on this operation makes
  * not necessary to allocate memory, the function return the same
  * string received, but with all values replaced.
+ *
+ * @return Returns the string modified.
  */
 char * axl_node_content_translate_defaults (char * content, 
 					    int  * content_size)
 {
-	int    iterator  = 0;
-	int    iterator2 = 0;
+	int     iterator  = 0;
+	int     iterator2 = 0;
 	
 	axl_return_val_if_fail (content, NULL);
+	axl_return_val_if_fail (content_size, NULL);
 
 	/* iterate over all content defined */
 	while (iterator < (*content_size)) {
