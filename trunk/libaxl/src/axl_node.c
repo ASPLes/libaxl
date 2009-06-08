@@ -433,19 +433,16 @@ char * __axl_node_content_copy_and_escape (const char * content,
 }
 
 /** 
- * @internal
- *
- * 
- * Internal function which replaces all entity references to its
- * corresponding values. Initially, this function only implements
- * translation for default recognized entities (&, <, >, ' and ").
+ * @brief Replaces all entity references to its corresponding
+ * values. Initially, this function only implements translation for
+ * default recognized entities (&, <, >, ' and ").
  *
  * Because the pattern substitution applied on this operation makes
  * not necessary to allocate memory, the function return the same
  * string received, but with all values replaced.
  */
-char * __axl_node_content_translate_defaults (char * content, 
-					      int  * content_size)
+char * axl_node_content_translate_defaults (char * content, 
+					    int  * content_size)
 {
 	int    iterator  = 0;
 	int    iterator2 = 0;
@@ -1514,7 +1511,7 @@ char    * axl_node_get_attribute_value_trans (axlNode    * node,
 	
 	/* return a copy */
 	size   = strlen (_value);
-	return __axl_node_content_translate_defaults (_value, &size);
+	return axl_node_content_translate_defaults (_value, &size);
 }
 
 /** 
@@ -3286,8 +3283,8 @@ char    * axl_node_get_content_trans (axlNode * node, int * content_size)
 	/* translate all references that performs the entities to the
 	 * replacement text. */
 	if (content_size)
-		return __axl_node_content_translate_defaults (result, content_size);
-	return __axl_node_content_translate_defaults (result, &_content_size);
+		return axl_node_content_translate_defaults (result, content_size);
+	return axl_node_content_translate_defaults (result, &_content_size);
 }
 
 
@@ -6642,11 +6639,17 @@ void          axl_item_transfer_childs_after (axlNode * old_parent,
  * item type and the content associated to the item type.
  *
  *
- * @param item The first item to check.  @param item2 The second item
- * to check with the first item.  @param trimmed This paramenter
- * allows to configure how equal checking is performed for content
- * element (\ref ITEM_CONTENT, \ref ITEM_CDATA, \ref ITEM_COMMENT and
- * \ref ITEM_REF).
+ * @param item The first item to check.  
+ *
+ * @param item2 The second item to check with the first item.  
+ * 
+ * @param trimmed This paramenter allows to configure how equal
+ * checking is performed for content element (\ref ITEM_CONTENT, \ref
+ * ITEM_CDATA, \ref ITEM_COMMENT and \ref ITEM_REF).
+ *
+ * @param error Optional \ref axlError reference where textual
+ * diagnostic is reported.
+ *
  *
  * @return \ref axl_true if the both items represents the same
  * information, otherwise \ref axl_false is returned. If the function
