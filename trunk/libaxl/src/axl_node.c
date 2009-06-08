@@ -443,7 +443,9 @@ char * __axl_node_content_copy_and_escape (const char * content,
  * <).
  *
  * @param content_size A non-optional reference to an integer variable
- * which will hold the new size of the string returned.
+ * which will hold the new size of the string returned. You can pass a
+ * variable initialized to 0 or -1 to let the function to calculate
+ * the initial string length.
  *
  * Because the pattern substitution applied on this operation makes
  * not necessary to allocate memory, the function return the same
@@ -459,6 +461,10 @@ char * axl_node_content_translate_defaults (char * content,
 	
 	axl_return_val_if_fail (content, NULL);
 	axl_return_val_if_fail (content_size, NULL);
+
+	/* update string length if no data was provided */
+	if (*content_size == 0 || *content_size == -1)
+		*content_size = strlen (content);
 
 	/* iterate over all content defined */
 	while (iterator < (*content_size)) {
