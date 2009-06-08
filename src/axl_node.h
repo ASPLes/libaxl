@@ -421,17 +421,20 @@ int       axl_node_dump_at                  (axlNode * node,
 					     int       level,
 					     int       tabular);
 
-axl_bool  axl_node_has_invalid_chars        (const char * content,
-					     int    content_size,
-					     int  * added_size);
+axl_bool    axl_node_has_invalid_chars        (const char * content,
+					       int    content_size,
+					       int  * added_size);
 
-axl_bool  axl_node_has_invalid_chars_cdata  (const char * content,
-					     int          content_size,
-					     int        * added_size);
+axl_bool    axl_node_has_invalid_chars_cdata    (const char * content,
+						 int          content_size,
+						 int        * added_size);
 
-char    * axl_node_content_copy_and_escape  (const char * content, 
-					     int          content_size, 
-					     int          additional_size);
+char      * axl_node_content_translate_defaults (char * content, 
+						 int  * content_size);
+
+char      * axl_node_content_copy_and_escape    (const char * content, 
+						 int          content_size, 
+						 int          additional_size);
 
 char * axl_node_content_copy_and_escape_cdata (const char * content, 
 					       int          content_size, 
