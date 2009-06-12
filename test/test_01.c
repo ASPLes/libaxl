@@ -6704,6 +6704,137 @@ axl_bool test_01_04 () {
 }
 
 /** 
+ * @brief Check axl list remove at API.
+ */
+axl_bool test_01_04_a () {
+	axlList       * list;
+	char          * value;
+	char          * value2;
+	char          * value3;
+
+	/* create the list */
+	list = axl_list_new (axl_list_equal_string, axl_free);
+
+	/* add tree items */
+	axl_list_add (list, axl_strdup ("this is a test 1"));
+	axl_list_add (list, axl_strdup ("this is a test 2"));
+	axl_list_add (list, axl_strdup ("this is a test 3"));
+
+	/* remove second position */
+	axl_list_remove_at (list, 1);
+	if (axl_list_length (list) != 2) {
+		printf ("ERROR: Expected to find two items in a list after removal operation..");
+		return axl_false;
+	} /* end if */
+
+	/* check content */
+	if (! axl_cmp ("this is a test 1", axl_list_get_nth (list, 0))) {
+		printf ("ERROR: Expected to find item '%s' but found '%s'\n",
+			"this is a test 1", (char*) axl_list_get_nth (list, 0));
+		return axl_false;
+	} /* end if */
+
+	/* now remove first position */
+	axl_list_remove_at (list, 0);
+	if (axl_list_length (list) != 1) {
+		printf ("ERROR: Expected to find one item in a list after removal operation..");
+		return axl_false;
+	} /* end if */
+
+	/* check content */
+	if (! axl_cmp ("this is a test 3", axl_list_get_nth (list, 0))) {
+		printf ("ERROR: Expected to find item '%s' but found '%s'\n",
+			"this is a test 1", (char*) axl_list_get_nth (list, 0));
+		return axl_false;
+	} /* end if */
+
+	/* now remove first position */
+	axl_list_remove_at (list, 0);
+	if (axl_list_length (list) != 0) {
+		printf ("ERROR: Expected to find no item in a list after removal operation..");
+		return axl_false;
+	} /* end if */
+
+	axl_list_free (list);
+
+	/* now test unlink_at */
+	value  = axl_strdup ("Funky string");
+	value2 = axl_strdup ("Funky string 2");
+	value3 = axl_strdup ("Funky string 3");
+
+	/* check axl_list_equal_string */
+	if (axl_list_equal_string (value, value2) == 0) {
+		printf ("ERROR: Expected to find different strings, but reported equal for '%s' == '%s'\n",
+			value, value2);
+		return axl_false;
+	}
+	
+	/* create the list */
+	list = axl_list_new (axl_list_equal_string, axl_free);
+
+	/* add items */
+	axl_list_add (list, value);
+	if (axl_list_length (list) != 1) {
+		printf ("ERROR: Expected to find a list with one item but found: %d\n", axl_list_length (list));
+		return axl_false;
+	}
+	axl_list_add (list, value2);
+	if (axl_list_length (list) != 2) {
+		printf ("ERROR: Expected to find a list with two item but found: %d\n", axl_list_length (list));
+		return axl_false;
+	}
+	axl_list_add (list, value3);
+	if (axl_list_length (list) != 3) {
+		printf ("ERROR: Expected to find a list with three item but found: %d\n", axl_list_length (list));
+		return axl_false;
+	}
+
+	/* unlink items */
+	axl_list_unlink_at (list, 1);
+	if (axl_list_length (list) != 2) {
+		printf ("ERROR: Expected to find two items in a list after removal operation but found:..%d\n", axl_list_length (list));
+		return axl_false;
+	} /* end if */
+
+	/* check content */
+	if (! axl_cmp ("Funky string", axl_list_get_nth (list, 0))) {
+		printf ("ERROR: Expected to find item '%s' but found '%s'\n",
+			"Funky string", (char*) axl_list_get_nth (list, 0));
+		return axl_false;
+	} /* end if */
+
+	/* now remove first position */
+	axl_list_unlink_at (list, 0);
+	if (axl_list_length (list) != 1) {
+		printf ("ERROR: Expected to find one item in a list after removal operation..");
+		return axl_false;
+	} /* end if */
+
+	/* check content */
+	if (! axl_cmp ("Funky string 3", axl_list_get_nth (list, 0))) {
+		printf ("ERROR: Expected to find item '%s' but found '%s'\n",
+			"Funky string 3", (char*) axl_list_get_nth (list, 0));
+		return axl_false;
+	} /* end if */
+
+	/* now remove first position */
+	axl_list_unlink_at (list, 0);
+	if (axl_list_length (list) != 0) {
+		printf ("ERROR: Expected to find no item in a list after removal operation..");
+		return axl_false;
+	} /* end if */
+
+	axl_list_free (list);
+
+	/* now remove strings */
+	axl_free (value);
+	axl_free (value2);
+	axl_free (value3);
+
+	return axl_true;
+}
+
+/** 
  * @brief Checks error reporting functions.
  * 
  * 
@@ -8341,6 +8472,13 @@ int main (int argc, char ** argv)
 		printf ("Test 01-04: LibAxl list implementation (II) [   OK   ]\n");
 	}else {
 		printf ("Test 01-04: LibAxl list implementation (II) [ FAILED ]\n");
+		return -1;
+	}
+
+	if (test_01_04_a ()) {
+		printf ("Test 01-04-a: LibAxl list implementation (III) [   OK   ]\n");
+	}else {
+		printf ("Test 01-04-a: LibAxl list implementation (III) [ FAILED ]\n");
 		return -1;
 	}
 

@@ -67,9 +67,13 @@ void       axl_list_remove     (axlList * list, axlPointer pointer);
 
 void       axl_list_remove_ptr (axlList * list, axlPointer pointer);
 
+void       axl_list_remove_at  (axlList * list, int position);
+
 void       axl_list_unlink (axlList * list, axlPointer pointer);
 
 void       axl_list_unlink_ptr (axlList * list, axlPointer pointer);
+
+void       axl_list_unlink_at  (axlList * list, int position);
 
 void       axl_list_remove_first (axlList * list);
 
