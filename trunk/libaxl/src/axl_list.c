@@ -359,21 +359,28 @@ axlList  * axl_list_copy   (axlList * list, axlDuplicateFunc func)
  * given list.
  * 
  * The function will return 0 if the string are equal and 1 if
- * not. This will cause to make the strings addes to be append at the
- * end of the list.
+ * not. This will cause strings to be append at the end of the list.
  * 
  * @param a The first string to compare.
  * @param b The second string to compare.
  */
 int      axl_list_equal_string (axlPointer a, axlPointer b)
 {
-	int length = strlen (a);
+	int length;
+
 	axl_return_val_if_fail (a, 1);
 	axl_return_val_if_fail (b, 1);
 
+	/* get length */
+	length = strlen (a);
+
+	/* check first that both strings have the same length */
+	if (length != strlen (b))
+		return 1;
 
 	if (axl_stream_cmp (a, b, length))
 		return 0;
+	/* differs */
 	return 1;
 }
 
@@ -504,7 +511,6 @@ void      axl_list_add    (axlList * list, axlPointer pointer)
 				list->length ++;
 				return;
 			case 0:
-
 				/* the node found is equal, do not perform any operation */
 				return;
 			case 1:
@@ -986,6 +992,60 @@ void      axl_list_remove (axlList * list, axlPointer pointer)
 }
 
 /** 
+ * @internal Implementation that removes or unlinks a selected node at
+ * a particular position.
+ */
+void       __axl_list_remove_at_common  (axlList * list, int position, axl_bool remove_node)
+{
+	axlListNode * node;
+	int           iterator = 0;
+
+	axl_return_if_fail (list);
+	
+	/* find the item by position */
+	node  = list->first_node;
+
+	/* lookup */
+	while (node) {
+		/* return selected node */
+		if (iterator == position)
+			break;
+		
+		/* the node should be after this one */
+		node = node->next;
+
+		/* next iterator */
+		iterator++;
+	} /* end while */
+
+	if (node) {
+		/* remove selected node */
+		__axl_list_common_remove_selected_node (list, node, remove_node);
+	} /* end if */
+	return;
+}
+
+/** 
+ * @brief Allows to remove a particular item inside the list at a
+ * selected position.
+ *
+ * This function also deallocates the memory used by the node located
+ * at the particular position. In the case only a removal operation is
+ * required use \ref axl_list_unlink_at.
+ * 
+ * @param list The list where the remove operation will take place.
+ *
+ * @param position The position where the removal operation will take
+ * place. Position values ranges from 0 up to (N - 1).
+ */
+void       axl_list_remove_at  (axlList * list, int position)
+{
+	/* call to common implementation */
+	__axl_list_remove_at_common (list, position, axl_true);
+	return;
+}
+
+/** 
  * @brief Allows to remove the provided pointer from the list (calling
  * to the destroy function defined).
  *
@@ -1051,6 +1111,27 @@ void axl_list_unlink_ptr (axlList * list, axlPointer pointer)
 	
 	return;
 }
+
+/** 
+ * @brief Allows to unlink a particular item inside the list at a
+ * selected position.
+ *
+ * This function DO NOT deallocates the memory used by the node located
+ * at the particular position. In the case a complete removal operation is
+ * required use \ref axl_list_remove_at.
+ * 
+ * @param list The list where the unlink operation will take place.
+ *
+ * @param position The position where the unlink operation will take
+ * place. Position values ranges from 0 up to (N - 1).
+ */
+void       axl_list_unlink_at  (axlList * list, int position)
+{
+	/* call to common implementation */
+	__axl_list_remove_at_common (list, position, axl_false);
+	return;
+}
+
 
 /** 
  * @brief Allows to remove the first element, calling to the destroy
