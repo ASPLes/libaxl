@@ -2733,22 +2733,19 @@ const char    * axl_node_get_content     (axlNode * node, int * content_size)
 /** 
  * @brief Allows to set content to the given \ref axlNode instance.
  *
- * The xml node content is that part defined inside two xml starts,
- * using the same label, that are balanced. Here is an example:
+ * The xml node content is that part defined inside two balanced xml tags,
+ * using the same label. Here is an example:
  * \code
  * <data>
  *   Content inside the xml node.
  * </data>
  * \endcode
  *
- * Because the function will perform a local copy for the provided
- * data, it will also check for especial entities to be placed
- * properly. 
+ * The function perform a local copy from the content received, doing
+ * all entity replacement required.
  *
- * The following characters represents the set of characters that
- * should be referenced by using its associated entity reference. But,
- * if provided as is, the function will translate them into the
- * appropiate entity reference.
+ * The following table shows the set of characters that this function
+ * will translate into its corresponding entity:
  *
  * <table>
  * <tr><td><b>Character</b></td><td>Entity name</td></tr>
@@ -2759,18 +2756,11 @@ const char    * axl_node_get_content     (axlNode * node, int * content_size)
  * <tr><td>"</td><td>&amp;quot;</td></tr>
  * </table>
  *
- * In general it is a good idea to espace previous sequences by
- * providing the right entity value, avoding the additional
- * computation required to translate the value received. 
- * 
- * Rembember that valid XML documents have these values escaped. 
- * 
  * @param node The xml node, represented by an already initialized
  * \ref axlNode, where the node content will be set.
  *
  * @param content The content to set to the \ref axlNode. The function
- * will perform a local copy. Provided value could be unreferenced
- * once the function finish.
+ * will perform a local copy from it.
  *
  * @param content_size The content size that is being provided. If -1
  * is used, the function will use strlen function to get current
