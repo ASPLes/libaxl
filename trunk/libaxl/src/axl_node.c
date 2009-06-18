@@ -2900,8 +2900,7 @@ void      axl_node_set_content_from_factory (axlFactory * factory,
 }
 
 /** 
- * @brief Allows to store data as content of the provided noe to be
- * enclosed as CDATA.
+ * @brief Allows to store CDATA enclosed content on the provided node.
  *
  * Some characters are not allowed to be stored "as is" inside a
  * parseable XML document. The basic set of them are: &, ', ", < or >.
@@ -2909,16 +2908,14 @@ void      axl_node_set_content_from_factory (axlFactory * factory,
  * In order to store content containing previous characters inside an
  * xml node, and to remain valid, functions like \ref
  * axl_node_set_content will translate those value, into the accepted
- * scape sequences. However, in the other hand, the entity parsing the
- * document produced must perform the translation back to the normal
- * state.
+ * escape sequences. 
  *
  * As an alternative, the XML node content could be stored enclosed as
- * a CDATA section: <![CDATA[..]]> allow to store "un-parsed"
+ * a CDATA section: <![CDATA[..]]>, which allows to store unparsed
  * characters, including those not allowed.
  *
  * NOTE: In the case content received includes a ]]> declaration, it
- * is escaped. to allow it. This is provided not to allow nested CDATA
+ * is escaped to allow it. This is provided not to allow nested CDATA
  * declarations which is not allowed by XML 1.0 standard but to allow
  * binary content to be stored that may include a ]]> declaration.
  * 
@@ -2987,7 +2984,7 @@ void      axl_node_set_cdata_content_from_factory (axlFactory * factory,
  * 
  * The comment will be placed at the end of the current child
  * list. So, if you want to place a xml comment before a xml node,
- * call first to this function and the to \ref axl_node_set_child.
+ * call first to this function and then to \ref axl_node_set_child.
  *
  * @param node The node that will contain the comment.
  *
@@ -3035,7 +3032,7 @@ void      axl_node_set_comment        (axlNode * node,
  * 
  * @param node The \ref axlNode where the content is being required.
  *
- * @param content_size An optinal reference to an integer variable
+ * @param content_size An optional reference to an integer variable
  * where the content size will be returned. The function will return
  * the content size (if the variable is defined) ranging from 0 up to
  * the content size.
@@ -3074,12 +3071,12 @@ char    * axl_node_get_content_copy (axlNode * node, int * content_size)
 
 /** 
  * @brief Allows to get the content inside the provided node, trimming
- * the header and trailing white spaces found.
+ * the head and trailing white spaces found.
  *
  * Note that calling to this function will modify the node content,
- * removing "white spaces" found. Once the function is called, the
- * node content will be returned by \ref axl_node_get_content already
- * trimmed.
+ * removing beginig and ending "white spaces" found. Once the function
+ * is called, the node content will be returned by \ref
+ * axl_node_get_content already trimmed.
  *
  * @param node The node where the content will be trimmed and
  * returned.
@@ -3200,8 +3197,8 @@ void axl_node_get_content_trans_copy (axlItem * item, char * result)
  * allocation for the returned result, translating default entities
  * values with its replacement text.
  * 
- * @param node The XML node where the content is being requested.
- *
+ * @param node The XML node where the content is being requested to be
+ * translated.
  *
  * @param content_size An optional reference to an integer variable to
  * return the node content size.
@@ -3343,7 +3340,8 @@ void      axl_node_set_child (axlNode * parent, axlNode * child)
 }
 
 /** 
- * @brief Sets a new child after the node provided as a reference.
+ * @brief Sets a new child after the node provided, using it as a
+ * reference.
  *
  * This function is useful to allow configuring new childs placed
  * after some particular node. The child configured will be placed
@@ -3361,6 +3359,7 @@ void      axl_node_set_child_after    (axlNode * reference,
 	return;
 }
 
+/****/
 
 /** 
  * @brief Allows to replace a selected node, with the new reference
