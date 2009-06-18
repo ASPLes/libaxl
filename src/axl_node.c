@@ -263,8 +263,8 @@ struct _axlNode {
 	 */
 	axlPointer    * attributes;
 
-	/**
-	 * @internal A reference to the frist child.
+	/** 
+	 * @internal A reference to the first child.
 	 */
 	axlItem      * first;
 
@@ -273,7 +273,7 @@ struct _axlNode {
 	 */
 	axlItem      * last;
 
-	/**
+	/** 
 	 * @internal A hash used to store arbitrary data associated to
 	 * the node.
 	 */
@@ -434,8 +434,8 @@ char * __axl_node_content_copy_and_escape (const char * content,
 
 /** 
  * @brief Replaces all entity references to its corresponding
- * values. Initially, this function only implements translation for
- * default recognized entities (&, <, >, ' and ").
+ * values. This function only implements translation for default
+ * recognized entities (&, <, >, ' and ").
  *
  * @param content The string content having escaped XML declarations
  * such \&gt; or \&lt; which should be
@@ -445,13 +445,15 @@ char * __axl_node_content_copy_and_escape (const char * content,
  * @param content_size A non-optional reference to an integer variable
  * which will hold the new size of the string returned. You can pass a
  * variable initialized to 0 or -1 to let the function to calculate
- * the initial string length.
+ * the initial string length (by using strlen).
  *
- * Because the pattern substitution applied on this operation makes
+ * Because the substitution pattern applied on this operation makes
  * not necessary to allocate memory, the function return the same
- * string received, but with all values replaced.
+ * string received, but with all values replaced. If you want to avoid
+ * this behaviour, use \ref axl_strdup before calling to this
+ * function.
  *
- * @return Returns the string modified.
+ * @return Returns the string modified or NULL if it fails.
  */
 char * axl_node_content_translate_defaults (char * content, 
 					    int  * content_size)
@@ -534,14 +536,14 @@ char * axl_node_content_translate_defaults (char * content,
 /** 
  * @brief Creates a new \ref axlNode with the provided name.
  *
- * The function will perform a new local copy for the reference
+ * The function will perform a new local copy from the name reference
  * received. See also \ref axl_node_create_ref for an explanation
- * about saving memory.
+ * about how to save memory.
  *
  * @param name The name to be used for the node be created. The
  * function doesn't check if the paramater received is null.
  * 
- * @return A newly allocate \ref axlNode reference, that must be
+ * @return A newly allocated \ref axlNode reference, that must be
  * deallocated by \ref axl_node_free.
  */
 axlNode * axl_node_create (const char * name)
@@ -558,7 +560,7 @@ axlNode * axl_node_create (const char * name)
 
 /** 
  * @brief This function allows to create a xml node from the provided
- * xml content.
+ * xml content (bootstraping XML content).
  *
  * This function is useful if it is required to create a node with a
  * particular complex content, without going into the detail of
@@ -606,7 +608,8 @@ axlNode * axl_node_create (const char * name)
  * axl_node_free (root);
  * \endcode
  * 
- * @param error Optional error reference to report parsing error problems that can be found.
+ * @param error Optional error reference to report parsing error
+ * problems that can be found.
  * 
  * The function receives a set of strings, separate by comma, ended by
  * NULL.
@@ -677,7 +680,7 @@ axlNode * axl_node_parse_strings      (axlError ** error, ...)
  * node but its content, using a printf-like format.
  *
  * This handy function, like \ref axl_node_parse_strings, allows to
- * create complex xml structures providing the inline content.
+ * create complex xml structures providing inline content.
  *
  * Here is an example:
  * \code
@@ -745,23 +748,22 @@ axlNode * axl_node_parse                    (axlError ** error, const char * con
 
 
 /** 
- * @brief Creates a new \ref axlNode but using the memory passed in by
- * the name reference.
+ * @brief Creates a new \ref axlNode but reusing the memory passed in
+ * by the name reference.
  *
  * This function works the same way like \ref axl_node_create, but
- * previous one makes a local copy for the name provided. This means
+ * previous one makes a local copy from the name provided. This means
  * that, if you have allocated the reference being passed, the
  * previous function will allocate again memory for the name
  * reference.
  *
  * Obviously, for a few xml nodes this have none or little effect but,
  * if your xml document have 100.000 nodes you save 100.000 extra
- * memory allocations and deallocations. This have a great impact in
- * the long term impact of your programm because memory fragmentation
- * is kept as low as possible.
+ * memory allocations and deallocations. This may improve your
+ * application performace because memory
+ * fragmentation/allocations/deallocations are reduced.
  *
- * Keep in mind that this function should not be used for static names
- * declared on the code. Example:
+ * Keep in mind that this function should not be used with static strings. Example:
  * \code
  *    // propery node creation 
  *    axlNode * node = axl_node_create ("test");
@@ -770,9 +772,8 @@ axlNode * axl_node_parse                    (axlError ** error, const char * con
  *    axlNode * node = axl_node_create_ref ("test");
  * \endcode
  *
- * @param name A reference to the node name that is hold by
- * dinamically allocated memory from the user space code. The function
- * doesn't check if the parameter received is null.
+ * @param name A user-space allocated memory representing the node
+ * name. The function doesn't check if the parameter received is null.
  * 
  * @return A newly created \ref axlNode reference that must be
  * deallocated by \ref axl_node_free.
@@ -796,9 +797,9 @@ axlNode * axl_node_create_ref         (char * name)
  *
  * @param node The node to be configured with a new name.
  * 
- * @param name The new name to configure to the node. The value
- * provided will be allocated, to create a local copy. The function
- * won't check the name parameter received to be a non-null pointer.
+ * @param name The new name to configure on the node. Function will
+ * create a local copy from the new name provided. The function won't
+ * check the name parameter received to be a non-null pointer.
  */
 void      axl_node_set_name                 (axlNode * node, const char * name)
 {
@@ -820,7 +821,7 @@ void      axl_node_set_name                 (axlNode * node, const char * name)
  *
  * @param node The node to be configured with a new name.
  * 
- * @param name The new name to configure to the node. The value
+ * @param name The new name to configure on the node. The value
  * provided will be owned by the node. The function won't check the
  * name parameter received to be a non-null pointer.
  */
@@ -875,17 +876,12 @@ axlPointer __axl_node_copy_value (axlPointer key, axlDestroyFunc key_destroy,
 /** 
  * @brief Allows to perform a copy operation for the provided node.
  *
- * The function can perform a simple copy, without attributes and
- * childs, if both attributes are axl_false. If the copy attributes and
- * copy childs are activated, childs copied will have attributes
- * copied.
- * 
- * @param node The node source of information.
+ * @param node The source node to copy.
  *
- * @param copy_attributes Signals the function to copy node attributes
- * into the newly created node.
+ * @param copy_attributes Signals the function to also copy node
+ * attributes into the newly created node.
  *
- * @param copy_childs Signals the function to copy childs for the
+ * @param copy_childs Signals the function to also copy childs for the
  * source node.
  * 
  * @return A newly created node copy or null if it fails. The function
@@ -963,11 +959,7 @@ axlNode * axl_node_copy                     (axlNode   * node,
  * document reference.
  * 
  * @return The xml document reference or NULL if it is not already
- * set. Once a xml node is created, it must be added to the xml
- * document either because it is the parent node, in that case \ref
- * axl_doc_set_root must be used, or either because the node is being
- * added as a child of a xml node that is the already added root node
- * or a child of it.
+ * set. 
  */
 axlDoc  * axl_node_get_doc                  (axlNode * node)
 {
@@ -1115,28 +1107,24 @@ void      __axl_node_set_attribute      (axlFactory * factory,
 }
 
 /** 
- * @brief Allows to configure an xml attribute to the given node.
+ * @brief Allows to configure an xml attribute on the given node.
  *
- * Attributes are that piece of the xml node definition that is
- * defined the by pair attr=value. Here is an example of an xml node
- * with an attribute:
- * 
  * \code
  * <complex attr1='value'>
  *   ..
  * </complex>
  * \endcode
  *
- * It is not permited to store the same attributes several times
- * inside the same node. If the function detects that a node is being
- * set to have the same attribute name several times, the attribute
- * will not be added.
+ * It is not allowed to store the same attribute twice inside the same
+ * node. If the function detects that a node is being set to have the
+ * same attribute name several times, the attribute will be silently
+ * not added.
  *
- * Values for the attribute name (<b>attribute</b>) and its value can
- * be deallocated once the function finish. This function will perform
- * a local copy.
+ * Values for the attribute name (<b>attribute</b>) and its associated
+ * value can be deallocated once the function finish. This function
+ * will perform a local copy.
  * 
- * @param node The \ref axlNode where the attribute will be installed
+ * @param node The \ref axlNode where the attribute will be installed.
  *
  * @param attribute The attribute name to configure. This value can't
  * be NULL.
@@ -1205,8 +1193,7 @@ void      axl_node_set_attribute      (axlNode    * node,
  * for them.
  * 
  * This function works the same way like \ref axl_node_set_attribute
- * but reusing memory allocated by the user space to avoid allocating
- * information twice.
+ * but reusing memory allocated by the user space.
  * 
  * @param node The \ref axlNode where the attributes will be
  * installed.
@@ -1262,6 +1249,8 @@ void      axl_node_set_attribute_from_factory  (axlFactory * factory,
  * 
  * @return A \ref axl_true if the attribute value is set, otherwise
  * \ref axl_false is returned.
+ *
+ * See also \ref HAS_ATTR.
  */
 axl_bool          axl_node_has_attribute      (axlNode * node, const char * attribute)
 {
@@ -1295,10 +1284,10 @@ axl_bool          axl_node_has_attribute      (axlNode * node, const char * attr
 }
 
 /** 
- * @brief Allows to remove the attribute provided, from the node
+ * @brief Allows to remove the provided attribute, from the node
  * provided.
  * 
- * @param node The node that will be updated by removing the attribute
+ * @param node The node to be updated by removing the attribute
  * provided.
  *
  * @param attribute The attribute to locate and remove.
@@ -1369,7 +1358,7 @@ void      axl_node_remove_attribute         (axlNode    * node,
  * @param node The node that is requested to return the number of
  * attributes installed.
  * 
- * @return Attributes installed, or -1 if it fails.
+ * @return Number of attributes installed, or -1 if it fails.
  */
 int       axl_node_num_attributes           (axlNode    * node)
 {
@@ -1398,7 +1387,8 @@ int       axl_node_num_attributes           (axlNode    * node)
 }
 
 /** 
- * @brief Allows to check if the provided has any attribute installed.
+ * @brief Allows to check if the provided node has attributes
+ * installed.
  * 
  * @param node The node to be checked for attributes.
  * 
@@ -1419,12 +1409,14 @@ axl_bool      axl_node_has_attributes (axlNode * node)
  * inside the given node.
  *
  * It is recomended to call first to \ref axl_node_has_attribute to
- * ensure that the attribute to be reported its value already exists.
+ * ensure that the attribute to be reported its value already
+ * exists. See also \ref ATTR_VALUE.
  *
- * @param node The \ref axlNode the the attribute value associated
+ * @param node The \ref axlNode where the attribute value associated
  * will be returned.
  *
- * @param attribute The attribute that is being required its value.
+ * @param attribute The attribute that is being required for its
+ * value.
  * 
  * @return A string containing the attribute value or NULL if
  * fails. Returned value must not be deallocated, it is a reference to
@@ -1476,7 +1468,7 @@ const char    * axl_node_get_attribute_value (axlNode * node, const char * attri
  * @param attribute The attribute that is being requested.
  * 
  * @return A newly allocated reference that must be deallocated when
- * no longer needed calling to axl_free.
+ * no longer needed calling to \ref axl_free.
  */
 char    * axl_node_get_attribute_value_copy (axlNode    * node, 
 					     const char * attribute)
@@ -1493,7 +1485,7 @@ char    * axl_node_get_attribute_value_copy (axlNode    * node,
 
 /** 
  * @brief Gets the attribute content for the provided attribute name,
- * at the provided node, but translating entity references.
+ * at the provided node, but translating entity references found.
  *
  * This function works the same way like \ref
  * axl_node_get_attribute_value_copy, in the sense it returns a
@@ -1501,9 +1493,6 @@ char    * axl_node_get_attribute_value_copy (axlNode    * node,
  * at the same time, it returns the content with all entity references
  * already translated.
  *
- * If the attribute content has <b>&amp;</b>, <b>&lt;</b>, etc, this
- * function will translate them into the corresponding values.
- * 
  * @param node The \ref axlNode instance where the attribute content
  * will be returned.
  *
@@ -1532,14 +1521,14 @@ char    * axl_node_get_attribute_value_trans (axlNode    * node,
 }
 
 /** 
- * @brief Allows to get the value associated to the attributed
+ * @brief Allows to get the value associated to the attribute
  * provided, inside the node selected, removing trailing and ending
  * white spaces (in the W3C sence: \\n, \\t, \\r, ' ').
  *
  * See \ref ATTR_VALUE_TRIMMED for a convenience macro.
  * 
  * @param node The node that is requested to return the associated 
- * value to the attributed.
+ * value to the attribute.
  *
  * @param attribute The attribute that is being requested.
  * 
@@ -1577,8 +1566,8 @@ const char    * axl_node_get_attribute_value_trimmed (axlNode    * node,
  * @param attribute The attribute to be checked.
  * @param value The value to checked if the attribute is found.
  * 
- * @return \ref axl_true if the node has the attribute with the provided
- * value.
+ * @return \ref axl_true if the node has the attribute with the
+ * provided value.
  */
 axl_bool axl_node_has_attribute_value       (axlNode    * node, 
 					     const char * attribute, 
@@ -1620,17 +1609,19 @@ void __init_node_annotation (axlNode * node)
  * @brief Allows to store user defined data associated to the node
  * that is not visible from an XML perspective.
  *
- * This function allows to store data associated to the node that is
- * accesible in an inherired fashion that allows to store semantic
- * information while parsing xml documents.
+ * This function allows to store data associated to the node and to
+ * retrieve it later in an inherited fashion. This allows to store
+ * semantic/metadata information while parsing xml documents.
  *
- * This function stores the given key using a hashing storage,
+ * This function stores the given key using a hash,
  * associating the data provided on the given node. You can also check
  * the \ref axl_node_annotate_data_full which performs the same task
  * but allowing to provide key and data destroy functions.
  *
  * Once data is stored, it could be inherited by child nodes because
- * the access to it is done using \ref axl_node_annotate_get. 
+ * the access to it is done using \ref axl_node_annotate_get which can
+ * configure the data lookup to into the particular node or its
+ * parents.
  *
  * Additionally, you can also perform annotation using native types:
  * int, string and double. Check the following functions to do so.
@@ -1667,14 +1658,13 @@ void      axl_node_annotate_data                 (axlNode     * node,
  * that is not visible from an XML perspective.
  *
  * See \ref axl_node_annotate_data for a long explanation. This
- * function performs the same task as \ref axl_node_annotate_data_full
- * but allowing to store a destroy key and a destroy data associated
- * to the annotated data to be stored.
+ * function performs the same task as \ref axl_node_annotate_data but
+ * allowing to set a key destroy and data destroy functions. They are
+ * later used to deallocate key and data references.
  *
  * @param node The node where the annotated data will be stored.
  *
- * @param key The key under which the annotated data will be stored
- * (and indexed).
+ * @param key The key under which the annotated data will be stored.
  *
  * @param key_destroy The destroy function to be called to deallocate
  * the key stored.
@@ -1703,18 +1693,17 @@ void      axl_node_annotate_data_full            (axlNode       * node,
 }
 
 /** 
- * @brief Allows to perform lookups for annotated data stored on the
- * provided node, configure how data is looked up if it fails to find
- * on the provided node.
+ * @brief Allows to perform a lookup for annotated data stored on the
+ * provided node.
  * 
  * @param node The node where the lookup will be performed.
  *
  * @param key The key to lookup in the \ref axlNode reference.
  *
- * @param lookup_in_parent Once the lookup fails, this variable allows
- * to signal the function to also lookup the value in the parent
- * nodes. This mechanism allows to store data on parent nodes that are
- * shared by child nodes.
+ * @param lookup_in_parent Once the lookup fails in the current node,
+ * this variable allows to signal the function to also lookup the
+ * value in the parent nodes recursively. This mechanism allows to
+ * store data on parent nodes that are shared among all child nodes.
  *
  * @return The data associated to the key according to the lookup
  * configuration (lookup_in_parent and lookup_in_doc).
@@ -1819,16 +1808,16 @@ void __axl_annotate_data_free (AnnotateNodeData * data)
  *
  * While using xml documents loaded into memory, each node could be
  * processed and annotated with particular information, indexed with a
- * key, that could be retrieved later for faster process. 
+ * key, that could be retrieved later for faster process.
  * 
  * This data annotation doesn't perform any modification to the xml
  * document in any form. It is just a programming support that allows
- * developers to avoid created complex and independent structures to
- * the xml document while developing.
+ * developers to avoid creating complex and independent structures to
+ * the xml document while developing XML based solutions.
  * 
- * While using annotation support, you can use low level functions that
- * provide a simple way to store pointers associated to particular
- * nodes and retrieve them using:
+ * While using annotation support, you can use low level functions
+ * that provide a simple way to store pointers associated to
+ * particular nodes and retrieve them using:
  * 
  * - \ref axl_node_annotate_data_full
  * - \ref axl_node_annotate_data
@@ -1843,14 +1832,15 @@ void __axl_annotate_data_free (AnnotateNodeData * data)
  *  - \ref axl_node_annotate_double
  *
  * If you use this function to store an integer data you must use \ref
- * axl_node_annotate_get_int to retreive data stored. You can't use \ref axl_node_annotate_get.
+ * axl_node_annotate_get_int to retreive data stored. You can't use
+ * \ref axl_node_annotate_get.
  * 
  * @param node The node where the annotation will be aplied.
  *
  * @param key The key to index the data annotated to the node.
  *
- * @param int_value An integer value that will be annotated to the node
- * received under the key provided.
+ * @param int_value An integer value that will be annotated to the
+ * node received under the key provided.
  */
 void       axl_node_annotate_int                 (axlNode    * node,
 						 const char * key,
@@ -1879,16 +1869,16 @@ void       axl_node_annotate_int                 (axlNode    * node,
  *
  * While using xml documents loaded into memory, each node could be
  * processed and annotated with particular information, indexed with a
- * key, that could be retrieved later for faster process. 
+ * key, that could be retrieved later for faster process.
  * 
  * This data annotation doesn't perform any modification to the xml
  * document in any form. It is just a programming support that allows
- * developers to avoid created complex and independent structures to
- * the xml document while developing.
+ * developers to avoid creating complex and independent structures to
+ * the xml document while developing XML based solutions.
  * 
- * While using annotation support, you can use low level functions that
- * provide a simple way to store pointers associated to particular
- * nodes and retrieve them using:
+ * While using annotation support, you can use low level functions
+ * that provide a simple way to store pointers associated to
+ * particular nodes and retrieve them using:
  * 
  * - \ref axl_node_annotate_data_full
  * - \ref axl_node_annotate_data
@@ -1941,16 +1931,16 @@ void       axl_node_annotate_string              (axlNode       * node,
  *
  * While using xml documents loaded into memory, each node could be
  * processed and annotated with particular information, indexed with a
- * key, that could be retrieved later for faster process. 
+ * key, that could be retrieved later for faster process.
  * 
  * This data annotation doesn't perform any modification to the xml
  * document in any form. It is just a programming support that allows
- * developers to avoid created complex and independent structures to
- * the xml document while developing.
+ * developers to avoid creating complex and independent structures to
+ * the xml document while developing XML based solutions.
  * 
- * While using annotation support, you can use low level functions that
- * provide a simple way to store pointers associated to particular
- * nodes and retrieve them using:
+ * While using annotation support, you can use low level functions
+ * that provide a simple way to store pointers associated to
+ * particular nodes and retrieve them using:
  * 
  * - \ref axl_node_annotate_data_full
  * - \ref axl_node_annotate_data
@@ -1996,7 +1986,7 @@ void       axl_node_annotate_double              (axlNode    * node,
 }
 
 /** 
- * @brief Allows to retreive the annotated int value stored on the
+ * @brief Allows to retrieve the annotated int value stored on the
  * particular node, under the provided key.
  * 
  * @param node The node that is required to return the annotated data.
@@ -2044,7 +2034,7 @@ int        axl_node_annotate_get_int             (axlNode    * node,
 }
 
 /** 
- * @brief Allows to retreive the annotated string value stored on the
+ * @brief Allows to retrieve the annotated string value stored on the
  * particular node, under the provided key.
  * 
  * @param node The node that is required to return the annotated data.
@@ -2092,7 +2082,7 @@ char *     axl_node_annotate_get_string          (axlNode    * node,
 }
 
 /** 
- * @brief Allows to retreive the annotated double value stored on the
+ * @brief Allows to retrieve the annotated double value stored on the
  * particular node, under the provided key.
  * 
  * @param node The node that is required to return the annotated data.
@@ -2225,15 +2215,7 @@ void      axl_node_set_is_empty (axlNode * node, axl_bool empty)
 }
 
 /** 
- * @brief Allows to get current xml node name (represented the xml node by \ref axlNode).
- *
- * The name of a node is the label that identifies it at the start and
- * close tag. On the following example, the xml node name is
- * considered to be <b>"data"</b>.
- *
- * \code
- * <data>...</data>
- * \endcode
+ * @brief Allows to get current xml node name.
  *
  * If it is required to check if the given \ref axlNode have a
  * particular name you can use the macro \ref NODE_CMP_NAME.
@@ -2262,13 +2244,9 @@ const char    * axl_node_get_name           (axlNode * node)
 }
 
 /** 
- * @brief Allows to get the parent xml node (\ref axlNode) that is holding
- * as child the provided xml node reference.
+ * @brief Allows to get the parent xml node (\ref axlNode) of the
+ * provided xml node reference.
  *
- * When a node holds childs, it is also created a parent relation from
- * the child to the parent. This function allows to return that
- * reference.
- * 
  * @param node The xml node that is requested to return its parent
  * node.
  * 
@@ -2296,18 +2274,18 @@ axlNode * axl_node_get_parent         (axlNode * node)
 
 /** 
  * @brief Allows to get the node that is located, at the same level,
- * on the next position of the child list.
+ * on the next position on the child list.
  *
  * When a parent node holds more node childs, all of them have the
  * same parent child, and at the same time, all of them have a brother
- * relation. This relation makes that to nodes that are childs for a
+ * relation. This relation makes that two nodes that are childs for a
  * parent node, are positioned sequentially as childs for the parent.
  *
- * This function allows to get the next childs that is stored at the
+ * This function allows to get the next child that is stored at the
  * next position, inside the same level, for the given child node.
  *
  * There are an alternative API that allows to get the next node,
- * following to the node selected, providing the name to match. See
+ * following to the node selected, but providing the name to match. See
  * \ref axl_node_get_next_called.
  *
  * @param node The node to get the next xml node reference.
@@ -2357,9 +2335,13 @@ axlNode * axl_node_get_next           (axlNode * node)
  * @brief Allows to get the next node, following to the node provided,
  * matching the given name.
  *
- * <i><b>NOTE:</b> This function isn't XML Namespace aware. You must use \ref axl_ns_node_get_next_called instead. See \ref axl_ns_doc_validate. </i>
+ * <i><b>NOTE:</b> This function isn't XML Namespace aware. You must
+ * use \ref axl_ns_node_get_next_called instead. See \ref
+ * axl_ns_doc_validate. </i>
  * 
- * @param node The node that is requested to return its next sibling node.
+ * @param node The node that is requested to return its next sibling
+ * node.
+ *
  * @param name The name to match for the next node.
  * 
  * @return A reference to the next node or NULL if it fails. The
@@ -2388,14 +2370,15 @@ axlNode * axl_node_get_next_called    (axlNode * node,
 }
 
 /** 
- * @brief Allows to get the previous reference from the reference node
- * provided. 
+ * @brief Allows to get the previous reference relative to the node
+ * reference provided.
  *
  * See \ref axl_node_get_next. Previous reference is the considered
  * the previous node to the referenced provided that shares the same
  * parent and it is situated in the same level.
  * 
- * @param node The node where the previous reference to the previous node will be returned.
+ * @param node The node where the previous reference to the previous
+ * node will be returned.
  * 
  * @return The previous node reference or NULL if the node doesn't
  * have previous reference or NULL if the function fails (the function
@@ -2428,7 +2411,9 @@ axlNode * axl_node_get_previous (axlNode * node)
  * @brief Allows to get the previous node, preceding to the node
  * provided, matching the given name.
  *
- * <i><b>NOTE:</b> This function isn't XML Namespace aware. You must use \ref axl_ns_node_get_previous_called instead. See \ref axl_ns_doc_validate. </i>
+ * <i><b>NOTE:</b> This function isn't XML Namespace aware. You must
+ * use \ref axl_ns_node_get_previous_called instead. See \ref
+ * axl_ns_doc_validate. </i>
  * 
  * @param node The node that is requested to return its previous sibling node.
  * @param name The name to match for the previous node.
@@ -2579,19 +2564,8 @@ axlNode * axl_node_get_last_child     (axlNode * node)
 }
 
 /** 
- * @brief Allows to get current emptyness configuration for the given
- * \ref axlNode.
+ * @brief Allows to check if the provided \ref axlNode is empty.
  *
- * An \ref axlNode, which is a representation of a xml node, is
- * considered to be empty only if it has no content inside it. The
- * following xml code snipet shows what is considered the content:
- *
- * \code
- * <data>
- *    Xml content, data node content
- * </data>
- * \endcode
- * 
  * If a node have content, this function will return \ref
  * axl_false. The content must not be confused with the node childs. A
  * xml node (\ref axlNode) could be empty but have childs at the same
@@ -2608,7 +2582,8 @@ axlNode * axl_node_get_last_child     (axlNode * node)
  * </data>
  * \endcode
  *
- * A node that is empty will return NULL data once called to \ref axl_node_get_content.
+ * A node that is empty will return NULL data once called to \ref
+ * axl_node_get_content.
  * 
  * @param node The node to check for its empty status. 
  * 
@@ -2646,8 +2621,8 @@ axl_bool          axl_node_is_empty        (axlNode * node)
  * @brief Allows to get current xml node content (\ref axlNode).
  * 
  * See \ref axl_node_is_empty for more details. This function allows
- * to get current xml node content, which is the free text enclosed by
- * the node.
+ * to get current xml node content, which is the free text enclosed
+ * inside the node.
  *
  * Returned value is an internal reference to the content stored. So,
  * in the case a local copy is desired, you should check \ref
@@ -2658,7 +2633,7 @@ axl_bool          axl_node_is_empty        (axlNode * node)
  * into the application level values. 
  * 
  * This is done because while using the content, you may be interested
- * on getting the raw content to be passed to another xml parser which
+ * in getting the raw content to be passed to another xml parser which
  * is also able to process that entities.
  *
  * If you don't like this behaviour you can check \ref
@@ -2676,10 +2651,10 @@ axl_bool          axl_node_is_empty        (axlNode * node)
  * copy).
  *
  * - \ref axl_node_get_content_trim (the same like this function but
- * removing initial and trailing white spaces in the W3C: spaces,
+ * removing initial and trailing white spaces in the W3C sense: spaces,
  * tabulars, carry returns and line feed values).
  * 
- * @param node The \ref axlDoc node where the content will be retrieved.
+ * @param node The \ref axlNode node where the content will be retrieved.
  *
  * @param content_size Optional pointer to an integer variable where
  * the content size will be reported. If the variable is not set, the
