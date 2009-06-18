@@ -3359,28 +3359,20 @@ void      axl_node_set_child_after    (axlNode * reference,
 	return;
 }
 
-/****/
-
 /** 
- * @brief Allows to replace a selected node, with the new reference
+ * @brief Allows to replace a selected node with a new reference
  * inside its context (updating all references: next, previous and
  * parent).
  *
- * If the node replace is inserted in a document, the replace also
- * works. In fact, this function is designed to replace a node already
- * inserted in an xml document (\ref axlDoc). If the node being
- * replaced is the root one, this function will configured the new
- * root node.
- *
- * Previous \ref axlNode will be unreference according to dealloc
- * value. This function will replace the node provided by the second
- * reference (no matter if the node is inside a document or not).
+ * The \ref axlNode replaced will be unreference according to dealloc
+ * value. 
  * 
- * @param node The node to be replaced by the following reference.
+ * @param node The node to be replaced by <b>new_node</b> reference.
  *
- * @param new_node The node that will replace the previous value.
+ * @param new_node The node that will replace <b>node</b> reference.
  *
- * @param dealloc Signal if the previous node must be deallocated.
+ * @param dealloc Signal if <b>node</b> must be deallocated after the
+ * replace operation.
  */
 void      axl_node_replace             (axlNode   * node, 
 					axlNode   * new_node,
@@ -3431,21 +3423,23 @@ void      axl_node_replace             (axlNode   * node,
 }
 
 /** 
- * @brief Allows to the remove the selected reference from the
- * document containing it.
+ * @brief Allows to remove the selected reference from the document
+ * containing it.
  *
  * The function remove the selected reference from the document. If
  * the node asked to be removed is the root one, the node won't be
  * removed because the \ref axl_doc_set_root doesn't accept to remove
  * the root node.  
  *
- * All childs hold by the node removed from the document whill also be
+ * All childs hold by the node removed from the document will also be
  * removed if dealloc is selected.
  * 
  * @param node The node to remove.
  *
- * @param dealloc \ref axl_true to not only unlink relations but also
- * remove the node.
+ * @param dealloc \ref axl_true to also dealloc the memory used by the
+ * node. Setting this parameter to \ref axl_false only unlinks the
+ * node from the document making possible to reuse the node in another
+ * part of the document or to move the node to a different document.
  */
 void      axl_node_remove             (axlNode  * node,
 				       axl_bool   dealloc)
@@ -3515,9 +3509,9 @@ void      axl_node_remove             (axlNode  * node,
  * document that is holding it.
  * 
  * This function is useful while requiring to reallocate nodes from
- * parent to parent, making the parent node that is holding it to lost
- * references to the node, decreasing all internal counts to the node,
- * etc.
+ * parent to parent, making the parent node that is holding it to
+ * cancel its references to the node, decreasing all internal counts
+ * to the node, etc.
  *
  * If the node isn't attached to any document, the function does
  * nothing.
@@ -3544,8 +3538,8 @@ void axl_node_deattach (axlNode * node)
  * 
  * @param node The node to configure.
  *
- * @param childs The child configuration, axl_true to notify that the
- * node have childs, otherwise, axl_false is returned.
+ * @param childs The child configuration, \ref axl_true to notify that
+ * the node have childs, otherwise, \ref axl_false is returned.
  */
 void      axl_node_set_have_childs (axlNode * node, axl_bool childs)
 {
@@ -3554,8 +3548,8 @@ void      axl_node_set_have_childs (axlNode * node, axl_bool childs)
 }
 
 /** 
- * @brief Allows to get current childs configuration for the given xml
- * node (\ref axlNode).
+ * @brief Allows to get current childs configuration from the given
+ * xml node (\ref axlNode).
  *
  * An xml node (represented by an \ref axlNode) is considered to have
  * childs only if it has more xml child nodes. The content is not
@@ -3622,9 +3616,12 @@ axl_bool          axl_node_have_childs_aux        (axlNode * node)
 }
 
 /** 
- * @brief Allows to get a particular child node for the given node (\ref axlNode).
+ * @brief Allows to get a particular child node from the given node
+ * (\ref axlNode).
  *
- * <i><b>NOTE:</b> This function isn't XML Namespace aware. You must use \ref axl_ns_node_get_child_called instead. See \ref axl_ns_doc_validate. </i>
+ * <i><b>NOTE:</b> This function isn't XML Namespace aware. You must
+ * use \ref axl_ns_node_get_child_called instead. See \ref
+ * axl_ns_doc_validate. </i>
  * 
  * @param parent The parent node where the child will be looked up.
  *
@@ -3669,12 +3666,12 @@ axlNode * axl_node_get_child_called   (axlNode * parent, char * name)
 }
 
 /** 
- * @brief Allows to find the first child called as provided inside the
- * childs (including its descendants) hold by the parent provided.
+ * @brief Allows to find the first child called <b>name</b>, inside
+ * all childs (including its descendants) held by the parent provided.
  *
- * This function is similar to \ref axl_node_get_child_called but it
- * will look for a child node called as provided not only in direct
- * childs hold by the parent but also on its all descendants.
+ * This function is similar to \ref axl_node_get_child_called but
+ * though it will also look for a child node called as provided not
+ * only in direct childs but also on its all descendants.
  *
  * If you are looking for a function to search for a particular child
  * node inside direct childs stored for the provided parent, then you
@@ -3684,14 +3681,16 @@ axlNode * axl_node_get_child_called   (axlNode * parent, char * name)
  * lookup using as a reference a document (using the root node from
  * it): \ref axl_doc_find_called.
  *
- * <i><b>NOTE:</b> This function isn't XML Namespace aware. You must use \ref axl_ns_node_find_called instead. See \ref axl_ns_doc_validate. </i>
+ * <i><b>NOTE:</b> This function isn't XML Namespace aware. You must
+ * use \ref axl_ns_node_find_called instead. See \ref
+ * axl_ns_doc_validate. </i>
  *
  * @param parent The parent where the lookup will be produced.
  *
  * @param name The name of the child to be looked up.
  * 
  * @return A reference to the node found (first instaned matching the
- * name) or NULL if it fails to find a child. 
+ * name) or NULL if it fails to find a child.
  */
 axlNode * axl_node_find_called    (axlNode * parent, char * name)
 {
@@ -3729,7 +3728,7 @@ axlNode * axl_node_find_called    (axlNode * parent, char * name)
 
 /** 
  * @brief Allows to get the child that is located at the given
- * position, for the given parent node.
+ * position, inside the given parent node.
  *
  * @param parent The parent node where the child will be looked up.
  *
@@ -3775,7 +3774,8 @@ axlNode * axl_node_get_child_nth      (axlNode * parent, int position)
 }
 
 /** 
- * @brief Allows to get the number of childs the provided node has.
+ * @brief Allows to get the number of childs that the provided node
+ * has.
  * 
  * @param parent The node where the number of childs is being queried.
  * 
@@ -3811,12 +3811,13 @@ int       axl_node_get_child_num      (axlNode * parent)
 
 
 /** 
- * @brief Allows to get childs nodes for the given xml node (\ref
+ * @brief Allows to get childs nodes from the given xml node (\ref
  * axlNode).
  *
- * This function creates a newly allocated list. In the case a
- * iterating over all childs for the provided node is its better to
- * use the following:
+ * This function creates a newly allocated list. In the case you want
+ * to iterate over all nodes, it is better to use something similar to
+ * this:
+ *
  * \code
  * axlNode * child;
  *
@@ -4160,7 +4161,7 @@ char    * axl_node_get_pi_target_content    (axlNode * node,
  * This function is particular useful while moving content from nodes.
  * 
  * @param old_parent The old parent node where all childs will be
- * removed and and placed in the new parent.
+ * removed and placed in the new parent.
  *
  * @param new_parent The parent node where the content will be
  * placed. If the parent node already have childs, the content will be
@@ -4183,7 +4184,6 @@ void      axl_node_transfer_childs          (axlNode * old_parent,
 		axl_item_set_child_ref (new_parent, item);
 
 		
-
 		/* get the next */
 		item = item_aux;
 
@@ -4244,15 +4244,16 @@ axl_bool __axl_node_dump_common (axlNode * node, char ** content, int * size, ax
  * @brief Allows to dump the xml content taking as starting point the
  * xml node provided. 
  * 
- * @param node The \ref axlNode to dump.
+ * @param node The \ref axlNode used as reference and starting point
+ * to dump.
  *
  * @param content The reference where the result will be returned.
  *
  * @param size The reference where the document content size will be
  * returned. 
  *
- * @return The function returns \ref axl_true if the dump operation was
- * performed. Otherwise \ref axl_false is returned.
+ * @return The function returns \ref axl_true if the dump operation
+ * was performed. Otherwise \ref axl_false is returned.
  */
 axl_bool      axl_node_dump                    (axlNode  * node, 
 						char    ** content, 
@@ -4269,15 +4270,15 @@ axl_bool      axl_node_dump                    (axlNode  * node,
  * @param node The node to be used as reference for the dump operation.
  * 
  * @param content A reference to a user defined pointer where the
- * content will be placed. Not optional parameter.
+ * content will be placed. Non optional parameter.
  *
  * @param size A reference to a user defined pointer where the content
  * size will be placed. Optional parameter.
  * 
- * @param tabular How many spaces to be placed at each level.
+ * @param tabular How many spaces to be placed on each level.
  * 
- * @return axl_true if the dump operation was properly done, otherwise
- * axl_false is returned.
+ * @return \ref axl_true if the dump operation was properly done, otherwise
+ * \ref axl_false is returned.
  */
 axl_bool      axl_node_dump_pretty             (axlNode  * node,
 						char    ** content,
@@ -4411,7 +4412,7 @@ axl_bool      axl_node_dump_pretty_to_file     (axlNode  * node,
  *  - \ref axl_node_has_pi_target
  *  - \ref axl_node_get_pi_target_content
  *
- * However, this function will return first ocurrency for PI found
+ * However, this function will return first ocurrence for PI found
  * inside the xml document. If you don't use repeated PI elements, you
  * won't find problems, but, if you need to iterate ever all PI found
  * or you are using repeated PI, you can use this function as follows
@@ -5184,14 +5185,16 @@ axl_bool      axl_node_has_invalid_chars_internal        (const char * content,
 }
 
 /** 
- * @brief Allows to check if the provided string have escape sequences
- * that must be defined by using the entity reference rather the value
+ * @brief Allows to check if the provided string have invalid chars
+ * that must be escaped by using the entity reference rather the value
  * itself.
  *
  * This function is useful in the sense it allows to know if a
  * particular content will contain elements not allowed by the XML 1.0
  * definition to be placed directly (like &, <, ;, ' and ").
  *
+ *
+ * This function use usually complemented with \ref axl_node_content_copy_and_escape. 
  * 
  * @param content The content to check.
  *
@@ -5204,8 +5207,8 @@ axl_bool      axl_node_has_invalid_chars_internal        (const char * content,
  * references. This parameter is optional, so passing a NULL value is
  * allowed.
  * 
- * @return axl_true if the string contains non valid sequences that
- * must be escaped using entity references.
+ * @return \ref axl_true if the string contains non valid chars
+ * that must be escaped using entity references.
  */
 axl_bool      axl_node_has_invalid_chars        (const char * content,
 						 int          content_size,
@@ -5225,6 +5228,8 @@ axl_bool      axl_node_has_invalid_chars        (const char * content,
  * This function is useful in the sense it allows to know if a
  * particular content will contain elements not allowed by the XML 1.0
  * definition to be placed directly (like &, <, ;, ' and ").
+ *
+ * This function use usually complemented with \ref axl_node_content_copy_and_escape_cdata. 
  *
  * @param content The content to check.
  *
@@ -5250,7 +5255,7 @@ axl_bool      axl_node_has_invalid_chars_cdata        (const char * content,
 }
 
 /** 
- * @brief Allows to perform a copy for the content provided, doing an
+ * @brief Allows to perform a copy from the content provided, doing an
  * xml character escaping for non allowed values (&, <, >, ' and ").
  *
  * This function must be used with \ref axl_node_has_invalid_chars to
@@ -5271,7 +5276,7 @@ axl_bool      axl_node_has_invalid_chars_cdata        (const char * content,
  * \endcode
  * 
  * @param content The content to be escaped. If this parameter is
- * null, the function returns NULL.
+ * NULL, the function returns NULL.
  * 
  * @param content_size The content size for the first parameter.
  *
@@ -5308,9 +5313,8 @@ char * axl_node_content_copy_and_escape (const char * content,
  *
  * if (axl_node_has_invalid_chars_cdata (content, strlen (content), &additional_size)) {
  *      // found that the string has invalid chars, escape them
- *      new_content = axl_node_content_copy_and_escape_cdate (content, strlen (content), additional_size);
+ *      new_content = axl_node_content_copy_and_escape_cdata (content, strlen (content), additional_size);
  * } 
- *
  * \endcode
  * 
  * @param content The content to be escaped. If this parameter is
@@ -5391,7 +5395,8 @@ void __axl_node_free_internal (axlNode * node, axl_bool also_childs)
 /** 
  * @brief Destroy the given node provided by the reference.
  *
- * The function will check for nodes that are null references.
+ * The function will check for nodes that are NULL references,
+ * returning immediately.
  * 
  * @param node The node to destroy. 
  */
@@ -5421,12 +5426,13 @@ void axl_node_free (axlNode * node)
 }
 
 /** 
- * @brief Allows to remove the provided node without removing childs
- * inside it.
+ * @brief Allows to remove the provided node, optionally without
+ * removing childs inside it.
  * 
  * @param node The node to deallocate.
  *
- * @param also_childs Signal the function to dealloc childs or not.
+ * @param also_childs Signal the function to also dealloc childs or
+ * not.
  */
 void      axl_node_free_full       (axlNode * node, axl_bool also_childs)
 {
@@ -5456,7 +5462,7 @@ void      axl_node_free_full       (axlNode * node, axl_bool also_childs)
  * @}
  */
 
-/**
+/** 
  * \defgroup axl_node_attribute_cursor Axl Node Attribute iteration: An interface provided to iterate attribute nodes without knowing them.
  */
 
@@ -5479,8 +5485,8 @@ void      axl_node_free_full       (axlNode * node, axl_bool also_childs)
  *   - \ref axl_node_attr_cursor_first
  *   - \ref axl_node_attr_cursor_next
  *
- * Finally, the following functions are provided to get the the key
- * and the value data associated to the current selected attribute,
+ * Finally, the following functions are provided to get the key and
+ * the value data associated to the current selected attribute,
  * pointed by the current status of the cursor:
  * 
  *   - \ref axl_node_attr_cursor_get_key (returns the key of the current attribute selected)
@@ -5511,8 +5517,8 @@ void      axl_node_free_full       (axlNode * node, axl_bool also_childs)
  * axl_node_attr_cursor_free (cursor);
  * \endcode
  *
- * Once created the \ref axlAttrCursor you must release it and
- * create a new one if you modify your \ref axlNode attribute configuration
+ * Once created the \ref axlAttrCursor you must release it and create
+ * a new one if you modify your \ref axlNode attribute configuration
  * adding more items.
  * 
  * @param node The node that is requested to create the \ref
@@ -5662,8 +5668,8 @@ axl_bool                 axl_node_attr_cursor_has_item  (axlAttrCursor * cursor)
 }
 
 /** 
- * @brief Allows to get the attribute key associated to the attribute
- * selected by the cursor.
+ * @brief Allows to get the attribute key associated to the current
+ * attribute selected by the cursor.
  * 
  * @param cursor The cursor that is being queried.
  * 
@@ -5745,7 +5751,7 @@ axl_bool __axl_node_attr_foreach_aux (axlPointer key, axlPointer data, axlPointe
 }
 
 /** 
- * @brief Allows to provide a function which is called foreach
+ * @brief Allows to provide a function which is called for each
  * attribute installed on the provided node.
  *
  * This function will allow you to operate on every attribute
@@ -5817,6 +5823,7 @@ void            axl_node_attr_foreach          (axlNode       * node,
  * axlItem without performing a copy: \ref axl_item_new_ref.
  *
  * @param type The type that will represent the \ref axlItem created.
+ *
  * @param data Data associated to the axlItem. In the case the \ref
  * axlItem being created will represent content (\ref ITEM_CONTENT),
  * an entity ref (\ref ITEM_REF), a comment (\ref ITEM_COMMENT) or
@@ -5880,10 +5887,11 @@ axlItem     * axl_item_new             (AxlItemType type,
  * The function won't configure the parent node holding the item.
  *
  * @param type The type that will represent the \ref axlItem created.
+ *
  * @param data Data associated to the axlItem. This function won't
  * perform any copy for the data received. The user calling to this
- * API will ensure that the data is only owned by the \ref axlItem
- * created.
+ * API must check that the data is only owned by the \ref axlItem
+ * created (that is, used by this function).
  * 
  * @return A newly allocated \ref axlItem with no parent and holding
  * the data provided.
@@ -5986,6 +5994,8 @@ axlNode * axl_item_get_parent      (axlItem * item)
 	/* return the parent */
 	return item->parent;
 }
+
+/****/
 
 /** 
  * @brief Allows to get the following element that is next to the item
