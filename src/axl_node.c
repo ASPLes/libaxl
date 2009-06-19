@@ -5995,16 +5995,14 @@ axlNode * axl_item_get_parent      (axlItem * item)
 	return item->parent;
 }
 
-/****/
-
 /** 
  * @brief Allows to get the following element that is next to the item
- * reference provided (\ref axlItem), at the same level.
+ * reference provided (\ref axlItem), and at the same level.
  * 
  * @param item The item that is required to return its next reference.
  * 
- * @return A reference to the next element or NULL if no it fails or
- * no element is found next to the element provided.
+ * @return A reference to the next element or NULL if it fails or no
+ * element is found next to the element provided.
  */
 axlItem * axl_item_get_next        (axlItem * item)
 {
@@ -6038,12 +6036,13 @@ axlItem * axl_item_node_next (axlNode * node)
 }
 
 /** 
- * @brief Allows to get the following element that is previous to the item
- * reference provided (\ref axlItem), at the same level.
+ * @brief Allows to get the following element that is previous to the
+ * item reference provided (\ref axlItem), and at the same level.
  * 
- * @param item The item that is required to return its previous reference.
+ * @param item The item that is required to return its previous
+ * reference.
  * 
- * @return A reference to the previous element or NULL if no it fails or
+ * @return A reference to the previous element or NULL if it fails or
  * no element is found previous to the element provided.
  */
 axlItem * axl_item_get_previous        (axlItem * item)
@@ -6196,7 +6195,9 @@ axlPointer axl_item_get_data (axlItem * item)
  * its size) from the received \ref axlItem, supposing it is storing
  * an \ref ITEM_CONTENT, \ref ITEM_CDATA, \ref ITEM_COMMENT or \ref ITEM_REF.
  *
- * @param item The \ref axlItem that is supposed to store an item with type: \ref ITEM_CONTENT, \ref ITEM_CDATA, \ref ITEM_COMMENT or \ref ITEM_REF.
+ * @param item The \ref axlItem that is supposed to store an item with
+ * type: \ref ITEM_CONTENT, \ref ITEM_CDATA, \ref ITEM_COMMENT or \ref
+ * ITEM_REF.
  *
  * @param size Optional variable reference. If defined, if returns the
  * content size.
@@ -6314,13 +6315,14 @@ void axl_item_set_child (axlNode * parent, AxlItemType type, axlPointer data)
 
 /** 
  * @brief Allows to configure xml content just after the item used as
- * reference. 
+ * reference.
  *
- * @param item The item used as reference to place the content after it.
+ * @param item The item used as reference to place the content after
+ * it.
  *
  * @param type AxlItemType to configure the content to be placed.
  *
- * @param data Pointer that is 
+ * @param data Pointer that is associated to the type.
  */
 void          axl_item_set_after       (axlItem * item,
 					AxlItemType type,
@@ -6378,8 +6380,8 @@ void axl_item_set_child_ref (axlNode * parent, axlItem * item)
 }
 
 /** 
- * @brief Copies the reference provided creating a newly allocated
- * copy, including he content inside.
+ * @brief Copy the reference provided creating a newly allocated
+ * reference, including the content inside.
  * 
  * @param item The item to copy.
  *
@@ -6442,8 +6444,8 @@ axlItem * axl_item_copy (axlItem * item, axlNode * set_parent)
 
 /** 
  * @brief Allows to remove the \ref axlItem instance from the document
- * that is currently linked, optionally deallocating the memory used
- * by the structure.
+ * that is currently holding it, optionally deallocating the memory
+ * used by the structure.
  * 
  * @param item The item to remove from its container (without taking
  * into consideration the item type).
@@ -6489,7 +6491,8 @@ void          axl_item_remove          (axlItem   * item,
 /** 
  * @brief Allows to replace the content held by the \ref axlItem
  * reference with a new \ref axlItem, updating all references, and
- * optionally, deallocating the memory used by the previous node.
+ * optionally, deallocating the memory used by the previous item
+ * reference..
  * 
  * @param item The item to be replaced.
  *
@@ -6629,13 +6632,12 @@ void          axl_item_transfer_childs_after (axlNode * old_parent,
  * @brief Allows to check if both items are equal, considering the
  * item type and the content associated to the item type.
  *
+ * @param item The first item to check.
  *
- * @param item The first item to check.  
- *
- * @param item2 The second item to check with the first item.  
+ * @param item2 The second item to check.
  * 
- * @param trimmed This paramenter allows to configure how equal
- * checking is performed for content element (\ref ITEM_CONTENT, \ref
+ * @param trimmed This paramenter allows to configure how the equal
+ * check is performed for content element (\ref ITEM_CONTENT, \ref
  * ITEM_CDATA, \ref ITEM_COMMENT and \ref ITEM_REF).
  *
  * @param error Optional \ref axlError reference where textual
@@ -6735,11 +6737,13 @@ axl_bool          axl_item_are_equal_full      (axlItem    * item,
  * item type and the content associated to the item type.
  *
  *
- * @param item The first item to check.  @param item2 The second item
- * to check with the first item.  @param trimmed This paramenter
- * allows to configure how equal checking is performed for content
- * element (\ref ITEM_CONTENT, \ref ITEM_CDATA, \ref ITEM_COMMENT and
- * \ref ITEM_REF).
+ * @param item The first item to check.  
+ *
+ * @param item2 The second item to check.
+ *
+ * @param trimmed This paramenter allows to configure how equal
+ * checking is performed for content element (\ref ITEM_CONTENT, \ref
+ * ITEM_CDATA, \ref ITEM_COMMENT and \ref ITEM_REF).
  *
  * @return \ref axl_true if the both items represents the same
  * information, otherwise \ref axl_false is returned. If the function
@@ -6759,7 +6763,7 @@ axl_bool          axl_item_are_equal      (axlItem   * item,
  * 
  * @param item The item to dealloc.
  *
- * @param dealloc \ref axl_true to also dealloc the value inside. 
+ * @param dealloc \ref axl_true to also dealloc the value inside.
  */
 void          axl_item_free           (axlItem  * item,
 				       axl_bool   dealloc)
