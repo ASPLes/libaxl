@@ -6492,7 +6492,7 @@ void          axl_item_remove          (axlItem   * item,
  * @brief Allows to replace the content held by the \ref axlItem
  * reference with a new \ref axlItem, updating all references, and
  * optionally, deallocating the memory used by the previous item
- * reference..
+ * reference.
  * 
  * @param item The item to be replaced.
  *
