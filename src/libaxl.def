@@ -54,11 +54,11 @@ __axl_list_always_true
 __axl_list_common_remove_selected_node
 __axl_list_dispose_node
 __axl_list_get_next_node_available
+__axl_list_remove_at_common
 __axl_node_are_equal_attr
 __axl_node_attr_foreach_aux
 __axl_node_attr_list_is_equal
 __axl_node_content_copy_and_escape
-__axl_node_content_translate_defaults
 __axl_node_copy_attr_list
 __axl_node_copy_key
 __axl_node_copy_value
@@ -91,6 +91,7 @@ axl_cmp
 axl_doc_add_pi_target
 axl_doc_are_equal
 axl_doc_are_equal_common
+axl_doc_are_equal_full
 axl_doc_are_equal_trimmed
 axl_doc_configure_encoding
 axl_doc_consume_comments
@@ -199,6 +200,7 @@ axl_hash_show_status_full
 axl_hash_string
 axl_init
 axl_item_are_equal
+axl_item_are_equal_full
 axl_item_attr_factory_create
 axl_item_content_factory_create
 axl_item_copy
@@ -264,11 +266,13 @@ axl_list_lookup
 axl_list_new
 axl_list_prepend
 axl_list_remove
+axl_list_remove_at
 axl_list_remove_first
 axl_list_remove_last
 axl_list_remove_ptr
 axl_list_set_destroy_func
 axl_list_unlink
+axl_list_unlink_at
 axl_list_unlink_first
 axl_list_unlink_last
 axl_list_unlink_ptr
@@ -289,6 +293,7 @@ axl_node_annotate_get_string
 axl_node_annotate_int
 axl_node_annotate_string
 axl_node_are_equal
+axl_node_are_equal_full
 axl_node_attr_cursor_first
 axl_node_attr_cursor_free
 axl_node_attr_cursor_get_key
@@ -300,6 +305,7 @@ axl_node_attr_cursor_next
 axl_node_attr_foreach
 axl_node_content_copy_and_escape
 axl_node_content_copy_and_escape_cdata
+axl_node_content_translate_defaults
 axl_node_copy
 axl_node_create
 axl_node_create_ref
