@@ -58,9 +58,9 @@ BEGIN_C_DECLS
  * @{
  */
 
-axl_bool  axl_init ();
+axl_bool  axl_init (void);
 
-void      axl_end ();
+void      axl_end (void);
 
 /* @} */
 

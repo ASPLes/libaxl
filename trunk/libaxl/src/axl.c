@@ -1054,7 +1054,7 @@
  * @return The function returns \ref axl_true if it was properly
  * initialized or \ref axl_false if something fails.  if fails.
  */
-axl_bool axl_init ()
+axl_bool axl_init (void)
 {
 	/* nothing to initialize dude */
 	return axl_true;
@@ -1067,7 +1067,7 @@ axl_bool axl_init ()
  * stop libaxl function. The implementation will try to keep this,
  * however, if the future this could be required.
  */
-void axl_end ()
+void axl_end (void)
 {
 	/* nothing to do jack */
 	return;

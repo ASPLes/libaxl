@@ -6813,7 +6813,7 @@ void          axl_item_free           (axlItem  * item,
 	return;
 }
 
-axlFactory * axl_item_factory_create ()
+axlFactory * axl_item_factory_create (void)
 {
 	return axl_factory_create (sizeof (axlItem));
 }
@@ -6823,7 +6823,7 @@ axlItem        * axl_item_factory_get (axlFactory * factory)
 	return axl_factory_get (factory);
 }
 
-axlFactory * axl_node_factory_create ()
+axlFactory * axl_node_factory_create (void)
 {
 	return axl_factory_create (sizeof (axlNode));
 }
@@ -6839,13 +6839,13 @@ axlNode    * axl_node_factory_get (axlFactory * factory)
 	return node;
 }
 
-axlFactory     * axl_item_content_factory_create ()
+axlFactory     * axl_item_content_factory_create (void)
 {
 	/* create a factory for axlNodeContent elements */
 	return axl_factory_create (sizeof (axlNodeContent));
 }
 
-axlFactory     * axl_item_attr_factory_create ()
+axlFactory     * axl_item_attr_factory_create (void)
 {
 	/* create a factory for axlNodeAttr elements */
 	return axl_factory_create (sizeof (axlNodeAttr));

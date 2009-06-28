@@ -517,17 +517,17 @@ axl_bool      axl_item_are_equal_full (axlItem    * item,
 void          axl_item_free           (axlItem * item,
 				       axl_bool      dealloc);
 
-axlFactory     * axl_item_factory_create ();
+axlFactory     * axl_item_factory_create (void);
 
 axlItem        * axl_item_factory_get (axlFactory * factory);
 
-axlFactory     * axl_node_factory_create ();
+axlFactory     * axl_node_factory_create (void);
 
 axlNode        * axl_node_factory_get (axlFactory * factory);
 
-axlFactory     * axl_item_content_factory_create ();
+axlFactory     * axl_item_content_factory_create (void);
 
-axlFactory     * axl_item_attr_factory_create ();
+axlFactory     * axl_item_attr_factory_create (void);
 
 END_C_DECLS
 
