@@ -171,7 +171,7 @@ struct _axlStrFactory {
  *
  * @return A reference to the newly allocated axlStrFactory.
  */
-axlStrFactory * axl_string_factory_create ()
+axlStrFactory * axl_string_factory_create (void)
 {
 	axlStrFactory * factory;
 

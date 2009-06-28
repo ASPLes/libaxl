@@ -48,9 +48,9 @@ BEGIN_C_DECLS
  * @{
  */
 
-axl_bool     axl_log_is_enabled ();
+axl_bool     axl_log_is_enabled (void);
 
-axl_bool     axl_log_color_is_enabled ();
+axl_bool     axl_log_color_is_enabled (void);
 
 void         axl_log_enable (axl_bool value);
 

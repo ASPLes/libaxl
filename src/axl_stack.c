@@ -396,7 +396,7 @@ struct _axlBinaryStack {
  * axl_binary_stack_pop. Once finished, use \ref axl_binary_stack_free
  * to free the binary stack.
  */
-axlBinaryStack * axl_binary_stack_new ()
+axlBinaryStack * axl_binary_stack_new (void)
 {
 	axlBinaryStack * result;
 

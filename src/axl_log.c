@@ -61,7 +61,7 @@ axl_bool     debug_color_enabled = axl_false;
  *
  * @return axl_true if the log is enabled or axl_false
  */
-axl_bool      axl_log_is_enabled () 
+axl_bool      axl_log_is_enabled (void) 
 {
 #if defined(AXL_OS_WIN32) && ! defined(__GNUC__)
 	int requiredSize;
@@ -87,7 +87,7 @@ axl_bool      axl_log_is_enabled ()
  * 
  * @return axl_true if the color log is enabled or axl_false
  */
-axl_bool    axl_log_color_is_enabled ()
+axl_bool    axl_log_color_is_enabled (void)
 {
 #if defined(AXL_OS_WIN32) && ! defined(__GNUC__)
 	int requiredSize;

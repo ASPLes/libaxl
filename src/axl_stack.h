@@ -75,7 +75,7 @@ axl_bool   axl_stack_is_empty (axlStack * stack);
 
 void       axl_stack_free (axlStack * stack);
 
-axlBinaryStack * axl_binary_stack_new ();
+axlBinaryStack * axl_binary_stack_new (void);
 
 void             axl_binary_stack_push          (axlBinaryStack * bstack, axl_bool status);
 
