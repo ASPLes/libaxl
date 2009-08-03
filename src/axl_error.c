@@ -279,7 +279,7 @@ int axl_error_get_code (axlError * _error)
  * not deallocate memory returned by this function because it is an
  * internal copy.
  */
-char * axl_error_get      (axlError * _error)
+const char * axl_error_get      (axlError * _error)
 {
 	/* check received reference */
 	if (_error == NULL)

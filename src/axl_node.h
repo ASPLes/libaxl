@@ -289,13 +289,13 @@ axlNode * axl_node_get_parent         (axlNode * node);
 
 axlNode * axl_node_get_next           (axlNode * node);
 
-axlNode * axl_node_get_next_called    (axlNode * node, 
-				       char    * name);
+axlNode * axl_node_get_next_called    (axlNode    * node, 
+				       const char * name);
 
 axlNode * axl_node_get_previous         (axlNode * node);
 
-axlNode * axl_node_get_previous_called  (axlNode * node, 
-					 char    * name);
+axlNode * axl_node_get_previous_called  (axlNode    * node, 
+					 const char * name);
 
 axlNode * axl_node_get_first_child    (axlNode * node);
 
@@ -364,9 +364,9 @@ void      axl_node_set_have_childs    (axlNode * node, axl_bool childs);
 
 axl_bool  axl_node_have_childs        (axlNode * node);
 
-axlNode * axl_node_get_child_called   (axlNode * parent, char * name);
+axlNode * axl_node_get_child_called   (axlNode * parent, const char * name);
 
-axlNode * axl_node_find_called        (axlNode * parent, char * name);
+axlNode * axl_node_find_called        (axlNode * parent, const char * name);
 
 axlNode * axl_node_get_child_nth      (axlNode * parent, int position);
 

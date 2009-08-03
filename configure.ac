@@ -1,4 +1,4 @@
-dnl  Copyright (C) 2006 Advanced Software Production Line, S.L.
+dnl  Copyright (C) 2009 Advanced Software Production Line, S.L.
 dnl
 dnl  This program is free software; you can redistribute it and/or
 dnl  modify it under the terms of the GNU Lesser General Public License
@@ -55,6 +55,31 @@ AC_CHECK_SIZEOF(long)
 AC_CHECK_SIZEOF(int)
 AC_CHECK_SIZEOF(void *)
 
+AM_PATH_PYTHON([2.3])
+
+# get python includes 
+PYTHON_INCLUDES=`python-config --includes 2>/dev/null`
+old_CPPFLAGS=$CPPFLAGS
+CPPFLAGS="-Wall -Werror $PYTHON_INCLUDES"
+echo "Python includes: $PYTHON_INCLUDES"
+AC_SUBST(PYTHON_INCLUDES)
+
+AC_TRY_COMPILE([#include <Python.h>],
+  [Py_InitModule3(NULL, NULL, NULL);],
+  python_devel_found=yes,
+  python_devel_found=no)
+AC_MSG_RESULT([Python development headers status: $python_devel_found])
+if test "x$python_devel_found" = "xno"; then
+   AC_MSG_WARN([Cannot find Python.h header or current python development environment do not compile symbols required. On debian try to install python-dev package.])
+fi
+
+# get python flags and libs
+PYTHON_CFLAGS=`python-config --cflags 2>/dev/null`
+PYTHON_LIBS=`python-config --ldflags 2>/dev/null`
+AC_SUBST(PYTHON_CFLAGS)
+AC_SUBST(PYTHON_LIBS)
+AM_CONDITIONAL(ENABLE_PY_AXL, test "x$python_devel_found" = "xyes")
+
 ##########################
 # Check for doxygen tool #
 ##########################
@@ -87,11 +112,15 @@ AM_CONDITIONAL(ENABLE_AXL_BABEL, test "x$enable_axl_babel" = "xyes")
 # The following command also comes to produce the axl_config.h file
 # required by the tool. If you update this, remember to update the
 # af-arch main configure.ac
-AC_TRY_LINK([#include <stdio.h>], 
+AC_TRY_LINK([#define _GNU_SOURCE
+#include <stdio.h>], 
 [
-  char * result = NULL;
-  vasprintf (&result, "This is a test: %d", 10);
+  va_list arg;
+  char * result;
+  vasprintf (&result, "This is a test: %d", arg);
+  return 0;
 ], [have_vasprintf=yes],[have_vasprintf=no])
+echo "Checking vasprintf support: $have_vasprintf"
 
 # produce axl_config.h file this section will only be run if
 # config.status is invoked with no arguments, or with "axl_config.h"
@@ -230,6 +259,10 @@ case $host in
 esac
 AC_SUBST(EXARG_FLAGS)
 
+dnl get site dinamic library extension
+SHARED_EXTENSION=$shrext_cmds
+AC_SUBST(SHARED_EXTENSION)
+
 
 AC_OUTPUT([
 Makefile
@@ -238,6 +271,8 @@ ns/Makefile
 doc/Makefile
 doc/axl-doc.doxygen
 babel/Makefile
+py-axl/Makefile
+py-axl/__init__.py
 test/Makefile
 knife/Makefile
 axl.pc
@@ -252,6 +287,7 @@ echo "   Build Axl Namespace support:  [$enable_axl_ns]"
 echo "   Build Axl Library tests:      [$enable_axl_test]"
 echo "   Build Axl Knife:              [$enable_axl_knife]"
 echo "   Build Axl Library debug log:  [$enable_axl_log]"
+echo "   Build PyAxl:                  [$python_devel_found]"
 if test x$DOXYGEN = xyes ; then
    echo "   Build Axl Library doc:        enabled"
 else	    

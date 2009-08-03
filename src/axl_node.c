@@ -2347,8 +2347,8 @@ axlNode * axl_node_get_next           (axlNode * node)
  * @return A reference to the next node or NULL if it fails. The
  * returned reference mustn't be deallocated.
  */
-axlNode * axl_node_get_next_called    (axlNode * node, 
-				       char    * name)
+axlNode * axl_node_get_next_called    (axlNode       * node, 
+				       const char    * name)
 {
 	axlNode * next;
 	axl_return_val_if_fail (node, NULL);
@@ -2420,9 +2420,9 @@ axlNode * axl_node_get_previous (axlNode * node)
  * 
  * @return A reference to the previous node or NULL if it fails. The
  * returned reference mustn't be deallocated.
- */
-axlNode * axl_node_get_previous_called    (axlNode * node, 
-					   char    * name)
+ */ 
+axlNode *  axl_node_get_previous_called     (axlNode       * node, 
+					     const char    * name)
 {
 	axlNode * previous;
 
@@ -3630,7 +3630,7 @@ axl_bool          axl_node_have_childs_aux        (axlNode * node)
  * @return A refernce to a \ref axlNode or NULL if no child exists
  * called by the name provided, inside the node provided.
  */
-axlNode * axl_node_get_child_called   (axlNode * parent, char * name)
+axlNode * axl_node_get_child_called   (axlNode * parent, const char * name)
 {
 	axlNode * node;
 	axlItem * item;
@@ -3692,7 +3692,7 @@ axlNode * axl_node_get_child_called   (axlNode * parent, char * name)
  * @return A reference to the node found (first instaned matching the
  * name) or NULL if it fails to find a child.
  */
-axlNode * axl_node_find_called    (axlNode * parent, char * name)
+axlNode * axl_node_find_called    (axlNode * parent, const char * name)
 {
 	axlNode * node;
 	axlNode * child;
