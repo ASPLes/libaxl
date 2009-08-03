@@ -2424,7 +2424,7 @@ char      * axl_stream_strdup_n (const char * chunk, int n)
  */
 int axl_stream_vprintf_len (const char * format, va_list args)
 {
-# if defined (AXL_OS_WIN32) && ! defined (__GNUC__)
+#if defined (AXL_OS_WIN32) && ! defined (__GNUC__)
 #   if HAVE_VSCPRINTF
 	if (format == NULL)
 		return 0;
@@ -2440,7 +2440,6 @@ int axl_stream_vprintf_len (const char * format, va_list args)
 	if (format == NULL)
 		return 0;
 	return vsnprintf (NULL, 0, format, args) + 1;
-
 #endif
 }
 
@@ -2590,13 +2589,19 @@ char      * axl_stream_strdup_printf   (const char * chunk, ...)
 }
 
 /** 
- * @brief Allows to produce an string representing the message hold by
- * chunk with the parameters provided.
+ * @brief DEPRECATED: Allows to produce an string representing the
+ * message hold by chunk with the parameters provided.
  * 
  * @param chunk The message chunk to print.
  * @param args The arguments for the chunk.
  * 
  * @return A newly allocated string.
+ *
+ * IMPLEMENTATION NOTE: This function have a fundamental bug due to
+ * the design of va_list arguments under amd64 platforms. In short, a
+ * function receiving a va_list argument can't use it twice. In you
+ * are running amd64, check your axl_config.h did find
+ * AXL_HAVE_VASPRINTF. 
  */
 char  * axl_stream_strdup_printfv    (const char * chunk, va_list args)
 {
@@ -2628,11 +2633,11 @@ char  * axl_stream_strdup_printfv    (const char * chunk, va_list args)
 	result   = axl_new (char, size + 2);
 	
 	/* copy current size */
-#if defined(AXL_OS_WIN32) && ! defined (__GNUC__)
+#    if defined(AXL_OS_WIN32) && ! defined (__GNUC__)
 	new_size = _vsnprintf_s (result, size + 1, size, chunk, args);
-#else
+#    else
 	new_size = vsnprintf (result, size + 1, chunk, args);
-#endif
+#    endif
 #endif
 	/* return the result */
 	return result;
@@ -2670,9 +2675,17 @@ char    * axl_stream_strdup_printf_len (const char * chunk, int * chunk_size, ..
 #ifdef AXL_HAVE_VASPRINTF
 	/* do the operation using the GNU extension */
 	new_size = vasprintf (&result, chunk, args);
+
+	/* reopen to avoid amd64 bug */
+	va_end (args);
+	va_start (args, chunk_size);
 #else
 	/* get the amount of memory to be allocated */
 	size = axl_stream_vprintf_len (chunk, args);
+
+	/* reopen to avoid amd64 bug */
+	va_end (args);
+	va_start (args, chunk_size);
 	
 	/* check result */
 	if (size == -1) {

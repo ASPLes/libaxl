@@ -43,17 +43,17 @@
 
 BEGIN_C_DECLS
 
-void       axl_error_new      (int code, char * error, axlStream * stream, axlError ** _error);
+void         axl_error_new      (int code, char * error, axlStream * stream, axlError ** _error);
 
-void       axl_error_report   (axlError ** _error, int code, char * format, ...);
+void         axl_error_report   (axlError ** _error, int code, char * format, ...);
 
-axl_bool   axl_error_was_ok   (axlError * _error);
+axl_bool     axl_error_was_ok   (axlError * _error);
 
-int        axl_error_get_code (axlError * _error);
+int          axl_error_get_code (axlError * _error);
 
-char     * axl_error_get      (axlError * _error);
+const char * axl_error_get      (axlError * _error);
 
-void       axl_error_free     (axlError * _error);
+void         axl_error_free     (axlError * _error);
 
 
 END_C_DECLS

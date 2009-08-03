@@ -320,7 +320,7 @@ void __destroy_axl_dtd_element_list (axlDtdElementListNode * node)
  * 
  * @return A newly allocated \ref axlDtd reference.
  */
-axlDtd * __axl_dtd_new ()
+axlDtd * __axl_dtd_new (void)
 {
 	axlDtd * dtd;
 

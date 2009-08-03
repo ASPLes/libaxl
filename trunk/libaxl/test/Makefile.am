@@ -29,7 +29,7 @@ xml_files = \
 xdl_files = test17.xdl test03.xdl test04.xdl test01.xdl test02.xdl 
 misc_files = Makefile.win test_01.vcproj
 
-EXTRA_DIST      = $(h_files) $(c_files) $(dtd_files) $(xml_files) $(misc_files) $(xdl_files)
+EXTRA_DIST      = $(h_files) $(c_files) $(dtd_files) $(xml_files) $(misc_files) $(xdl_files) test_01.py
 
 if ENABLE_AXL_LOG
 LOG = -DSHOW_DEBUG_LOG
@@ -48,7 +48,7 @@ endif
 INCLUDES = -DTEST_DIR=$(top_srcdir)/test -I$(top_srcdir)/src/ -I$(top_srcdir)/ns -I$(top_srcdir)/babel -Wall $(LOG) $(NS) $(BABEL) -DVERSION=\""$(AXL_VERSION)"\" -D__axl_disable_broken_bool_def__ 
 
 # replace with bin_PROGRAMS to check performance
-bin_PROGRAMS = test_01 test_01a test_02a test_03a
+noinst_PROGRAMS = test_01 test_01a test_02a test_03a
 TESTS = test_01
 
 bin_SCRIPTS = prepare_files
@@ -68,6 +68,13 @@ test_03a_LDADD   = $(top_builddir)/src/libaxl.la
 # copy all test files 
 prepare_files: 
 	test -e test.xml || cp $(top_srcdir)/test/*.xml $(top_srcdir)/test/*.xdl $(top_srcdir)/test/*.dtd .
+	@cd ../py-axl; make; cd -
+	@test -d axl || mkdir axl
+        # copy dynamic libraries
+	@cp `find ../py-axl -name libpy_axl$(SHARED_EXTENSION) -type l` axl/
+        # copy python imports
+	@test -e axl/__init__.py || cp ../py-axl/__init__.py axl/
+	@diff axl/__init__.py ../py-axl/__init__.py || cp ../py-axl/__init__.py axl/
 
 refresh: 
 	$(top_builddir)/knife/axl-knife --input fact.dtd --dtd-to-c --output fact.dtd.h --ifnewer

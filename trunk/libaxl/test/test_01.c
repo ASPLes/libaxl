@@ -3842,7 +3842,6 @@ axl_bool test_06 (axlError ** error)
 		return axl_false;
 	}
 
-
 	/* free document */
 	axl_doc_free (doc);
 
