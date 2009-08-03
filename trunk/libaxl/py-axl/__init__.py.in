@@ -1,0 +1,5 @@
+# py-axl package version
+VERSION = "@AXL_VERSION@"
+
+# only import base library
+from libpy_axl import *
