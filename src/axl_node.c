@@ -806,9 +806,10 @@ void      axl_node_set_name                 (axlNode * node, const char * name)
 	/* check the name to be already configured and dealloc it */
 	if (node->name != NULL && ! (node->conf & NODE_NAME_FROM_FACTORY))
 		axl_free (node->name);
-
+	
 	/* alloc the new name */
 	node->name = axl_strdup (name);
+	node->conf &= ~NODE_NAME_FROM_FACTORY;
 	
 	return;
 }

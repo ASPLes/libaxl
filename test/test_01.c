@@ -26,7 +26,22 @@
 
 #define test_41_iso_8859_15_value "Esto es una prueba: camión, españa, y la tabla de caráteres!\"#$%()*+,-./0123456789:;=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~ ¡¢£€¥Š§š©ª«¬­®¯°±²³Žµ¶·ž¹º»ŒœŸ¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ"
 
-/**
+
+/** 
+ * @brief Check a memory leak while operating with root nodes.
+ */
+axl_bool test_43 (axlError ** error)
+{
+	axlDoc  * doc  = axl_doc_parse("<example />", -1, NULL);
+	axlNode * root = axl_doc_get_root(doc);
+
+	axl_node_set_name (root, "my_name");
+
+	axl_doc_free(doc);
+	return axl_true;
+}
+
+/** 
  * @brief Storing arbitrary binary content inside CDATA declaration
  * including ']]>'.
  * 
@@ -8984,6 +8999,15 @@ int main (int argc, char ** argv)
 		printf ("Test 42: Checking nested CDATA support (including ']]>', '<![CDATA[' or xml documents with '<![CDATA[..]]>' decls) [   OK   ]\n");
 	}else {
 		printf ("Test 42: Checking nested CDATA support CDATA declaration (including ']]>', '<![CDATA[' or xml documents with '<![CDATA[..]]>' decls) [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}
+
+	if (test_43 (&error)) {
+		printf ("Test 43: Memory leak check with root nodes [   OK   ]\n");
+	}else {
+		printf ("Test 43: Memory leak check with root nodes [ FAILED ]\n  (CODE: %d) %s\n",
 			axl_error_get_code (error), axl_error_get (error));
 		axl_error_free (error);
 		return -1;
