@@ -68,6 +68,7 @@ PyMODINIT_FUNC  initlibpy_axl_11 (void);
 #include <py_axl_doc.h>
 #include <py_axl_error.h>
 #include <py_axl_node.h>
+#include <py_axl_attr_cursor.h>
 #include <py_axl_dtd.h>
 #include <py_axl_list.h>
 #include <py_axl_hash.h>

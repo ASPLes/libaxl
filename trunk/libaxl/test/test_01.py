@@ -509,6 +509,67 @@ def test_05():
 
     return True
 
+def test_22():
+
+    # create a document
+    doc = axl.Doc ()
+
+    # set root node
+    doc.root = axl.Node ("root-node")
+
+    # check if the node has an attribute not available
+    if doc.root.has_attr ("attribute-not-found"):
+        error ("Expected to not find attribute: attribute-not-found, but found it")
+        return False
+
+    # check none value
+    if doc.root.attr ("attribute-not-found"):
+        error ("Expected to find None value associated to missing attribute, but found something defined")
+        return False
+
+    # configure attribute
+    doc.root.attr ("attribute1", "value1")
+
+    # check if the node has an attribute available
+    if not doc.root.has_attr ("attribute1"):
+        error ("Expected to find attribute: attribute1, but it wasn't found")
+        return False
+
+    if not doc.root.attr ("attribute1") == "value1":
+        error ("Expected to find value1 as value associated to attribute1 but found: " + doc.root.attr ("attribute1"))
+        return False
+
+    # set more attributes
+    doc.root.attr ("attribute2", "value2")
+    doc.root.attr ("attribute3", "value3")
+    doc.root.attr ("attribute4", "value4")
+    doc.root.attr ("attribute5", "value5")
+    doc.root.attr ("attribute6", "value6")
+
+    # check attr iterator
+    cursor = doc.root.attr_cursor_new ()
+    while cursor.has_item ():
+        if cursor.key == "attribute2" and cursor.value != "value2":
+            error ("Expected to find value2 for attribute2 but found: " + cursor.value)
+            return False
+        if cursor.key == "attribute3" and cursor.value != "value3":
+            error ("Expected to find value3 for attribute3 but found: " + cursor.value)
+            return False
+        if cursor.key == "attribute4" and cursor.value != "value4":
+            error ("Expected to find value4 for attribute4 but found: " + cursor.value)
+            return False
+        if cursor.key == "attribute5" and cursor.value != "value5":
+            error ("Expected to find value5 for attribute5 but found: " + cursor.value)
+            return False
+        if cursor.key == "attribute6" and cursor.value != "value6":
+            error ("Expected to find value6 for attribute6 but found: " + cursor.value)
+            return False
+
+        # next cursor
+        cursor.next ()
+
+    return True
+
 def test_33():
 
     # creates a document with default version, default encoding and standalone = true
@@ -539,6 +600,26 @@ def test_33():
 
     # now create empty nodes
     node = axl.Node ("test")
+
+    return True
+
+def py_test_01():
+
+    # parse content
+    (doc, err) = axl.parse ("<content />")
+    if err:
+        error ("Expected to find proper parse operation but found an error: " + err.msg)
+        return False
+
+    # get the node
+    node = doc.root
+
+    # get document containing node
+    doc2 = node.doc
+
+    if doc2.root.name != "content":
+        error ("Expected to find node name: content but found: " + doc2.root.name)
+        return False
 
     return True
 
@@ -575,15 +656,20 @@ def run_all_tests ():
 
 # declare list of tests available
 tests = [
-    (test_01,   "Check PyVortex context initialization"),
-    (test_01b,  "Check Basic XML parsing, XML document position"),
-    (test_01c,  "Check Basic XML parsing, XML document traversing"),
-    (test_01d,  "Check Basic XML parsing, node nth access"),
-    (test_01f,  "Check Basic XML parsing, white space node content"),
-    (test_03,   "Check complex xml error detection"),
-    (test_04,   "Check complex xml parsing"),
-    (test_05,   "Check DTD basic parsing"),
-    (test_33,   "Check Recursive root node replace")
+    # note test functions starting with test_ are using the same reg test
+    # as defined by test_01.c (axl reg test). Tests that are specific to
+    # py-axl must start with py_test_.
+    (test_01,    "Check PyVortex context initialization"),
+    (test_01b,   "Check Basic XML parsing, XML document position"),
+    (test_01c,   "Check Basic XML parsing, XML document traversing"),
+    (test_01d,   "Check Basic XML parsing, node nth access"),
+    (test_01f,   "Check Basic XML parsing, white space node content"),
+    (test_03,    "Check complex xml error detection"),
+    (test_04,    "Check complex xml parsing"),
+    (test_05,    "Check DTD basic parsing"),
+    (test_22,    "Check Axl node attributes"),
+    (test_33,    "Check Recursive root node replace"),
+    (py_test_01, "Check PyNode type attributes"),
 ]
 
 info (" LibAxl: Another XML library (regression test).")

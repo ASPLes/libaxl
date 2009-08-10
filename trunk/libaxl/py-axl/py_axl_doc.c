@@ -46,6 +46,8 @@ struct _PyAxlDoc {
 
 	/* pointer to the axl doc */
 	axlDoc * doc;
+	/* release the document on gc */
+	axl_bool finish_on_gc;
 };
 
 static int py_axl_doc_init_type (PyAxlDoc *self, PyObject *args, PyObject *kwds)
@@ -76,7 +78,8 @@ static PyObject * py_axl_doc_new (PyTypeObject *type, PyObject *args, PyObject *
 		return NULL;
 
 	/* create the document */
-	self->doc = axl_doc_create (version, encoding, stand_alone);
+	self->finish_on_gc = axl_true;
+	self->doc          = axl_doc_create (version, encoding, stand_alone);
 
 	/* return reference created */
 	return (PyObject *)self;
@@ -89,7 +92,8 @@ static PyObject * py_axl_doc_new (PyTypeObject *type, PyObject *args, PyObject *
 static void py_axl_doc_dealloc (PyAxlDoc* self)
 {
 	/* free document and nullfy pointer */
-	axl_doc_free (self->doc);
+	if (self->finish_on_gc)
+		axl_doc_free (self->doc);
 	self->doc = NULL;
 
 	/* free the node it self */
@@ -281,7 +285,7 @@ axl_bool             py_axl_doc_check    (PyObject          * obj)
 	return PyObject_TypeCheck (obj, &PyAxlDocType);
 }
 
-PyObject   * py_axl_doc_create    (axlDoc * doc)
+PyObject   * py_axl_doc_create    (axlDoc * doc, axl_bool finish_on_gc)
 {
 	/* return a new instance */
 	PyAxlDoc * obj = (PyAxlDoc *) PyObject_CallObject ((PyObject *) &PyAxlDocType, NULL); 
@@ -291,6 +295,9 @@ PyObject   * py_axl_doc_create    (axlDoc * doc)
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "Failed to create PyAxlDoc object, returning NULL");
 		return NULL;
 	} /* end if */
+
+	/* configure finish handling */
+	obj->finish_on_gc = finish_on_gc;
 
 	/* set doc if defined */
 	if (doc) {
