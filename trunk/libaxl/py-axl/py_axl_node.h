@@ -52,6 +52,8 @@ axl_bool     py_axl_node_check    (PyObject * obj);
 PyObject   * py_axl_node_create   (axlNode  * node, 
 				   axl_bool   finish_on_gc);
 
+axlNode    * py_axl_node_get      (PyObject * obj);
+
 void         init_axl_node        (PyObject * module);
 
 #endif

@@ -59,11 +59,26 @@ static int py_axl_doc_init_type (PyAxlDoc *self, PyObject *args, PyObject *kwds)
  */
 static PyObject * py_axl_doc_new (PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
-	PyAxlDoc *self;
+	PyAxlDoc   * self;
+	const char * version     = NULL;
+	const char * encoding    = NULL;
+	axl_bool     stand_alone = axl_true;
+
+	/* now parse arguments */
+	static char *kwlist[] = {"version", "encoding", "standalone", NULL};
 
 	/* create the object */
 	self = (PyAxlDoc *)type->tp_alloc(type, 0);
 
+	/* in the case the constructor was called with arguments,
+	 * check them */
+	if (! PyArg_ParseTupleAndKeywords(args, kwds, "|ssi", kwlist, &version, &encoding, &stand_alone))
+		return NULL;
+
+	/* create the document */
+	self->doc = axl_doc_create (version, encoding, stand_alone);
+
+	/* return reference created */
 	return (PyObject *)self;
 }
 
@@ -97,12 +112,12 @@ PyObject * py_axl_doc_get_attr (PyObject *o, PyObject *attr_name) {
 	if (! PyArg_Parse (attr_name, "s", &attr))
 		return NULL;
 
-	__axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "received request to report channel attr name %s (self: %p)",
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "received request to report doc attr name %s (self: %p)",
 		   attr, o);
 	if (axl_cmp (attr, "encoding")) {
 		/* encoding */
 		return Py_BuildValue ("s", axl_doc_get_encoding (self->doc));
-	} else if (axl_cmp (attr, "standalone")) {
+	} else if (axl_cmp (attr, "standalone") || axl_cmp (attr, "stand_alone")) {
 		/* standalone */
 		return Py_BuildValue ("i", axl_doc_get_standalone (self->doc));
 	} else if (axl_cmp (attr, "root")) {
@@ -129,13 +144,22 @@ PyObject * py_axl_doc_get_attr (PyObject *o, PyObject *attr_name) {
  */
 int py_axl_doc_set_attr (PyObject *o, PyObject *attr_name, PyObject *v)
 {
-	const char      * attr = NULL;
-/*	PyAxlDoc        * self = (PyAxlDoc *) o; */
-/*	axl_bool          boolean_value = axl_false; */
+	const char      * attr    = NULL;
+	PyAxlDoc        * self    = (PyAxlDoc *) o; 
+	PyObject        * py_node = NULL;
 
 	/* now implement other attributes */
 	if (! PyArg_Parse (attr_name, "s", &attr))
 		return -1;
+
+	if (axl_cmp (attr, "root")) {
+		if (! PyArg_Parse (v, "O", &py_node))
+			return -1;
+
+		/* configure the node */
+		axl_doc_set_root (self->doc, py_axl_node_get (py_node));
+		return 0;
+	}
 
 	/* now implement generic setter */
 	return PyObject_GenericSetAttr (o, attr_name, v);
@@ -269,8 +293,11 @@ PyObject   * py_axl_doc_create    (axlDoc * doc)
 	} /* end if */
 
 	/* set doc if defined */
-	if (doc)
+	if (doc) {
+		/* clear previous reference */
+		axl_doc_free (obj->doc);
 		obj->doc = doc;
+	}
 
 	return __PY_OBJECT (obj);
 }

@@ -60,10 +60,21 @@ static int py_axl_node_init_type (PyAxlNode *self, PyObject *args, PyObject *kwd
  */
 static PyObject * py_axl_node_new (PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
-	PyAxlNode *self;
+	PyAxlNode  * self;
+	const char * name = NULL;
 
 	/* create the object */
 	self = (PyAxlNode *)type->tp_alloc(type, 0);
+
+	/* parse and get node name */
+	if (! PyArg_ParseTuple (args, "|s", &name))
+		return NULL;
+		
+	/* create the node if received a defined name */
+	if (name != NULL) {
+		self->node         = axl_node_create (name);
+		self->finish_on_gc = axl_true;
+	}
 
 	return (PyObject *)self;
 }
@@ -75,8 +86,10 @@ static PyObject * py_axl_node_new (PyTypeObject *type, PyObject *args, PyObject 
 static void py_axl_node_dealloc (PyAxlNode* self)
 {
 
-	/* release node */
-	if (self->finish_on_gc) 
+	/* release node on if it is signaled to be released and it was
+	 * not configured to be inside a document, which means the
+	 * document will take care of this */
+	if (self->finish_on_gc && axl_node_get_doc (self->node) == NULL)
 		axl_node_free (self->node);
 	self->node = NULL;
 
@@ -102,7 +115,7 @@ PyObject * py_axl_node_get_attr (PyObject *o, PyObject *attr_name) {
 	if (! PyArg_Parse (attr_name, "s", &attr))
 		return NULL;
 
-	__axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "received request to report channel attr name %s (self: %p)",
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "received request to report node attr name %s (self: %p)",
 		   attr, o);
 
 	if (axl_cmp (attr, "name")) {
@@ -305,6 +318,30 @@ static PyObject * py_axl_node_attr_value (PyObject * _self, PyObject * args)
 	return Py_BuildValue ("z", ATTR_VALUE (self->node, attr_name));
 }
 
+static PyObject * py_axl_node_set_child (PyObject * _self, PyObject * args)
+{
+	PyAxlNode  * self      = (PyAxlNode *) _self;
+	PyObject   * child     = Py_None;
+
+	/* parse and check result */
+	if (! PyArg_ParseTuple (args, "O", &child))
+		return NULL;
+
+	/* check object received */
+	if (! py_axl_node_check (child)) {
+		/* set exception */
+		PyErr_SetString (PyExc_TypeError, "Expected to receive an axl.Node object but received something different");
+		return NULL;
+	}
+
+	/* set the node as child */
+	axl_node_set_child (self->node, py_axl_node_get (child));
+	
+	/* return ok */
+	Py_INCREF (Py_None);
+	return Py_None;
+}
+
 static PyMethodDef py_axl_node_methods[] = { 
 	/* next_called */
 	{"next_called", (PyCFunction) py_axl_node_next_called, METH_VARARGS,
@@ -327,6 +364,9 @@ static PyMethodDef py_axl_node_methods[] = {
 	/* attr */
 	{"attr", (PyCFunction) py_axl_node_attr_value, METH_VARARGS,
 	 "Allows to get the given attribute on the provided node."},
+	/* set_child */
+	{"set_child", (PyCFunction) py_axl_node_set_child, METH_VARARGS,
+	 "Allows to configure the provided node as the instance's child."},
  	{NULL}  
 }; 
 
@@ -415,6 +455,20 @@ PyObject   * py_axl_node_create   (axlNode  * node,
 	obj->finish_on_gc = finish_on_gc;
 
 	return __PY_OBJECT (obj);
+}
+
+/** 
+ * @internal Allows to get the internal reference used by the provided
+ * PyAxlNode.
+ */
+axlNode    * py_axl_node_get      (PyObject * obj)
+{
+	/* check object received */
+	if (! py_axl_node_check (obj))
+		return NULL;
+
+	/* return the node */
+	return ((PyAxlNode *)obj)->node;
 }
 
 void        init_axl_node      (PyObject * module)

@@ -509,6 +509,39 @@ def test_05():
 
     return True
 
+def test_33():
+
+    # creates a document with default version, default encoding and standalone = true
+    doc  = axl.Doc ()
+
+    # create a node
+    node = axl.Node ("test")
+
+    # set as root
+    doc.root = node
+
+    iterator = 0
+    while iterator < 2:
+        # get a temp reference to the current node
+        temp = doc.root
+
+        # create a new root
+        node = axl.Node ("test")
+
+        # set new root
+        doc.root = node
+
+        # set new child
+        node.set_child (temp)
+
+        # next position
+        iterator += 1
+
+    # now create empty nodes
+    node = axl.Node ("test")
+
+    return True
+
 ###########################
 # intraestructure support #
 ###########################
@@ -549,7 +582,8 @@ tests = [
     (test_01f,  "Check Basic XML parsing, white space node content"),
     (test_03,   "Check complex xml error detection"),
     (test_04,   "Check complex xml parsing"),
-    (test_05,   "Check DTD basic parsing")
+    (test_05,   "Check DTD basic parsing"),
+    (test_33,   "Check Recursive root node replace")
 ]
 
 info (" LibAxl: Another XML library (regression test).")
