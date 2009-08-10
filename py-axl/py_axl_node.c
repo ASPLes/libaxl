@@ -162,6 +162,17 @@ PyObject * py_axl_node_get_attr (PyObject *o, PyObject *attr_name) {
 		PyTuple_SetItem (tuple, 1, Py_BuildValue ("i", size));
 			
 		return tuple;
+	} else if (axl_cmp (attr, "doc")) {
+		
+		/* check if the node has a document configured */
+		if (axl_node_get_doc (self->node) == NULL) {
+			/* return none */
+			Py_INCREF (Py_None);
+			return Py_None;
+		} /* end if */
+
+		/* ok, return document holding the node */
+		return py_axl_doc_create (axl_node_get_doc (self->node), axl_false);
 	}
 
 	/* first implement generic attr already defined */
@@ -309,11 +320,20 @@ static PyObject * py_axl_node_has_attr (PyObject * _self, PyObject * args)
 static PyObject * py_axl_node_attr_value (PyObject * _self, PyObject * args)
 {
 	PyAxlNode  * self      = (PyAxlNode *) _self;
-	char       * attr_name = NULL;
+	char       * attr_name  = NULL;
+	char       * attr_value = NULL;
 
 	/* parse and check result */
-	if (! PyArg_ParseTuple (args, "s", &attr_name))
+	if (! PyArg_ParseTuple (args, "s|s", &attr_name, &attr_value))
 		return NULL;
+
+	/* check set operation */
+	if (PyTuple_Size (args) == 2) {
+		/* found set operation */
+		axl_node_set_attribute (self->node, attr_name, attr_value);
+		Py_INCREF (Py_None);
+		return Py_None;
+	} /* end if */
 	
 	return Py_BuildValue ("z", ATTR_VALUE (self->node, attr_name));
 }
@@ -342,6 +362,15 @@ static PyObject * py_axl_node_set_child (PyObject * _self, PyObject * args)
 	return Py_None;
 }
 
+static PyObject * py_axl_node_attr_cursor_new (PyObject * _self, PyObject * args)
+{
+	PyAxlNode  * self      = (PyAxlNode *) _self;
+	
+	/* create node cursor attr */
+	return py_axl_attr_cursor_create (axl_node_attr_cursor_new (self->node), axl_true);
+}
+
+
 static PyMethodDef py_axl_node_methods[] = { 
 	/* next_called */
 	{"next_called", (PyCFunction) py_axl_node_next_called, METH_VARARGS,
@@ -367,6 +396,9 @@ static PyMethodDef py_axl_node_methods[] = {
 	/* set_child */
 	{"set_child", (PyCFunction) py_axl_node_set_child, METH_VARARGS,
 	 "Allows to configure the provided node as the instance's child."},
+	/* attr_cursor_new */
+	{"attr_cursor_new", (PyCFunction) py_axl_node_attr_cursor_new, METH_NOARGS,
+	 "Allows to create a new attribute cursor object used to iterate over all attributes of a node."},
  	{NULL}  
 }; 
 

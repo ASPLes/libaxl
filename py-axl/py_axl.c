@@ -43,7 +43,7 @@
 static PyObject * py_axl_doc_parse (PyObject * self, PyObject * args)
 {
 	const char * document  = NULL;
-	int          size      = 0;
+	int          size      = -1;
 	PyObject   * doc;
 	axlDoc     * _doc;
 	axlError   * _error     = NULL;
@@ -51,7 +51,7 @@ static PyObject * py_axl_doc_parse (PyObject * self, PyObject * args)
 	PyObject   * error;
 
 	/* parse and check result */
-	if (! PyArg_ParseTuple (args, "si", &document, &size))
+	if (! PyArg_ParseTuple (args, "s|i", &document, &size))
 		return NULL;
 	
 	/* parse document */
@@ -73,7 +73,7 @@ static PyObject * py_axl_doc_parse (PyObject * self, PyObject * args)
 	} /* end if */
 	
 	/* document parsed ok */
-	doc = py_axl_doc_create (_doc);
+	doc = py_axl_doc_create (_doc, axl_true);
 	PyTuple_SetItem (result, 0, doc);
 	PyTuple_SetItem (result, 1, Py_None);
 	Py_INCREF (Py_None);
@@ -113,7 +113,7 @@ static PyObject * py_axl_doc_parse_from_file (PyObject * self, PyObject * args)
 	} /* end if */
 	
 	/* document parsed ok */
-	doc = py_axl_doc_create (_doc);
+	doc = py_axl_doc_create (_doc, axl_true);
 	PyTuple_SetItem (result, 0, doc);
 	PyTuple_SetItem (result, 1, Py_None);
 	Py_INCREF (Py_None);
@@ -191,14 +191,15 @@ PyMODINIT_FUNC  initlibpy_axl (void)
 		return;
 
 	/* call to register all axl modules and types */
-	init_axl_doc       (module);
-	init_axl_error     (module);
-	init_axl_node      (module);
-	init_axl_dtd       (module);
-	init_axl_list      (module);
-	init_axl_hash      (module);
-	init_axl_stack     (module);
-	init_axl_stream    (module);
+	init_axl_doc           (module);
+	init_axl_error         (module);
+	init_axl_node          (module);
+	init_axl_attr_cursor   (module);
+	init_axl_dtd           (module);
+	init_axl_list          (module);
+	init_axl_hash          (module);
+	init_axl_stack         (module);
+	init_axl_stream        (module);
 	return;
 }
 

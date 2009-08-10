@@ -36,24 +36,24 @@
  *         info@aspl.es - http://www.aspl.es/axl
  */
 
-#ifndef __PY_AXL_DOC_H__
-#define __PY_AXL_DOC_H__
+#ifndef __PY_AXL_ATTR_CURSOR_H__
+#define __PY_AXL_ATTR_CURSOR_H__
 
 /** 
  * @brief Object definition that represents the Python encapsulation
- * for axlDoc type.
+ * for axlAttrCursor type.
  */
-typedef struct _PyAxlDoc PyAxlDoc;
+typedef struct _PyAxlAttrCursor PyAxlAttrCursor;
 
 #include <py_axl.h>
 
-axl_bool     py_axl_doc_check    (PyObject * obj);
+axl_bool           py_axl_attr_cursor_check    (PyObject * obj);
 
-PyObject   * py_axl_doc_create   (axlDoc    * doc, 
-				  axl_bool    finish_on_gc);
+PyObject         * py_axl_attr_cursor_create   (axlAttrCursor  * attr_cursor, 
+						axl_bool   finish_on_gc);
 
-axlDoc     * py_axl_doc_get      (PyObject * doc);
+axlAttrCursor    * py_axl_attr_cursor_get      (PyObject * obj);
 
-void        init_axl_doc         (PyObject * module);
+void               init_axl_attr_cursor        (PyObject * module);
 
 #endif

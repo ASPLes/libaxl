@@ -17,6 +17,7 @@ libpy_axl_la_include_HEADERS  = \
 	py_axl_doc.h \
 	py_axl_error.h \
 	py_axl_node.h \
+	py_axl_attr_cursor.h \
 	py_axl_dtd.h \
 	py_axl_list.h \
 	py_axl_hash.h \
@@ -27,6 +28,7 @@ libpy_axl_la_SOURCES  = \
 	py_axl_doc.c \
 	py_axl_error.c \
 	py_axl_node.c \
+	py_axl_attr_cursor.c \
 	py_axl_dtd.c \
 	py_axl_list.c \
 	py_axl_hash.c \
