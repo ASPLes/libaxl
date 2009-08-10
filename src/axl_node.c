@@ -5954,7 +5954,11 @@ axlItem     * axl_item_new_ref         (AxlItemType type,
  */
 axlDoc  * axl_item_get_doc         (axlItem * item)
 {
-	axl_return_val_if_fail (item, NULL);
+	/* do not report an error since it is usual to have a node
+	 * without an item hold configured: for example after
+	 * axl_node_create */
+	if (item == NULL)
+		return NULL;
 
 	/* return the document reference */
 	return item->doc;

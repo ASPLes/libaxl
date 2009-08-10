@@ -96,7 +96,7 @@ PyObject * py_axl_error_get_attr (PyObject *o, PyObject *attr_name) {
 	if (! PyArg_Parse (attr_name, "s", &attr))
 		return NULL;
 
-	__axl_log (LOG_DOMAIN, AXL_LEVEL_CRITICAL, "received request to report channel attr name %s (self: %p)",
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "received request to report axl.Error attr name %s (self: %p)",
 		   attr, o);
 
 	if (axl_cmp (attr, "code")) {
