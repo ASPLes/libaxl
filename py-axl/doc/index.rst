@@ -24,6 +24,9 @@ features:
 .. toctree::
    :maxdepth: 1
 
+   axl
+   doc
+
 
 =================
 Community support
