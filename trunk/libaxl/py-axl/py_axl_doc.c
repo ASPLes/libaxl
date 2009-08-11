@@ -190,6 +190,100 @@ static PyObject * py_axl_doc_get_node (PyObject * _self, PyObject * args)
 	return py_axl_node_create (node, axl_false);
 }
 
+static PyObject * py_axl_doc_dump (PyObject * _self, PyObject * args, PyObject * kwds)
+{
+	PyAxlDoc   * self    = (PyAxlDoc *) _self;
+	int          tabular = 0;
+	char       * content = NULL;
+	int          size    = 0;
+	PyObject   * result;
+	
+
+	/* parse and check result */
+	if (PyTuple_Size (args) == 0) {
+		/* simple dump operation */
+		/* dump content */
+		if (! axl_doc_dump (self->doc, &content, &size)) {
+			/* failed to dump */
+			PyErr_SetString (PyExc_TypeError, "axl_doc_dump operation failed, unable to produce dumped content");
+			return NULL;
+		} /* end if */
+
+		/* create the tuple */
+		result = PyTuple_New (2);
+		PyTuple_SetItem (result, 0, Py_BuildValue ("s", content));
+		axl_free (content);
+		PyTuple_SetItem (result, 1, Py_BuildValue ("i", size));
+	} else {
+		/* dump with tabular configuration */
+		if (! PyArg_ParseTuple (args, "i", &tabular))
+			return NULL;
+		
+		/* check tabular value */
+		if (tabular < 0) {
+			PyErr_SetString (PyExc_ValueError, "failed to produce dump operation, received a non-positive (including 0) tabular value");
+			return NULL;
+		} /* end if */
+		
+		/* dump content with tabular configured */
+		if (! axl_doc_dump_pretty (self->doc, &content, &size, tabular)) {
+			/* failed to dump */
+			PyErr_SetString (PyExc_TypeError, "axl_doc_dump operation failed, unable to produce dumped content");
+			return NULL;
+		} /* end if */
+
+		/* create the tuple */
+		result = PyTuple_New (2);
+		PyTuple_SetItem (result, 0, Py_BuildValue ("s", content));
+		axl_free (content);
+		PyTuple_SetItem (result, 1, Py_BuildValue ("i", size));
+	} /* end if */
+
+	/* return tuple */
+	return result;
+}
+
+static PyObject * py_axl_doc_file_dump (PyObject * _self, PyObject * args, PyObject * kwds)
+{
+	PyAxlDoc   * self    = (PyAxlDoc *) _self;
+	int          tabular = 0;
+	char       * file    = NULL;
+
+	/* parse and check result */
+	if (PyTuple_Size (args) == 1) {
+
+		/* dump with tabular configuration */
+		if (! PyArg_ParseTuple (args, "s", &file))
+			return NULL;
+
+		/* simple dump operation */
+		/* dump content */
+		if (! axl_doc_dump_to_file (self->doc, file)) {
+			/* failed to dump */
+			PyErr_SetString (PyExc_TypeError, "axl_doc_dump_to_file operation failed, unable to produce dumped content");
+			return NULL;
+		} /* end if */
+		
+	} else if (PyTuple_Size (args) == 2) {
+
+		/* dump with tabular configuration */
+		if (! PyArg_ParseTuple (args, "si", &file, &tabular))
+			return NULL;
+
+		/* simple dump operation */
+		/* dump content */
+		if (! axl_doc_dump_pretty_to_file (self->doc, file, tabular)) {
+			/* failed to dump */
+			PyErr_SetString (PyExc_TypeError, "axl_doc_dump_pretty_to_file operation failed, unable to produce dumped content");
+			return NULL;
+		} /* end if */
+
+	} /* end if */
+
+	/* return ok operation */
+	return Py_BuildValue ("i", 1);
+}
+
 static PyObject * py_axl_doc_has_pi (PyObject * _self, PyObject * args)
 {
 	PyAxlDoc  * self      = (PyAxlDoc *) _self;
@@ -218,6 +312,11 @@ static PyMethodDef py_axl_doc_methods[] = {
 	/* next_called */
 	{"get", (PyCFunction) py_axl_doc_get_node, METH_VARARGS,
 	 "Allows to get a node found at a particular path (method wrapper of axl_doc_get)"},
+	/* next_called */
+	{"dump", (PyCFunction) py_axl_doc_dump, METH_VARARGS | METH_KEYWORDS,
+	 "Allows to perform a dump operation returning the content and the size that result in a tuple."},
+	{"file_dump", (PyCFunction) py_axl_doc_file_dump, METH_VARARGS | METH_KEYWORDS,
+	 "Allows to perform a dump operation sending the content to a file."},
 	/* has_pi */
 	{"has_pi", (PyCFunction) py_axl_doc_has_pi, METH_VARARGS,
 	 "Allows to check if the provided doc has the given process instruction."},
