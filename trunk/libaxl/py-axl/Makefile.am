@@ -1,5 +1,7 @@
 EXTRA_DIST = __init__.py
 
+SUBDIRS = doc
+
 if ENABLE_AXL_LOG
 LOG = -DSHOW_DEBUG_LOG
 endif
