@@ -273,6 +273,7 @@ doc/axl-doc.doxygen
 babel/Makefile
 py-axl/Makefile
 py-axl/__init__.py
+py-axl/doc/conf.py
 test/Makefile
 knife/Makefile
 axl.pc
