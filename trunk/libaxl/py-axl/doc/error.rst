@@ -1,4 +1,4 @@
-:mod:`error` --- PyAxlError class: error handling and reporting
+:mod:`axl` --- PyAxlError class: error handling and reporting
 ===============================================================
 
 .. currentmodule:: axl

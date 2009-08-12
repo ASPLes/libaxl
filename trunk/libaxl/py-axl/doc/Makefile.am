@@ -8,7 +8,11 @@ PAPER         =
 
 EXTRA_DIST = py-axl-doc.css conf.py conf.py.in make.bat \
 	license.rst index.rst \
-	axl.rst doc.rst error.rst 
+	axl.rst \
+	doc.rst \
+	error.rst \
+	node.rst \
+	dtd.rst
 
 # Internal variables.
 PAPEROPT_a4     = -D latex_paper_size=a4
