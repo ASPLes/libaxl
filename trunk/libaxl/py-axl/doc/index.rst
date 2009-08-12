@@ -26,6 +26,7 @@ features:
 
    axl
    doc
+   error
 
 
 =================
