@@ -392,7 +392,7 @@ static PyMethodDef py_axl_node_methods[] = {
 	 "Allows to check if the provided node has the given attribute."},
 	/* attr */
 	{"attr", (PyCFunction) py_axl_node_attr_value, METH_VARARGS,
-	 "Allows to get the given attribute on the provided node."},
+	 "Allows to get/set the given attribute on the provided node."},
 	/* set_child */
 	{"set_child", (PyCFunction) py_axl_node_set_child, METH_VARARGS,
 	 "Allows to configure the provided node as the instance's child."},

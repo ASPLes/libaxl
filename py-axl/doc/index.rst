@@ -26,6 +26,8 @@ features:
 
    axl
    doc
+   node
+   dtd
    error
 
 
