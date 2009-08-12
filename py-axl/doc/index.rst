@@ -27,6 +27,7 @@ features:
    axl
    doc
    node
+   attr_cursor
    dtd
    error
 

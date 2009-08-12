@@ -12,7 +12,8 @@ EXTRA_DIST = py-axl-doc.css conf.py conf.py.in make.bat \
 	doc.rst \
 	error.rst \
 	node.rst \
-	dtd.rst
+	dtd.rst \
+	attr_cursor.rst
 
 # Internal variables.
 PAPEROPT_a4     = -D latex_paper_size=a4
