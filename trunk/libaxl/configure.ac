@@ -274,6 +274,7 @@ babel/Makefile
 py-axl/Makefile
 py-axl/__init__.py
 py-axl/doc/conf.py
+py-axl/doc/Makefile
 test/Makefile
 knife/Makefile
 axl.pc
