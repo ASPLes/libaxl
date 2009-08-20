@@ -1,5 +1,5 @@
 PyAxl's license
-==================
+===============
 
 PyAxl is developed by Advanced Software Production Line,
 S.L. (http://www.aspl.es) and released under the terms of the LGPL 2.1
