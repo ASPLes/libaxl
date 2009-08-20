@@ -36,8 +36,8 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-build_triplet = i686-pc-linux-gnu
-host_triplet = i686-pc-linux-gnu
+build_triplet = x86_64-unknown-linux-gnu
+host_triplet = x86_64-unknown-linux-gnu
 subdir = py-axl/doc
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(srcdir)/conf.py.in
@@ -45,7 +45,7 @@ ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
-mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
+mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES = conf.py
 SOURCES =
@@ -59,7 +59,7 @@ AR = ar
 AUTOCONF = ${SHELL} /home/acinom/af-arch/libaxl/missing --run autoconf
 AUTOHEADER = ${SHELL} /home/acinom/af-arch/libaxl/missing --run autoheader
 AUTOMAKE = ${SHELL} /home/acinom/af-arch/libaxl/missing --run automake-1.9
-AWK = gawk
+AWK = mawk
 AXL_VERSION = 0.5.6.b.g9996078
 CC = gcc
 CCDEPMODE = depmode=gcc3
@@ -67,9 +67,9 @@ CFLAGS = -g -O2
 CPP = gcc -E
 CPPFLAGS = -Wall -Werror -I/usr/include/python2.5 -I/usr/include/python2.5
 CXX = g++
-CXXCPP = g++ -E
-CXXDEPMODE = depmode=gcc3
-CXXFLAGS = -g -O2
+CXXCPP = 
+CXXDEPMODE = depmode=none
+CXXFLAGS = 
 CYGPATH_W = echo
 DEFS = -DHAVE_CONFIG_H
 DEPDIR = .deps
@@ -94,7 +94,7 @@ ENABLE_AXL_TESTS_FALSE = #
 ENABLE_AXL_TESTS_TRUE = 
 ENABLE_PY_AXL_FALSE = #
 ENABLE_PY_AXL_TRUE = 
-EXARG_FLAGS = 
+EXARG_FLAGS = -DHAVE_VASPRINTF 
 EXEEXT = 
 F77 = 
 FFLAGS = 
@@ -109,9 +109,9 @@ LIBS =
 LIBTOOL = $(SHELL) $(top_builddir)/libtool
 LN_S = ln -s
 LTLIBOBJS = 
-MAINT = 
-MAINTAINER_MODE_FALSE = #
-MAINTAINER_MODE_TRUE = 
+MAINT = #
+MAINTAINER_MODE_FALSE = 
+MAINTAINER_MODE_TRUE = #
 MAKEINFO = ${SHELL} /home/acinom/af-arch/libaxl/missing --run makeinfo
 NMEDIT = 
 OBJEXT = o
@@ -138,33 +138,33 @@ SHELL = /bin/sh
 STRIP = strip
 VERSION = 0.5.6.b.g9996078
 ac_ct_CC = gcc
-ac_ct_CXX = g++
+ac_ct_CXX = 
 ac_ct_F77 = 
 am__fastdepCC_FALSE = #
 am__fastdepCC_TRUE = 
-am__fastdepCXX_FALSE = #
-am__fastdepCXX_TRUE = 
+am__fastdepCXX_FALSE = 
+am__fastdepCXX_TRUE = #
 am__include = include
 am__leading_dot = .
 am__quote = 
 am__tar = ${AMTAR} chof - "$$tardir"
 am__untar = ${AMTAR} xf -
 bindir = ${exec_prefix}/bin
-build = i686-pc-linux-gnu
+build = x86_64-unknown-linux-gnu
 build_alias = 
-build_cpu = i686
+build_cpu = x86_64
 build_os = linux-gnu
-build_vendor = pc
+build_vendor = unknown
 datadir = ${datarootdir}
 datarootdir = ${prefix}/share
 docdir = ${datarootdir}/doc/${PACKAGE}
 dvidir = ${docdir}
 exec_prefix = ${prefix}
-host = i686-pc-linux-gnu
+host = x86_64-unknown-linux-gnu
 host_alias = 
-host_cpu = i686
+host_cpu = x86_64
 host_os = linux-gnu
-host_vendor = pc
+host_vendor = unknown
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
@@ -179,14 +179,14 @@ oldincludedir = /usr/include
 pdfdir = ${docdir}
 pkgpyexecdir = ${pyexecdir}/axl
 pkgpythondir = ${pythondir}/axl
-prefix = /usr
+prefix = /usr/local
 program_transform_name = s,x,x,
 psdir = ${docdir}
 pyexecdir = ${exec_prefix}/lib/python2.5/site-packages
 pythondir = ${prefix}/lib/python2.5/site-packages
 sbindir = ${exec_prefix}/sbin
 sharedstatedir = ${prefix}/com
-sysconfdir = /etc
+sysconfdir = ${prefix}/etc
 target_alias = 
 
 # You can set these variables from the command line.
@@ -210,7 +210,7 @@ ALLSPHINXOPTS = -d _build/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
 all: all-am
 
 .SUFFIXES:
-$(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
+$(srcdir)/Makefile.in: # $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
 	    *$$dep*) \
@@ -235,9 +235,9 @@ Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 $(top_builddir)/config.status: $(top_srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 
-$(top_srcdir)/configure:  $(am__configure_deps)
+$(top_srcdir)/configure: # $(am__configure_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
-$(ACLOCAL_M4):  $(am__aclocal_m4_deps)
+$(ACLOCAL_M4): # $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 conf.py: $(top_builddir)/config.status $(srcdir)/conf.py.in
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
