@@ -2084,14 +2084,20 @@ axl_bool     __axl_dtd_validate_sequence (axlNode            * parent,
 				/* check if we were working with a
 				 * list, which have matched at least
 				 * one item */
-				if (times == ONE_OR_MANY && one_matched && status && 
-				    ((iterator + 1) == axl_dtd_item_list_count (itemList))) {
-					*child_position = child_pos;
-					__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "sequence validated with child position (III): %d", child_pos);
-					return axl_true;
+				if (times == ONE_OR_MANY && one_matched && status) {
+					if ((iterator + 1) == axl_dtd_item_list_count (itemList)) {
+						*child_position = child_pos;
+						__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "sequence validated with child position (III): %d", child_pos);
+						return axl_true;
+					} 
+
+					/* reached this point we have
+					   matched a one to many with
+					   at least one match */
+					break;
 				}
 				
-				/* check that the reset of the
+				/* check that the rest of the
 				 * specification item is optional,
 				 * including the one used */
 				status = axl_true;
@@ -2122,8 +2128,9 @@ axl_bool     __axl_dtd_validate_sequence (axlNode            * parent,
 				
 				/* check if a try match is being runned */
 				if (! try_match) {
-					axl_error_new (-1, "Found that DTD specifies more nodes to be hold by the parent, but no more childs were found",
-						       NULL, error);
+					axl_error_report (error, -1 , 
+						       "Found that DTD specifies more nodes to be hold by the parent (<%s>), but no more childs were found",
+						       axl_node_get_name (parent));
 				}
 
 				__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found that no nodes left to satisfy DTD validation operation");
