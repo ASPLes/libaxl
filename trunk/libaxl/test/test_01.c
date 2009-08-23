@@ -26,6 +26,53 @@
 
 #define test_41_iso_8859_15_value "Esto es una prueba: camión, españa, y la tabla de caráteres!\"#$%()*+,-./0123456789:;=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~ ¡¢£€¥Š§š©ª«¬­®¯°±²³Žµ¶·ž¹º»ŒœŸ¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ"
 
+/** 
+ * @brief Check and fix DTD bug
+ */
+axl_bool test_44 (axlError ** error)
+{
+
+	axlDoc * doc;
+	axlDtd  * dtd;
+
+	/* parse the document found */
+	doc = axl_doc_parse_from_file ("test_44.xml", error);
+	if (doc == NULL)
+		return axl_false;
+
+	
+	dtd = axl_dtd_parse_from_file ("test_44.dtd", error);
+	if (dtd == NULL)
+		return axl_false;
+
+	/* now validate the document */
+	if (! axl_dtd_validate (doc, dtd, error)) {
+		return axl_false;
+	}
+
+	/* release memory used by the parser */
+	axl_doc_free (doc);
+
+	/* parse the document found */
+	doc = axl_doc_parse_from_file ("test_44_b.xml", error);
+	if (doc == NULL)
+		return axl_false;
+
+	/* now validate the document */
+	if (! axl_dtd_validate (doc, dtd, error)) {
+		return axl_false;
+	}
+	
+	/* release memory used by the DTD element */
+	axl_dtd_free (dtd);
+
+	/* release memory used by the parser */
+	axl_doc_free (doc);
+
+	return axl_true;
+	
+}
+
 
 /** 
  * @brief Check a memory leak while operating with root nodes.
@@ -9008,6 +9055,15 @@ int main (int argc, char ** argv)
 		printf ("Test 43: Memory leak check with root nodes [   OK   ]\n");
 	}else {
 		printf ("Test 43: Memory leak check with root nodes [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}
+
+	if (test_44 (&error)) {
+		printf ("Test 44: DTD fix (optional child after one to many child spec) [   OK   ]\n");
+	}else {
+		printf ("Test 44: DTD fix (optional child after one to many child spec) [ FAILED ]\n  (CODE: %d) %s\n",
 			axl_error_get_code (error), axl_error_get (error));
 		axl_error_free (error);
 		return -1;

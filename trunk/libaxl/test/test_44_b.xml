@@ -1,0 +1,6 @@
+<modules>
+  <directory src="data" />
+  <unload-after-fork>
+    <module name="data" />
+  </unload-after-fork>
+</modules>
