@@ -849,3 +849,46 @@ form.comment textarea {
         display: none;
     }
 }
+
+.aspl-logo { 
+  padding-right: 20px;
+  border: 0px;
+  background: white;
+}
+.aspl-logo img { 
+  border: 0px;
+}
+.af-arch-header { 
+  width: 100%;
+  background: #ffffff;
+  margin: 0;
+}
+.ads { 
+  width: 100%;
+  height: 112px;
+  border-top: 1px solid #172e4b;
+  border-bottom: 1px solid #172e4b;
+  background: #c9c9c9;
+}
+
+.ads iframe { 
+  width: 802px;
+  height: 102px;
+  position: absolute;
+  top: 90px;
+  left: 200px;
+}
+
+.ads2 { 
+  width: 100%;
+  height: 112px;
+  background: #c9c9c9;
+}
+
+.ads2 iframe { 
+  width: 802px;
+  height: 102px;
+  position: relative;
+  top: 10px;
+  left: 120px;
+}

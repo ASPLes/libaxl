@@ -43,6 +43,8 @@ clean:
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) _build/html
 	cp py-axl-doc.css _build/html/_static/
+	cp ../../doc/aspl-logo.png _build/html/
+	cp ../../doc/main-page-logo.png _build/html/
 	@echo
 	@echo "Build finished. The HTML pages are in _build/html."
 
