@@ -1,0 +1,134 @@
+          ########################################
+          #             Axl Library              #
+          #          Un día en el mundo          # 
+          #                0.6.0                 #
+          ########################################
+
+Advanced Software Production Line is proud to announce a new Axl
+Library release.
+
+Axl Library is a small and efficient XML toolkit, written in ANSI C
+and released under the LGPL. It allows to produce efficient and clear
+code that handle XML data.
+
+The library was produced to support XML requirements needed by
+software developed by Advanced Software Production Line, S.L.
+
+At this moment the library is being used by Vortex Library, Af-Arch,
+Turbulence, Shaper, Fovap and Ju-Doc.
+
+Resources
+~~~~~~~~~
+
+   Axl Homepage
+   [ http://www.aspl.es/xml ]
+
+   Advanced Software Production Line, S.L.
+   [ http://www.aspl.es ]
+
+This release in short
+~~~~~~~~~~~~~~~~~~~~~
+
+  This release feature support for Python language through PyAxl
+  binding (http://www.aspl.es/xml/doc.html). Some bugs were fixed:
+  especially at DTD validation.
+  
+Thanks to..
+~~~~~~~~~~~
+  Benoit Amiaux (reported memory leak at axl_node_set_name).
+
+Changes from previous release 0.5.7
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* [fix] Fixed DTD validation error (one to many spec followed by
+  optional node). Added regression test to reproduce the problem and
+  check the fix introduced.
+
+* [new] Updated PyAxlDoc API to include methods to dump document
+  content. API added:
+
+   - doc.dump ()
+   - doc.file_dump ()
+
+* [new] Added support to axl.Node type to returns its current holding
+  document. API added:
+
+   - axl.Node.doc
+
+* [fix] Making axl.Node.attr () method to act like a setter method in
+  the case two arguments are received and like a getter method in the
+  case one argument is received.
+
+* [new] Updated API to support support for axl.AttrCursor type.
+  Updated axl.Node type to include a method to initialize a cursor.
+  API added:
+
+   - axl.Node.cursor_new ()
+   - axl.AttrCursor.key
+   - axl.AttrCursor.value
+   - axl.AttrCursor.first ()
+   - axl.AttrCursor.next ()
+   - axl.AttrCursor.has_item ()
+   - axl.AttrCursor.has_next ()
+
+* [fix] Making axl_item_get_doc to not report a log error when it is
+  found no document holding the node.
+
+* [new] Updated support to allow creating empty documents and xml
+  nodes (axl.Node () and axlDoc ()).
+
+* [fix] Updated axl.Node type destructor to check if the internal node
+  is stored on a document before proceeding the GC.
+
+* [new] Added new method to set child nodes. API added:
+
+   axl.Node.set_child
+
+* [new] Added support to configure xml root node. API added:
+  
+   axl.Node.root
+
+* [fix] Fixed memory leak at axl_node_set_name which was causing to to
+  free node name configured. Fixed and reported by Benoit Amiaux.
+  Added regression test to check patch and fix introduced.
+
+* [new] Added regression test to check python bindings: test_01.py
+
+* [fix] Added const declaration to some parameters. Functions updated:
+
+   - axl_node_get_next_called
+   - axl_node_get_previous_called
+   - axl_node_get_child_called
+   - axl_node_find_called
+
+* [fix] Fixed configure.ac to properly check and detect the presence
+  of vasprintf symbol which is essential on Linux amd64 platforms.
+
+* [new] Added initial working PyAxl implementation: python bindings for
+  axl library.
+
+* [fix] Fixed api declarations using () rather than (void) which
+  causing python extension building to complain. Checked regression
+  tests..
+
+About Advanced Software Production Line, S.L.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Advanced Software Production Line provides GNU/Linux support and
+  consulting services to enable organization to introduce GNU/Linux
+  into their processes, making other platforms to properly interact
+  with it.
+
+  Contact us, using English or Spanish, to get commercial support
+  and/or XML based development services.
+
+  You can reach us:
+
+       http://www.aspl.es - info@aspl.es
+
+  We hope Axl Library help you. Enjoy Axl Library!
+
+--
+Francis Brosnan Blázquez           - francis@aspl.es
+Advanced Software Production Line  - http://www.aspl.es
+3th sep 2009, Madrid (Spain)

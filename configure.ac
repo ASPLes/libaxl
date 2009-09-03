@@ -115,9 +115,8 @@ AM_CONDITIONAL(ENABLE_AXL_BABEL, test "x$enable_axl_babel" = "xyes")
 AC_TRY_LINK([#define _GNU_SOURCE
 #include <stdio.h>], 
 [
-  va_list arg;
   char * result;
-  vasprintf (&result, "This is a test: %d", arg);
+  vasprintf (&result, "This is a test: %d", NULL);
   return 0;
 ], [have_vasprintf=yes],[have_vasprintf=no])
 echo "Checking vasprintf support: $have_vasprintf"
@@ -298,6 +297,7 @@ else
    echo "     have to install doxygen tool. Then run again"
    echo "     configure process."
 fi
+echo "   vasprintf support:            [$have_vasprintf]"
 echo "------------------------------------------"
 echo "--     NOW TYPE: make; make install     --"
 echo "------------------------------------------"

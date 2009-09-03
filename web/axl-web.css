@@ -249,6 +249,13 @@ ul.news li.header-news {
   text-decoration: none; 
 }
 
+.central-link table { 
+  margin-left: 20%;
+  margin-right: 20%;
+  text-align: center;
+  width: 60%;
+}
+
 .central-link img { 
   border: 0;
   text-align: center;
