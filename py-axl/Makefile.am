@@ -42,7 +42,8 @@ libpy_axl_la_includedir = $(includedir)/py_axl
 libdir = ${pythondir}/axl
 
 install-exec-hook:
-	@echo "site installation ${pythondir}/axl.."
+	@echo "site installation ${pythondir}/axl prefix=${DESTDIR}.."
+	install -d ${DESTDIR}/${pythondir}/axl
 	install -m 644 \
 		__init__.py \
-		${pythondir}/axl
+		${DESTDIR}/${pythondir}/axl
