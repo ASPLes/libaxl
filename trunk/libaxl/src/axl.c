@@ -56,16 +56,16 @@
  * href="http://vortex.aspl.es">Vortex Library</a>, which are already
  * using the library successfully in production environments.
  * 
- * Main objectives for this library is to provide:
+ * Some features this library has are:
  *
  * <ul>
  * 
  * <li><b>A clean implementation</b>, that only includes, those elements
  * defined, and only those, inside the XML 1.0 standard, as defined in <a href="http://www.w3.org/TR/REC-xml/">the third edition</a>.</li>
  *
- * <li>To be a <b>fast and memory efficient</b> implementation. If you still
+ * <li><b>Fast and memory efficient</b> implementation. If you still
  * think that XML is slow and memory inefficient, you didn't taste Axl
- * Library. You'll find report about its performance and memory usage at: http://xml.aspl.es/doc.html </li>
+ * Library. You'll find report about its performance and memory usage at: http://www.aspl.es/xml/doc.html </li>
  *
  * <li>Ensure that the library is implemented using abstract data types,
  * commonly known as opaque types, to avoid exposing details to the
@@ -74,29 +74,27 @@
  * code and, the most important, to not be limited by details already
  * exposed.
  * In fact, this design have being already used to improve the library
- * performance greatly. See reports founds at: http://xml.aspl.es/doc.html</a>.</li>
+ * performance greatly. See reports founds at: http://www.aspl.es/xml/doc.html</a>.</li>
  *
- * <li>To be <b>small and efficient</b>, ensuring on every stable release that
+ * <li><b>Small and efficient</b>, ensuring on every stable release that
  * the library do not leak, not only while using the library in a
- * proper manner but also when errors were found. 
- * This point is really important for us because Af-Arch server
- * applications needs to be working for a long time. </li>
+ * proper manner but also when errors were found. </li>
  *
  * <li>Have a <b>modular</b> design that allows to use only those
  * elements required by your software. At this moment it is provided a
- * base library (with implements XML 1.0) and optionals libraries that
+ * base library (with implements XML 1.0) and optional libraries that
  * provides additional features to support XML Namespaces 1.0 and
  * extended encodings.</li>
  *
- * <li>The other issue is that the Af-Arch client platform should be
- * easily embedded, so, a <b>small footprint</b> is a requirement. Currently LibAxl (89K) and LibAxl-Ns (9K)</li>
+ * <li>To have an <b>small footprint</b> is a requirement. Currently LibAxl (118K) and LibAxl-Ns (9K)</li>
  *
+ * <li><b>Bindings</b> for other languages. At this moment it is officially supported <b>PyAxl</b>, a binding for the Python Language.</li>
  * </ul>
  *
  * \section features_and_status What is the status of the library
  *
  * Currently the library is stable and it is known to work under
- * GNU/Linux and Windows with a really good performance. See reports found at http://xml.aspl.es/doc.html to know more about this.
+ * GNU/Linux and Windows with a really good performance. See reports found at http://www.aspl.es/xml/doc.html to know more about this.
  *
  * The library already covers the 95% of common requires that XML
  * development needs. Among others, it support:
