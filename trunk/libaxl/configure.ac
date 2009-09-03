@@ -57,8 +57,11 @@ AC_CHECK_SIZEOF(void *)
 
 AM_PATH_PYTHON([2.3])
 
+# find python-config
+PYTHON_CONFIG=`./get-python-config`
+
 # get python includes 
-PYTHON_INCLUDES=`python-config --includes 2>/dev/null`
+PYTHON_INCLUDES=`$PYTHON_CONFIG --includes 2>/dev/null`
 old_CPPFLAGS=$CPPFLAGS
 CPPFLAGS="-Wall -Werror $PYTHON_INCLUDES"
 echo "Python includes: $PYTHON_INCLUDES"
@@ -74,8 +77,8 @@ if test "x$python_devel_found" = "xno"; then
 fi
 
 # get python flags and libs
-PYTHON_CFLAGS=`python-config --cflags 2>/dev/null`
-PYTHON_LIBS=`python-config --ldflags 2>/dev/null`
+PYTHON_CFLAGS=`$PYTHON_CONFIG --cflags 2>/dev/null`
+PYTHON_LIBS=`$PYTHON_CONFIG --ldflags 2>/dev/null`
 AC_SUBST(PYTHON_CFLAGS)
 AC_SUBST(PYTHON_LIBS)
 AM_CONDITIONAL(ENABLE_PY_AXL, test "x$python_devel_found" = "xyes")

@@ -65,3 +65,18 @@ Section: libs
 Architecture: any
 Description: Fast and efficient XML 1.0 implementation
  Libaxl package documentation (html doxygen generated)
+
+Package: python-axl
+Section: libs
+Architecture: any
+Depends: libaxl1 (= ${Source-Version}), python2.4
+Description: Python bindings for Axl Library
+ Python bindings for LibAxl library.
+
+
+Package: python-axl-dev
+Section: libdevel
+Architecture: any
+Depends: libaxl-dev (= ${Source-Version}), python-axl
+Description: Development headers for Axl Python bindings
+  Python Axl bindings development headers.
