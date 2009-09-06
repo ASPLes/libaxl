@@ -161,6 +161,11 @@ static PyObject * py_axl_dtd_parse_from_file (PyObject * self, PyObject * args)
 	return result;
 }
 
+static PyObject * py_axl_version (PyObject * self)
+{
+	return Py_BuildValue ("s", VERSION);
+}
+
 static PyMethodDef py_axl_methods[] = { 
 	/* parse */
 	{"parse", (PyCFunction) py_axl_doc_parse, METH_VARARGS,
@@ -171,6 +176,9 @@ static PyMethodDef py_axl_methods[] = {
 	/* dtd_file_parse */
 	{"dtd_file_parse", (PyCFunction) py_axl_dtd_parse_from_file, METH_VARARGS,
 	 "Parse the DTD document found in the file path provided returning a new reference to (axl.Dtd, axl.Error)"},
+	/* version */
+	{"version", (PyCFunction) py_axl_version, METH_NOARGS,
+	 "Returns current py-axl version (with is the same as Axl Library)"},
 	{NULL, NULL, 0, NULL}   /* sentinel */
 }; 
 
