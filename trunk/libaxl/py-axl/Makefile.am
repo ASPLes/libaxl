@@ -43,7 +43,7 @@ libdir = ${pythondir}/axl
 
 install-exec-hook:
 	@echo "site installation ${pythondir}/axl prefix=${DESTDIR}.."
-	install -d ${DESTDIR}/${pythondir}/axl
+	install -d ${DESTDIR}${pythondir}/axl
 	install -m 644 \
 		__init__.py \
-		${DESTDIR}/${pythondir}/axl
+		${DESTDIR}${pythondir}/axl
