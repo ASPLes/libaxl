@@ -1908,7 +1908,7 @@ axlDtd * __axl_dtd_parse_common (const char * entity, int entity_size,
 
 		/* stop the loop */
 		if (iterator == 3) {
-			axl_error_new (-1, "unable to process DTD content, unable to found expected information", stream, error);
+			axl_error_new (-1, "unable to process DTD content, unable to find expected information (no <!ELEMENT, <!ATTLIST or <!ENTITY declaration)", stream, error);
 			axl_stream_free (stream);
 			return NULL;
 		}
