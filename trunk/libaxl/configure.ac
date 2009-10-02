@@ -273,12 +273,12 @@ ns/Makefile
 doc/Makefile
 doc/axl-doc.doxygen
 babel/Makefile
+test/Makefile
+knife/Makefile
 py-axl/Makefile
 py-axl/__init__.py
 py-axl/doc/conf.py
 py-axl/doc/Makefile
-test/Makefile
-knife/Makefile
 axl.pc
 axl-ns.pc
 axl-babel.pc])
