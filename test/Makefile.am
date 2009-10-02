@@ -51,7 +51,11 @@ INCLUDES = -DTEST_DIR=$(top_srcdir)/test -I$(top_srcdir)/src/ -I$(top_srcdir)/ns
 noinst_PROGRAMS = test_01 test_01a test_02a test_03a
 TESTS = test_01
 
-bin_SCRIPTS = prepare_files
+if ENABLE_PY_AXL
+AXL_PY_PREPARE = prepare_files
+endif
+
+bin_SCRIPTS = $(AXL_PY_PREPARE)
 
 test_01_SOURCES = test_01.c
 test_01_LDADD   = $(top_builddir)/src/libaxl.la $(NS_LIB) $(BABEL_LIB)
