@@ -1,0 +1,14 @@
+<pre>
+   &lt;<span class="node">global-settings</span>>
+      <span class="comment">&lt;!--  ... more settings ...  --></span>
+      <span class="comment">&lt;!--  port to listen to  --></span>
+      &lt;<span class="node">ports</span>>
+         &lt;<span class="node">port</span>>3206&lt;/<span class="node">port</span>>
+         &lt;<span class="node">port</span>>44010&lt;/<span class="node">port</span>>
+      &lt;/<span class="node">ports</span>>
+      <span class="comment">&lt;!--  listener configuration (address to listen)  --></span>
+      &lt;<span class="node">listener</span>>
+         &lt;<span class="node">name</span>>0.0.0.0&lt;/<span class="node">name</span>>
+      &lt;/<span class="node">listener</span>>
+   &lt;/<span class="node">global-settings</span>>
+</pre>

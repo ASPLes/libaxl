@@ -1,0 +1,14 @@
+<global-settings>
+  <!-- ... more settings ... -->
+ 
+  <!-- port to listen to -->
+  <ports>
+    <port>3206</port>
+    <port>44010</port>
+  </ports>
+  
+  <!-- listener configuration (address to listen) -->
+  <listener>
+    <name>0.0.0.0</name>
+  </listener>
+</global-settings>
