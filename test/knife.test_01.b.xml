@@ -1,0 +1,9 @@
+ <global-settings>
+    <!-- ... more settings ... -->
+
+    <!--  Configure the default turbulence behavior to start or stop
+          if a configuration or module error is found. By default
+          Turbulence will stop if a failure is found.
+        -->
+    <clean-start value="yes" />
+ </global-settings>

@@ -32,7 +32,8 @@ misc_files = Makefile.win test_01.vcproj
 EXTRA_DIST      = $(h_files) $(c_files) $(dtd_files) $(xml_files) $(misc_files) $(xdl_files) test_01.py test-axl-knife.pl
 
 knife_files = \
-	knife.test_01.xml knife.test_01.ref
+	knife.test_01.xml knife.test_01.ref \
+	knife.test_01.b.xml knife.test_01.b.ref 
 
 if ENABLE_AXL_LOG
 LOG = -DSHOW_DEBUG_LOG

@@ -446,8 +446,10 @@ axl_bool axl_knife_htmlize_iterator_node (FILE * fstream, axlNode * node, int le
 		axl_knife_introduce_indentation (fstream, level);
 	}
 		
-	fprintf (fstream, "&lt;/<span class=\"node\">%s</span>>\n",
-		 axl_node_get_name (node));
+	if (axl_node_have_childs (node) || ! axl_node_is_empty (node)) {
+		fprintf (fstream, "&lt;/<span class=\"node\">%s</span>>\n",
+			 axl_node_get_name (node));
+	} /* end if */
 
 	/* don't stop iteration */
 	return axl_true;
