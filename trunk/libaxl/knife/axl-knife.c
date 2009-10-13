@@ -474,7 +474,10 @@ axl_bool axl_knife_htmlize (axlDoc * doc)
 	} /* end if */
 
 	/* call to iterate */
-	fprintf (fstream, "<pre>\n");
+	if (exarg_is_defined ("pre-class")) 
+		fprintf (fstream, "<pre class='%s'>\n", exarg_get_string ("pre-class"));
+	else
+		fprintf (fstream, "<pre>\n");
 	axl_knife_htmlize_iterator_node (fstream, axl_doc_get_root (doc), 1);
 	fprintf (fstream, "</pre>\n");
 
@@ -652,6 +655,9 @@ int main (int argc, char ** argv)
 
 	exarg_install_arg ("htmlize", "e", EXARG_NONE,
 			   "Takes an input xml document and produces an transformation preparing the document to be included into an html web page");
+
+	exarg_install_arg ("pre-class", "p", EXARG_STRING,
+			   "In conjunction with --htmlize option, which option allows to configure the CSS class to be placed on top most <pre> node.");
 	
 	/* log options */
 	exarg_install_arg ("enable-log", "l", EXARG_NONE,
@@ -669,6 +675,7 @@ int main (int argc, char ** argv)
 
 	/* add dependecies */
 	exarg_add_dependency ("htmlize", "input");
+	exarg_add_dependency ("pre-class", "htmlize");
 	exarg_add_dependency ("dtd-to-c", "input");
 	exarg_add_dependency ("check-xml", "input");
 	
