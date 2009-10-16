@@ -2194,8 +2194,11 @@ axl_bool     __axl_dtd_validate_sequence (axlNode            * parent,
 							   axl_node_get_name (node), 
 							   axl_dtd_item_node_get_value (itemNode),
 							   child_pos, iterator);
-						axl_error_new (-1, "Found a different node, inside a sequence, than the sequence especification (DTD)",
-							       NULL, error);
+						axl_error_report (error, -1, 
+								  "Found different node (<%s>) for a sequence expected (<%s>), at child position: %d, item list pos: %d",
+								  axl_node_get_name (node), 
+								  axl_dtd_item_node_get_value (itemNode),
+								  child_pos, iterator);
 					}
 					/* return that a match wasn't possible */
 					*child_position = child_pos;
