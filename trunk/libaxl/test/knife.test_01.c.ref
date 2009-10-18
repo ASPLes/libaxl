@@ -1,0 +1,7 @@
+<pre>
+&lt;<span class="node">path-def</span> path-name=<span class="attrvalue">"not local-parts"</span> 
+          src=<span class="attrvalue">"not 192.168.0.*"</span> 
+          server-name=<span class="attrvalue">".*"</span> >
+   <span class="comment">&lt;!--  profile path configuration  --></span>
+&lt;/<span class="node">path-def</span>>
+</pre>
