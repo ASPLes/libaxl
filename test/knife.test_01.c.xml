@@ -1,0 +1,3 @@
+<path-def server-name=".*" src="not 192.168.0.*" path-name="not local-parts">
+  <!-- profile path configuration -->
+</path-def>

@@ -341,6 +341,7 @@ axl_bool axl_knife_htmlize_iterator_node (FILE * fstream, axlNode * node, int le
 	char          * content;
 	axlAttrCursor * cursor;
 	int             iterator;
+	axl_bool        found_content;
 	
 	/* introduce indentation level */
 	axl_knife_introduce_indentation (fstream, level);
@@ -392,10 +393,16 @@ axl_bool axl_knife_htmlize_iterator_node (FILE * fstream, axlNode * node, int le
 			} /* end while */
 		}
 			
-		fprintf (fstream, "/>\n");
-		
 		/* free cursor */
 		axl_node_attr_cursor_free (cursor);
+
+		/* check if the node have not child on any kind ... */
+		if (axl_item_get_first_child (node) == NULL) {
+			fprintf (fstream, "/>\n");
+			return axl_true;
+		} else {
+			fprintf (fstream, ">\n");
+		}
 		
 	} else {
 		/* check if the node has childs or only content to avoid placing a \n */
@@ -405,8 +412,10 @@ axl_bool axl_knife_htmlize_iterator_node (FILE * fstream, axlNode * node, int le
 	}
 
 	/* call to produce internal content representation */
-	item = axl_item_get_first_child (node);
+	item          = axl_item_get_first_child (node);
+	found_content = axl_false;
 	while (item != NULL) {
+		found_content = axl_true;
 		/* according to the type do */
 		switch (axl_item_get_type (item)) {
 		case ITEM_NODE:
@@ -446,7 +455,7 @@ axl_bool axl_knife_htmlize_iterator_node (FILE * fstream, axlNode * node, int le
 		axl_knife_introduce_indentation (fstream, level);
 	}
 		
-	if (axl_node_have_childs (node) || ! axl_node_is_empty (node)) {
+	if (found_content) {
 		fprintf (fstream, "&lt;/<span class=\"node\">%s</span>>\n",
 			 axl_node_get_name (node));
 	} /* end if */
@@ -478,7 +487,7 @@ axl_bool axl_knife_htmlize (axlDoc * doc)
 		fprintf (fstream, "<pre class='%s'>\n", exarg_get_string ("pre-class"));
 	else
 		fprintf (fstream, "<pre>\n");
-	axl_knife_htmlize_iterator_node (fstream, axl_doc_get_root (doc), 1);
+	axl_knife_htmlize_iterator_node (fstream, axl_doc_get_root (doc), 0);
 	fprintf (fstream, "</pre>\n");
 
 	return axl_true;

@@ -1,10 +1,10 @@
 <pre>
-   &lt;<span class="node">global-settings</span>>
-      <span class="comment">&lt;!--  ... more settings ...  --></span>
-      <span class="comment">&lt;!--   Configure the default turbulence behavior to start or stop
+&lt;<span class="node">global-settings</span>>
+   <span class="comment">&lt;!--  ... more settings ...  --></span>
+   <span class="comment">&lt;!--   Configure the default turbulence behavior to start or stop
           if a configuration or module error is found. By default
           Turbulence will stop if a failure is found.
          --></span>
-      &lt;<span class="node">clean-start</span> value=<span class="attrvalue">"yes"</span> />
-   &lt;/<span class="node">global-settings</span>>
+   &lt;<span class="node">clean-start</span> value=<span class="attrvalue">"yes"</span> />
+&lt;/<span class="node">global-settings</span>>
 </pre>

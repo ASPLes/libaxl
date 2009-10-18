@@ -18,17 +18,26 @@ sub run_cmd {
 
 sub test_01 () {
 
+    ### test ####
     # call to produce knife representation check with reference
     run_cmd ("$axl_knife -i knife.test_01.xml -o knife.test_01.xml.tmp -e");
 
     # call to get differences
     run_cmd ("$diff knife.test_01.xml.tmp knife.test_01.ref");
 
+    ### test ####
     # call to produce knife representation check with reference
     run_cmd ("$axl_knife -i knife.test_01.b.xml -o knife.test_01.xml.b.tmp -e");
 
     # call to get differences
     run_cmd ("$diff knife.test_01.xml.b.tmp knife.test_01.b.ref");
+
+    ### test ####
+    # call to produce knife representation check with reference
+    run_cmd ("$axl_knife -i knife.test_01.c.xml -o knife.test_01.xml.c.tmp -e");
+
+    # call to get differences
+    run_cmd ("$diff knife.test_01.xml.c.tmp knife.test_01.c.ref");
 
     return 1;
 }
