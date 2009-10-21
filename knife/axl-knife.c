@@ -442,6 +442,8 @@ axl_bool axl_knife_htmlize_iterator_node (FILE * fstream, axlNode * node, int le
 		case ITEM_REF:
 			break;
 		case ITEM_CDATA:
+			fprintf (fstream, "<span class=\"cdata\">&lt;![CDATA[</span>%s<span class=\"cdata\">]]></span>",
+				 axl_item_get_content (item, NULL));
 			break;
 		} /* end switch */
 

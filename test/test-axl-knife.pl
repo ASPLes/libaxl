@@ -39,6 +39,13 @@ sub test_01 () {
     # call to get differences
     run_cmd ("$diff knife.test_01.xml.c.tmp knife.test_01.c.ref");
 
+    ### test ####
+    # call to produce knife representation check with reference
+    run_cmd ("$axl_knife -i knife.test_01.d.xml -o knife.test_01.xml.d.tmp -e");
+
+    # call to get differences
+    run_cmd ("$diff knife.test_01.xml.d.tmp knife.test_01.d.ref");
+
     return 1;
 }
 
