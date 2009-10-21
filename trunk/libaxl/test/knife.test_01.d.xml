@@ -1,0 +1,16 @@
+<?xml version='1.0' standalone='yes' ?>
+<mod-def>
+   <name>mod-template</name>
+   <description>Place here a generic module description</description>
+   <source-code>
+      <!-- init method, called once the module is loaded -->
+      <init><![CDATA[/* Place here your mod init code. This will be called once turbulence decides to include the module. */
+return axl_true;]]></init>
+      <!-- close method, called once the module is going to be stoped -->
+      <close><![CDATA[/* Place here the code required to stop and dealloc resources used by your module */]]></close>
+      <!-- reconf method, called once it is received a 'reconfiguration signal' -->
+      <reconf><![CDATA[/* Place here all your optional reconf code if the HUP signal is received */]]></reconf>
+      <!-- unload method, called once the module is required to be unloaded from memory due to child process creation (or similar) -->
+      <unload><![CDATA[/* Place here the code required to dealloc resources used by your module because turbulence signaled the child process must not have access (using unload-after-fork option) */]]></unload>
+   </source-code>
+</mod-def>

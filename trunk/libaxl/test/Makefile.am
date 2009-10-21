@@ -33,7 +33,9 @@ EXTRA_DIST      = $(h_files) $(c_files) $(dtd_files) $(xml_files) $(misc_files) 
 
 knife_files = \
 	knife.test_01.xml knife.test_01.ref \
-	knife.test_01.b.xml knife.test_01.b.ref 
+	knife.test_01.b.xml knife.test_01.b.ref \
+	knife.test_01.c.xml knife.test_01.c.ref \
+	knife.test_01.d.xml knife.test_01.d.ref 
 
 if ENABLE_AXL_LOG
 LOG = -DSHOW_DEBUG_LOG
