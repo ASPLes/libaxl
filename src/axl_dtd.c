@@ -2685,8 +2685,10 @@ axl_bool     __axl_dtd_validate_element_type_children (axlDtdElement  * element,
 			   axl_node_get_name (parent));
 			
 		if (child_pos < axl_node_get_child_num (parent)) {
-			axl_error_new (-1, "Found that the validation process didn't cover all nodes. All xml child nodes inside the parent wasn't covered. This means that the xml document have more content than the DTD spec.",
-				       NULL, error);
+			axl_error_report (error, -1,
+					  "Found that the validation process didn't cover all nodes (%d < min:%d) (%d < childs:%d). All xml child nodes inside the parent=<%s> wasn't covered. This means that the xml document have more content than the DTD spec defines.",
+					  child_pos, element->minimum_match, child_pos, axl_node_get_child_num (parent), 
+					  axl_node_get_name (parent));
 			return axl_false;
 		}
 		/* seems that the minimum match */
