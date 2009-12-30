@@ -26,3 +26,8 @@ SUBDIRS = src  $(AXL_NS_DIR) $(AXL_KNIFE_DIR) $(AXL_BABEL_DIR) $(PY_AXL_DIR) $(A
 EXTRA_DIST = axl.pc.in VERSION libaxl.sln README.win32 get-python-config
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = axl.pc axl-ns.pc axl-babel.pc
+
+update-defs:
+	cd src; make update-def; cd ..
+	cd ns; make update-def; cd ..
+	cd babel; make update-def; cd ..

@@ -873,10 +873,6 @@ typedef enum {
 	AXL_LEVEL_CRITICAL}  
 AxlDebugLevel;
 
-axlPointer  axl_calloc(size_t count, size_t size);
-
-axlPointer  axl_realloc(axlPointer ref, size_t size);
-
 /** 
  * @brief Support macro to allocate memory using axl_calloc function,
  * making a casting and using the sizeof keyword.
@@ -887,10 +883,6 @@ axlPointer  axl_realloc(axlPointer ref, size_t size);
  * @return A newly allocated pointer.
  */
 #define axl_new(type, count) (type *) axl_calloc (count, sizeof (type))
-
-void    axl_free(axlPointer ref);
-
-
 
 /** 
  * @brief Allows to check a condition and return if it is not meet.
@@ -1380,6 +1372,16 @@ typedef axl_bool (* axlDocDetectCodification) (axlStream * stream, const char **
  * axl_false is returned.
  */
 typedef axl_bool (* axlDocConfigureCodification) (axlStream * stream, const char * encoding, const char * detected_encoding, axlPointer user_data, axlError ** error);
+
+BEGIN_C_DECLS
+
+axlPointer  axl_calloc  (size_t count, size_t size);
+
+axlPointer  axl_realloc (axlPointer ref, size_t size);
+
+void        axl_free    (axlPointer ref);
+
+END_C_DECLS
 
 /* @} */
 #endif
