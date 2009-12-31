@@ -27,6 +27,62 @@
 #define test_41_iso_8859_15_value "Esto es una prueba: camión, españa, y la tabla de caráteres!\"#$%()*+,-./0123456789:;=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~ ¡¢£€¥Š§š©ª«¬­®¯°±²³Žµ¶·ž¹º»ŒœŸ¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ"
 
 /** 
+ * @brief Check that xml node attributes can't be added twice
+ */
+axl_bool test_45 (axlError ** error)
+{
+	axlAttrCursor * cursor;
+	axlDoc        * doc;
+	axlNode       * node;
+	int             count;
+
+	doc = axl_doc_parse ("<root value='test1' />", 24, NULL);
+	if (doc == NULL) {
+		printf ("Expected to find proper document parsing but found NULL\n");
+		return axl_false;
+	} /* end if */
+
+	/* get root node */
+	node = axl_doc_get_root (doc);
+
+	/* get attribute value */
+	if (! HAS_ATTR (node, "value")) {
+		printf ("Expected to find attribute value but not found..\n");
+		return axl_false;
+	} /* end if */
+
+	/* set new attribute */
+	axl_node_set_attribute (node, "value", "test2");
+	
+	/* check now many attributes we have */
+	cursor = axl_node_attr_cursor_new (node);
+	count  = 0;
+	while (axl_node_attr_cursor_has_item (cursor)) {
+
+		count++;
+
+		/* next attribute */
+		axl_node_attr_cursor_next (cursor);
+	}
+	axl_node_attr_cursor_free (cursor);
+
+	/* check count here */
+	if (count != 1) {
+		printf ("Error, expected to find 1 attribute but found: %d\n", count);
+		return axl_false;
+	}
+
+	if (! HAS_ATTR_VALUE (node, "value", "test1")) {
+		printf ("Error, expected to find updated value=test1 but found %s..\n", ATTR_VALUE (node, "value"));
+		return axl_false;
+	}
+
+	axl_doc_free (doc);
+
+	return axl_true;
+}
+
+/** 
  * @brief Check and fix DTD bug
  */
 axl_bool test_44 (axlError ** error)
@@ -9064,6 +9120,15 @@ int main (int argc, char ** argv)
 		printf ("Test 44: DTD fix (optional child after one to many child spec) [   OK   ]\n");
 	}else {
 		printf ("Test 44: DTD fix (optional child after one to many child spec) [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}
+
+	if (test_45 (&error)) {
+		printf ("Test 45: Fix attribute added twice [   OK   ]\n");
+	}else {
+		printf ("Test 45: Fix attribute added twice [ FAILED ]\n  (CODE: %d) %s\n",
 			axl_error_get_code (error), axl_error_get (error));
 		axl_error_free (error);
 		return -1;
