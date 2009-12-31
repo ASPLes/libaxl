@@ -1017,12 +1017,15 @@ void      axl_node_set_doc                  (axlNode * node, axlDoc * doc)
  * 
  * Support function to install attribute information provided into the
  * \ref axlNode provided.
+ *
+ * @return axl_true if the attribute was added, otherwise axl_false is
+ * returned.
  */
-void      __axl_node_set_attribute      (axlFactory * factory, 
-					 axlNode    * node, 
-					 char       * attribute, 
-					 char       * value, 
-					 axl_bool     from_factory)
+axl_bool      __axl_node_set_attribute      (axlFactory * factory, 
+					     axlNode    * node, 
+					     char       * attribute, 
+					     char       * value, 
+					     axl_bool     from_factory)
 {
 	axlNodeAttr * attr;
 	axlNodeAttr * next;
@@ -1045,11 +1048,15 @@ void      __axl_node_set_attribute      (axlFactory * factory,
 		/* store the node */
 		node->attributes = (axlPointer) attr;
 
-		return;
+		return axl_true;
 	}
 
 	/* store the attribute using the general case */
 	if (node->attr_num < 10) {
+
+		/* check if the attribute exists */
+		if (axl_node_has_attribute (node, attribute))
+			return axl_false;
 
 		/* create the node */
 		if (from_factory)
@@ -1067,6 +1074,10 @@ void      __axl_node_set_attribute      (axlFactory * factory,
 		node->attributes = (axlPointer) attr;
 		
 	} else if (node->attr_num >= 10) {
+
+		/* check if the attribute exists */
+		if (axl_node_has_attribute (node, attribute))
+			return axl_false;
 		
 		/* check if we have to translate current attributes */
 		if (node->attr_num == 10) {
@@ -1104,7 +1115,7 @@ void      __axl_node_set_attribute      (axlFactory * factory,
 	/* update attribute count */
 	node->attr_num++;
 
-	return;
+	return axl_true;
 }
 
 /** 
@@ -1184,7 +1195,11 @@ void      axl_node_set_attribute      (axlNode    * node,
 	}
 
 	/* insert the attribute */
-	__axl_node_set_attribute (NULL, node, _attr, _value, axl_false);
+	if (! __axl_node_set_attribute (NULL, node, _attr, _value, axl_false)) {
+		axl_free (_attr);
+		axl_free (_value);
+	} /* end if */
+	
 	return;
 }
 
@@ -1211,7 +1226,11 @@ void      axl_node_set_attribute_ref  (axlNode * node, char * attribute, char * 
 	axl_return_if_fail (value);
 
 	/* insert the attribute */
-	__axl_node_set_attribute (NULL, node, attribute, value, axl_false);
+	if (! __axl_node_set_attribute (NULL, node, attribute, value, axl_false)) {
+		axl_free (attribute);
+		axl_free (value);
+		return;
+	} /* end if */
 
 	return;
 }

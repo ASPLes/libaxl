@@ -329,6 +329,9 @@ static PyObject * py_axl_node_attr_value (PyObject * _self, PyObject * args)
 
 	/* check set operation */
 	if (PyTuple_Size (args) == 2) {
+		/* remove previous attribute if exists */
+		axl_node_remove_attribute (self->node, attr_name);
+
 		/* found set operation */
 		axl_node_set_attribute (self->node, attr_name, attr_value);
 		Py_INCREF (Py_None);
