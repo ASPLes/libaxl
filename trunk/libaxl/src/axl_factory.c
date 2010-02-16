@@ -38,6 +38,8 @@
  */
 #include <axl.h>
 
+#define LOG_DOMAIN "axl-factory"
+
 typedef struct _axlItemBlock axlItemBlock;
 
 struct _axlItemBlock {
@@ -46,9 +48,14 @@ struct _axlItemBlock {
 };
 
 struct _axlFactory {
-	int       count;
-	int       step;
-	int       type_size;
+	int            count;
+	int            step;
+	int            type_size;
+
+	int            spare_max;
+	int            spare_next;
+	axlPointer   * spares;
+
 	axlItemBlock * block;
 };
 
@@ -71,6 +78,7 @@ axlFactory * axl_factory_create (int size_of_type)
 	result->type_size = size_of_type;
 	result->step      = 256 / size_of_type;
 
+	/* create available block */
 	result->block        = axl_new (axlItemBlock, 1);
 	result->block->items = axl_calloc (result->step, size_of_type);
 
@@ -89,6 +97,14 @@ axlFactory * axl_factory_create (int size_of_type)
 axlPointer   axl_factory_get (axlFactory * factory)
 {
 	axlItemBlock * block;
+	axlPointer     result;
+
+	/* check if we have spares available */
+	if (factory->spare_max > 0 && factory->spare_next >= 0) {
+		result = factory->spares[factory->spare_next];
+		factory->spare_next--;
+		return result;
+	} /* end if */
 	
 	/* update factory allocated elements */
 	factory->count++;
@@ -114,6 +130,73 @@ axlPointer   axl_factory_get (axlFactory * factory)
 	return ((char *)factory->block->items) + ((factory->count - 1) * factory->type_size);
 } /* end if */
 
+void      axl_factory_release_spare (axlFactory * factory, axlPointer node)
+{
+	/* check if we have spare structure avaialble */
+	if (factory->spare_max == 0) {
+		/* basic case, where spares structure is not ready (no
+		 * previous release done). We initialize and set
+		 * maximum spare capacity to 1 and next spare pointer
+		 * to retrieve on next axl_factory_get set to 0  */
+		factory->spares     = axl_new (axlPointer, 10);
+		factory->spare_max  = 9;
+		factory->spare_next = 0;
+	} else if (factory->spare_max > factory->spare_next) {
+		/* found that we have available spare pointer capacity
+		 * and spare next is lower, so we don't need to
+		 * allocate more memory to store current spares plus
+		 * the gone being spared at this moment */
+		if (factory->spare_next == -1)
+			factory->spare_next = 0;
+		else {
+			factory->spare_next++;
+		} /* end if */
+	} else {
+		/* not enough to store spares, realloc and copy */
+		factory->spare_max += 10;
+		factory->spares = realloc (factory->spares, sizeof (axlPointer) * factory->spare_max);
+		factory->spare_max--;
+		factory->spare_next++;
+	}
+
+	/* store node pointer */
+	factory->spares[factory->spare_next] = node;
+
+	return;
+}
+
+/** 
+ * @brief Allows to get how many spare nodes can be stored (returned
+ * into the factory via axl_factory_release_spare).
+ *
+ * @param factory The factory where the spare value will be returned.
+ *
+ * @return The spare max or -1 if it fails.
+ */
+int          axl_factory_spare_max     (axlFactory * factory)
+{
+	if (factory == NULL)
+		return -1;
+	return factory->spare_max;
+}
+
+/** 
+ * @brief Allows to get how many spare nodes are stored (returned into
+ * the factory via axl_factory_release_spare). The value returned is
+ * the index to the next item to return, this means that having the
+ * index + 1 is the number of spares already stored.
+ *
+ * @param factory The factory where the next spare index value will be returned.
+ *
+ * @return The next spare index or -1 if it fails.
+ */
+int          axl_factory_spare_next    (axlFactory * factory)
+{
+	if (factory == NULL)
+		return -1;
+	return factory->spare_next;
+}
+
 /** 
  * @internal Allows to deallocate the axlFactory created.
  * 
@@ -130,7 +213,6 @@ void         axl_factory_free (axlFactory * factory)
 
 	/* get the first block */
 	block = factory->block;
-	
 	while (block != NULL) {
 		
 		/* get a reference to the next */
@@ -145,6 +227,7 @@ void         axl_factory_free (axlFactory * factory)
 
 	} /* end while */
 
+	axl_free (factory->spares);
 	axl_free (factory);
 
 	return;	
@@ -267,7 +350,6 @@ void            axl_string_factory_free   (axlStrFactory * factory)
 		block = aux;
 
 	} /* end while */
-
 	axl_free (factory);
 
 	return;

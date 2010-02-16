@@ -402,9 +402,9 @@ if (_increase)\
  * stored.
  *
  * <b>NOTE:</b> The insert operation will replace a previously
- * inserted item with the same key. If no item is found, and insert
+ * inserted item with the same key. If no item is found, an insert
  * will take place, otherwise previous item is replaced calling to the
- * key destroy and data destroy defined.
+ * key destroy and data destroy functions defined.
  * 
  * @param hash The hash table where the data will be added.
  *
@@ -597,6 +597,7 @@ axl_bool            __axl_hash_remove_common       (axlHash    * hash,
 		hash->items--;
 					
 		/* delete the node */
+		axl_factory_release_spare (hash->factory, node);  
 		/* axl_free (node); */
 
 		/* element destroyed, nothing more to do around
@@ -1082,6 +1083,22 @@ int             axl_hash_items        (axlHash * hash)
 }
 
 /** 
+ * @brief Allows to get the amount of items that could store the hash
+ * without allocating more additional memory.
+ *
+ * @param hash The hash that is being requested to return its items
+ * capacity (key + value) pair.
+ *
+ * @return The capacity or -1 if the reference received is null.
+ */
+int             axl_hash_capacity     (axlHash * hash)
+{
+	axl_return_val_if_fail (hash, -1);
+	/* return current capacity */
+	return hash->hash_size;
+}
+
+/** 
  * @internal Shows current hash status to the console.
  * 
  * The function is only useful for internal hash module purposes. It
@@ -1239,6 +1256,24 @@ void       axl_hash_free        (axlHash *  hash)
 
 	/* nothing more to free */
 	return;
+}
+
+/** 
+ * @internal Function that allows to get how many spare internal hash
+ * nodes we can store.
+ */
+int             __axl_hash_spare_max         (axlHash * hash)
+{
+	return axl_factory_spare_max (hash->factory);
+}
+
+/** 
+ * @internal Function that allows to get how many spare internal hash
+ * nodes are actually stored.
+ */
+int             __axl_hash_spare_next        (axlHash * hash)
+{
+	return axl_factory_spare_next (hash->factory);
 }
 
 /* @} */
