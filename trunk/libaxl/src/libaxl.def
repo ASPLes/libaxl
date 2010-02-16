@@ -48,6 +48,8 @@ __axl_hash_cursor_init
 __axl_hash_foreach
 __axl_hash_internal_lookup
 __axl_hash_remove_common
+__axl_hash_spare_max
+__axl_hash_spare_next
 __axl_item_common_configure
 __axl_list_allocate_nodes
 __axl_list_always_true
@@ -165,7 +167,11 @@ axl_error_was_ok
 axl_factory_create
 axl_factory_free
 axl_factory_get
+axl_factory_release_spare
+axl_factory_spare_max
+axl_factory_spare_next
 axl_free
+axl_hash_capacity
 axl_hash_copy
 axl_hash_cursor_first
 axl_hash_cursor_free
