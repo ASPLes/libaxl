@@ -45,6 +45,13 @@ axlFactory * axl_factory_create (int size_of_type);
 
 axlPointer   axl_factory_get (axlFactory * factory);
 
+void         axl_factory_release_spare (axlFactory * factory, 
+					axlPointer   node);
+
+int          axl_factory_spare_max     (axlFactory * factory);
+
+int          axl_factory_spare_next    (axlFactory * factory);
+
 void         axl_factory_free (axlFactory * factory);
 
 axlStrFactory * axl_string_factory_create (void);

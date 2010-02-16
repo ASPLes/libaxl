@@ -106,6 +106,8 @@ void            axl_hash_foreach4     (axlHash            * hash,
 				
 int             axl_hash_items        (axlHash * hash);
 
+int             axl_hash_capacity     (axlHash * hash);
+
 axlHash       * axl_hash_copy         (axlHash             * hash,
 				       axlHashItemCopy       key_copy,
 				       axlHashItemCopy       value_copy);
@@ -143,6 +145,11 @@ axlPointer      axl_hash_cursor_get_value    (axlHashCursor * cursor);
 axlHash       * axl_hash_cursor_hash         (axlHashCursor * cursor);
 
 void            axl_hash_cursor_free         (axlHashCursor * cursor);
+
+/* private api */
+int             __axl_hash_spare_max         (axlHash * hash);
+
+int             __axl_hash_spare_next        (axlHash * hash);
 
 END_C_DECLS
 

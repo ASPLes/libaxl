@@ -8211,6 +8211,222 @@ axl_bool test_02_04 ()
 
 }
 
+axl_bool test_02_04_1 ()
+{
+	axlHash * hash;
+	int       iterator;
+
+	hash     = axl_hash_new (axl_hash_string, axl_hash_equal_string);
+	iterator = 0;
+	while (iterator < 1000) {
+		/* check the value do not exists */
+		if (axl_hash_exists (hash, "status-ok")) {
+			printf ("ERROR (1): expected to not find key value 'status-ok', but found..\n");
+			return axl_false;
+		} /* end if */
+
+		axl_hash_insert_full (hash, "status-ok", NULL, INT_TO_PTR (1), NULL);
+
+		if (! axl_hash_exists (hash, "status-ok")) {
+			printf ("ERROR (2): expected to find key value 'status-ok', but not found..\n");
+			return axl_false;
+		} /* end if */
+		
+		axl_hash_remove (hash, "status-ok");
+
+		if (axl_hash_exists (hash, "status-ok")) {
+			printf ("ERROR (3): expected to NOT find key value 'status-ok', but found..\n");
+			return axl_false;
+		} /* end if */
+
+		/* next iterator */
+		iterator++;
+	} /* end while */
+
+	printf ("Test 02-04-1: capacity %d, items stored: %d\n", axl_hash_capacity (hash), axl_hash_items (hash));
+
+	/* now store 10 items */
+	axl_hash_insert (hash, "value", INT_TO_PTR (1));
+	axl_hash_insert (hash, "value2", INT_TO_PTR (2));
+	axl_hash_insert (hash, "value3", INT_TO_PTR (3));
+	axl_hash_insert (hash, "value4", INT_TO_PTR (4));
+	axl_hash_insert (hash, "value5", INT_TO_PTR (5));
+	axl_hash_insert (hash, "value6", INT_TO_PTR (6));
+	axl_hash_insert (hash, "value7", INT_TO_PTR (7));
+	axl_hash_insert (hash, "value8", INT_TO_PTR (8));
+	axl_hash_insert (hash, "value9", INT_TO_PTR (9));
+	axl_hash_insert (hash, "value10", INT_TO_PTR (10));
+
+	/* check capacity */
+	printf ("Test 02-04-1: Items stored %d\n", axl_hash_items (hash));
+	if (axl_hash_items (hash) != 10) {
+		printf ("ERROR (3): expected to find 10 items but found %d..\n",
+			axl_hash_items (hash));
+		return axl_false;
+	} /* end if */
+
+	/* check here available internal store */
+	if (__axl_hash_spare_max (hash) != 9 || __axl_hash_spare_next (hash) != -1) {
+		printf ("ERROR (5): expected to find either max spare 9 or next spare -1 but found %d and %d..\n",
+			__axl_hash_spare_max (hash), __axl_hash_spare_next (hash));
+		return axl_false;
+	} /* end if */
+
+	/* remove items */
+	printf ("Test 02-04-1: Calling to remove items..\n");
+	axl_hash_remove (hash, "value");
+	axl_hash_remove (hash, "value2");
+	axl_hash_remove (hash, "value3");
+	axl_hash_remove (hash, "value4");
+	axl_hash_remove (hash, "value5");
+	axl_hash_remove (hash, "value6");
+	axl_hash_remove (hash, "value7");
+	axl_hash_remove (hash, "value8");
+	axl_hash_remove (hash, "value9");
+	axl_hash_remove (hash, "value10");
+
+	if (axl_hash_items (hash) != 0) {
+		printf ("ERROR (4): expected to find 0 items but found %d..\n",
+			axl_hash_items (hash));
+		return axl_false;
+	} /* end if */
+
+	/* check here available internal store */
+	if (__axl_hash_spare_max (hash) != 9 || __axl_hash_spare_next (hash) != 9) {
+		printf ("ERROR (5): expected to find either max spare 9 or next spare 9 but found %d and %d..\n",
+			__axl_hash_spare_max (hash), __axl_hash_spare_next (hash));
+		return axl_false;
+	} /* end if */
+
+	/* check capacity */
+	printf ("Test 02-04-1: Items stored %d\n", axl_hash_items (hash));
+
+	/* insert lot of items */
+	axl_hash_insert (hash, "value", INT_TO_PTR (1));
+	axl_hash_insert (hash, "value2", INT_TO_PTR (2));
+	axl_hash_insert (hash, "value3", INT_TO_PTR (3));
+	axl_hash_insert (hash, "value4", INT_TO_PTR (4));
+	axl_hash_insert (hash, "value5", INT_TO_PTR (5));
+	axl_hash_insert (hash, "value6", INT_TO_PTR (6));
+	axl_hash_insert (hash, "value7", INT_TO_PTR (7));
+	axl_hash_insert (hash, "value8", INT_TO_PTR (8));
+	axl_hash_insert (hash, "value9", INT_TO_PTR (9));
+	axl_hash_insert (hash, "value10", INT_TO_PTR (10));
+	axl_hash_insert (hash, "value11", INT_TO_PTR (1));
+	axl_hash_insert (hash, "value12", INT_TO_PTR (2));
+	axl_hash_insert (hash, "value13", INT_TO_PTR (3));
+	axl_hash_insert (hash, "value14", INT_TO_PTR (4));
+	axl_hash_insert (hash, "value15", INT_TO_PTR (5));
+	axl_hash_insert (hash, "value16", INT_TO_PTR (6));
+	axl_hash_insert (hash, "value17", INT_TO_PTR (7));
+	axl_hash_insert (hash, "value18", INT_TO_PTR (8));
+	axl_hash_insert (hash, "value19", INT_TO_PTR (9));
+	axl_hash_insert (hash, "value20", INT_TO_PTR (10));
+
+	/* check here available internal store */
+	printf ("Test 02-04-1: Max spares %d, next spares %d..\n",
+		__axl_hash_spare_max (hash), __axl_hash_spare_next (hash));
+	if (__axl_hash_spare_max (hash) != 9 || __axl_hash_spare_next (hash) != -1) {
+		printf ("ERROR (5): expected to find either max spare 9 or next spare -1 but found %d and %d..\n",
+			__axl_hash_spare_max (hash), __axl_hash_spare_next (hash));
+		return axl_false;
+	} /* end if */
+
+	/* insert lot of items */
+	axl_hash_remove (hash, "value");
+	axl_hash_remove (hash, "value2");
+	axl_hash_remove (hash, "value3");
+	axl_hash_remove (hash, "value4");
+	axl_hash_remove (hash, "value5");
+	axl_hash_remove (hash, "value6");
+	axl_hash_remove (hash, "value7");
+	axl_hash_remove (hash, "value8");
+	axl_hash_remove (hash, "value9");
+	axl_hash_remove (hash, "value10");
+	axl_hash_remove (hash, "value11");
+	axl_hash_remove (hash, "value12");
+	axl_hash_remove (hash, "value13");
+	axl_hash_remove (hash, "value14");
+	axl_hash_remove (hash, "value15");
+	axl_hash_remove (hash, "value16");
+	axl_hash_remove (hash, "value17");
+	axl_hash_remove (hash, "value18");
+	axl_hash_remove (hash, "value19");
+	axl_hash_remove (hash, "value20");
+
+	printf ("Test 02-04-1: Max spares %d, next spares %d..\n",
+		__axl_hash_spare_max (hash), __axl_hash_spare_next (hash));
+
+	if (__axl_hash_spare_max (hash) != 27 || __axl_hash_spare_next (hash) != 19) {
+		printf ("ERROR (6): expected to find either max spare 27 or next spare 19 but found %d and %d..\n",
+			__axl_hash_spare_max (hash), __axl_hash_spare_next (hash));
+		return axl_false;
+	} /* end if */
+
+	/* insert lot of items */
+	axl_hash_insert (hash, "value", INT_TO_PTR (1));
+	axl_hash_insert (hash, "value2", INT_TO_PTR (2));
+	axl_hash_insert (hash, "value3", INT_TO_PTR (3));
+	axl_hash_insert (hash, "value4", INT_TO_PTR (4));
+	axl_hash_insert (hash, "value5", INT_TO_PTR (5));
+	axl_hash_insert (hash, "value6", INT_TO_PTR (6));
+	axl_hash_insert (hash, "value7", INT_TO_PTR (7));
+	axl_hash_insert (hash, "value8", INT_TO_PTR (8));
+	axl_hash_insert (hash, "value9", INT_TO_PTR (9));
+	axl_hash_insert (hash, "value10", INT_TO_PTR (10));
+	axl_hash_insert (hash, "value11", INT_TO_PTR (1));
+	axl_hash_insert (hash, "value12", INT_TO_PTR (2));
+	axl_hash_insert (hash, "value13", INT_TO_PTR (3));
+	axl_hash_insert (hash, "value14", INT_TO_PTR (4));
+	axl_hash_insert (hash, "value15", INT_TO_PTR (5));
+	axl_hash_insert (hash, "value16", INT_TO_PTR (6));
+	axl_hash_insert (hash, "value17", INT_TO_PTR (7));
+	axl_hash_insert (hash, "value18", INT_TO_PTR (8));
+	axl_hash_insert (hash, "value19", INT_TO_PTR (9));
+	axl_hash_insert (hash, "value20", INT_TO_PTR (10));
+
+	printf ("Test 02-04-1: Max spares %d, next spares %d..\n",
+		__axl_hash_spare_max (hash), __axl_hash_spare_next (hash));
+
+	if (__axl_hash_spare_max (hash) != 27 || __axl_hash_spare_next (hash) != -1) {
+		printf ("ERROR (6): expected to find either max spare 27 or next spare 19 but found %d and %d..\n",
+			__axl_hash_spare_max (hash), __axl_hash_spare_next (hash));
+		return axl_false;
+	} /* end if */
+
+	/* insert lot of items */
+	axl_hash_remove (hash, "value");
+	axl_hash_remove (hash, "value2");
+	axl_hash_remove (hash, "value3");
+	axl_hash_remove (hash, "value4");
+	axl_hash_remove (hash, "value5");
+	axl_hash_remove (hash, "value6");
+	axl_hash_remove (hash, "value7");
+	axl_hash_remove (hash, "value8");
+	axl_hash_remove (hash, "value9");
+	axl_hash_remove (hash, "value10");
+	axl_hash_remove (hash, "value11");
+	axl_hash_remove (hash, "value12");
+	axl_hash_remove (hash, "value13");
+	axl_hash_remove (hash, "value14");
+	axl_hash_remove (hash, "value15");
+	axl_hash_remove (hash, "value16");
+	axl_hash_remove (hash, "value17");
+	axl_hash_remove (hash, "value18");
+	axl_hash_remove (hash, "value19");
+	axl_hash_remove (hash, "value20");
+
+	if (__axl_hash_spare_max (hash) != 27 || __axl_hash_spare_next (hash) != 19) {
+		printf ("ERROR (7): expected to find either max spare 27 or next spare 19 but found %d and %d..\n",
+			__axl_hash_spare_max (hash), __axl_hash_spare_next (hash));
+		return axl_false;
+	} /* end if */
+
+	axl_hash_free (hash);
+
+	return axl_true;
+}
+
 axl_bool test_02_05 ()
 {
 	axlHash       * hash;
@@ -8639,6 +8855,13 @@ int main (int argc, char ** argv)
 		printf ("Test 02-04: LibAxl hash implementation (remove) [   OK   ]\n");
 	}else {
 		printf ("Test 02-04: LibAxl hash implementation (remove) [ FAILED ]\n");
+		return -1;
+	}
+
+	if (test_02_04_1 ()) {
+		printf ("Test 02-04-1: LibAxl hash implementation (insert-remove cycle) [   OK   ]\n");
+	}else {
+		printf ("Test 02-04-1: LibAxl hash implementation (insert-remove cycle) [ FAILED ]\n");
 		return -1;
 	}
 
