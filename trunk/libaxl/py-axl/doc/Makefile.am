@@ -40,6 +40,7 @@ help:
 clean:
 	-rm -rf _build/*
 
+build_doc: html
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) _build/html
 	cp py-axl-doc.css _build/html/_static/

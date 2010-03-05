@@ -84,14 +84,17 @@ Module API
 
       :rtype: Returns an instance of :class:`axl.Node` or None if no node was found.
 
-   .. method:: has_attr (attr_name)
+   .. method:: has_attr (attr_name, [attr_value])
    
       Allows to check if the provided node has the given attribute.
 
       :param attr_name: the attribute name to check.
       :type  attr_name: String
 
-      :rtype: Returns an instance of :class:`axl.Node` or None if no node was found.
+      :param attr_value: Optional the attribute value to check. If provided the method check if the node has an attribute with the provided value.
+      :type  attr_value: String
+
+      :rtype: Returns the presence of the provided attribute on the given node, and optionall checking if that attribute has a particular value.
 
    .. method:: attr (attr_name, [value])
    
