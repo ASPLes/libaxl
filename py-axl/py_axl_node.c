@@ -308,13 +308,16 @@ static PyObject * py_axl_node_nth_child (PyObject * _self, PyObject * args)
 static PyObject * py_axl_node_has_attr (PyObject * _self, PyObject * args)
 {
 	PyAxlNode  * self      = (PyAxlNode *) _self;
-	char       * attr_name = NULL;
+	char       * attr_name  = NULL;
+	char       * attr_value = NULL;
 
 	/* parse and check result */
-	if (! PyArg_ParseTuple (args, "s", &attr_name))
+	if (! PyArg_ParseTuple (args, "s|s", &attr_name, &attr_value))
 		return NULL;
-	
-	return Py_BuildValue ("i", HAS_ATTR (self->node, attr_name));
+
+	if (attr_value == NULL)
+		return Py_BuildValue ("i", HAS_ATTR (self->node, attr_name));
+	return Py_BuildValue ("i", HAS_ATTR_VALUE (self->node, attr_name, attr_value));
 }
 
 static PyObject * py_axl_node_attr_value (PyObject * _self, PyObject * args)
