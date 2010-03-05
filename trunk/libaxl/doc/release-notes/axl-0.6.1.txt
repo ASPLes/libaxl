@@ -1,0 +1,126 @@
+          ########################################
+          #             Axl Library              #
+          #           One step closer            # 
+          #                0.6.1                 #
+          ########################################
+
+Advanced Software Production Line is proud to announce a new Axl
+Library release.
+
+Axl Library is a small and efficient XML toolkit, written in ANSI C,
+with support for Python bindings and released under the LGPL. It
+allows to produce efficient and clear code that handle XML data.
+
+The library was produced to support XML requirements needed by
+software developed by Advanced Software Production Line, S.L.
+
+At this moment the library is being used by Vortex Library, Af-Arch,
+Turbulence, Shaper, Fovap and Ju-Doc.
+
+Resources
+~~~~~~~~~
+
+   Axl Homepage
+   [ http://www.aspl.es/xml ]
+
+   Advanced Software Production Line, S.L.
+   [ http://www.aspl.es ]
+
+This release in short
+~~~~~~~~~~~~~~~~~~~~~
+  Fixed some bugs, and improved memory handling at axl hash.
+
+Changes from previous release 0.6.0
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* [fix] Several modifications to properly produce debian packages for
+  0.6.0 release (including python ones).
+
+* [new] Updated PyAxl to include axl.version() which returns current
+  PyAxl installed version.
+
+* [fix] Fixed error string returned at dtd parsing to include more
+  information.
+
+* [fix] Making library to compile in the case no python devel headers
+  are found..
+
+* [fix] Fixed htmlize option which was not produce proper indentation
+  when output was redirected to a file. Added initial scaffolding to
+  run regression tests to check axl-knife function.
+
+* [fix] Fixed another bug in axl-knife which was placing a node
+  termination for a node that has no childs or content, inside htmlize
+  function. Added reg test to check its function.
+
+* [new] Updated axl-knife tool to allow configuring a CSS class for
+  --htmlize option. Checked reg-test.
+
+* [fix] Improving error message returned by DTD validation failure.
+
+* [fix] Fixed axl-knife htmlize bug. Added regression test case to
+  check fix introduced.
+
+* [fix] Fixed missing CDATA support for --htmlize option..
+
+* [fix] Adding missing flags to libaxl/Makefile.am
+
+* [fix] Committing .def updates and version components..
+
+* [fix] Improving DTD error reported when child content is bigger than
+  expected.
+
+* [fix] Moved function declarations axl_free, axl_alloc and
+  axl_realloc to be included inside C_DECLS so windows platforms (c++
+  compilers) can include it right.
+
+* [fix] Fixed bug inside axl_node_set_attribute which was allowing to
+  add the same attribute more than one time. Updated PyAxl
+  implementation to remove and set the attribute in the case a set
+  operation is requested. Added reg test test_45 to reproduce bug and
+  check fix introduced.
+
+* [new] Updated axl factory internals to implement optional spares
+  support allowing to reuse nodes released (returned to the factory)
+  which can be used later by next calls to axl_factory_get. API added:
+   
+   - axl_factory_release_spare
+   - axl_factory_spare_max
+   - axl_factory_spare_next
+
+* [fix] Updated axlHash implementation to use new spare support from
+  factory that allows reusing internal hash nodes, saving memory
+  allocations in common insert/remove cycles (specially using same
+  keys). Updated regression tests to check function and how it saves
+  space (test_02_04_1).  Initial results shows a total amount of bytes
+  allocated of 20,300 that now consumes 389 in a constant manner
+  (assuming insert and removes keeps the hash under the same set of
+  items).
+
+* [fix] Updated PyAxl axl.Node.has_attr method to allow support
+  providing the attribute value to check. Updated documentation.
+
+------------------------------------------------------------------------
+
+
+About Advanced Software Production Line, S.L.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Advanced Software Production Line provides GNU/Linux support and
+  consulting services to enable organization to introduce GNU/Linux
+  into their processes, making other platforms to properly interact
+  with it.
+
+  Contact us, using English or Spanish, to get commercial support
+  and/or XML based development services.
+
+  You can reach us:
+
+       http://www.aspl.es - info@aspl.es
+
+  We hope Axl Library help you. Enjoy Axl Library!
+
+--
+Francis Brosnan Blázquez           - francis@aspl.es
+Advanced Software Production Line  - http://www.aspl.es
+5th mar 2010, Madrid (Spain)
