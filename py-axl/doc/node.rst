@@ -125,6 +125,14 @@ Module API
       :param node: the new child node to configure.
       :type  node: axl.Node
 
+   .. method:: remove ([dealloc=True])
+   
+      Allows to remove the node from its current document. By default
+      the internal node is deallocated. 
+
+      :param node: the new node to be removed from current holding document
+      :type  node: :class:`axl.Node`
+
    .. attribute:: name
 
       (Read only attribute) (String) Allows to get the node name.

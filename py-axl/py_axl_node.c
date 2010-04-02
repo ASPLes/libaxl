@@ -376,6 +376,21 @@ static PyObject * py_axl_node_attr_cursor_new (PyObject * _self, PyObject * args
 	return py_axl_attr_cursor_create (axl_node_attr_cursor_new (self->node), axl_true);
 }
 
+static PyObject * py_axl_node_remove (PyObject * _self, PyObject * args)
+{
+	PyAxlNode  * self      = (PyAxlNode *) _self;
+	axl_bool     dealloc   = axl_true;
+
+	/* parse and check result */
+	if (! PyArg_ParseTuple (args, "|i", &dealloc))
+		return NULL;
+	
+	/* remove the node from the document */
+	axl_node_remove (self->node, dealloc);
+	Py_INCREF (Py_None);
+	return Py_None;
+}
+
 
 static PyMethodDef py_axl_node_methods[] = { 
 	/* next_called */
@@ -405,6 +420,9 @@ static PyMethodDef py_axl_node_methods[] = {
 	/* attr_cursor_new */
 	{"attr_cursor_new", (PyCFunction) py_axl_node_attr_cursor_new, METH_NOARGS,
 	 "Allows to create a new attribute cursor object used to iterate over all attributes of a node."},
+	/* attr_cursor_new */
+	{"remove", (PyCFunction) py_axl_node_remove, METH_VARARGS,
+	 "Allows to remove the provided node from its current document. The method also receives an optional Boolean parameter to signal to also finish the internal reference."},
  	{NULL}  
 }; 
 
