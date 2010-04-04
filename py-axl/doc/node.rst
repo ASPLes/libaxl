@@ -133,6 +133,10 @@ Module API
       :param node: the new node to be removed from current holding document
       :type  node: :class:`axl.Node`
 
+   .. method:: set_empty ()
+   
+      Allows to clear all content set inside a particular node.
+
    .. attribute:: name
 
       (Read only attribute) (String) Allows to get the node name.
@@ -155,8 +159,18 @@ Module API
 
    .. attribute:: content
 
-      (Read only attribute) (:class:`axl.Node`) Allows to get the node
-      content. See axl_node_get_content.
+      (Read/Write attribute) (:class:`axl.Node`) Allows to get/set the
+      node content. See axl_node_get_content and axl_node_set_content
+      from C API. The attribute detects on write operations if the
+      content to be configured is not supported directly without replacing &, <, ', >, ", and ;. In such case, Axl API translate the content (replacing those values by &amp;, &lt;, etc...). 
+
+      The attribute returns a tuple with (content, size).
+
+   .. attribute:: trans
+
+      (Read only attribute) (:class:`axl.Node`) Allows to get content stored on a node translating known entity references: &amp;, &lt;, etc..
+
+      The attribute returns a tuple with (content, size).
 
    .. attribute:: doc
 
