@@ -162,6 +162,14 @@ PyObject * py_axl_node_get_attr (PyObject *o, PyObject *attr_name) {
 		PyTuple_SetItem (tuple, 1, Py_BuildValue ("i", size));
 			
 		return tuple;
+	} else if (axl_cmp (attr, "trans")) {
+		/* return a tuple with content and size */
+		tuple = PyTuple_New (2);
+		
+		PyTuple_SetItem (tuple, 0, Py_BuildValue ("z", axl_node_get_content_trans (self->node, &size)));
+		PyTuple_SetItem (tuple, 1, Py_BuildValue ("i", size));
+			
+		return tuple;
 	} else if (axl_cmp (attr, "doc")) {
 		
 		/* check if the node has a document configured */
@@ -188,13 +196,22 @@ PyObject * py_axl_node_get_attr (PyObject *o, PyObject *attr_name) {
  */
 int py_axl_node_set_attr (PyObject *o, PyObject *attr_name, PyObject *v)
 {
-	const char      * attr = NULL;
-/*	PyAxlNode        * self = (PyAxlNode *) o; */
+	const char      * attr    = NULL;
+	const char      * content = NULL;
+	PyAxlNode        * self = (PyAxlNode *) o; 
 /*	axl_bool          boolean_value = axl_false; */
 
 	/* now implement other attributes */
 	if (! PyArg_Parse (attr_name, "s", &attr))
 		return -1;
+
+        if (axl_cmp (attr, "content")) {
+		if (! PyArg_Parse (v, "s", &content))
+			return -1;		
+		/* check if the content has invalid chars */
+		axl_node_set_content (self->node, content, -1);
+		return 0;
+	}
 
 	/* now implement generic setter */
 	return PyObject_GenericSetAttr (o, attr_name, v);
@@ -391,6 +408,16 @@ static PyObject * py_axl_node_remove (PyObject * _self, PyObject * args)
 	return Py_None;
 }
 
+static PyObject * py_axl_node_set_empty (PyObject * _self, PyObject * args)
+{
+	PyAxlNode  * self      = (PyAxlNode *) _self;
+
+	/* remove the node from the document */
+	axl_node_set_is_empty (self->node, axl_true);
+	Py_INCREF (Py_None);
+	return Py_None;
+}
+
 
 static PyMethodDef py_axl_node_methods[] = { 
 	/* next_called */
@@ -423,6 +450,9 @@ static PyMethodDef py_axl_node_methods[] = {
 	/* attr_cursor_new */
 	{"remove", (PyCFunction) py_axl_node_remove, METH_VARARGS,
 	 "Allows to remove the provided node from its current document. The method also receives an optional Boolean parameter to signal to also finish the internal reference."},
+	/* set_empty */
+	{"set_empty", (PyCFunction) py_axl_node_set_empty, METH_NOARGS,
+	 "Allows to clear all node content."},
  	{NULL}  
 }; 
 
