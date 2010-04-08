@@ -6334,7 +6334,7 @@ axl_bool test_01_03 ()
 		return axl_false;
 	}
 
-	res = axl_stream_printf_len ("%lu", (unsigned long int) 182);
+	res = axl_stream_printf_len ("%lu", (unsigned long) 182);
 	if ( res != 4) {
 		printf ("failed, expected to find an string value of 4, but it was found (%d)\n", res);
 		return axl_false;
