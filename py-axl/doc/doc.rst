@@ -1,5 +1,5 @@
-:mod:`axl` --- PyAxlDoc class: XML document instance 
-====================================================
+:mod:`axl.Doc` --- PyAxlDoc class: XML document instance 
+========================================================
 
 .. currentmodule:: axl
 

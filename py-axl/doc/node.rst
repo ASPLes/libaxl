@@ -1,5 +1,5 @@
-:mod:`axl` --- PyAxlNode class: XML node instance 
-==================================================
+:mod:`axl.Node` --- PyAxlNode class: XML node instance 
+======================================================
 
 .. currentmodule:: axl
 
