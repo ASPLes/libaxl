@@ -1,4 +1,4 @@
-:mod:`axl` --- PyAxlAttrCursor class: xml node attributes iterator
+:mod:`axl.AttrCursor` --- PyAxlAttrCursor class: xml node attributes iterator
 ==================================================================
 
 .. currentmodule:: axl

@@ -1,4 +1,4 @@
-:mod:`axl` --- PyAxlDtd class: DTD support
+:mod:`axl.Dtd` --- PyAxlDtd class: DTD support
 ===========================================
 
 .. currentmodule:: axl
