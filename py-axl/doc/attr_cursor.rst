@@ -18,10 +18,10 @@ are used to check all attributes stored on a node::
    node   = doc.get ("/document/child")
 
    # create the cursor
-   cursor = node.cursor_new ()
-   while node.has_item ():
+   cursor = node.attr_cursor_new ()
+   while cursor.has_item ():
    	 # print content
-   	 print ("found attribute: " + node.key + "=" + node.value)
+   	 print ("found attribute: " + cursor.key + "=" + cursor.value)
 	 
 	 # next item
 	 cursor.next ()
