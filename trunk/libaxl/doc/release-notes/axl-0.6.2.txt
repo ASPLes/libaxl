@@ -1,0 +1,85 @@
+          ########################################
+          #             Axl Library              #
+          #              Starlight               # 
+          #                0.6.2                 #
+          ########################################
+
+Advanced Software Production Line is proud to announce a new Axl
+Library release.
+
+Axl Library is a small and efficient XML toolkit, written in ANSI C,
+with support for Python bindings and released under the LGPL. It
+allows to produce efficient and clear code that handle XML data.
+
+The library was produced to support XML requirements needed by
+software developed by Advanced Software Production Line, S.L.
+
+At this moment the library is being used by Vortex Library, Af-Arch,
+Turbulence, Shaper, Fovap and Ju-Doc.
+
+Resources
+~~~~~~~~~
+
+   Axl Homepage
+   [ http://www.aspl.es/xml ]
+
+   Advanced Software Production Line, S.L.
+   [ http://www.aspl.es ]
+
+This release in short
+~~~~~~~~~~~~~~~~~~~~~
+  Stable release that fixes some compilation issues and platform
+  detection around vasprintf. Also includes PyAxl API and
+  documentation updates.
+
+Changes from previous release 0.6.1
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* [fix] Fixed wrong vasprintf detection (configure.ac) on newer libc6
+  versions.
+
+* [fix] Resolved compilation error with gcc 4.4.1. printf cant now
+  receive directly a char * string it must be passed by argument
+
+* [fix] Added axl.Node.remove () method to PyAxl API which allows to
+  remove a node from its current document. Updated documentation.
+
+* [new] Updated PyAxl node API to include support to configure node
+  content, returning content translated and to clear all content on a
+  node. Updated documentation. API added:
+
+   - axl.Node.trans
+   - axl.Node.content (now with write support)
+   - axl.Node.set_empty ()
+
+* [fix] Removed unsigned long int, replaced by unsigned long at reg
+  tests.
+
+* [fix] Several PyAxl documentation updates.
+
+* [fix] Fixed PyAxl documentation warnings..
+
+* [fix] Fixed PyAxl axl.AttrCursor documentation examples.
+
+
+About Advanced Software Production Line, S.L.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Advanced Software Production Line provides GNU/Linux support and
+  consulting services to enable organization to introduce GNU/Linux
+  into their processes, making other platforms to properly interact
+  with it.
+
+  Contact us, using English or Spanish, to get commercial support
+  and/or XML based development services.
+
+  You can reach us:
+
+       http://www.aspl.es - info@aspl.es
+
+  We hope Axl Library help you. Enjoy Axl Library!
+
+--
+Francis Brosnan Blázquez           - francis@aspl.es
+Advanced Software Production Line  - http://www.aspl.es
+16th apr 2010, Madrid (Spain)
