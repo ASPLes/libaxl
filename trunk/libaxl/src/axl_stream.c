@@ -2424,6 +2424,9 @@ char      * axl_stream_strdup_n (const char * chunk, int n)
  */
 int axl_stream_vprintf_len (const char * format, va_list args)
 {
+	/** IMPLEMENTATION NOTE: in the case this code is update,
+	 * update exarg_vprintf_len **/
+
 #if defined (AXL_OS_WIN32) && ! defined (__GNUC__)
 #   if HAVE_VSCPRINTF
 	if (format == NULL)
