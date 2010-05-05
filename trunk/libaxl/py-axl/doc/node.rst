@@ -117,6 +117,13 @@ Module API
       :param node: the new child node to configure.
       :type  node: :class:`axl.Node`
 
+   .. method:: set_child_after (node)
+   
+      Allows to configure a new child node placing it after the calling node inside the same level. Both nodes will share parent node. Node must be not attached to a document. See :meth:`deattach` to disconnect a node from a document or create a new node (:class:`axl.Node`).
+
+      :param node: the new child node to configure.
+      :type  node: :class:`axl.Node`
+
    .. method:: attr_cursor_new ()
    
       Creates a new :class:`axl.AttrCursor` instance which is used to
@@ -132,6 +139,18 @@ Module API
 
       :param node: the new node to be removed from current holding document
       :type  node: :class:`axl.Node`
+
+   .. method:: replace ([dealloc=True])
+   
+      Allows to remove the node from its current document. By default
+      the internal node is deallocated. 
+
+      :param node: the new node to be removed from current holding document
+      :type  node: :class:`axl.Node`
+
+   .. method:: deattach ()
+   
+      Allows to disconnect the node from its current document.
 
    .. method:: set_empty ()
    

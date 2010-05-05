@@ -623,6 +623,52 @@ def py_test_01():
 
     return True
 
+def py_test_02():
+
+    # parse content
+    (doc, err) = axl.parse ("<content><load><value test='10' /></load></content>")
+    if err:
+        error ("Expected to find proper parse operation but found an error: " + err.msg)
+        return False
+
+    # get the node
+    node = doc.get ("/content/load/value")
+
+    node2 = axl.Node ("test")
+    node2.attr ('id', "10")
+
+    # do replace
+    node.replace (node2)
+
+    (content, size) = doc.dump ()
+
+    # check value
+    if content != "<?xml version='1.0' ?><content><load><test id='10' /></load></content>":
+        return False
+
+    # now swap two nodes
+    (doc, err) = axl.parse ("<content><load><value test='10' /><value2 test='20' /></load></content>")
+    if err:
+        error ("Expected to find proper parse operation but found an error: " + err.msg)
+        return False
+
+    node  = doc.get ("/content/load/value")
+    node2 = doc.get ("/content/load/value2")
+
+    # disconnect node from document
+    node.deattach ()
+
+    # now place after
+    node2.set_child_after (node)
+
+    (content, size) = doc.dump ()
+
+    # check value
+    if content != "<?xml version='1.0' ?><content><load><value2 test='20' /><value test='10' /></load></content>":
+        return False
+
+    return True
+
 ###########################
 # intraestructure support #
 ###########################
@@ -670,6 +716,7 @@ tests = [
     (test_22,    "Check Axl node attributes"),
     (test_33,    "Check Recursive root node replace"),
     (py_test_01, "Check PyNode type attributes"),
+    (py_test_02, "Check PyNode replace, deattach, set_child_after method")
 ]
 
 info (" LibAxl: Another XML library (regression test).")

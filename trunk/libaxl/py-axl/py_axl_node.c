@@ -385,6 +385,30 @@ static PyObject * py_axl_node_set_child (PyObject * _self, PyObject * args)
 	return Py_None;
 }
 
+static PyObject * py_axl_node_set_child_after (PyObject * _self, PyObject * args)
+{
+	PyAxlNode  * self      = (PyAxlNode *) _self;
+	PyObject   * child     = Py_None;
+
+	/* parse and check result */
+	if (! PyArg_ParseTuple (args, "O", &child))
+		return NULL;
+
+	/* check object received */
+	if (! py_axl_node_check (child)) {
+		/* set exception */
+		PyErr_SetString (PyExc_TypeError, "Expected to receive an axl.Node object but received something different");
+		return NULL;
+	}
+
+	/* set the node as child */
+	axl_node_set_child_after (self->node, py_axl_node_get (child));
+	
+	/* return ok */
+	Py_INCREF (Py_None);
+	return Py_None;
+}
+
 static PyObject * py_axl_node_attr_cursor_new (PyObject * _self, PyObject * args)
 {
 	PyAxlNode  * self      = (PyAxlNode *) _self;
@@ -404,6 +428,38 @@ static PyObject * py_axl_node_remove (PyObject * _self, PyObject * args)
 	
 	/* remove the node from the document */
 	axl_node_remove (self->node, dealloc);
+	Py_INCREF (Py_None);
+	return Py_None;
+}
+
+static PyObject * py_axl_node_replace (PyObject * _self, PyObject * args)
+{
+	PyAxlNode  * self      = (PyAxlNode *) _self;
+	PyAxlNode  * new_ref   = NULL;
+	axl_bool     dealloc   = axl_true;
+
+	/* parse and check result */
+	if (! PyArg_ParseTuple (args, "O|i", &new_ref, &dealloc))
+		return NULL;
+
+	if (! py_axl_node_check ((PyObject *)new_ref)) {
+		/* set exception */
+		PyErr_SetString (PyExc_TypeError, "Expected to receive an axl.Node object but received something different");
+		return NULL;
+	} /* end if */
+	
+	/* replace node reference */
+	axl_node_replace (self->node, new_ref->node, dealloc);
+	Py_INCREF (Py_None);
+	return Py_None;
+}
+
+static PyObject * py_axl_node_deattach (PyObject * _self, PyObject * args)
+{
+	PyAxlNode  * self      = (PyAxlNode *) _self;
+
+	/* deattach node */
+	axl_node_deattach (self->node);
 	Py_INCREF (Py_None);
 	return Py_None;
 }
@@ -444,12 +500,21 @@ static PyMethodDef py_axl_node_methods[] = {
 	/* set_child */
 	{"set_child", (PyCFunction) py_axl_node_set_child, METH_VARARGS,
 	 "Allows to configure the provided node as the instance's child."},
+	/* set_child_after */
+	{"set_child_after", (PyCFunction) py_axl_node_set_child_after, METH_VARARGS,
+	 "Allows to configure a new child node placing it after the calling node inside the same level. Both nodes will share parent node."},
 	/* attr_cursor_new */
 	{"attr_cursor_new", (PyCFunction) py_axl_node_attr_cursor_new, METH_NOARGS,
 	 "Allows to create a new attribute cursor object used to iterate over all attributes of a node."},
-	/* attr_cursor_new */
+	/* remove */
 	{"remove", (PyCFunction) py_axl_node_remove, METH_VARARGS,
 	 "Allows to remove the provided node from its current document. The method also receives an optional Boolean parameter to signal to also finish the internal reference."},
+	/* replace */
+	{"replace", (PyCFunction) py_axl_node_replace, METH_VARARGS,
+	 "Allows to replace current node with the node provided. The method also receives an optional Boolean parameter to signal to also finish the internal reference."},
+	/* dettach */
+	{"deattach", (PyCFunction) py_axl_node_deattach, METH_NOARGS,
+	 "Allows to dettach the current node from its holding document. This operation is useful to prepare node to be moved inside the same document or different documents."},
 	/* set_empty */
 	{"set_empty", (PyCFunction) py_axl_node_set_empty, METH_NOARGS,
 	 "Allows to clear all node content."},
