@@ -428,6 +428,11 @@ static PyObject * py_axl_node_remove (PyObject * _self, PyObject * args)
 	
 	/* remove the node from the document */
 	axl_node_remove (self->node, dealloc);
+
+	/* clean internal reference when dealloc is true */
+	if (dealloc) 
+		self->node = NULL;
+
 	Py_INCREF (Py_None);
 	return Py_None;
 }
