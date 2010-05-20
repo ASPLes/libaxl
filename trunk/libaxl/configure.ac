@@ -205,6 +205,7 @@ $ac_cv_sizeof_long) 	pti_cast='(long)'  ptui_cast='(unsigned long)' ;;
 esac
 
 # Get current configure for the platform and the os we are running.
+echo "Host detected: $host"
 case $host in
   *-*-beos*)
     axl_platform="#define AXL_OS_BEOS (1)"
