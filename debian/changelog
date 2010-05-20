@@ -1,3 +1,9 @@
+libaxl (0.6.2) stable; urgency=low
+
+  * New upstream version 0.6.2
+
+ -- Francis Brosnan <francis@aspl.es>  Fri, 16 Apr 2010 16:18:11 +0200
+
 libaxl (0.6.0) stable; urgency=low
 
   * New upstream version 0.6.0
