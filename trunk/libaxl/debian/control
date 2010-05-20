@@ -69,7 +69,7 @@ Description: Fast and efficient XML 1.0 implementation
 Package: python-axl
 Section: libs
 Architecture: any
-Depends: libaxl1 (= ${Source-Version}), python2.4
+Depends: libaxl1 (= ${Source-Version}), python
 Description: Python bindings for Axl Library
  Python bindings for LibAxl library.
 
