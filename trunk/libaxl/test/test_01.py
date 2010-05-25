@@ -669,6 +669,28 @@ def py_test_02():
 
     return True
 
+def py_test_03():
+    # parse content
+    (doc, err) = axl.parse ("<content><load><value test='10' /></load></content>")
+    if err:
+        error ("Expected to find proper parse operation but found an error: " + err.msg)
+        return False
+
+    # get the node
+    node = doc.get ("/content/load/value")
+
+    iterator = 0
+    while iterator < 100:
+        # now add content to the node
+        node2 = axl.Node ("test")
+        node.set_child (node2)
+
+        iterator += 1
+
+    return True
+    
+    
+
 ###########################
 # intraestructure support #
 ###########################
@@ -715,8 +737,9 @@ tests = [
     (test_05,    "Check DTD basic parsing"),
     (test_22,    "Check Axl node attributes"),
     (test_33,    "Check Recursive root node replace"),
-    (py_test_01, "Check PyNode type attributes"),
-    (py_test_02, "Check PyNode replace, deattach, set_child_after method")
+    (py_test_01, "Check PyAxlNode type attributes"),
+    (py_test_02, "Check PyAxlNode replace, deattach, set_child_after method"),
+    (py_test_03, "Check PyAxlNode and PyAxlDoc relation")
 ]
 
 info (" LibAxl: Another XML library (regression test).")
