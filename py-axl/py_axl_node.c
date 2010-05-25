@@ -379,6 +379,12 @@ static PyObject * py_axl_node_set_child (PyObject * _self, PyObject * args)
 
 	/* set the node as child */
 	axl_node_set_child (self->node, py_axl_node_get (child));
+
+	/* and make the node to not release its internal node when it
+	 * is deallocated to avoid the node finishing the reference
+	 * that was finished by the document holding */
+	if (axl_node_get_doc (py_axl_node_get (child))) 
+		((PyAxlNode *)(child))->finish_on_gc = axl_false;
 	
 	/* return ok */
 	Py_INCREF (Py_None);
@@ -403,6 +409,12 @@ static PyObject * py_axl_node_set_child_after (PyObject * _self, PyObject * args
 
 	/* set the node as child */
 	axl_node_set_child_after (self->node, py_axl_node_get (child));
+
+	/* and make the node to not release its internal node when it
+	 * is deallocated to avoid the node finishing the reference
+	 * that was finished by the document holding */
+	if (axl_node_get_doc (py_axl_node_get (child))) 
+		((PyAxlNode *)(child))->finish_on_gc = axl_false;
 	
 	/* return ok */
 	Py_INCREF (Py_None);
@@ -455,6 +467,16 @@ static PyObject * py_axl_node_replace (PyObject * _self, PyObject * args)
 	
 	/* replace node reference */
 	axl_node_replace (self->node, new_ref->node, dealloc);
+
+	if (dealloc)
+		self->node = NULL;
+
+	/* and make the node to not release its internal node when it
+	 * is deallocated to avoid the node finishing the reference
+	 * that was finished by the document holding */
+	if (axl_node_get_doc (new_ref->node)) 
+		new_ref->finish_on_gc = axl_false;
+
 	Py_INCREF (Py_None);
 	return Py_None;
 }
