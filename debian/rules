@@ -36,10 +36,7 @@ prepare:
 	./autogen.sh --prefix=/usr --sysconfdir=/etc
 
 # Add here commands to compile the package.
-	$(MAKE)
-# check build
-	$(MAKE) check
-
+#	$(MAKE)
 	touch $@
 
 clean:
