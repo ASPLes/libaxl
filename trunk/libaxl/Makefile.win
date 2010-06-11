@@ -1,0 +1,76 @@
+# Hey emacs this this -*- makefile -*- 
+# Makefile.win: compile the af-arch enviroment under the mingw
+# Advanced Software Prodution Line, S.L.
+# 
+# Instructions:
+# 
+# 1) To compile the project run:
+#
+#    >> make -f Makefile.win build_axl
+# 
+# 2) To clean the project run:
+# 
+#    >> make -f Makefile.win clean_axl
+#
+#  Requirements: mingw, msys, make and gcc
+# 
+
+# version
+axl_version = 0.6.2,4392,4395
+
+# While especifiying directories do not append the trailing slash
+
+# cc compiler to use usually gcc.exe
+export CC          = gcc.exe
+
+# general configuration
+export enable_gcc_debug = -g
+
+# axl configuration (enable log: uncomment)
+# export enable_axl_log = -DSHOW_DEBUG_LOG 
+
+# compilation mode to use: console, windows. If console is used the
+# output to the console will be allowed. Other wise, if windows
+# selected the console output will be disabled. On windows platforms
+# is prefered the windows mode. For debuging I recomend to use
+# console.
+export MODE        = windows
+
+
+#############################################
+# after this line lines shouldn't be edited #
+#############################################
+top_srcdir               = ../..
+version_prefix           = -MinGW32
+export search_lib_path   = 
+
+
+# axl
+axl                            = src
+axl_ns                         = ns
+axl_babel                      = babel
+axl_test                       = test
+axl_knife                      = knife
+export axl_dll                 = libaxl
+
+all: build_axl
+
+build_axl: 
+	@echo
+	@echo "Building libaxl.."
+	@cd $(axl); AXL_VERSION=$(axl_version) make -f Makefile.win; cd $(top_srcdir)
+	@echo "Building libaxl (Namespaces).."
+	@cd $(axl_ns); AXL_VERSION=$(axl_version) make -f Makefile.win; cd $(top_srcdir)
+	@echo "Building libaxl (BABEL).."
+	@cd $(axl_babel); AXL_VERSION=$(axl_version) make -f Makefile.win; cd $(top_srcdir)
+	@echo "Building axl-knife.."
+	@cd $(axl_knife); AXL_VERSION=$(axl_version) make -f Makefile.win; cd $(top_srcdir)
+	@echo "Building libaxl tests.."
+	@cd $(axl_test); AXL_VERSION=$(axl_version) make -f Makefile.win; cd $(top_srcdir)
+
+clean_axl:
+	cd $(axl);             make -f Makefile.win clean; cd $(top_srcdir)
+	cd $(axl_ns);          make -f Makefile.win clean; cd $(top_srcdir)
+	cd $(axl_babel);       make -f Makefile.win clean; cd $(top_srcdir)
+	cd $(axl_test);        make -f Makefile.win clean; cd $(top_srcdir)
+
