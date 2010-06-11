@@ -16,7 +16,7 @@
 # 
 
 # version
-axl_version = 0.6.2.b4392.g4416
+axl_version = @AXL_VERSION@
 
 # While especifiying directories do not append the trailing slash
 
