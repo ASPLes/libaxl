@@ -50,9 +50,12 @@ typedef struct _PyAxlNode PyAxlNode;
 axl_bool     py_axl_node_check    (PyObject * obj);
 
 PyObject   * py_axl_node_create   (axlNode  * node, 
-				   axl_bool   finish_on_gc);
+				   axl_bool   finish_on_gc,
+				   PyObject * py_doc);
 
 axlNode    * py_axl_node_get      (PyObject * obj);
+
+void         py_axl_node_set_dealloc (PyObject * obj, axl_bool dealloc);
 
 void         init_axl_node        (PyObject * module);
 

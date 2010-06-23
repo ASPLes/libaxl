@@ -51,18 +51,26 @@ def test_01b():
     if err:
         error ("Found error: " + str (err.code) + ", message: " + err.msg)
         return False
+    
+    info ("Test 01-b: finished document parsing, getting root node")
 
     # get root node
     node = doc.root
+
+    info ("Test 01-b: checking node name..")
 
     # check node name 
     if node.name != "document":
         error ("Expected to find node name 'document' but found: " + node.name)
         return False
 
+    info ("Test 01-b: about to get first reference..")
+
     # get first child
     node = node.first_child
-    
+
+    info ("Test 01-b: returning..")
+
     # check node name 
     if node.name != "child1":
         error ("Expected to find node name 'child1' but found: " + node.name)
@@ -679,12 +687,41 @@ def py_test_03():
     # get the node
     node = doc.get ("/content/load/value")
 
+    info ("Got root node, creating child nodes..")
+
     iterator = 0
     while iterator < 100:
         # now add content to the node
+        # info ("About to create child node, iterator=" + str (iterator))
         node2 = axl.Node ("test")
         node.set_child (node2)
 
+        iterator += 1
+
+    return True
+
+def py_test_04_load ():
+    # parse content
+    (doc, err) = axl.parse ("<content><load><value test='10' /></load></content>")
+    if err:
+        error ("Expected to find proper parse operation but found an error: " + err.msg)
+        return False
+
+    # get the node
+    return doc.get ("/content/load/value")
+    
+def py_test_04():
+    # call to get the node from a document
+    node = py_test_04_load ()
+
+    iterator = 0
+    while iterator < 100:
+        
+        # check value
+        if node.attr ("test") != "10":
+            return False
+
+        # next position
         iterator += 1
 
     return True
@@ -739,7 +776,8 @@ tests = [
     (test_33,    "Check Recursive root node replace"),
     (py_test_01, "Check PyAxlNode type attributes"),
     (py_test_02, "Check PyAxlNode replace, deattach, set_child_after method"),
-    (py_test_03, "Check PyAxlNode and PyAxlDoc relation")
+    (py_test_03, "Check PyAxlNode and PyAxlDoc relation"),
+    (py_test_04, "Check PyAxlNode reference after PyAxlDoc reference finish")
 ]
 
 info (" LibAxl: Another XML library (regression test).")

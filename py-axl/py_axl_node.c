@@ -47,6 +47,9 @@ struct _PyAxlNode {
 	/* pointer to the axl node */
 	axlNode   * node;
 	axl_bool    finish_on_gc;
+
+	/* pointer to the parent document */
+	PyObject  * py_doc;
 };
 
 static int py_axl_node_init_type (PyAxlNode *self, PyObject *args, PyObject *kwds)
@@ -84,7 +87,12 @@ static PyObject * py_axl_node_new (PyTypeObject *type, PyObject *args, PyObject 
  * object axl.Node
  */
 static void py_axl_node_dealloc (PyAxlNode* self)
+
+	
 {
+
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "Finishing axl.Node reference %p (%s)",
+		   self, axl_node_get_name (self->node));
 
 	/* release node on if it is signaled to be released and it was
 	 * not configured to be inside a document, which means the
@@ -92,6 +100,14 @@ static void py_axl_node_dealloc (PyAxlNode* self)
 	if (self->finish_on_gc && axl_node_get_doc (self->node) == NULL)
 		axl_node_free (self->node);
 	self->node = NULL;
+
+	/* decrease reference to the document if defined */
+	if (self->py_doc) {
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "  Finishing axl.Doc reference %p (%d)",
+			   self->py_doc, self->py_doc->ob_refcnt);
+		Py_DECREF (self->py_doc);
+		self->py_doc = NULL;
+	}
 
 	/* free the node it self */
 	self->ob_type->tp_free ((PyObject*)self);
@@ -128,7 +144,7 @@ PyObject * py_axl_node_get_attr (PyObject *o, PyObject *attr_name) {
 			return Py_None;
 		} 
 			
-		return Py_BuildValue ("O", py_axl_node_create (axl_node_get_first_child (self->node), axl_false));
+		return py_axl_node_create (axl_node_get_first_child (self->node), axl_false, self->py_doc);
 	} else if (axl_cmp (attr, "next")) {
 		/* next */
 		if (axl_node_get_next (self->node) == NULL) {
@@ -136,7 +152,7 @@ PyObject * py_axl_node_get_attr (PyObject *o, PyObject *attr_name) {
 			return Py_None;
 		} 
 			
-		return Py_BuildValue ("O", py_axl_node_create (axl_node_get_next (self->node), axl_false));
+		return py_axl_node_create (axl_node_get_next (self->node), axl_false, self->py_doc);
 	} else if (axl_cmp (attr, "previous")) {
 		/* previous */
 		if (axl_node_get_previous (self->node) == NULL) {
@@ -144,7 +160,7 @@ PyObject * py_axl_node_get_attr (PyObject *o, PyObject *attr_name) {
 			return Py_None;
 		} 
 			
-		return Py_BuildValue ("O", py_axl_node_create (axl_node_get_previous (self->node), axl_false));
+		return py_axl_node_create (axl_node_get_previous (self->node), axl_false, self->py_doc);
 	} else if (axl_cmp (attr, "parent")) {
 		/* parent */
 		if (axl_node_get_parent (self->node) == NULL) {
@@ -152,7 +168,7 @@ PyObject * py_axl_node_get_attr (PyObject *o, PyObject *attr_name) {
 			return Py_None;
 		} 
 			
-		return Py_BuildValue ("O", py_axl_node_create (axl_node_get_parent (self->node), axl_false));
+		return py_axl_node_create (axl_node_get_parent (self->node), axl_false, self->py_doc);
 
 	} else if (axl_cmp (attr, "content")) {
 		/* return a tuple with content and size */
@@ -235,7 +251,7 @@ static PyObject * py_axl_node_next_called (PyObject * _self, PyObject * args)
 	} /* end if */
 	
 	/* create node result */
-	return py_axl_node_create (node, axl_false);
+	return py_axl_node_create (node, axl_false, self->py_doc);
 }
 
 static PyObject * py_axl_node_previous_called (PyObject * _self, PyObject * args)
@@ -256,7 +272,7 @@ static PyObject * py_axl_node_previous_called (PyObject * _self, PyObject * args
 	} /* end if */
 	
 	/* create node result */
-	return py_axl_node_create (node, axl_false);
+	return py_axl_node_create (node, axl_false, self->py_doc);
 }
 
 static PyObject * py_axl_node_child_called (PyObject * _self, PyObject * args)
@@ -277,7 +293,7 @@ static PyObject * py_axl_node_child_called (PyObject * _self, PyObject * args)
 	} /* end if */
 	
 	/* create node result */
-	return py_axl_node_create (node, axl_false);
+	return py_axl_node_create (node, axl_false, self->py_doc);
 }
 
 static PyObject * py_axl_node_find_called (PyObject * _self, PyObject * args)
@@ -298,7 +314,7 @@ static PyObject * py_axl_node_find_called (PyObject * _self, PyObject * args)
 	} /* end if */
 	
 	/* create node result */
-	return py_axl_node_create (node, axl_false);
+	return py_axl_node_create (node, axl_false, self->py_doc);
 }
 
 static PyObject * py_axl_node_nth_child (PyObject * _self, PyObject * args)
@@ -319,7 +335,7 @@ static PyObject * py_axl_node_nth_child (PyObject * _self, PyObject * args)
 	} /* end if */
 	
 	/* create node result */
-	return py_axl_node_create (node, axl_false);
+	return py_axl_node_create (node, axl_false, self->py_doc);
 }
 
 static PyObject * py_axl_node_has_attr (PyObject * _self, PyObject * args)
@@ -383,7 +399,7 @@ static PyObject * py_axl_node_set_child (PyObject * _self, PyObject * args)
 	/* and make the node to not release its internal node when it
 	 * is deallocated to avoid the node finishing the reference
 	 * that was finished by the document holding */
-	if (axl_node_get_doc (py_axl_node_get (child))) 
+	if (axl_node_get_doc (py_axl_node_get (_self)))
 		((PyAxlNode *)(child))->finish_on_gc = axl_false;
 	
 	/* return ok */
@@ -616,7 +632,8 @@ axl_bool             py_axl_node_check    (PyObject          * obj)
  * the variable gets garbage collected.
  */
 PyObject   * py_axl_node_create   (axlNode  * node, 
-				   axl_bool   finish_on_gc)
+				   axl_bool   finish_on_gc,
+				   PyObject * py_doc)
 {
 	/* return a new instance */
 	PyAxlNode * obj = (PyAxlNode *) PyObject_CallObject ((PyObject *) &PyAxlNodeType, NULL); 
@@ -631,6 +648,15 @@ PyObject   * py_axl_node_create   (axlNode  * node,
 	if (node)
 		obj->node = node;
 	obj->finish_on_gc = finish_on_gc;
+
+	/* get a reference to the document if defined */
+	if (py_doc) {
+		Py_INCREF (py_doc);
+		obj->py_doc = py_doc;
+	} /* end if */
+
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "Created axl.Node reference (%p, ref count: %d): %s (doc: %p, refcount: %d)", 
+		   obj, obj->ob_refcnt, axl_node_get_name (obj->node), obj->py_doc, obj->py_doc->ob_refcnt);
 
 	return __PY_OBJECT (obj);
 }
@@ -647,6 +673,17 @@ axlNode    * py_axl_node_get      (PyObject * obj)
 
 	/* return the node */
 	return ((PyAxlNode *)obj)->node;
+}
+
+/** 
+ * @internal Function used to set the node to be deallocated or not
+ * according to the provided dealloc value.
+ */
+void         py_axl_node_set_dealloc (PyObject * obj, axl_bool dealloc)
+{
+	PyAxlNode * node = (PyAxlNode *) obj;
+	node->finish_on_gc = dealloc;
+	return;
 }
 
 void        init_axl_node      (PyObject * module)
