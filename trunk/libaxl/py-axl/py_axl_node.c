@@ -91,8 +91,7 @@ static void py_axl_node_dealloc (PyAxlNode* self)
 	
 {
 
-	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "Finishing axl.Node reference %p (%s)",
-		   self, axl_node_get_name (self->node));
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "Finishing axl.Node reference %p", self);
 
 	/* release node on if it is signaled to be released and it was
 	 * not configured to be inside a document, which means the
