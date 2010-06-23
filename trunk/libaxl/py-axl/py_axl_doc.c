@@ -132,7 +132,9 @@ PyObject * py_axl_doc_get_attr (PyObject *o, PyObject *attr_name) {
 
 		/* return root axl node: signaling to not finish the
 		 * internal copy once it is collected the reference */
-		return py_axl_node_create (axl_doc_get_root (self->doc), axl_false);
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "reporting root node (doc ref: %p, ref count: %d)",
+			   self, self->ob_refcnt);
+		return py_axl_node_create (axl_doc_get_root (self->doc), axl_false, o);
 	}
 
 	/* first implement generic attr already defined */
@@ -162,6 +164,10 @@ int py_axl_doc_set_attr (PyObject *o, PyObject *attr_name, PyObject *v)
 
 		/* configure the node */
 		axl_doc_set_root (self->doc, py_axl_node_get (py_node));
+
+		/* set the node to not dealloc internal node */
+		py_axl_node_set_dealloc (py_node, axl_false);
+
 		return 0;
 	}
 
@@ -187,7 +193,7 @@ static PyObject * py_axl_doc_get_node (PyObject * _self, PyObject * args)
 	} /* end if */
 	
 	/* create node result */
-	return py_axl_node_create (node, axl_false);
+	return py_axl_node_create (node, axl_false, _self);
 }
 
 static PyObject * py_axl_doc_dump (PyObject * _self, PyObject * args, PyObject * kwds)
@@ -400,6 +406,8 @@ PyObject   * py_axl_doc_create    (axlDoc * doc, axl_bool finish_on_gc)
 
 	/* set doc if defined */
 	if (doc) {
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "Created axl.Doc reference (%p), refcount: %d",
+			   obj, obj->ob_refcnt);
 		/* clear previous reference */
 		axl_doc_free (obj->doc);
 		obj->doc = doc;
