@@ -439,6 +439,10 @@ axlDoc * __axl_doc_new (axl_bool create_parent_stack)
 {
 	axlDoc    * result = axl_new (axlDoc, 1);
 
+	/* check allocated value */
+	if (result == NULL)
+		return NULL;
+
 	/* default container lists */
 	result->parentNode   = axl_stack_new (NULL);
 	result->piTargets    = axl_list_new (axl_list_always_return_1, (axlDestroyFunc) axl_pi_free);
@@ -450,6 +454,20 @@ axlDoc * __axl_doc_new (axl_bool create_parent_stack)
 	result->content_factory = axl_item_content_factory_create ();
 	result->attr_factory    = axl_item_attr_factory_create ();
 	result->str_factory     = axl_string_factory_create ();
+
+	/* check memory allocation problem */
+	if (result->parentNode      == NULL || 
+	    result->piTargets       == NULL || 
+	    result->xmlPreserve     == NULL || 
+	    result->item_factory    == NULL || 
+	    result->node_factory    == NULL ||
+	    result->content_factory == NULL ||
+	    result->attr_factory    == NULL ||
+	    result->str_factory     == NULL) {
+		axl_doc_free (result);
+		return NULL;
+	}
+
 	return result;
 }
 
@@ -1462,6 +1480,10 @@ axl_bool __axl_doc_dump_common (axlDoc * doc, char ** content, int * size, axl_b
 	
 	/* allocate the memory block required */
 	result = axl_new (char, (*size) + 1);
+	if (result == NULL) {
+		axl_error_report (err, -5, "Failed to allocate memory to dump document.");
+		return axl_false;
+	}
 
 	/* xml document header */
 	index = 0;
@@ -2747,11 +2769,28 @@ axlPI * axl_pi_create (char * name, char * content)
 
 	/* create the PI */
 	pi          = axl_new (axlPI, 1);
+	/* check allocated value */
+	if (pi == NULL)
+		return NULL;
 	pi->name    = axl_strdup (name);
-	
+	/* check allocated value */
+	if (name && pi->name == NULL) {
+		axl_free (pi);
+		return NULL;
+	}
+		
 	/* copy the content if defined */
-	if (content != NULL)
+	if (content != NULL) {
 		pi->content = axl_strdup (content);
+
+		/* check allocated value */
+		if (pi->content == NULL) {
+			/* free pi */
+			axl_pi_free (pi);
+			return NULL;
+		}
+			
+	}
 
 	return pi;
 }
@@ -2772,11 +2811,26 @@ axlPI   * axl_pi_copy                      (axlPI  * pi)
 
 	/* create the PI */
 	_pi          = axl_new (axlPI, 1);
+	/* check allocated value */
+	if (_pi == NULL)
+		return NULL;
 	_pi->name    = axl_strdup (pi->name);
+	/* check allocated value */
+	if (pi->name && _pi->name == NULL) {
+		axl_free (_pi);
+		return NULL;
+	}
 	
 	/* copy the content if defined */
-	if (pi->content != NULL)
+	if (pi->content != NULL) {
 		_pi->content = axl_strdup (pi->content);
+		/* check allocated value */
+		if (_pi->content == NULL) {
+			/* free pi */
+			axl_pi_free (_pi);
+			return NULL;
+		}
+	}
 
 	return _pi;
 }
