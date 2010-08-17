@@ -79,6 +79,9 @@ axlStack * axl_stack_new (axlDestroyFunc destroy_data)
 
 	/* create an empty stack */
 	stack          = axl_new (axlStack, 1);
+	/* check returned value */
+	if (stack == NULL)
+		return NULL;
 	stack->destroy = destroy_data;
 
 	return stack;
@@ -96,6 +99,8 @@ axlStack * axl_stack_new (axlDestroyFunc destroy_data)
  */
 void       axl_stack_push (axlStack * stack, axlPointer data)
 {
+	axlPointer * temp;
+
 	axl_return_if_fail (stack);
 	axl_return_if_fail (data);
 
@@ -104,9 +109,20 @@ void       axl_stack_push (axlStack * stack, axlPointer data)
 		if (stack->size == 0) {
 			/* ask for a single pointer */
 			stack->stack = axl_new (axlPointer, 1);
+
+			/* check allocated result */
+			if (stack->stack == NULL)
+				return;
 		}else {
 			/* ask to grow the memory already allocated */
+			temp         = stack->stack;
 			stack->stack = realloc (stack->stack, sizeof (axlPointer) * (stack->size + 1));
+			/* check allocated value */
+			if (stack->stack == NULL) {
+				stack->stack = temp;
+				return;
+			} /* end if */
+
 		}
 		/* update the size available */
 		stack->size++;
@@ -401,6 +417,9 @@ axlBinaryStack * axl_binary_stack_new (void)
 	axlBinaryStack * result;
 
 	result           = axl_new (axlBinaryStack, 1);
+	/* check allocated value */
+	if (result == NULL)
+		return NULL;
 	result->stack    = axl_stack_new (axl_free);
 
 	/* return stack created */
@@ -428,6 +447,9 @@ void             axl_binary_stack_push (axlBinaryStack * bstack, axl_bool state)
 
 		/* configure last */
 		node         = axl_new (axlBinaryStackNode, 1);
+		/* check allocated value */
+		if (node == NULL)
+			return;
 		node->count  = 1;
 		node->state  = state;
 

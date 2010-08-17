@@ -126,6 +126,9 @@ axlNodeAttr * __axl_node_copy_attr_list (axlNodeAttr * list)
 	/* alloc memory to hold attribute name and value, and
 	 * copy it from the list */
 	result             = axl_new (axlNodeAttr, 1);
+	/* check allocated result */
+	if (result == NULL)
+		return NULL;
 	result->attribute  = axl_strdup (list->attribute);
 	result->value      = axl_strdup (list->value);
 

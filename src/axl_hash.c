@@ -333,7 +333,18 @@ axlHash       * axl_hash_new_full     (axlHashFunc    hash,
 	axlHash * result;
 
 	result           = axl_new (axlHash, 1);
+	/* check allocated node */
+	if (result == NULL)
+		return NULL;
+
 	result->factory  = axl_factory_create (sizeof (axlHashNode));
+	/* check allocated node */
+	if (result->factory == NULL) {
+		/* release allocated node */
+		axl_free (result);
+		return NULL;
+	}
+		
 	result->hash     = hash;
 	result->equal    = equal;
 	result->step     = step;
@@ -380,10 +391,12 @@ void      axl_hash_insert       (axlHash    * hash,
  */
 #define __axl_hash_create_node(factory, node, key, key_destroy, data, data_destroy)\
 node                = axl_factory_get (factory);\
-node->key           = key;\
-node->key_destroy   = key_destroy;\
-node->data          = data;\
-node->data_destroy  = data_destroy;   
+if (node != NULL) {				\
+     node->key          = key;			\
+     node->key_destroy  = key_destroy;		\
+     node->data         = data;			\
+     node->data_destroy = data_destroy;		\
+}
 
 /** 
  * @internal Function that performs the hash insertion for the
@@ -426,10 +439,11 @@ void       axl_hash_insert_full (axlHash        * hash,
 				 axlPointer       data,
 				 axlDestroyFunc   data_destroy)
 {
-	int           pos       = 0;
-	axlHashNode * node      = NULL;
-	axlHashNode * aux       = NULL;
-	int           iterator  = 0;
+	int            pos       = 0;
+	axlHashNode  * node      = NULL;
+	axlHashNode  * aux       = NULL;
+	int            iterator  = 0;
+	axlHashNode ** temp;
 
 	/* check incoming data */
 	axl_return_if_fail (hash);
@@ -439,10 +453,20 @@ void       axl_hash_insert_full (axlHash        * hash,
 	if (hash->hash_size == 0) {
 		/* allocate memory for the hash */
 		hash->table     = axl_new (axlHashNode *, hash->step);
+		/* check allocated value */
+		if (hash->table == NULL)
+			return;
 		hash->hash_size = hash->step;
 		
 		/* create the node to store */
 		__axl_hash_create_node (hash->factory, node, key, key_destroy, data, data_destroy);
+		/* check allocated value and cleanup on failure */
+		if (node == NULL) {
+			hash->hash_size = 0;
+			axl_free (hash->table);
+			hash->table = NULL;
+			return;
+		} /* end if */
 
 		/* insert the node into the hash */
 		__axl_hash_insert_node (pos, hash, key, node, axl_true);
@@ -500,7 +524,16 @@ void       axl_hash_insert_full (axlHash        * hash,
 		/* now we have in node a complete list of items
 		 * stored, allocate more memory and rehash */
 		hash->hash_size += hash->step;
+		temp             = hash->table;
 		hash->table      = realloc (hash->table, sizeof (axlHashNode *) * (hash->hash_size));
+
+		/* check realloc operation */
+		if (hash->table == NULL) {
+			/* alloc failed, restore and cleanup */
+			hash->table = temp;
+			hash->hash_size -= hash->step;
+			return;
+		} /* end if */
 
 		/* clear the table */
 		memset (hash->table, 0, sizeof (axlHashNode*) * (hash->hash_size));
@@ -526,6 +559,10 @@ void       axl_hash_insert_full (axlHash        * hash,
 	if (node == NULL) {
 		/* create a new node */
 		__axl_hash_create_node (hash->factory, node, key, key_destroy, data, data_destroy);
+		/* check allocated value and cleanup on failure */
+		if (node == NULL) {
+			return;
+		} /* end if */
 
 		/* insert the node into the hash as usual */
 		__axl_hash_insert_node (pos, hash, key, node, axl_true);
@@ -1403,6 +1440,9 @@ axlHashCursor * axl_hash_cursor_new      (axlHash * hash)
 
 	/* create the cursor */
 	cursor = axl_new (axlHashCursor, 1);
+	/* check allocated value */
+	if (cursor == NULL)
+		return NULL;
 
 	/* initial configuration */
 	cursor->hash    = hash;

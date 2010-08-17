@@ -147,6 +147,9 @@ void axl_error_new (int code, char * error_code, axlStream * stream, axlError **
 
 	/* create the error to be reported */
 	error             = axl_new (axlError, 1); 
+	/* check allocated value */
+	if (error == NULL)
+		return;
 	error->code       = code;
 	error->defined    = -346715;
 	if (stream == NULL) {
@@ -210,6 +213,13 @@ void   axl_error_report   (axlError ** _error, int code, char * format, ...)
 
 	/* create the error to be reported */
 	error             = axl_new (axlError, 1); 
+	/* check reference */
+	if (error == NULL) {
+		/* free string and clean called variable */
+		axl_free (string);
+		(* _error) = NULL;
+		return;
+	}
 	error->code       = code;
 	error->defined    = -346715;
 	/* allocate enough memory */
