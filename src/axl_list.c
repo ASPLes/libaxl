@@ -106,22 +106,57 @@ int __axl_list_always_true (axlPointer a, axlPointer b)
  */
 void  __axl_list_allocate_nodes (axlList * list)
 {
-	int iterator;
+	int              iterator;
+	axlListNode   ** temp;
+	int              available;
 
 	list->available     = 1;
 	list->allocated    += list->available;
 
 	/* allocate enough memory to hold all nodes already
 	 * allocated */
-	if (list->preallocated == NULL)
+	if (list->preallocated == NULL) {
 		list->preallocated  = axl_new (axlListNode *, list->allocated);
-	else
+		if (list->preallocated == NULL) {
+			/* reduce noddes available */
+			list->available = 0;
+			list->allocated--;
+			return;
+		}
+	} else {
+		/* realloc for the list */
+		temp                = list->preallocated;
 		list->preallocated  = realloc (list->preallocated, (sizeof (axlListNode *)) * list->allocated);
 
+		/* check alloc operation */
+		if (list->preallocated == NULL) {
+			/* alloc failed, restore to previous pointer */
+			list->preallocated = temp;
+
+			/* reduce noddes available */
+			list->available = 0;
+			list->allocated--;
+
+			return;
+		}
+	} /* end */
+
+	/* reached this point, alloc operation worked */
+
 	/* allocate a node for each available position */
+	available = list->available;
 	for (iterator = 0; iterator < list->available; iterator++) {
+		/* alloc node */
 		list->preallocated[iterator] = axl_new (axlListNode, 1);
-	}
+
+		/* check alloc operation */
+		if (list->preallocated[iterator] == NULL) {
+			available--;
+		} /* end if */
+	} /* end if */
+
+	/* update list of available nodes */
+	list->available = available;
 	
 	return;
 }
@@ -153,8 +188,14 @@ axlListNode * __axl_list_get_next_node_available (axlList * list)
 	axlListNode * node;
 
 	/* check that there are nodes available */
-	if (list->available == 0) 
+	if (list->available == 0) {
+		/* alloc nodes */
 		__axl_list_allocate_nodes (list);
+
+		/* check if there are available nodes */
+		if (list->available == 0)
+			return NULL;
+	} /* end if */
 	
 	/* get the next node available */
 	node = list->preallocated[list->available - 1];
@@ -263,7 +304,11 @@ axlList * axl_list_new    (axlEqualFunc are_equal, axlDestroyFunc destroy_data)
 
 	axl_return_val_if_fail (are_equal, NULL);
 
+	/* alloc node */
 	result               = axl_new (axlList, 1);
+	/* check alloc operation */
+	if (result == NULL)
+		return NULL;
 	result->are_equal    = are_equal;
 	result->destroy_data = destroy_data;
 
@@ -476,6 +521,9 @@ void      axl_list_add    (axlList * list, axlPointer pointer)
 	axl_return_if_fail (list);
 	
 	new_node         = __axl_list_get_next_node_available (list); 
+	/* check returned node */
+	if (new_node == NULL)
+		return;
 	new_node->data   = pointer;
 	
 	/* check basic case */
@@ -607,6 +655,9 @@ void       axl_list_add_at (axlList * list, axlPointer pointer, int position)
 	
 	/* allocate a new node */
 	new_node         = __axl_list_get_next_node_available (list); 
+	/* check returned node */
+	if (new_node == NULL)
+		return;
 	new_node->data   = pointer;
 	
 
@@ -658,6 +709,9 @@ void       axl_list_prepend (axlList * list, axlPointer pointer)
 	
 	/* simulate adding the node at the first position */
 	new_node         = __axl_list_get_next_node_available (list); 
+	/* check returned node */
+	if (new_node == NULL)
+		return;
 	new_node->data   = pointer;
 
 	/* make the new node the be the first one */
@@ -695,6 +749,9 @@ void       axl_list_append  (axlList * list, axlPointer pointer)
 	
 	/* simulate adding the node at the first position */
 	new_node         = __axl_list_get_next_node_available (list); 
+	/* check allocated node */
+	if (new_node == NULL)
+		return;
 	new_node->data   = pointer;
 
 	/* make the new node the be the first one */
