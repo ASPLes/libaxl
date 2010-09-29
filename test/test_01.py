@@ -725,6 +725,20 @@ def py_test_04():
         iterator += 1
 
     return True
+
+def py_test_05 ():
+    # create empty node 
+    node = axl.Node ("test")
+
+    # set is as child
+    node.set_child (axl.Node ("test2"))
+
+    # query empty
+    node.child_called ("test")
+    node.child_called ("test")
+
+    del node
+    return True
     
     
 
@@ -777,7 +791,8 @@ tests = [
     (py_test_01, "Check PyAxlNode type attributes"),
     (py_test_02, "Check PyAxlNode replace, deattach, set_child_after method"),
     (py_test_03, "Check PyAxlNode and PyAxlDoc relation"),
-    (py_test_04, "Check PyAxlNode reference after PyAxlDoc reference finish")
+    (py_test_04, "Check PyAxlNode reference after PyAxlDoc reference finish"),
+    (py_test_05, "Check PyAxlNode setting childs references crated")
 ]
 
 info (" LibAxl: Another XML library (regression test).")

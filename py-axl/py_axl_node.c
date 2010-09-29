@@ -398,7 +398,7 @@ static PyObject * py_axl_node_set_child (PyObject * _self, PyObject * args)
 	/* and make the node to not release its internal node when it
 	 * is deallocated to avoid the node finishing the reference
 	 * that was finished by the document holding */
-	if (axl_node_get_doc (py_axl_node_get (_self)))
+	if (axl_node_get_doc (py_axl_node_get (_self)) || self->finish_on_gc)
 		((PyAxlNode *)(child))->finish_on_gc = axl_false;
 	
 	/* return ok */
@@ -428,7 +428,7 @@ static PyObject * py_axl_node_set_child_after (PyObject * _self, PyObject * args
 	/* and make the node to not release its internal node when it
 	 * is deallocated to avoid the node finishing the reference
 	 * that was finished by the document holding */
-	if (axl_node_get_doc (py_axl_node_get (child))) 
+	if (axl_node_get_doc (py_axl_node_get (_self)) || self->finish_on_gc)
 		((PyAxlNode *)(child))->finish_on_gc = axl_false;
 	
 	/* return ok */
