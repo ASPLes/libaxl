@@ -358,6 +358,11 @@ static PyObject * py_axl_node_attr_value (PyObject * _self, PyObject * args)
 	char       * attr_name  = NULL;
 	char       * attr_value = NULL;
 
+	if (self->node == NULL) {
+		Py_INCREF (Py_None);
+		return Py_None;
+	} /* end if */
+
 	/* parse and check result */
 	if (! PyArg_ParseTuple (args, "s|s", &attr_name, &attr_value))
 		return NULL;
@@ -380,6 +385,11 @@ static PyObject * py_axl_node_set_child (PyObject * _self, PyObject * args)
 {
 	PyAxlNode  * self      = (PyAxlNode *) _self;
 	PyObject   * child     = Py_None;
+
+	if (self->node == NULL) {
+		Py_INCREF (Py_None);
+		return Py_None;
+	} /* end if */
 
 	/* parse and check result */
 	if (! PyArg_ParseTuple (args, "O", &child))
