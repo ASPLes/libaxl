@@ -5999,6 +5999,27 @@ axl_bool test_01_03_vargs (const char * format, ...)
 	return axl_true;
 }
 
+axl_bool test_01_03_replace_check (const char * _source, const char * string, const char * replacement, int check_size, const char * result_string)
+{
+	char * source;
+	int    res;
+	
+	source = axl_strdup (_source);
+	res    = axl_stream_replace (&source, -1, string, -1, replacement, -1);
+	if (res != check_size) {
+		printf ("ERROR: expected to find %d bytes but found %d at the replacement\n", check_size, res);
+		return axl_false;
+	}
+	/* check replacement */
+	if (! axl_cmp (source, result_string)) {
+		printf ("ERROR: expected to find '%s' but found '%s'\n", "This is a prueba", string);
+		return axl_false;
+	}
+	axl_free (source);
+
+	return axl_true;
+}
+
 /** 
  *
  * @brief Checks some internal functions that the library provides to
@@ -6724,6 +6745,20 @@ axl_bool test_01_03 ()
 
 	axl_free (string);
 
+
+	/* check replacement */
+	if (! test_01_03_replace_check ("This is a test", "test", "prueba", 16, "This is a prueba"))
+		return axl_false;
+
+	/* source, string, replace, check_size, result */
+	if (! test_01_03_replace_check ("test", "test", "prueba", 6, "prueba"))
+		return axl_false;
+
+	if (! test_01_03_replace_check ("We are going to replace o o this is a test", "o", "####", 54, "We are g####ing t#### replace #### #### this is a test"))
+		return axl_false;
+
+	if (! test_01_03_replace_check ("We are g####ing t#### replace #### #### this is a test", "####", "o", 42, "We are going to replace o o this is a test"))
+		return axl_false;
 
 	return axl_true;
 }
@@ -8772,6 +8807,8 @@ int main (int argc, char ** argv)
 	printf ("** Report bugs to:\n**\n");
 	printf ("**     <axl@lists.aspl.es> Axl mailing list\n**\n");
 
+
+	goto init;
 	
 	/* initialize axl library */
 	if (! axl_init ()) {
@@ -8794,12 +8831,16 @@ int main (int argc, char ** argv)
 		return -1;
 	}
 
+ init:
+
 	if (test_01_03 ()) {
 		printf ("Test 01-03: LibAxl string functions    [   OK   ]\n");
 	}else {
 		printf ("Test 01-03: LibAxl string functions    [ FAILED ]\n");
 		return -1;
 	}
+
+	return 0;
 
 	if (test_01_04 ()) {
 		printf ("Test 01-04: LibAxl list implementation (II) [   OK   ]\n");
