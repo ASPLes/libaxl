@@ -3007,6 +3007,118 @@ char      * axl_stream_join            (char      ** strings,
 }
 
 /** 
+ * @brief Allows to replace the provided string by the provided
+ * replacement on the provided source string, doing the replacement in
+ * an effective manner.
+ *
+ * @param source The source string where to look and replace. The
+ * result will be reported as a new pointer on this parameter. The
+ * function will dealloc previous string (passed in source).
+ *
+ * @param source_len The replace function can handle binary
+ * strings. This parameter signals the function how many bytes are
+ * found on the source pointer.
+ *
+ * @param string The string that will be looked for replacement. The
+ * string can be binary data but its length must be configured.
+ *
+ * @param string_len String length or -1. The string parameter can be
+ * binary data (may include \0) but length must be especified. If -1
+ * is provided, the function will use strlen () to get current string
+ * size.
+ *
+ * @param replacement The replace string. The replacement can be
+ * binary data but its length must be configured.
+ *
+ * @param replacement_len Replacement string length or -1. The
+ * replacement parameter can be binary data (may include \0) but
+ * length must be especified. If -1 is provided, the function will use
+ * strlen () to get current string size.
+ *
+ * @return The function returns the new size of the string. The
+ * function returns the same source length when no replacement was
+ * done. The function return -1 in the case some argument is NULL.
+ */
+int  axl_stream_replace         (char ** source, int source_len, 
+				 const char * string, int string_len, 
+				 const char * replacement, int replacement_len)
+{
+	int    iterator;
+	int    iterator2;
+	int    count;
+	char * result;
+	int    old_source_len;
+
+	/* check arguments */
+	axl_return_val_if_fail (source && string && replacement, -1);
+
+	/* get sizes if not configured */
+	if (source_len == -1)
+		source_len = strlen (*source);
+	if (string_len == -1)
+		string_len = strlen (string);
+	if (replacement_len == -1)
+		replacement_len = strlen (replacement);
+
+	/* find how many strings must be replaced */
+	iterator = 0;
+	count    = 0;
+	while (iterator < source_len) {
+		/* check if the string is found */
+		if (axl_memcmp ((*source) + iterator, string, string_len)) {
+			/* string found ! */
+			count++;
+			
+			/* skip these bytes */
+			iterator += string_len;
+			continue;
+		}
+
+		/* next position */
+		iterator++;
+	} /* end while */
+
+	/* update source length */
+	old_source_len = source_len;
+	if (replacement_len > string_len)
+		source_len = source_len + ((replacement_len - string_len) * count);
+	else
+		source_len = source_len + ((string_len - replacement_len) * count);
+
+	/* alloc memory for the replacement */
+	result     = axl_new (char, source_len + 1);
+
+	/* do replacement */
+	iterator  = 0;
+	iterator2 = 0;
+	while ((iterator + string_len - 1) < (old_source_len)) {
+		/* check if the string is found */
+		if (axl_memcmp ((*source) + iterator, string, string_len)) {
+			/* string found!, replace */
+			memcpy (result + iterator2, replacement, replacement_len);
+			
+			/* skip these bytes */
+			iterator  += string_len;
+			iterator2 += replacement_len;
+			continue;
+		}
+
+		/* copy byte by byte */
+		result[iterator2] = (*source)[iterator];
+
+		/* next position */
+		iterator++;
+		iterator2++;
+	} /* end while */
+
+	/* release and report new string */
+	axl_free (*source);
+	*source = result;
+
+	return source_len;
+}
+
+/** 
  * @brief Allows to concatenate the two given strings into a single
  * one.
  *

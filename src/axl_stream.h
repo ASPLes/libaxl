@@ -207,6 +207,10 @@ void        axl_stream_clean_split     (char ** split);
 
 char      * axl_stream_join            (char ** strings, const char * separator);
 
+int         axl_stream_replace         (char ** source, int source_len, 
+					const char * string, int string_len, 
+					const char * replacement, int replacement_len);
+
 char      * axl_stream_concat          (const char * chunk1, const char * chunk2);
 
 int         axl_stream_strv_num        (char ** chunks);
