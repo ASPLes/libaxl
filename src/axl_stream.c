@@ -3037,11 +3037,11 @@ char      * axl_stream_join            (char      ** strings,
  *
  * @return The function returns the new size of the string. The
  * function returns the same source length when no replacement was
- * done. The function return -1 in the case some argument is NULL.
+ * done. The function return source_len in the case some argument is NULL.
  */
-int  axl_stream_replace         (char ** source, int source_len, 
-				 const char * string, int string_len, 
-				 const char * replacement, int replacement_len)
+int  axl_stream_replace         (char        ** source,      int source_len, 
+				 const char   * string,      int string_len, 
+				 const char   * replacement, int replacement_len)
 {
 	int    iterator;
 	int    iterator2;
@@ -3050,7 +3050,7 @@ int  axl_stream_replace         (char ** source, int source_len,
 	int    old_source_len;
 
 	/* check arguments */
-	axl_return_val_if_fail (source && string && replacement, -1);
+	axl_return_val_if_fail (source && string && replacement, source_len);
 
 	/* get sizes if not configured */
 	if (source_len == -1)

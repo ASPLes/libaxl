@@ -289,6 +289,17 @@ axl_bool    axl_stream_content_check       (axlStream   * stream,
  */
 #define     axl_split  axl_stream_split
 
+/** 
+ * @brief Simple macro that implements a non-binary string replace. To
+ * use it:
+ * \code
+ * axl_replace (source, string, replacement);
+ * axl_replace (source, "test", "..test..");
+ * \endcode
+ * See \ref axl_stream_replace for more info.
+ */
+#define axl_replace(source,string,replacement) axl_stream_replace(&source,-1,string,-1,replacement,-1)
+
 /**
  * @brief Alias definition for the \ref axl_stream_freev.
  */
