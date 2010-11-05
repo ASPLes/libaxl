@@ -6003,6 +6003,8 @@ axl_bool test_01_03_replace_check (const char * _source, const char * string, co
 {
 	char * source;
 	int    res;
+
+	printf ("Test 01-03: Checking %s (%s -> %s)\n", _source, string, replacement);
 	
 	source = axl_strdup (_source);
 	res    = axl_stream_replace (&source, -1, string, -1, replacement, -1);
@@ -6012,7 +6014,7 @@ axl_bool test_01_03_replace_check (const char * _source, const char * string, co
 	}
 	/* check replacement */
 	if (! axl_cmp (source, result_string)) {
-		printf ("ERROR: expected to find '%s' but found '%s'\n", "This is a prueba", string);
+		printf ("ERROR: expected to find '%s' but found '%s'\n", result_string, source);
 		return axl_false;
 	}
 	axl_free (source);
@@ -6747,17 +6749,26 @@ axl_bool test_01_03 ()
 
 
 	/* check replacement */
-	if (! test_01_03_replace_check ("This is a test", "test", "prueba", 16, "This is a prueba"))
+	if (! test_01_03_replace_check ("1) This is a test", "test", "prueba", 19, "1) This is a prueba"))
 		return axl_false;
 
 	/* source, string, replace, check_size, result */
 	if (! test_01_03_replace_check ("test", "test", "prueba", 6, "prueba"))
 		return axl_false;
 
-	if (! test_01_03_replace_check ("We are going to replace o o this is a test", "o", "####", 54, "We are g####ing t#### replace #### #### this is a test"))
+	if (! test_01_03_replace_check ("3) We are going to replace o o this is a test", "o", "####", 57, "3) We are g####ing t#### replace #### #### this is a test"))
 		return axl_false;
 
-	if (! test_01_03_replace_check ("We are g####ing t#### replace #### #### this is a test", "####", "o", 42, "We are going to replace o o this is a test"))
+	if (! test_01_03_replace_check ("4) We are g####ing t#### replace #### #### this is a test", "####", "o", 45, "4) We are going to replace o o this is a test"))
+		return axl_false;
+
+	if (! test_01_03_replace_check ("oooo", "o", "i", 4, "iiii"))
+		return axl_false;
+
+	if (! test_01_03_replace_check ("oooo", "o", "ii", 8, "iiiiiiii"))
+		return axl_false;
+
+	if (! test_01_03_replace_check (" tes", "test", "asdfsdf", 4, " tes"))
 		return axl_false;
 
 	return axl_true;
@@ -8808,8 +8819,6 @@ int main (int argc, char ** argv)
 	printf ("**     <axl@lists.aspl.es> Axl mailing list\n**\n");
 
 
-	goto init;
-	
 	/* initialize axl library */
 	if (! axl_init ()) {
 		printf ("Unable to initialize Axl library\n");
@@ -8831,16 +8840,12 @@ int main (int argc, char ** argv)
 		return -1;
 	}
 
- init:
-
 	if (test_01_03 ()) {
 		printf ("Test 01-03: LibAxl string functions    [   OK   ]\n");
 	}else {
 		printf ("Test 01-03: LibAxl string functions    [ FAILED ]\n");
 		return -1;
 	}
-
-	return 0;
 
 	if (test_01_04 ()) {
 		printf ("Test 01-04: LibAxl list implementation (II) [   OK   ]\n");

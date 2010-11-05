@@ -3063,7 +3063,7 @@ int  axl_stream_replace         (char ** source, int source_len,
 	/* find how many strings must be replaced */
 	iterator = 0;
 	count    = 0;
-	while (iterator < source_len) {
+	while ((iterator + string_len - 1) < source_len) {
 		/* check if the string is found */
 		if (axl_memcmp ((*source) + iterator, string, string_len)) {
 			/* string found ! */
@@ -3078,12 +3078,13 @@ int  axl_stream_replace         (char ** source, int source_len,
 		iterator++;
 	} /* end while */
 
+	/* check if we have found some to replace */
+	if (count == 0)
+		return source_len;
+
 	/* update source length */
 	old_source_len = source_len;
-	if (replacement_len > string_len)
-		source_len = source_len + ((replacement_len - string_len) * count);
-	else
-		source_len = source_len + ((string_len - replacement_len) * count);
+	source_len     = source_len - (string_len * count) + (replacement_len * count);
 
 	/* alloc memory for the replacement */
 	result     = axl_new (char, source_len + 1);
@@ -3091,9 +3092,9 @@ int  axl_stream_replace         (char ** source, int source_len,
 	/* do replacement */
 	iterator  = 0;
 	iterator2 = 0;
-	while ((iterator + string_len - 1) < (old_source_len)) {
+	while (iterator < old_source_len) {
 		/* check if the string is found */
-		if (axl_memcmp ((*source) + iterator, string, string_len)) {
+		if (((iterator + string_len - 1) < old_source_len) && axl_memcmp ((*source) + iterator, string, string_len)) {
 			/* string found!, replace */
 			memcpy (result + iterator2, replacement, replacement_len);
 			
