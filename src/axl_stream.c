@@ -1504,8 +1504,10 @@ char * __axl_stream_get_untilv_wide (axlStream * stream, va_list args)
 			}
 			
 			/* in the case a memory chunk is being read */
-			if (stream->accept_terminator)
+			if (stream->accept_terminator) {
 				stream->stream_index     += length;
+				stream->global_index     += length;
+			}
 			stream->stream_index             += index;
 			stream->global_index             += index;
 			stream->previous_inspect          = 0;
