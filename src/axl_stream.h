@@ -57,7 +57,6 @@ axlStream * axl_stream_new             (const char  * stream_source,
 int         axl_stream_inspect         (axlStream * stream, const char * chunk, int inspected_size);
 
 int         axl_stream_inspect_code    (axlStream * stream, char value, int index_desp);
-
 int         axl_stream_peek            (axlStream * stream, const char * chunk, int inspected_size);
 
 int         axl_stream_inspect_several (axlStream * stream, int chunk_num, ...);
