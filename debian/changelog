@@ -1,3 +1,21 @@
+libaxl (0.6.4-lenny0) stable; urgency=low
+
+  * New upstream update.
+
+ -- Francis Brosnan <francis@aspl.es>  Thu, 27 Jan 2011 17:42:23 +0100
+
+libaxl (0.6.3-lenny4) stable; urgency=low
+
+  * New upstream update.
+
+ --  <francis@aspl.es>  Thu, 11 Nov 2010 17:20:30 +0100
+
+libaxl (0.6.3-lenny3) stable; urgency=low
+
+  * New upstream update
+
+ -- Francis Brosnan <francis@aspl.es>  Mon, 04 Oct 2010 13:20:38 +0200
+
 libaxl (0.6.3-lenny2) stable; urgency=low
 
   * New upstream version.
