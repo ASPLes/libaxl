@@ -1306,6 +1306,15 @@ axl_bool          axl_node_has_attribute      (axlNode * node, const char * attr
 	return axl_hash_exists ((axlHash *) node->attributes, (axlPointer) attribute);
 }
 
+axl_bool __axl_node_remove_attribute_reinsert  (axlPointer key, axlPointer data, axlPointer user_data)
+{
+	
+	/* re-add attributes into the node */
+	axl_node_set_attribute (user_data, key, data);
+
+	return axl_false; /* do not stop until process all nodes */
+}
+
 /** 
  * @brief Allows to remove the provided attribute, from the node
  * provided.
@@ -1320,6 +1329,7 @@ void      axl_node_remove_attribute         (axlNode    * node,
 {
 	axlNodeAttr * attr;
 	axlNodeAttr * previous;
+	axlHash     * temp;
 
 	axl_return_if_fail (node);
 	axl_return_if_fail (attribute);
@@ -1351,6 +1361,9 @@ void      axl_node_remove_attribute         (axlNode    * node,
 					axl_free (attr->value);
 					axl_free (attr);
 				} /* end if */
+
+				/* update attribute count */
+				node->attr_num--;
 				
 				return;
 			}
@@ -1367,9 +1380,25 @@ void      axl_node_remove_attribute         (axlNode    * node,
 	/* hashed configuration */
 	axl_hash_remove ((axlHash *) node->attributes, (axlPointer) attribute);
 
-	/* do not decrease attribute number
-	 * since it is used to know the kind
-	 * of store used. */
+	/* update attributes stored */
+	
+	node->attr_num = axl_hash_items ((axlHash *) node->attributes);
+
+	/* if we have fewer than the provided number, rebuild structure */
+	if (node->attr_num == 10) {
+		/* reconvert attribute format */
+		temp = (axlHash *) node->attributes;
+		node->attributes = NULL;
+		node->attr_num   = 0;
+		
+		/* reinsert nodes */
+		axl_hash_foreach (temp, __axl_node_remove_attribute_reinsert, node);
+
+		/* release hash */
+		axl_hash_free (temp);
+
+		printf ("Number of items after reinserting..%d\n", node->attr_num);
+	} /* end if */
 	
 	return;
 }
@@ -1385,24 +1414,10 @@ void      axl_node_remove_attribute         (axlNode    * node,
  */
 int       axl_node_num_attributes           (axlNode    * node)
 {
-	int           result = 0;
-	axlNodeAttr * attr;
-
 	axl_return_val_if_fail (node, -1);
 
 	if (node->attr_num <= 10) {
-		/* linked configuration */
-		attr     = (axlNodeAttr *) node->attributes;
-		while (attr != NULL) {
-			/* update sum */
-			result++;
-
-			/* get the next attribute */
-			attr     = attr->next;
-		} /* end while */
-
-		/* attribute not found */
-		return result;
+		return node->attr_num;
 	} /* end if */
 
 	/* hashed configuration */
