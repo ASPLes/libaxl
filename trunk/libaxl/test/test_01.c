@@ -2105,10 +2105,13 @@ axl_bool test_22 (axlError ** error)
 		axl_error_new (-1, "Expected to find 11 attributes", NULL, error);
 		return axl_false;
 	}
+	
+	printf ("Test 22: removing attribute 1, current attributes are %d\n", axl_node_num_attributes (node));
 	axl_node_remove_attribute (node, "attribute1");
+	printf ("Test 22: after removing attribute 1, current attributes are %d\n", axl_node_num_attributes (node));
 
 	if (axl_node_num_attributes (node) != 10) {
-		axl_error_new (-1, "Expected to find 10 attributes", NULL, error);
+		axl_error_report (error, -1, "Expected to find 10 attributes, but found: %d", axl_node_num_attributes (node));
 		return axl_false;
 	}
 	
