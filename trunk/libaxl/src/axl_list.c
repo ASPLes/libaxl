@@ -430,7 +430,29 @@ int      axl_list_equal_string (axlPointer a, axlPointer b)
 }
 
 /** 
- * @brief Equal function that is preprated to receive to integers and
+ * @brief Works like \ref axl_list_equal_string but ordering strings
+ * stored.
+ *
+ * @param a The first string to compare.
+ * @param b The second string to compare.
+ *
+ * @return 0 if both are equal, -1 if a shold go before b and 1 if a
+ * should go after b.
+ */
+int axl_list_order_string (axlPointer a, axlPointer b)
+{
+	int value;
+
+	value = strcmp (a, b);
+	if (value == 0)
+		return value;
+	if (value > 0)
+		return -1;
+	return 1;
+}
+
+/** 
+ * @brief Equal function that is prepared to receive to integers and
  * return if they are equal.
  *
  * It is assumed that integers are stored in the list using the
