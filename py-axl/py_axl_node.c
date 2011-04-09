@@ -381,6 +381,31 @@ static PyObject * py_axl_node_attr_value (PyObject * _self, PyObject * args)
 	return Py_BuildValue ("z", ATTR_VALUE (self->node, attr_name));
 }
 
+static PyObject * py_axl_node_attr_value_trans (PyObject * _self, PyObject * args)
+{
+	PyAxlNode  * self      = (PyAxlNode *) _self;
+	char       * attr_name  = NULL;
+	char       * value;
+	PyObject   * result;
+
+	if (self->node == NULL) {
+		Py_INCREF (Py_None);
+		return Py_None;
+	} /* end if */
+
+	/* parse and check result */
+	if (! PyArg_ParseTuple (args, "s", &attr_name))
+		return NULL;
+
+	/* get attribute */
+	value  = axl_node_get_attribute_value_trans (self->node, attr_name);
+	result = Py_BuildValue ("z", value);
+
+	/* free value */
+	axl_free (value);
+	return result;
+}
+
 static PyObject * py_axl_node_set_child (PyObject * _self, PyObject * args)
 {
 	PyAxlNode  * self      = (PyAxlNode *) _self;
@@ -548,6 +573,9 @@ static PyMethodDef py_axl_node_methods[] = {
 	/* attr */
 	{"attr", (PyCFunction) py_axl_node_attr_value, METH_VARARGS,
 	 "Allows to get/set the given attribute on the provided node."},
+	/* attr_trans */
+	{"attr_trans", (PyCFunction) py_axl_node_attr_value_trans, METH_VARARGS,
+	 "Allows to get the given attribute on the provided node translate entity references ' < & >."},
 	/* set_child */
 	{"set_child", (PyCFunction) py_axl_node_set_child, METH_VARARGS,
 	 "Allows to configure the provided node as the instance's child."},
