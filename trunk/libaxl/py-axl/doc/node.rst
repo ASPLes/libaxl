@@ -108,7 +108,16 @@ Module API
       :param value: If provided, allows to configure the value on the attribute (attr_name).
       :type  value: String
 
-      :rtype: Returns an instance of :class:`axl.Node` or None if no node was found.
+      :rtype: Returns a string if only one parameter is provided representing the attribute value or None if attribute and value are provided.
+
+   .. method:: attr_trans (attr_name)
+   
+      Gets the attribute content for the provided attribute name, at the provided node, but translating entity references found. 
+
+      :param attr_name: the attribute name to get its value.
+      :type  attr_name: String
+
+      :rtype: Returns a string or None representing the attribute value.
 
    .. method:: set_child (node)
    
