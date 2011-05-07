@@ -406,6 +406,29 @@ static PyObject * py_axl_node_attr_value_trans (PyObject * _self, PyObject * arg
 	return result;
 }
 
+static PyObject * py_axl_node_str (PyObject * _self)
+{
+	char      * dump   = NULL;
+	PyAxlNode * self   = (PyAxlNode *) _self;
+	PyObject  * result = NULL;
+
+	if (self == NULL || self->node == NULL) {
+		Py_INCREF (Py_None);
+		return Py_None;
+	}
+	
+	if (! axl_node_dump_pretty (self->node, &dump, NULL, 4)) {
+		Py_INCREF (Py_None);
+		return Py_None;
+	}
+
+	result = Py_BuildValue ("z", dump);
+	axl_free (dump);
+	return result;
+}
+
+
+
 static PyObject * py_axl_node_set_child (PyObject * _self, PyObject * args)
 {
 	PyAxlNode  * self      = (PyAxlNode *) _self;
@@ -617,7 +640,7 @@ static PyTypeObject PyAxlNodeType = {
     0,                         /* tp_as_mapping*/
     0,                         /* tp_hash */
     0,                         /* tp_call*/
-    0,                         /* tp_str*/
+    py_axl_node_str,           /* tp_str*/
     py_axl_node_get_attr,    /* tp_getattro*/
     py_axl_node_set_attr,    /* tp_setattro*/
     0,                         /* tp_as_buffer*/

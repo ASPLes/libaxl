@@ -332,6 +332,28 @@ static PyMethodDef py_axl_doc_methods[] = {
  	{NULL, NULL, 0, NULL}  
 }; 
 
+static PyObject * py_axl_doc_str (PyObject * _self)
+{
+	char      * dump   = NULL;
+	int         size   = 0;
+	PyAxlDoc  * self   = (PyAxlDoc *) _self;
+	PyObject  * result = NULL;
+
+	if (self == NULL || self->doc == NULL) {
+		Py_INCREF (Py_None);
+		return Py_None;
+	}
+	
+	if (! axl_doc_dump_pretty (self->doc, &dump, &size, 4)) {
+		Py_INCREF (Py_None);
+		return Py_None;
+	}
+
+	result = Py_BuildValue ("z", dump);
+	axl_free (dump);
+	return result;
+}
+
 static PyTypeObject PyAxlDocType = {
     PyObject_HEAD_INIT(NULL)
     0,                         /* ob_size*/
@@ -349,7 +371,7 @@ static PyTypeObject PyAxlDocType = {
     0,                         /* tp_as_mapping*/
     0,                         /* tp_hash */
     0,                         /* tp_call*/
-    0,                         /* tp_str*/
+    py_axl_doc_str,            /* tp_str*/
     py_axl_doc_get_attr,    /* tp_getattro*/
     py_axl_doc_set_attr,    /* tp_setattro*/
     0,                         /* tp_as_buffer*/
