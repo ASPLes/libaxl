@@ -1,3 +1,9 @@
+libaxl (0.6.4-squeeze1) stable; urgency=low
+
+  * Latest changes from SVN.
+
+ -- Francis Brosnan <francis@aspl.es>  Sat, 14 May 2011 12:19:02 +0200
+
 libaxl (0.6.4-lenny0) stable; urgency=low
 
   * New upstream update.
