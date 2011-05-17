@@ -74,6 +74,7 @@ __axl_node_free_attr_list
 __axl_node_free_internal
 __axl_node_get_flat_size_attributes
 __axl_node_get_flat_size_attributes_foreach
+__axl_node_remove_attribute_reinsert
 __axl_node_set_attribute
 __axl_node_set_content_common_ref
 __axl_stack_foreach_common
@@ -270,6 +271,7 @@ axl_list_is_empty
 axl_list_length
 axl_list_lookup
 axl_list_new
+axl_list_order_string
 axl_list_prepend
 axl_list_remove
 axl_list_remove_at
