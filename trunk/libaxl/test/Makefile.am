@@ -52,7 +52,7 @@ BABEL = -DAXL_BABEL_SUPPORT
 BABEL_LIB = $(top_builddir)/babel/libaxl-babel.la
 endif
 
-INCLUDES = -DTEST_DIR=$(top_srcdir)/test -I$(top_srcdir)/src/ -I$(top_srcdir)/ns -I$(top_srcdir)/babel -Wall $(LOG) $(NS) $(BABEL) -DVERSION=\""$(AXL_VERSION)"\" -D__axl_disable_broken_bool_def__ 
+INCLUDES = -DTEST_DIR=$(top_srcdir)/test -I$(top_srcdir)/src/ -I$(top_srcdir)/ns -I$(top_srcdir)/babel $(compiler_options) $(LOG) $(NS) $(BABEL) -DVERSION=\""$(AXL_VERSION)"\" -D__axl_disable_broken_bool_def__ 
 
 # replace with bin_PROGRAMS to check performance
 noinst_PROGRAMS = test_01 test_01a test_02a test_03a
@@ -97,7 +97,7 @@ leak-check:
 	libtool --mode=execute valgrind --leak-check=yes ./test_01
 
 compref:
-	gcc -g -Wall `pkg-config --libs --cflags libxml-2.0` test_01b.c -o test_01b
-	gcc -g -Wall `pkg-config --libs --cflags libxml-2.0` test_02b.c -o test_02b
-	gcc -g -Wall  `pkg-config --libs --cflags glib-2.0` -I$(top_srcdir)/src $(top_builddir)/src/.libs/libaxl.so test_03c.c -o test_03c
+	$(compiler) $(compiler_options) `pkg-config --libs --cflags libxml-2.0` test_01b.c -o test_01b
+	$(compiler) $(compiler_options) `pkg-config --libs --cflags libxml-2.0` test_02b.c -o test_02b
+	$(compiler) $(compiler_options)  `pkg-config --libs --cflags glib-2.0` -I$(top_srcdir)/src $(top_builddir)/src/.libs/libaxl.so test_03c.c -o test_03c
 

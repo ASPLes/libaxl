@@ -5351,7 +5351,7 @@ axl_bool test_01f (axlError ** error)
  * 
  * @return axl_true if it works properly or axl_false if not.
  */
-axl_bool test_01_01 () 
+axl_bool test_01_01 (void) 
 {
 	axlList * list;
 	int       value;
@@ -5915,7 +5915,7 @@ axl_bool test_01_02_foreach (axlPointer stack_data,
  * @return axl_true if the stack works properly, otherwise axl_false
  * is returned.
  */
-axl_bool test_01_02 () 
+axl_bool test_01_02 (void) 
 {
 	axlStack * stack;
 	char     * value;
@@ -6033,7 +6033,7 @@ axl_bool test_01_03_replace_check (const char * _source, const char * string, co
  * @return The function must return axl_true if everything is
  * ok. Otherwise axl_false is returned.
  */
-axl_bool test_01_03 () 
+axl_bool test_01_03 (void) 
 {
 	char  * string;
 	char ** result;
@@ -6780,7 +6780,7 @@ axl_bool test_01_03 ()
 /** 
  * @brief Intensive axl list implementation.
  */
-axl_bool test_01_04 () {
+axl_bool test_01_04 (void) {
 	int             iterator = 0;
 	int             value;
 	axlList       * list;
@@ -6872,7 +6872,7 @@ axl_bool test_01_04 () {
 /** 
  * @brief Check axl list remove at API.
  */
-axl_bool test_01_04_a () {
+axl_bool test_01_04_a (void) {
 	axlList       * list;
 	char          * value;
 	char          * value2;
@@ -7006,7 +7006,7 @@ axl_bool test_01_04_a () {
  * 
  * @return \ref axl_true if ok, \ref axl_false on rainy days.
  */
-axl_bool test_01_05 () 
+axl_bool test_01_05 (void) 
 {
 	axlError * error = NULL;
 
@@ -7048,7 +7048,7 @@ void test_02_02_check_key (axlHash * hash, char * key)
  *
  * @return axl_true if it works properly or axl_false if not.
  */
-axl_bool test_02_02 () 
+axl_bool test_02_02 (void) 
 {
 	axlHash     * hash;
 	int           iterator;
@@ -8046,7 +8046,7 @@ axlPointer test_02_01_copy_value (axlPointer key, axlDestroyFunc key_destroy, ax
  * 
  * @return \ref axl_true if it was ok.
  */
-axl_bool test_02_01 () 
+axl_bool test_02_01 (void) 
 {
 	axlHash    * hash;
 	axlHash    * hash2;
@@ -8104,7 +8104,7 @@ axl_bool test_02_01 ()
  *
  * @return axl_true if it works properly or axl_false if not.
  */
-axl_bool test_02_03 () 
+axl_bool test_02_03 (void) 
 {
 	axlHash * hash;
 
@@ -8136,7 +8136,7 @@ axl_bool test_02_03 ()
 	return axl_true;
 }
 
-axl_bool test_02_03a ()
+axl_bool test_02_03a (void)
 {
 	axlHash * hash;
 
@@ -8206,7 +8206,7 @@ void show_item_test_02_04 (axlPointer key, axlPointer data)
 	__axl_log ("hash-test", AXL_LEVEL_DEBUG, "  %s -> %s", (char *) key, (char *) data);
 }
 
-axl_bool test_02_04 () 
+axl_bool test_02_04 (void) 
 {
 	axlHash * hash;
 	
@@ -8260,7 +8260,7 @@ axl_bool test_02_04 ()
 
 }
 
-axl_bool test_02_04_1 ()
+axl_bool test_02_04_1 (void)
 {
 	axlHash * hash;
 	int       iterator;
@@ -8476,7 +8476,7 @@ axl_bool test_02_04_1 ()
 	return axl_true;
 }
 
-axl_bool test_02_05 ()
+axl_bool test_02_05 (void)
 {
 	axlHash       * hash;
 	axlHashCursor * cursor;
@@ -8687,7 +8687,7 @@ axl_bool test_02_05 ()
  * 
  * @return axl_true if tests are ok.
  */
-axl_bool test_02_06 ()
+axl_bool test_02_06 (void)
 {
 	axl_bool         value;
 	axlBinaryStack * bstack;

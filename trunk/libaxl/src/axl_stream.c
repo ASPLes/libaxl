@@ -2602,11 +2602,11 @@ char      * axl_stream_strdup_printf   (const char * chunk, ...)
  * 
  * @return A newly allocated string.
  *
- * IMPLEMENTATION NOTE: This function have a fundamental bug due to
- * the design of va_list arguments under amd64 platforms. In short, a
- * function receiving a va_list argument can't use it twice. In you
+ * IMPLEMENTATION NOTE: This function may have a fundamental bug due
+ * to the design of va_list arguments under amd64 platforms. In short,
+ * a function receiving a va_list argument can't use it twice. In you
  * are running amd64, check your axl_config.h did find
- * AXL_HAVE_VASPRINTF. 
+ * AXL_HAVE_VASPRINTF.
  */
 char  * axl_stream_strdup_printfv    (const char * chunk, va_list args)
 {

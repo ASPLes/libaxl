@@ -12,7 +12,7 @@ NS = -DAXL_NS_SUPPORT
 NS_LIB = $(top_builddir)/ns/libaxl-ns.la
 endif
 
-INCLUDES = -I$(top_srcdir)/src/ -I$(top_srcdir)/ns -Wall $(LOG) $(NS) -DVERSION=\"$(AXL_VERSION)\" -D__COMPILING_AXL_KNIFE__ 	-D__axl_disable_broken_bool_def__  $(EXARG_FLAGS)
+INCLUDES = -I$(top_srcdir)/src/ -I$(top_srcdir)/ns $(compiler_options) $(LOG) $(NS) -DVERSION=\"$(AXL_VERSION)\" -D__COMPILING_AXL_KNIFE__ 	-D__axl_disable_broken_bool_def__  $(EXARG_FLAGS)
 
 # replace with bin_PROGRAMS to check performance
 bin_PROGRAMS = axl-knife

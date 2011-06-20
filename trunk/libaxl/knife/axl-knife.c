@@ -495,7 +495,7 @@ axl_bool axl_knife_htmlize (axlDoc * doc)
 	return axl_true;
 }
 
-axl_bool axl_knife_dtd_to_c ()
+axl_bool axl_knife_dtd_to_c (void)
 {
 	
 	/* check the document received is a DTD */
