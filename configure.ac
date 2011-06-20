@@ -60,10 +60,18 @@ AM_PATH_PYTHON([2.3])
 # find python-config
 PYTHON_CONFIG=`./get-python-config`
 
+compiler_options=""
+STRICT_PROTOTYPES=""
+if test "$compiler" = "gcc" ; then
+   compiler_options="-Wstrict-prototypes -Wall -Werror -g -ansi"
+   echo "Detected gcc compiler: $compiler, adding options: $compiler_options"
+fi
+AC_SUBST(compiler_options)
+
 # get python includes 
 PYTHON_INCLUDES=`$PYTHON_CONFIG --includes 2>/dev/null`
 old_CPPFLAGS=$CPPFLAGS
-CPPFLAGS="-Wall -Werror $PYTHON_INCLUDES"
+CPPFLAGS="$WALL $WERROR $PYTHON_INCLUDES"
 echo "Python includes: $PYTHON_INCLUDES"
 AC_SUBST(PYTHON_INCLUDES)
 
@@ -288,6 +296,7 @@ echo "------------------------------------------"
 echo "--       LibAXL LIBRARY SETTINGS        --"
 echo "------------------------------------------"
 echo "   Installation prefix:          [$prefix]"
+echo "   Compiler:                     [$compiler]"
 echo "   Build Axl Namespace support:  [$enable_axl_ns]"
 echo "   Build Axl Library tests:      [$enable_axl_test]"
 echo "   Build Axl Knife:              [$enable_axl_knife]"

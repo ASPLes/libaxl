@@ -4,8 +4,8 @@ if ENABLE_AXL_LOG
 LOG = -DSHOW_DEBUG_LOG
 endif
 
-INCLUDES = -Wall -g -I$(top_srcdir)/src -I$(top_srcdir) $(LIBRARIES_CFLAGS) -DVERSION=\""$(AXL_VERSION)"\" \
-	-DPACKAGE_DTD_DIR=\""$(datadir)"\" -DPACKAGE_TOP_DIR=\""$(top_srcdir)"\" -Wall -ansi \
+INCLUDES = $(WALL) -g -I$(top_srcdir)/src -I$(top_srcdir) $(LIBRARIES_CFLAGS) -DVERSION=\""$(AXL_VERSION)"\" \
+	-DPACKAGE_DTD_DIR=\""$(datadir)"\" -DPACKAGE_TOP_DIR=\""$(top_srcdir)"\" $(ANSI) \
 	-D__axl_disable_broken_bool_def__ \
 	-DVERSION=\"$(AXL_VERSION)\" $(LOG)
 

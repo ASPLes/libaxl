@@ -94,7 +94,7 @@ axl_bool        axl_babel_init (axlError ** error)
  * @brief Remove handlers installed and babel configuration from base
  * library.
  */
-void        axl_babel_finish ()
+void        axl_babel_finish (void)
 {
 	/* call to configure babel */
 	axl_doc_set_detect_codification_func    (NULL, NULL);

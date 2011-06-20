@@ -68,7 +68,7 @@ typedef struct _axlBabelTable {
 
 axl_bool    axl_babel_init (axlError ** error);
 
-void        axl_babel_finish ();
+void        axl_babel_finish (void);
 
 axl_bool    axl_babel_detect_codification (axlStream   * stream, 
 					   const char ** encoding,

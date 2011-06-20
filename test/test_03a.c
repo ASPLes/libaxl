@@ -37,7 +37,7 @@ void test_01_check_key (axlList * list, char * key)
  *
  * @return axl_true if it works properly or axl_false if not.
  */
-axl_bool test_01 () 
+axl_bool test_01 (void) 
 {
 	axlList * list;
 	int       iterator;
