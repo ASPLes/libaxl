@@ -55,10 +55,40 @@ AC_CHECK_SIZEOF(long)
 AC_CHECK_SIZEOF(int)
 AC_CHECK_SIZEOF(void *)
 
-AM_PATH_PYTHON([2.3])
+dnl check for py-axl support
+AC_ARG_ENABLE(py-axl,   [   --disable-py-axl       Makes Axl Library to be build without PyAxl: python bindings support],
+              enable_py_axl_support="$enableval",
+	      enable_py_axl_support=yes)
+AM_CONDITIONAL(ENABLE_PY_AXL_SUPPORT, test "x$enable_py_axl_support" = "xyes")
+if test "$enable_py_axl_support" = "yes" ; then
+   AM_PATH_PYTHON([2.3])
 
-# find python-config
-PYTHON_CONFIG=`./get-python-config`
+   # find python-config
+   PYTHON_CONFIG=`./get-python-config`
+
+   # get python includes 
+   PYTHON_INCLUDES=`$PYTHON_CONFIG --includes 2>/dev/null`
+   old_CPPFLAGS=$CPPFLAGS
+   CPPFLAGS="$PYTHON_INCLUDES"
+   echo "Python includes: $PYTHON_INCLUDES"
+   AC_SUBST(PYTHON_INCLUDES)
+
+   AC_TRY_COMPILE([#include <Python.h>],
+      [Py_InitModule3(NULL, NULL, NULL);],
+      python_devel_found=yes,
+      python_devel_found=no)
+   AC_MSG_RESULT([Python development headers status: $python_devel_found])
+   if test "x$python_devel_found" = "xno"; then
+       AC_MSG_WARN([Cannot find Python.h header or current python development environment do not compile symbols required. On debian try to install python-dev package.])
+   fi
+
+   # get python flags and libs
+   PYTHON_CFLAGS=`$PYTHON_CONFIG --cflags 2>/dev/null | sed -r 's/\-arch (\d|\w)+ //g'`
+   PYTHON_LIBS=`$PYTHON_CONFIG --ldflags 2>/dev/null`
+   AC_SUBST(PYTHON_CFLAGS)
+   AC_SUBST(PYTHON_LIBS)
+fi
+AM_CONDITIONAL(ENABLE_PY_AXL, test "x$python_devel_found" = "xyes")
 
 compiler_options=""
 STRICT_PROTOTYPES=""
@@ -68,28 +98,6 @@ if test "$compiler" = "gcc" ; then
 fi
 AC_SUBST(compiler_options)
 
-# get python includes 
-PYTHON_INCLUDES=`$PYTHON_CONFIG --includes 2>/dev/null`
-old_CPPFLAGS=$CPPFLAGS
-CPPFLAGS="$WALL $WERROR $PYTHON_INCLUDES"
-echo "Python includes: $PYTHON_INCLUDES"
-AC_SUBST(PYTHON_INCLUDES)
-
-AC_TRY_COMPILE([#include <Python.h>],
-  [Py_InitModule3(NULL, NULL, NULL);],
-  python_devel_found=yes,
-  python_devel_found=no)
-AC_MSG_RESULT([Python development headers status: $python_devel_found])
-if test "x$python_devel_found" = "xno"; then
-   AC_MSG_WARN([Cannot find Python.h header or current python development environment do not compile symbols required. On debian try to install python-dev package.])
-fi
-
-# get python flags and libs
-PYTHON_CFLAGS=`$PYTHON_CONFIG --cflags 2>/dev/null | sed -r 's/\-arch (\d|\w)+ //g'`
-PYTHON_LIBS=`$PYTHON_CONFIG --ldflags 2>/dev/null`
-AC_SUBST(PYTHON_CFLAGS)
-AC_SUBST(PYTHON_LIBS)
-AM_CONDITIONAL(ENABLE_PY_AXL, test "x$python_devel_found" = "xyes")
 
 ##########################
 # Check for doxygen tool #
@@ -301,7 +309,7 @@ echo "   Build Axl Namespace support:  [$enable_axl_ns]"
 echo "   Build Axl Library tests:      [$enable_axl_test]"
 echo "   Build Axl Knife:              [$enable_axl_knife]"
 echo "   Build Axl Library debug log:  [$enable_axl_log]"
-echo "   Build PyAxl:                  [$python_devel_found]"
+echo "   Build PyAxl:                  [$enable_py_axl_support]"
 if test x$DOXYGEN = xyes ; then
    echo "   Build Axl Library doc:        enabled"
 else	    
