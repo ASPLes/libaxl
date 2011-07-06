@@ -1766,6 +1766,25 @@ int axl_doc_get_flat_size (axlDoc * doc)
 	return __axl_doc_get_flat_size_common (doc, axl_false, 0);
 }
 
+/** 
+ * @brief Allows to get how much will take the \ref axlDoc instance
+ * represented as an XML document in an storage device (like memory) using pretty print format.
+ *
+ * @param doc The \ref axlDoc reference that is being requested to return its size.
+ *
+ * @param tabular The amount of whitespaces to use for each single
+ * tabular unit.
+ * 
+ * @return The size the \ref axlDoc will represent, in a
+ * octect-counting, or -1 if fails. The function will only fail if the
+ * provided reference is NULL.
+ */
+int axl_doc_get_flat_size_pretty (axlDoc * doc, int tabular)
+{
+	/* use common implementation */
+	return __axl_doc_get_flat_size_common (doc, axl_true, tabular);
+}
+
 
 /** 
  * @brief Parse an XML entity that is hold inside the memory pointed

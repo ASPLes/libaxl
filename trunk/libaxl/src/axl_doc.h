@@ -80,6 +80,8 @@ axl_bool  axl_doc_dump_pretty_to_file      (axlDoc     * doc,
 
 int       axl_doc_get_flat_size            (axlDoc * doc);
 
+int       axl_doc_get_flat_size_pretty     (axlDoc * doc, int tabular);
+
 axl_bool  axl_doc_are_equal                (axlDoc * doc, 
 					    axlDoc * doc2);
 
