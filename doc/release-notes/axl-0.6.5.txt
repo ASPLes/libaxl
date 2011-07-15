@@ -1,0 +1,107 @@
+          ########################################
+          #             Axl Library              #
+          #             Stratosphere             #
+          #                0.6.5                 #
+          ########################################
+
+Advanced Software Production Line is proud to announce a new Axl
+Library release.
+
+Axl Library is a small and efficient XML toolkit, written in ANSI C,
+with support for Python bindings and released under the LGPL. It
+allows to produce efficient and clear code that handle XML data.
+
+The library was produced to support XML requirements needed by
+software developed by Advanced Software Production Line, S.L.
+
+At this moment the library is being used by Vortex Library, Af-Arch,
+Turbulence, Shaper, Fovap and Ju-Doc.
+
+Resources
+~~~~~~~~~
+
+   Axl Homepage
+   [ http://www.aspl.es/xml ]
+
+   Advanced Software Production Line, S.L.
+   [ http://www.aspl.es ]
+
+This release in short
+~~~~~~~~~~~~~~~~~~~~~
+  
+  New stable release that includes bug fixes and API updates to PyAxl.
+
+Changes from previous release 0.6.5
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* [fix] Minor bug fix to properly update internal node attribute count
+  when they are removed. Updated axl_node_remove_attribute and
+  axl_node_num_attributes.
+
+* [new] Added new axlList order function to order store string, API
+  added:
+
+    - axl_list_order_string
+  
+* [fix] Updated exarg.[ch] files with latest changes..
+
+* [fix] Making configure.ac to remove -arch options from python-config
+  --cflags command to avoid problems. Bug found at macosx
+  (i386). Reported by Ralf Konush.
+
+* [fix] Added new method to PyAxl node implementation to provide
+  access to axl_node_get_attribute_trans. API added:
+
+   - axl.Node.attr_trans
+
+  Updated documentation.
+
+* [new] Added support for tp_str handler for axl.Node and axl.Doc. Now
+  both objects dumps its content by simply calling print.
+
+* [fix] Adding fixed COPYING file with LGPL 2.1 license to avoid
+  confusion with automake placing on your code a link to v3 license...
+
+* [fix] General changes to accommodate the package to debian/squeeze.
+
+* [fix] Fixed wrong null pointer handling at PyVortexChannelPool
+  implementation..
+
+* [fix] Added gcc detection to avoid adding compilation flags that
+  aren't unrecognized by other compilers..
+
+* [fix] Making configure.ac to allow receiving --disable-py-axl to
+  avoid building python axl...
+
+* [fix] Adding check for pkg-config into configure.ac to warn the
+  user..
+
+* [fix] Updated axl doc API to provide a function to also calculate
+  document pretty print size. API added:
+
+   - axl_doc_get_flat_size_pretty
+
+* [fix] Updates to ensure .def files are always updated..
+
+
+About Advanced Software Production Line, S.L. (ASPL)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Advanced Software Production Line (ASPL) provides GNU/Linux support
+  and consulting services to enable organization to introduce
+  GNU/Linux into their processes, making other platforms to properly
+  interact with it.
+
+  Contact us, using English or Spanish, to get commercial support
+  and/or XML based development services.
+
+  You can reach us:
+
+       http://www.aspl.es - info@aspl.es
+
+  We hope Axl Library help you. Enjoy Axl Library!
+
+--
+Francis Brosnan Blázquez           - francis@aspl.es
+Advanced Software Production Line  - http://www.aspl.es
+15th jan 2011, Madrid (Spain)
