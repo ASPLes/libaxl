@@ -622,6 +622,10 @@ axl_bool            __axl_hash_remove_common       (axlHash    * hash,
 		hash->table [pos] = node->next;
 
 	remove_element:
+
+		/* decreases elements found */
+		hash->items--;
+
 		/* key destruction is defined */
 		if (node->key_destroy != NULL && remove)
 			node->key_destroy (node->key);
@@ -630,9 +634,6 @@ axl_bool            __axl_hash_remove_common       (axlHash    * hash,
 		if (node->data_destroy != NULL && remove)
 			node->data_destroy (node->data);
 
-		/* decreases elements found */
-		hash->items--;
-					
 		/* delete the node */
 		axl_factory_release_spare (hash->factory, node);  
 		/* axl_free (node); */
