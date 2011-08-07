@@ -99,6 +99,25 @@ axlPointer axl_list_get_nth   (axlList * list, int position);
 
 axlPointer axl_list_lookup    (axlList * list, axlLookupFunc func, axlPointer data);
 
+/** 
+ * @brief Convenient alias to axl_list_lookup to implement axlList foreach operation.
+ *
+ * Because \ref axl_list_lookup can be used to implement a foreach
+ * function (making \ref axlLookupFunc to always return axl_false)
+ * this alias exists to write code that is pretending doing a lookup
+ * (so developer can read it easily). That is, the alias just exists
+ * to allow writing \ref axl_list_foreach instead of \ref
+ * axl_list_lookup when a foreach is implemented (not a lookup).
+ *
+ * @param list The list where the foreach operation will take place.
+ *
+ * @param func The handler that will be called for each item found in the list.
+ *
+ * @param data Optional user pointer that will be passed to the
+ * foreach function along with the item list data.
+ */
+#define axl_list_foreach(list, func, data) axl_list_lookup(list,func,data)
+
 axl_bool   axl_list_find_string (axlPointer element, axlPointer data);
 
 int        axl_list_length (axlList * list);
