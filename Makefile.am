@@ -23,7 +23,7 @@ PY_AXL_DIR = py-axl
 endif
 
 SUBDIRS = src  $(AXL_NS_DIR) $(AXL_KNIFE_DIR) $(AXL_BABEL_DIR) $(PY_AXL_DIR) $(AXL_DOC_DIR) $(AXL_TEST_DIR) 
-EXTRA_DIST = axl.pc.in VERSION libaxl.sln README.win32 get-python-config Makefile.win Makefile.win.in get-python-site-packages.py
+EXTRA_DIST = axl.pc.in VERSION libaxl.sln README.win32 get-python-config Makefile.win Makefile.win.in check-python-dir.py
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = axl.pc axl-ns.pc axl-babel.pc
 
