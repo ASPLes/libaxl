@@ -19,6 +19,7 @@ initial_build_doc:
 	@test -e doc.stamp || touch doc.stamp
 
 build_doc:
+	rm -rf html/
 	@echo "Generating module documentation..";
 	doxygen axl-doc.doxygen
 	cp $(top_srcdir)/doc/axl.css html
