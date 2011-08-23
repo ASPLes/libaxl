@@ -6,21 +6,11 @@
 
 body { 
    margin: 0; 
-   background: #c9c9c9;
-}
-
-.thepage, body, h1, h2, h3, a, b, span, p, li, ul, b {
-   font-family: Arial, FreeSans, Sans, Sans-Serif, Helvetica;
 }
 
 h1, h2, h3, a { 
        color: #172e4b;   
 }
-
-.tabs span { 
-        color: #172e4b;   
-}
-
 
 a:link {
 	color: #204a87;
@@ -36,6 +26,7 @@ a:hover {
 }
 
 .aspl-logo { 
+  padding: 5px;
   padding-right: 20px;
   border: 0px;
   background: white;
