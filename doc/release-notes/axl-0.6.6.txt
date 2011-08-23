@@ -1,0 +1,78 @@
+          ########################################
+          #             Axl Library              #
+          #                Waves                 #
+          #                0.6.6                 #
+          ########################################
+
+Advanced Software Production Line is proud to announce a new Axl
+Library release.
+
+Axl Library is a small and efficient XML toolkit, written in ANSI C,
+with support for Python bindings and released under the LGPL. It
+allows to produce efficient and clear code that handle XML data.
+
+The library was produced to support XML requirements needed by
+software developed by Advanced Software Production Line, S.L.
+
+At this moment the library is being used by Vortex Library, Af-Arch,
+Turbulence, Shaper, Fovap and Ju-Doc.
+
+Resources
+~~~~~~~~~
+
+   Axl Homepage
+   [ http://www.aspl.es/xml ]
+
+   Advanced Software Production Line, S.L.
+   [ http://www.aspl.es ]
+
+This release in short
+~~~~~~~~~~~~~~~~~~~~~
+  
+  Minor stable release that improves python detection to build PyAxl
+  and fixes item counting on hash removals.
+
+Changes from previous release 0.6.5
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* [fix] Debian updates..
+
+* [fix] Committing missing file to detect python..
+
+* [fix] Several updates to configure process to allow detecting site
+  package installation for python modules to use this value to check
+  what proposes AM_PATH_PYTHON macro, to check if it is wrong, warning
+  the user to upgrade or fix its autoconf install.
+
+* [fix] Added convenient function alias called axl_list_foreach, that
+  wraps axl_list_lookup, allowing to write code that looks what is
+  done. Added documentation to explain its use. API added:
+
+   - axl_list_foreach
+
+* [fix] Making axl_hash_remove internals to decrease number of items
+  the hash has before calling key/value destroy so those functions
+  gets updated status.
+
+
+About Advanced Software Production Line, S.L. (ASPL)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Advanced Software Production Line (ASPL) provides GNU/Linux support
+  and consulting services to enable organization to introduce
+  GNU/Linux into their processes, making other platforms to properly
+  interact with it.
+
+  Contact us, using English or Spanish, to get commercial support
+  and/or XML based development services.
+
+  You can reach us:
+
+       http://www.aspl.es - info@aspl.es
+
+  We hope Axl Library help you. Enjoy Axl Library!
+
+--
+Francis Brosnan Blázquez           - francis@aspl.es
+Advanced Software Production Line  - http://www.aspl.es
+22th ago 2011, Madrid (Spain)
