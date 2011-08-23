@@ -1,0 +1,90 @@
+          ########################################
+          #             Axl Library              #
+          #      Radio Friendly Unit Shifter     #
+          #                0.6.4                 #
+          ########################################
+
+Advanced Software Production Line is proud to announce a new Axl
+Library release.
+
+Axl Library is a small and efficient XML toolkit, written in ANSI C,
+with support for Python bindings and released under the LGPL. It
+allows to produce efficient and clear code that handle XML data.
+
+The library was produced to support XML requirements needed by
+software developed by Advanced Software Production Line, S.L.
+
+At this moment the library is being used by Vortex Library, Af-Arch,
+Turbulence, Shaper, Fovap and Ju-Doc.
+
+Resources
+~~~~~~~~~
+
+   Axl Homepage
+   [ http://www.aspl.es/xml ]
+
+   Advanced Software Production Line, S.L.
+   [ http://www.aspl.es ]
+
+This release in short
+~~~~~~~~~~~~~~~~~~~~~
+
+  Minor stable release. Python Axl fixings, fixings at stream
+  reader global index and API updates.
+
+Changes from previous release 0.6.3
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* [fix] Fixing PyAxl node deallocation caused by setting a node
+  created inside a node created (with axl.Node). The last one do not
+  disable its finish_on_gc. Added reg test py_test_05.
+
+* [fix] making PyAxl node.remove () to flag internal node as null no
+  matter which is the value of dealloc parameter.
+
+* [fix] Adding some internal checks to PyAxl node to return None in
+  case of internal NULL reference found.
+
+* [new] Added new function to stream API to do efficient string
+  replacement (including binary strings). API added:
+ 
+    - axl_stream_replace
+
+  Updated regression test (test_01_03) to check its function.
+
+* [fix] Fixed bug at axl_stream_replace in case the replacement means
+  a reduction. Updated reg test (test_01_03) to check this issue.
+
+* [new] Added macro to do simple non-binary string replace. API added:
+
+   - axl_replace
+
+* [fix] Making axl_stream_replace to return source_len on NULL
+  parameter.
+
+* [fix] Fixed bug inside axl stream implementation which was not
+  properly updating global index in the case the terminator was
+  accepted.
+
+
+About Advanced Software Production Line, S.L. (ASPL)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Advanced Software Production Line (ASPL) provides GNU/Linux support
+  and consulting services to enable organization to introduce
+  GNU/Linux into their processes, making other platforms to properly
+  interact with it.
+
+  Contact us, using English or Spanish, to get commercial support
+  and/or XML based development services.
+
+  You can reach us:
+
+       http://www.aspl.es - info@aspl.es
+
+  We hope Axl Library help you. Enjoy Axl Library!
+
+--
+Francis Brosnan Blázquez           - francis@aspl.es
+Advanced Software Production Line  - http://www.aspl.es
+18th jan 2011, Madrid (Spain)
