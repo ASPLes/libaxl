@@ -1,0 +1,102 @@
+libaxl (0.6.6-1) stable; urgency=low
+
+  * New upstream release..
+
+ -- Francis Brosnan <francis@aspl.es>  Tue, 20 Sep 2011 12:59:44 +0200
+
+libaxl (0.6.6) stable; urgency=low
+
+  * New upstream release..
+
+ -- Francis Brosnan <francis@aspl.es>  Mon, 22 Aug 2011 13:55:07 +0200
+
+libaxl (0.6.5-1) stable; urgency=low
+
+  * New upstream release..
+
+ -- Francis Brosnan <francis@aspl.es>  Mon, 11 Jul 2011 12:18:00 +0200
+
+libaxl (0.6.4-squeeze1) stable; urgency=low
+
+  * Latest changes from SVN.
+
+ -- Francis Brosnan <francis@aspl.es>  Sat, 14 May 2011 12:19:02 +0200
+
+libaxl (0.6.4-lenny0) stable; urgency=low
+
+  * New upstream update.
+
+ -- Francis Brosnan <francis@aspl.es>  Thu, 27 Jan 2011 17:42:23 +0100
+
+libaxl (0.6.3-lenny4) stable; urgency=low
+
+  * New upstream update.
+
+ --  <francis@aspl.es>  Thu, 11 Nov 2010 17:20:30 +0100
+
+libaxl (0.6.3-lenny3) stable; urgency=low
+
+  * New upstream update
+
+ -- Francis Brosnan <francis@aspl.es>  Mon, 04 Oct 2010 13:20:38 +0200
+
+libaxl (0.6.3-lenny2) stable; urgency=low
+
+  * New upstream version.
+
+ -- Francis Brosnan <francis@aspl.es>  Fri, 10 Sep 2010 17:14:55 +0200
+
+libaxl (0.6.3-lenny1) stable; urgency=low
+
+  * New upstream verion.
+
+ -- Francis Brosnan <francis@aspl.es>  Mon, 30 Aug 2010 18:48:50 +0200
+
+libaxl (0.6.2-lenny1) stable; urgency=low
+
+  * New upstream version
+
+ -- Francis Brosnan <francis@aspl.es>  Fri, 09 Jul 2010 17:48:27 +0200
+
+libaxl (0.6.2-lenny0) stable; urgency=low
+
+  * New upstream version
+
+ -- Francis Brosnan <francis@aspl.es>  Wed, 26 May 2010 09:44:42 +0200
+
+libaxl (0.6.2) stable; urgency=low
+
+  * New upstream version 0.6.2
+
+ -- Francis Brosnan <francis@aspl.es>  Fri, 16 Apr 2010 16:18:11 +0200
+
+libaxl (0.6.0) stable; urgency=low
+
+  * New upstream version 0.6.0
+
+ -- Francis Brosnan Blázquez <francis@aspl.es>  Thu,  3 Sep 2009 18:07:01 +0200
+
+libaxl (0.5.7) stable; urgency=low
+
+  * New upstream version 0.5.7
+
+ -- Francis Brosnan Blázquez <francis@aspl.es>  Fri, 26 Jun 2009 12:05:43 +0200
+
+libaxl (0.5.6-etch1) stable; urgency=low
+
+  * New upstream version 0.5.6
+
+ -- root <francis@aspl.es>  Fri, 30 Jan 2009 15:50:47 +0100
+
+libaxl (0.5.3-etch1) stable; urgency=low
+
+  * New upstream version 0.5.3.
+
+ -- Francis Brosnan <francis@aspl.es>  Mon,  8 Sep 2008 15:43:57 +0200
+
+libaxl (0.4.5-1) stable; urgency=low
+
+  * First debian package version.
+
+ -- Francis Brosnan <francis@aspl.es>  Wed,  4 Jul 2007 18:20:35 +0200
+
