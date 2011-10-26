@@ -24,6 +24,8 @@
 #ifndef __AXL_CONFIG_H__
 #define __AXL_CONFIG_H__
 
+#include <basetsd.h>
+
 /**
  * \addtogroup axl_decl_module
  * @{
@@ -70,7 +72,7 @@
  * @brief If defined to 1, it means we are compiling in a windows
  * platform running 64 bit version.
  */
-#define AXL_OS_WIN64 (0)
+#define AXL_OS_WIN64 (1)
 
 /* @} */
 
