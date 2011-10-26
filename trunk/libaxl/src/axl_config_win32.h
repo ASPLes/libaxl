@@ -40,7 +40,7 @@
  *
  * @return A \ref axlPointer reference.
  */
-#define INT_TO_PTR(integer) IntToPtr(integer)
+#define INT_TO_PTR(integer) ((axlPointer) (integer))
 
 /**
  * @brief Allows to convert a pointer reference (\ref axlPointer),
@@ -53,7 +53,7 @@
  *
  * @return A int value.
  */
-#define PTR_TO_INT(ptr) PtrToInt((const void *)ptr)
+#define PTR_TO_INT(ptr) ((int) (ptr))
 
 /**
  * @brief Allows to get current platform configuration. This is used
