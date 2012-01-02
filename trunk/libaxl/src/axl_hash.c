@@ -1,5 +1,5 @@
 /*
- *  LibAxl:  Another XML library
+ *  Libaxl:  Another XML library
  *  Copyright (C) 2006 Advanced Software Production Line, S.L.
  *
  *  This program is free software; you can redistribute it and/or
@@ -1247,7 +1247,6 @@ void       axl_hash_free        (axlHash *  hash)
 {
 	int iterator = 0;
 	axlHashNode * node;
-	axlHashNode * aux;
 
 	/* do not perform any operation if a null reference is
 	 * received */
@@ -1271,7 +1270,6 @@ void       axl_hash_free        (axlHash *  hash)
 						node->data_destroy (node->data);
 					
 					/* check data */
-					aux  = node;
 					node = node->next;
 					
 					/* while more nodes */
