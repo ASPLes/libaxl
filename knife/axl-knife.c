@@ -337,8 +337,6 @@ axl_bool axl_knife_htmlize_iterator_node (FILE * fstream, axlNode * node, int le
 {
 	
 	axlItem       * item;
-	int             size;
-	char          * content;
 	axlAttrCursor * cursor;
 	int             iterator;
 	axl_bool        found_content;
@@ -424,8 +422,6 @@ axl_bool axl_knife_htmlize_iterator_node (FILE * fstream, axlNode * node, int le
 			break;
 		case ITEM_CONTENT_FROM_FACTORY:
 		case ITEM_CONTENT:
-			size    = 0;
-			content = axl_item_get_content (item, &size);
 			fprintf (fstream, "%s", axl_item_get_content (item, NULL));
 			break;
 		case ITEM_PI:

@@ -5260,7 +5260,6 @@ axl_bool test_01e (axlError ** error)
 {
 	axlDoc         * doc;
 	axlNode        * node;
-	const char     * content;
 	int              size;
 	
 	/* parse document */
@@ -5270,7 +5269,8 @@ axl_bool test_01e (axlError ** error)
 	
 	/* get root node */
 	node    = axl_doc_get_root (doc);
-	content = axl_node_get_content (node, &size);
+	if (! axl_node_get_content (node, &size))
+		return axl_false;
 	
 	/* free document */
 	axl_doc_free (doc);
@@ -5354,7 +5354,7 @@ axl_bool test_01f (axlError ** error)
 axl_bool test_01_01 (void) 
 {
 	axlList * list;
-	int       value;
+	int        value;
 
 	axlPointer ptr1;
 	axlPointer ptr2;
@@ -5693,6 +5693,11 @@ axl_bool test_01_01 (void)
 		
 		/* get the integer value */
 		value = PTR_TO_INT (axl_list_get_first (list));
+
+		if (! (value > 0)) {
+			printf ("Expected to not find any item under 0..\n");
+			return axl_false;
+		}
 		
 		/* remove */
 		axl_list_unlink_first (list);

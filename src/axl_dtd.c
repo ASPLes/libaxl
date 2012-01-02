@@ -2437,16 +2437,12 @@ axl_bool     __axl_dtd_validate_item_list (axlDtdElementList  * itemList,
 					   axl_bool             top_level)
 {
 	int          temp_child_pos;
-	int          caller_child_pos;
 	axl_bool     status;
 	axl_bool     already_matched;
 
 
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "validating an item list with repeat pattern: %d, at %d, top level=%d",
 		   axl_dtd_item_list_repeat (itemList), *child_position, top_level);
-
-	/* store current caller child position value to check it before */
-	caller_child_pos = *child_position;
 
 	/* now check repetition type */
 	switch (axl_dtd_item_list_repeat (itemList)) {

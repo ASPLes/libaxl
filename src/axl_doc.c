@@ -2006,7 +2006,6 @@ axlDoc  * axl_doc_parse_strings            (axlError ** error,
  */
 axl_bool __axl_doc_are_equal (axlNode * node, axlNode * node2, axl_bool trimmed, axlError ** error)
 {
-	int       iterator;
 	int       length;
 	int       length2;
 
@@ -2018,7 +2017,6 @@ axl_bool __axl_doc_are_equal (axlNode * node, axlNode * node2, axl_bool trimmed,
 		return axl_false;
 
 	/* iterate over all childs inside the node */
-	iterator = 0;
 	length   = axl_node_get_child_num (node);
 	length2  = axl_node_get_child_num (node2);
 
