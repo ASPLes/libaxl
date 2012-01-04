@@ -1,0 +1,70 @@
+          ########################################
+          #             Axl Library              #
+          #        How to pronounce either       #
+          #                0.6.7                 #
+          ########################################
+
+Advanced Software Production Line is proud to announce a new Axl
+Library release.
+
+Axl Library is a small and efficient XML toolkit, written in ANSI C,
+with support for Python bindings and released under the LGPL. It
+allows to produce efficient and clear code that handle XML data.
+
+The library was produced to support XML requirements needed by
+software developed by Advanced Software Production Line, S.L.
+
+At this moment the library is being used by Vortex Library, 
+Turbulence, Ju-Doc and Core-Admin.
+
+Resources
+~~~~~~~~~
+
+   Axl Homepage
+   [ http://www.aspl.es/xml ]
+
+   Advanced Software Production Line, S.L.
+   [ http://www.aspl.es ]
+
+This release in short
+~~~~~~~~~~~~~~~~~~~~~
+  
+  Minor stable release that fixes some unused variables that triggers
+  compilation errors that completely stop the building process on some
+  newer systems.
+
+Changes from previous release 0.6.6
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* [fix] Fixed documentation..
+
+* [fix] Minor missing changes in the web.
+
+* [fix] Reorganized debian directory into debian-files having a
+  subfolder for each supported debian distribution.
+
+* [fix] Minor change to debian build system..
+
+* [fix] Several updates to remove variables not used.
+
+About Advanced Software Production Line, S.L. (ASPL)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Advanced Software Production Line (ASPL) provides GNU/Linux support
+  and consulting services to enable organization to introduce
+  GNU/Linux into their processes, making other platforms to properly
+  interact with it.
+
+  Contact us, using English or Spanish, to get commercial support
+  and/or XML based development services.
+
+  You can reach us:
+
+       http://www.aspl.es - info@aspl.es
+
+  We hope Axl Library help you. Enjoy Axl Library!
+
+--
+Francis Brosnan Blázquez           - francis@aspl.es
+Advanced Software Production Line  - http://www.aspl.es
+04th Jan 2012, Madrid (Spain)
