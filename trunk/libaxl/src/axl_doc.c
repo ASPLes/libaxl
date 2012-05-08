@@ -982,7 +982,8 @@ axl_bool __axl_doc_parse_node (axlStream   * stream,
 
 			if (axl_node_has_attribute (node, string_aux)) {
 				/* parse error */
-				axl_error_new (-3, "Unable to add attribute to node which already has this attribute. Duplicate attribute error.", stream, error);
+				axl_error_report (error, -3, "Unable to add attribute '%s' to node <%s> which already has this attribute. Duplicate attribute error. Error was found near to: %s", 
+						  string_aux, axl_node_get_name (node), axl_stream_get_near_to (stream, 100));
 				axl_stream_free (stream);
 				return axl_false;
 			} /* end if */
