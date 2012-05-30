@@ -29,6 +29,21 @@
 /** 
  * @brief Check that xml node attributes can't be added twice
  */
+axl_bool test_46 (axlError ** error)
+{
+	/* check broken content to avoid breaking axl */
+	axl_doc_parse ("<node><![CDATA[asdlkjasdf]", 25, NULL);
+
+	axl_doc_parse ("<node", 5, NULL);
+
+	axl_doc_parse ("<!--", 4, NULL);
+
+	return axl_true;
+}
+
+/** 
+ * @brief Check that xml node attributes can't be added twice
+ */
 axl_bool test_45 (axlError ** error)
 {
 	axlAttrCursor * cursor;
@@ -9406,6 +9421,15 @@ int main (int argc, char ** argv)
 		printf ("Test 45: Fix attribute added twice [   OK   ]\n");
 	}else {
 		printf ("Test 45: Fix attribute added twice [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}
+
+	if (test_46 (&error)) {
+		printf ("Test 46: Check crafted content [   OK   ]\n");
+	}else {
+		printf ("Test 46: Check crafted content [ FAILED ]\n  (CODE: %d) %s\n",
 			axl_error_get_code (error), axl_error_get (error));
 		axl_error_free (error);
 		return -1;
