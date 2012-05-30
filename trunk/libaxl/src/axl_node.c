@@ -5193,7 +5193,7 @@ axl_bool      axl_node_has_invalid_chars_internal        (const char * content,
 		}
 
 		/* check for ]]> */
-		if (content [iterator] == ']' && content [iterator + 1] == ']' && content [iterator + 2] == '>') {
+		if ((iterator + 2) < content_size && content [iterator] == ']' && content [iterator + 1] == ']' && content [iterator + 2] == '>') {
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "found invalid sequence=']]>'");
 			result = axl_true;
 			if (cdata) {
