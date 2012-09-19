@@ -361,7 +361,7 @@ struct _axlDoc {
 	/** 
 	 * @internal
 	 * 
-	 * @brief Internal list to hold all PI targets readed.
+	 * @brief Internal list to hold all PI targets read.
 	 */
 	axlList   * piTargets;
 
@@ -824,7 +824,7 @@ axl_bool __axl_doc_parse_node (axlStream   * stream,
 		/* get the string length */
 		length = strlen (string_aux);
 
-		/* if matched / it means that it was readed />, remove
+		/* if matched / it means that it was read />, remove
 		 * it and all white spaces */
 		if (string_aux[length - 1] == '/') {
 			/* flag as matched /> */
@@ -1895,7 +1895,7 @@ int __axl_doc_get_file_size (char * file_path)
  *    return -1;
  * }
  *
- * // do some stuff with the readed document
+ * // do some stuff with the read document
  * 
  * // release it once no longer needed
  * axl_doc_free (doc);

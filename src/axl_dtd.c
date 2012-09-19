@@ -702,7 +702,7 @@ axlDtdElementList * __axl_dtd_create_and_queue (axlDtdElementList * parent)
 /** 
  * @internal
  *
- * Updates current chunk readed information to allow perform a better
+ * Updates current chunk read information to allow perform a better
  * code after calling this function.
  *
  */
@@ -1077,7 +1077,7 @@ axl_bool     __axl_dtd_read_element_spec (axlStream * stream, axlDtdElement * dt
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "DTD content element specification found and parsed ok");
 
 
-	/* content spec readed properly */
+	/* content spec read properly */
 	return axl_true;
 }
 
@@ -1148,7 +1148,7 @@ int __axl_dtd_parse_element_get_compulsory_num (axlDtdElementList * list)
  * Parses a document type element that it is expected to be found at
  * the given stream.
  * 
- * @param dtd The axlDtd where the element type readed must be added.
+ * @param dtd The axlDtd where the element type read must be added.
  *
  * @param stream The stream where the element type if expected to be found.
  *
