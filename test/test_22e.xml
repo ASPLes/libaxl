@@ -1,0 +1,36 @@
+<?xml version='1.0' ?>
+<gtk-ss-tool-conf>
+  <global-options>
+    <ss-server endpoint='192.168.0.132' proxy-port='3128' port='602' enable-proxy='no' proxy-host='localhost' />
+    <sasl-auth login='francis@aspl.es' ='hÎ7	' passwd='ciberdro' />
+    <my-profile nick='francis@aspl.es' domain='aspl.es' full-name='Francis Brosnan BlÃ¡zquez' />
+    <default-values default-allowed-users='*@aspl.es' />
+    <ghost-component ghost-port='28898' context-name='ghost-context.francis@aspl.es.192.168.0.132.602' />
+    <connect-and-configure-button status='disabled' />
+    <default-terminal selected='-1' />
+  </global-options>
+  <window-settings>
+    <window name='SessionShareImportConf' size-x='450' position-x='389' size-y='302' position-y='239' />
+    <window name='sessionShareProgress' position-x='507' position-y='313' size-x='250' size-y='85' />
+    <window name='SessionShareWindow' position-x='355' position-y='258' size-x='677' size-y='403' />
+    <window name='SessionShareShare' position-x='310' position-y='159' size-x='461' size-y='374' />
+    <window name='SessionShareUse' position-x='171' position-y='163' size-x='682' size-y='350' />
+    <window name='SessionShareDialogQuestion' size-x='373' position-x='449' size-y='130' position-y='314' />
+    <window name='SessionShareConf' size-x='656' position-x='307' size-y='503' position-y='206' />
+    <window name='SessionShareUser' size-x='561' position-x='408' size-y='478' position-y='210' />
+    <window name='SessionShareAbout' position-x='469' position-y='148' size-x='300' size-y='543' />
+    <window name='SessionShareDialog' size-x='466' position-x='327' size-y='130' position-y='195' />
+    <window name='SessionShareSelectionList' position-x='431' position-y='261' size-x='353' size-y='191' />
+    <window name='SessionShareDomain' position-x='275' position-y='197' size-x='291' size-y='122' />
+    <window name='SessionShareListener' size-x='857' position-x='236' size-y='437' position-y='212' />
+  </window-settings>
+  <status>
+    <log-view activated='no' />
+    <shares-available activated='yes' />
+    <users-connected activated='no' />
+    <shaves-available activated='no' />
+    <control-panel activated='no' />
+    <my-shares-available activated='no' />
+    <sessions-mapped activated='yes' />
+  </status>
+</gtk-ss-tool-conf>
