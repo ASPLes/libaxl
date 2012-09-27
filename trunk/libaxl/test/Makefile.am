@@ -24,7 +24,7 @@ xml_files = \
 	test_13c.xml test_19a.xml test_19b.xml test_19c.xml test_19d.xml \
 	test_19e.xml test_19f.xml test_19g.xml test_19.xml test13.xml  \
 	channel5.xml channel4.xml channel2.xml channel3.xml channel.xml \
-	test5.xml test3.xml test4.xml gmovil2.xml gmovil.xml small.xml  \
+	test5.xml test3.xml test4.xml gmovil3.xml gmovil.xml small.xml  \
 	test2.xml test.xml  test_22.xml test_22b.xml test_22c.xml \
 	test_44.xml test_44.dtd test_44_b.xml
 xdl_files = test17.xdl test03.xdl test04.xdl test01.xdl test02.xdl 

@@ -3471,7 +3471,7 @@ axl_bool test_11 (axlError ** error)
 	axlDtd * dtd = NULL;
 
 	/* parse gmovil file (an af-arch xml chunk) */
-	doc = axl_doc_parse_from_file ("gmovil2.xml", error); 
+	doc = axl_doc_parse_from_file ("gmovil3.xml", error); 
 	if (doc == NULL) 
 		return axl_false;
 
