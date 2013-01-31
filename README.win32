@@ -4,11 +4,11 @@
 1. Intro
 ~~~~~~~~
 
-  There are two know ways to compile LibAxl under windows: using gcc
+There are two know ways to compile LibAxl under windows: using gcc
 tools, provided by the mingw project [1] or using one of the Microsoft
-C compilers. 
+C compilers.
 
-  In any case, you must take into consideration these basic steps for
+In any case, you must take into consideration these basic steps for
 both:
 
   1) You must create an axl_config.h file, using the
@@ -33,32 +33,32 @@ both:
 2. GCC and Mingw
 ~~~~~~~~~~~~~~~~
 
-  This is default platform we are using to get LibAxl working under
+This is default platform we are using to get LibAxl working under
 windows. It is showed to get really good results and good performance,
 however there is a problem. Gcc tools do not produce a debug
-information format that could be used by Microsoft tools. 
+information format that could be used by Microsoft tools.
 
-  Obviously, if this is not a problem for you, then you don't have any
+Obviously, if this is not a problem for you, then you don't have any
 problem, and, under this situation we recomend to use gcc as default
 compilation tool.
 
-  You can use makefiles (Makefile.win) provided inside the src, ns and test directory to
-compile Axl.
+You can use makefiles (Makefile.win) provided inside the src, ns and
+test directory to compile Axl.
 
 3. Microsoft compilers
 ~~~~~~~~~~~~~~~~~~~~~~
 
-  Axl library is tested to compile and run properly using Visual C 6.0,
+Axl library is tested to compile and run properly using Visual C 6.0,
 Visual Studio 2005 and its express edition.
 
-  With the source code are provided visual studio project files to
-make it easy to compile LibAxl. See libaxl.sln under the top source
+With the source code are provided visual studio project files to make
+it easy to compile LibAxl. See libaxl.sln under the top source
 directory.
 
 4. Testing build done
 ~~~~~~~~~~~~~~~~~~~~~
 
-  Whatever you compiler is, you must execute the test_01 regression
+Whatever you compiler is, you must execute the test_01 regression
 test, found inside the test/ directory to ensure your build will
 provide proper function. All tests must be passed without any warning
 (or understanding why those warnings happens and how they may affect
