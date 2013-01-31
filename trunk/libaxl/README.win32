@@ -12,7 +12,8 @@ In any case, you must take into consideration these basic steps for
 both:
 
   1) You must create an axl_config.h file, using the
-     axl_config_win32.h file provided. Just rename it. 
+     axl_config_win32.h (for 32bits) or axl_config_win64.h (for
+     64bits) provided under src/. Just rename it.
 
   2) If you are using Microsoft C compilers, you must ensure you can
      have access to the _vscprintf function or not. If you can, which
