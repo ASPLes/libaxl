@@ -2405,6 +2405,33 @@ char      * axl_stream_strdup_n (const char * chunk, int n)
 }
 
 /** 
+ * @brief Allows get current limit for axl_stream_printf operations.
+ *
+ * By default, Axl API has no limit for these operation unless there
+ * is no suitable secure API to implement these operation. 
+ *
+ * This function allows to check what's the current limit of the
+ * binary being used to to let upper level libraries and/or
+ * applications that are the limits for these axl_strdup_printf
+ * operations.
+ *
+ * @return -1 if no limit is found, or a number > 0 letting the limit
+ * for these operations.
+ */
+int axl_stream_printf_limit (void) {
+
+#if defined (AXL_OS_WIN32) && ! defined (__GNUC__)
+#   if HAVE_VSCPRINTF
+	return -1;
+#   else
+	return 8192;
+#   endif
+#else
+	return -1;
+#endif
+}
+
+/** 
  * @internal Allows to calculate the amount of memory required to
  * store the string that will representing the construction provided
  * by the printf-like format received and its arguments.

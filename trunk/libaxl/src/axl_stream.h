@@ -200,6 +200,8 @@ int         axl_stream_printf_buffer     (char * buffer,
 					  int  * real_size,
 					  const char * format, ...);
 
+int         axl_stream_printf_limit (void);
+
 char     ** axl_stream_split           (const char * chunk, int separator_num, ...);
 
 void        axl_stream_clean_split     (char ** split);
@@ -313,6 +315,8 @@ axl_bool    axl_stream_content_check       (axlStream   * stream,
  * @param ref An string reference to check.
  */
 #define     axl_check_undef(ref) (ref ? ref : "NULL")
+
+
 
 /* @} */
 

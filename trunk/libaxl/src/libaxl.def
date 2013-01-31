@@ -444,6 +444,7 @@ axl_stream_peek
 axl_stream_prebuffer
 axl_stream_printf_buffer
 axl_stream_printf_len
+axl_stream_printf_limit
 axl_stream_push
 axl_stream_remains
 axl_stream_remove
