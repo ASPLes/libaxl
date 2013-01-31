@@ -29,6 +29,20 @@
 /** 
  * @brief Check that xml node attributes can't be added twice
  */
+axl_bool test_47 (axlError ** error)
+{
+
+	if (axl_stream_printf_limit () != -1) {
+		printf ("WARNING WARNING: current build is limited to %d bytes for printfv operations\n", 
+			axl_stream_printf_limit ());
+	} /* end if */
+
+	return axl_true;
+}
+
+/** 
+ * @brief Check that xml node attributes can't be added twice
+ */
 axl_bool test_46 (axlError ** error)
 {
 	/* check broken content to avoid breaking axl */
@@ -9430,6 +9444,15 @@ int main (int argc, char ** argv)
 		printf ("Test 46: Check crafted content [   OK   ]\n");
 	}else {
 		printf ("Test 46: Check crafted content [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}
+
+	if (test_47 (&error)) {
+		printf ("Test 47: Check axl stream printf buffer limits [   OK   ]\n");
+	}else {
+		printf ("Test 47: Check axl stream printf buffer limits [ FAILED ]\n  (CODE: %d) %s\n",
 			axl_error_get_code (error), axl_error_get (error));
 		axl_error_free (error);
 		return -1;
