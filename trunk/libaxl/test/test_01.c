@@ -27,6 +27,44 @@
 #define test_41_iso_8859_15_value "Esto es una prueba: camión, españa, y la tabla de caráteres!\"#$%()*+,-./0123456789:;=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~ ¡¢£€¥Š§š©ª«¬­®¯°±²³Žµ¶·ž¹º»ŒœŸ¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ"
 
 /** 
+ * @brief Check to support UTF-8 bom
+ */
+axl_bool test_48 (axlError ** _error)
+{
+	axlDoc   * doc;
+	axlNode  * node;
+	axlError * error = NULL;
+	
+
+	/* parse the document found */
+	doc = axl_doc_parse_from_file ("utf-8.bom.xml", &error);
+	if (doc == NULL) {
+		printf ("ERROR: unable to open file, (code: %d) error was: %s\n", 
+			axl_error_get_code (error), axl_error_get (error));
+		return axl_false;	
+	}
+
+	/* get the child1 node */
+	printf ("Test 48: checking node..\n");
+	node = axl_doc_get (doc, "/Kodak/Device/State");
+	if (node == NULL) {
+		printf ("ERROR: unable to find xml node under the path /Kodak/Device/State\n");
+		return axl_false;
+	} /* end if */
+
+	printf ("Test 48: checking attribute..\n");
+	if (! HAS_ATTR_VALUE (node, "type", "string")) {
+		printf ("ERROR: expected to find type='string' attribute in the xml node under the path /Kodak/Device/State\n");
+		return axl_false;
+	} /* end if */
+	
+	/* release document */
+	axl_doc_free (doc);
+
+	return axl_true;
+}
+
+/** 
  * @brief Check that xml node attributes can't be added twice
  */
 axl_bool test_47 (axlError ** error)
@@ -9453,6 +9491,15 @@ int main (int argc, char ** argv)
 		printf ("Test 47: Check axl stream printf buffer limits [   OK   ]\n");
 	}else {
 		printf ("Test 47: Check axl stream printf buffer limits [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}
+
+	if (test_48 (&error)) {
+		printf ("Test 48: Check utf-8 bom [   OK   ]\n");
+	}else {
+		printf ("Test 48: Check utf-8 bom [ FAILED ]\n  (CODE: %d) %s\n",
 			axl_error_get_code (error), axl_error_get (error));
 		axl_error_free (error);
 		return -1;
