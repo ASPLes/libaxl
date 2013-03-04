@@ -608,6 +608,12 @@ axl_bool __axl_doc_parse_xml_header (axlStream * stream, axlDoc * doc, axlError 
 
 	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "looking for an xml header declaration");
 
+	/* check for boms declarations */
+	if (axl_stream_check (stream, "\xEF\xBB\xBF", 3)) {
+		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "  found UTF-8 bom mark");
+		axl_stream_move (stream, 3);
+	}
+
 	/* check for initial XMLDec (production 23) */
 	if (axl_stream_inspect (stream, "<?", 2)) {
 		
