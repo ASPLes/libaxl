@@ -90,7 +90,7 @@ axl_bool      axl_log_is_enabled (void)
 axl_bool    axl_log_color_is_enabled (void)
 {
 #if defined(AXL_OS_WIN32) && ! defined(__GNUC__)
-	size_t requiredSize;
+	size_t  requiredSize;
 #endif
 
 	if (not_executed_color) {
