@@ -281,7 +281,7 @@ double     axl_node_annotate_get_double          (axlNode      * node,
  * 
  * @return \ref axl_true if names are equal or \ref axl_false if not.
  */
-#define NODE_CMP_NAME(node,name) (axl_cmp ((node != NULL) ? axl_node_get_name(node) : "><", (name != NULL) ? name : "<>"))
+#define NODE_CMP_NAME(node,name) (axl_cmp ((node) ? axl_node_get_name(node) : "><", (name) ? (name) : "<>"))
 
 const char * axl_node_get_name           (axlNode * node);
 
