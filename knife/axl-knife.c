@@ -1,6 +1,6 @@
 /*
  *  Axl Knife: Console tool on top of Axl Library
- *  Copyright (C) 2007 Advanced Software Production Line, S.L.
+ *  Copyright (C) 2013 Advanced Software Production Line, S.L.
  *
  *  This program is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU General Public License as
@@ -39,7 +39,7 @@
 #endif
 
 #define HELP_HEADER "Axl Knife: Console Tool on top of Axl Library\n\
-Copyright (C) 2007  Advanced Software Production Line, S.L.\n\n"
+Copyright (C) 2013  Advanced Software Production Line, S.L.\n\n"
 
 #define POST_HEADER "\n\
 If you have question, bugs to report, patches, you can reach us\n\
