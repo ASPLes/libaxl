@@ -3181,7 +3181,7 @@ axl_bool test_14 (axlError ** error)
 
 	/* get content trimmed */
 	size  = 15;
-	value = axl_node_get_content_trim (node, &size);
+	value = (char *) axl_node_get_content_trim (node, &size);
 	if (size != 0) {
 		axl_error_new (-1, "Expected to find a node content with 0 bytes but it 15 (/test)\n", NULL, error);
 		return axl_false;

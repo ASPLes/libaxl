@@ -1132,8 +1132,8 @@ axl_bool      __axl_node_set_attribute      (axlFactory * factory,
  *
  * It is not allowed to store the same attribute twice inside the same
  * node. If the function detects that a node is being set to have the
- * same attribute name several times, the attribute will be silently
- * not added.
+ * same attribute name several times, then the attribute will be
+ * silently not added. 
  *
  * Values for the attribute name (<b>attribute</b>) and its associated
  * value can be deallocated once the function finish. This function
@@ -3127,8 +3127,8 @@ char    * axl_node_get_content_copy (axlNode * node, int * content_size)
  * content, the function will return an empty string (but never a NULL
  * value).
  */
-char    * axl_node_get_content_trim   (axlNode * node,
-				       int * content_size)
+const char    * axl_node_get_content_trim   (axlNode * node,
+					     int * content_size)
 {
 	int    trimmed;
 
