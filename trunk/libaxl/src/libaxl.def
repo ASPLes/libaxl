@@ -256,6 +256,7 @@ axl_list_cursor_previous
 axl_list_cursor_remove
 axl_list_cursor_unlink
 axl_list_equal_int
+axl_list_equal_ptr
 axl_list_equal_string
 axl_list_exists
 axl_list_exists_at
