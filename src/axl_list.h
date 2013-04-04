@@ -53,6 +53,8 @@ int        axl_list_order_string (axlPointer a, axlPointer b);
 
 int        axl_list_equal_int    (axlPointer a, axlPointer b);
 
+int        axl_list_equal_ptr    (axlPointer a, axlPointer b);
+
 int        axl_list_always_return_1 (axlPointer a, axlPointer b);
 
 axlList  * axl_list_copy   (axlList * list, axlDuplicateFunc func);

@@ -290,14 +290,27 @@ axlListNode * __axl_list_get_next_node_available (axlList * list)
  *
  * 
  * @param are_equal The equal function to be used by the list to find
- * and order elements inside the list. This function isn't
- * optional. If you do not provide it, the list will not be created.
+ * and order elements inside the list. <b>This function isn't
+ * optional</b>. If you do not provide it, the list will not be created.
  *
  * @param destroy_data An optional handler to destroy nodes in the
  * case the list is unrefered.
  * 
  * @return A newly allocated list, that must be destroy by calling to
  * \ref axl_list_free.
+ *
+ * <b>Creating an equal element function (are_equal) or reusing one</b>
+ *
+ * The list created by this function needs an are_equal function. You
+ * can use one of the already available functions:
+ *
+ * - \ref axl_list_equal_string
+ * - \ref axl_list_equal_int
+ * - \ref axl_list_equal_ptr
+ * - \ref axl_list_order_string
+ *
+ * But also, you can build your own equal function by checking the
+ * implementation of these (above) functions and/or checking. All these functions uses the prototype defined by \ref axlEqualFunc.
  */
 axlList * axl_list_new    (axlEqualFunc are_equal, axlDestroyFunc destroy_data)
 {
@@ -468,8 +481,8 @@ int axl_list_order_string (axlPointer a, axlPointer b)
  * list = axl_list_new (axl_list_equal_int, NULL);
  * \endcode
  *
- * The list created with this function will order data from litter to
- * greater values.
+ * The list created with this function will order data from small to
+ * big values.
  * 
  * 
  * @param a A reference to the first integer.
@@ -487,6 +500,32 @@ int        axl_list_equal_int    (axlPointer a, axlPointer b)
 		return -1;
 	else
 		return 1;
+}
+
+/** 
+ * @brief Equal function that is prepared to receive to pointers (memory addresses).
+ *
+ * It is assumed that pointers are stored in the list using the following:
+ * \code
+ * axl_list_add (list, integer);
+ * \endcode
+ *
+ * You can use this function to create an \ref axlList that stores pointer values as follows:
+ * \code
+ * list = axl_list_new (axl_list_equal_ptr, NULL);
+ * \endcode
+ *
+ * @param a A reference to the first pointer.
+ * @param b A reference to the second pointer.
+ * 
+ * @return 0 if values received are equal, otherwise -1 is returned.
+ */
+int        axl_list_equal_ptr    (axlPointer a, axlPointer b)
+{
+	/* especial case where a 0 is stored */
+	if (a == b)
+		return 0;
+	return -1;
 }
 
 /** 
