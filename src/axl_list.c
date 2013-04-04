@@ -290,7 +290,8 @@ axlListNode * __axl_list_get_next_node_available (axlList * list)
  *
  * 
  * @param are_equal The equal function to be used by the list to find
- * and order elements inside the list.
+ * and order elements inside the list. This function isn't
+ * optional. If you do not provide it, the list will not be created.
  *
  * @param destroy_data An optional handler to destroy nodes in the
  * case the list is unrefered.
