@@ -515,14 +515,14 @@ char  * exarg_strdup_printfv    (char * chunk, va_list args)
 	int       size;
 #endif
 	char    * result   = NULL;
+	int       new_size = -1;
 
 	if (chunk == NULL)
 		return NULL;
 
 #ifdef HAVE_VASPRINTF
 	/* do the operation using the GNU extension */
-	if (vasprintf (&result, chunk, args) == -1)
-		return NULL;
+	new_size = vasprintf (&result, chunk, args);
 #else
 	/* get the amount of memory to be allocated */
 	size = exarg_vprintf_len (chunk, args);
@@ -538,9 +538,9 @@ char  * exarg_strdup_printfv    (char * chunk, va_list args)
 	
 	/* copy current size */
 #  if defined(OS_WIN32) && ! defined (__GNUC__)
-	_vsnprintf_s (result, size + 1, size, chunk, args);
+	new_size = _vsnprintf_s (result, size + 1, size, chunk, args);
 #  else
-	vsnprintf (result, size + 1, chunk, args);
+	new_size = vsnprintf (result, size + 1, chunk, args);
 #  endif
 #endif
 	/* return the result */
