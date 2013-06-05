@@ -269,11 +269,11 @@ ul.news li.header-news {
    margin: 0px;
    padding: 0px;
    border-top: 2px solid #ffffff;
-   float: left;
+   float: left; 
    width: 100%;
    color: white;
    background: #172e4b;
-   height: 85px;
+   height: 300px;
 }
 
 .footer p { 
@@ -366,3 +366,50 @@ ul.list {
 .debian pre { 
   font-size: 10pt;
 }
+
+.sponsored-content { 
+  background: #172e4b; /* #3465a4 */
+  color: white; 
+  text-align: left;
+  border-bottom: 1px dotted #172e4b; /* #3465a4 */
+  margin-bottom: 10px;
+  border-left: 1px dotted #729fcf;
+  border-right: 1px dotted #729fcf;
+  font-weight: bold;  
+}
+
+.sponsored-content .dotted { 
+  border-right: 1px dotted #729fcf;
+}
+
+.sponsored-content a { 
+   background: #172e4b; /* #3465a4 */
+   color: white; 
+}
+
+.sponsored-content table { 
+  padding: 10px;
+  padding-bottom: 0px;
+  margin-bottom: 0px;
+}
+
+.sponsored-content h1 { 
+  padding-top: 0px;
+  margin-top: 0px;
+  background: #172e4b; /* #3465a4 */
+  color: white; 
+}
+
+.sponsored-content td { 
+  vertical-align: top;
+}
+
+.sponsored-content ul { 
+  padding: 6px;
+  margin: 6px;
+}
+
+.sponsored-content li { 
+  list-style: none;
+}
+
