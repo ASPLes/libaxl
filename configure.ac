@@ -55,6 +55,14 @@ AC_CHECK_SIZEOF(long)
 AC_CHECK_SIZEOF(int)
 AC_CHECK_SIZEOF(void *)
 
+compiler_options=""
+STRICT_PROTOTYPES=""
+if test "$compiler" = "gcc" ; then
+   compiler_options="-Wstrict-prototypes -Wall -Werror -g -ansi -fstack-protector-all -Wstack-protector"
+   echo "Detected gcc compiler: $compiler, adding options: $compiler_options"
+fi
+AC_SUBST(compiler_options)
+
 dnl check for py-axl support
 AC_ARG_ENABLE(py-axl,   [   --disable-py-axl       Makes Axl Library to be build without PyAxl: python bindings support],
               enable_py_axl_support="$enableval",
