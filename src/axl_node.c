@@ -2544,7 +2544,9 @@ axlNode *  axl_node_get_previous_called     (axlNode       * node,
  * 
  * @param node The node that is requested to return its first child.
  * 
- * @return The first child node or NULL if it has no child node.
+ * @return The first child node or NULL if it has no child node. Do not
+ * release (\ref axl_node_free) result returned by this function. It
+ * is a reference to the internal document. 
  */
 axlNode * axl_node_get_first_child    (axlNode * node)
 {
@@ -3666,7 +3668,9 @@ axl_bool          axl_node_have_childs_aux        (axlNode * node)
  * @param name The name for the child to search.
  * 
  * @return A refernce to a \ref axlNode or NULL if no child exists
- * called by the name provided, inside the node provided.
+ * called by the name provided, inside the node provided. Do not
+ * release (\ref axl_node_free) result returned by this function. It
+ * is a reference to the internal document. 
  */
 axlNode * axl_node_get_child_called   (axlNode * parent, const char * name)
 {
@@ -3728,7 +3732,9 @@ axlNode * axl_node_get_child_called   (axlNode * parent, const char * name)
  * @param name The name of the child to be looked up.
  * 
  * @return A reference to the node found (first instaned matching the
- * name) or NULL if it fails to find a child.
+ * name) or NULL if it fails to find a child. Do not
+ * release (\ref axl_node_free) result returned by this function. It
+ * is a reference to the internal document. 
  */
 axlNode * axl_node_find_called    (axlNode * parent, const char * name)
 {

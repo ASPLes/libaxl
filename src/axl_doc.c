@@ -2226,7 +2226,9 @@ axl_bool      axl_doc_are_equal_full           (axlDoc    * doc,
  * @param doc The xml document (\ref axlDoc) where the root node will
  * be returned. 
  * 
- * @return The root node (\ref axlNode) or NULL if fails.
+ * @return The root node (\ref axlNode) or NULL if fails. Do not
+ * release (\ref axl_node_free) result returned by this function. It
+ * is a reference to the internal document. 
  */
 axlNode * axl_doc_get_root                 (axlDoc * doc)
 {
