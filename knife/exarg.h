@@ -46,7 +46,7 @@
 /** 
  * @brief Enum type which defines how a argument must be interpreted.
  * 
- * This enumeration is used to figure out what type of argument is been installed.
+ * This enumeration is used to figure out what type of argument has been installed.
  * You can also see the documentation \ref exarg_install_arg to get more info about
  * this enumeration.
  */
