@@ -3438,6 +3438,16 @@ axl_bool axl_cmp (const char * string, const char * string2)
 	return axl_true;
 }
 
+/** 
+ * @brief Allows to do a case insensitive string comparison.
+ *
+ * @param string The first string to compare.
+ *
+ * @param string2 The second string to compare.
+ *
+ * @return axl_true in the case the two strings are equal, otherwise
+ * axl_false is returned.
+ */ 
 axl_bool        axl_casecmp (const char * string, const char * string2)
 {
 	int length;
