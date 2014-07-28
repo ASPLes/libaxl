@@ -1434,8 +1434,7 @@ char * __axl_stream_get_untilv_wide (axlStream * stream, va_list args)
 				
 				/* try to figure out if the next
 				 * string match */
-				if ((stream->chunks [iterator][0] == 
-				     stream->stream [_index])) {
+				if (stream->chunks [iterator][0] == stream->stream [_index]) {
 					
 					if ((length == 1) ||
 					    (axl_memcmp (stream->chunks [iterator] + 1, stream->stream + _index + 1, length -1))) {
