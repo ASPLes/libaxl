@@ -1816,7 +1816,7 @@ axl_bool            axl_list_cursor_has_item    (axlListCursor * cursor)
 
 /** 
  * @brief Allows to remove current element pointed by the cursor,
- * maintainig internal state of the cursor.
+ * maintaining internal state of the cursor.
  *
  * The function won't call to the destroy function asociated to the
  * list. If you want the item stored to be also destroyed call \ref
@@ -1849,7 +1849,7 @@ void            axl_list_cursor_unlink       (axlListCursor * cursor)
 
 /** 
  * @brief Allows to remove current element pointed by the cursor,
- * maintainig internal state of the cursor, calling to the destroy
+ * maintaining internal state of the cursor, calling to the destroy
  * function associated in the list.
  *
  * The function will call to the destroy function asociated to the

@@ -1600,7 +1600,7 @@ axl_bool            axl_hash_cursor_has_item    (axlHashCursor * cursor)
 
 /** 
  * @brief Allows to remove current element pointed by the cursor,
- * maintainig internal state of the cursor, calling to the destroy
+ * maintaining internal state of the cursor, calling to the destroy
  * function associated in the hash.
  *
  * The function will call to the destroy function asociated to the
