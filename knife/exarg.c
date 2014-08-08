@@ -513,6 +513,7 @@ char  * exarg_strdup_printfv    (char * chunk, va_list args)
 
 #ifndef HAVE_VASPRINTF
 	int       size;
+	int       new_size;
 #endif
 	char    * result   = NULL;
 
@@ -542,6 +543,9 @@ char  * exarg_strdup_printfv    (char * chunk, va_list args)
 #  else
 	new_size = vsnprintf (result, size + 1, chunk, args);
 #  endif
+
+	if (new_size < 0)
+		return NULL;
 #endif
 	/* return the result */
 	return result;
