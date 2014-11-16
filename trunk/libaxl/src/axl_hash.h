@@ -111,6 +111,12 @@ int             axl_hash_capacity     (axlHash * hash);
 axlHash       * axl_hash_copy         (axlHash             * hash,
 				       axlHashItemCopy       key_copy,
 				       axlHashItemCopy       value_copy);
+
+axlHash       * axl_hash_copy_full    (axlHash             * hash,
+				       axlHashItemCopy       key_copy,
+				       axlHashItemCopy       value_copy,
+				       axlDestroyFunc        destroy_key,
+				       axlDestroyFunc        destroy_data);
 				       
 
 void            axl_hash_show_status  (axlHash * hash);

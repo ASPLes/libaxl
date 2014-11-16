@@ -916,11 +916,15 @@ axlNode * axl_node_copy                     (axlNode   * node,
 		if (node->attr_num >= 11) {
 			/* copy attribute list supposing it is a
 			 * hash */
-			result->attributes = (axlPointer) axl_hash_copy ((axlHash *) node->attributes, 
-									 /* key copy function */
-									 __axl_node_copy_key,
-									 /* value copy function */
-									 __axl_node_copy_value);
+			result->attributes = (axlPointer) axl_hash_copy_full ((axlHash *) node->attributes, 
+									      /* key copy function */
+									      __axl_node_copy_key,
+									      /* value copy function */
+									      __axl_node_copy_value,
+									      /* destroy key */
+									      axl_free,
+									      /* destroy data */
+									      axl_free);
 		} else {
 			/* copy attribute list */
 			result->attributes = (axlPointer) __axl_node_copy_attr_list ((axlNodeAttr *) node->attributes);

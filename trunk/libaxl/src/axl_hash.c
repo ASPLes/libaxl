@@ -1045,6 +1045,110 @@ axl_bool __axl_hash_copy_foreach (axlPointer key,
 	return axl_false;
 }
 
+axlHash       * __axl_hash_copy_full_common    (axlHash             * hash,
+						axlHashItemCopy       key_copy,
+						axlHashItemCopy       value_copy,
+						axl_bool              replace_destroy_funcs,
+						axlDestroyFunc        destroy_key,
+						axlDestroyFunc        destroy_data)
+{
+	axlHash     * result;
+        int           iterator = 0;
+	axlHashNode * node;
+	
+	/* return if the hash reference is null */
+	axl_return_val_if_fail (hash, NULL);
+	axl_return_val_if_fail (key_copy, NULL);
+	axl_return_val_if_fail (value_copy, NULL);
+
+	/* create the hash */
+	result = axl_hash_new_full (hash->hash, 
+				    hash->equal,
+				    /* make initial step to be equal
+				     * to the current hash size copied
+				     * to avoid resizing operations
+				     * during the foreach. */
+				    hash->items);
+	/* restore step */
+	result->step = hash->step;
+
+	/* check empty hash value */
+	if (hash->hash_size == 0)
+		return result;
+
+	/* copy all items */
+	axl_hash_foreach4 (hash, __axl_hash_copy_foreach, hash, result, key_copy, value_copy);
+
+	/* if no replace destroy functions requested, just return with copied result */
+	if (! replace_destroy_funcs)
+		return result;
+
+	/* ensure destroy function after copy */
+	while (iterator < result->hash_size) {
+		
+		/* check for content */
+		if (result->table[iterator] != NULL) {
+			/* get the first item inside the table */
+			node = result->table[iterator];
+
+			while (node != NULL) {
+				/* ensure key and data destroy handlers */
+				node->key_destroy  = destroy_key;
+				node->data_destroy = destroy_data;
+				
+				/* next item inside the same collition
+				 * position */
+				node = node->next;
+			} 
+		} /* end if */
+		
+		/* update the iterator */
+		iterator++;
+	} /* end while */
+
+	/* return created hash */
+	return result;
+}
+
+/** 
+ * @brief Allows to copy the provided hash, providing the copy
+ * function used to duplicate key and value items stored.
+ *
+ * The function are optional, so, if they are null, the same value is
+ * stored in the hash (for the key and the value). In this case, if
+ * the source hash has defined destroy function for either key or
+ * values, they will not be configured in the returning hash.
+ *
+ * If function are provided, \ref axl_hash_copy will use it to get a
+ * duplicated version for either the key or the value. In this case,
+ * if the source hash has defined the destroy function either for the
+ * key or the value, it will be configured in the returning hash.
+ * 
+ * @param hash The \ref axlHash that will work as data source.
+ *
+ * @param key_copy The function to be used to duplicate keys.
+ *
+ * @param value_copy The function used to duplicate values.
+ *
+ * @param destroy_key Forces a particular key destroy function
+ * skipping key destroy function provided by the source hash.
+ *
+ * @param destroy_data Forces a particular data destroy function
+ * skipping data destroy function provided by the source hash.
+ * 
+ * @return A newly allocated reference to a \ref axlHash containing
+ * all values from the source hash. The function will fail if the hash
+ * provided is a null reference or copy functions aren't provided.
+ */
+axlHash       * axl_hash_copy_full    (axlHash             * hash,
+				       axlHashItemCopy       key_copy,
+				       axlHashItemCopy       value_copy,
+				       axlDestroyFunc        destroy_key,
+				       axlDestroyFunc        destroy_data)
+{
+	return __axl_hash_copy_full_common (hash, key_copy, value_copy, axl_true, destroy_key, destroy_data);
+}
+
 /** 
  * @brief Allows to copy the provided hash, providing the copy
  * function used to duplicate key and value items stored.
@@ -1073,34 +1177,8 @@ axlHash       * axl_hash_copy         (axlHash         * hash,
 				       axlHashItemCopy   key_copy,
 				       axlHashItemCopy   value_copy)
 {
-	axlHash         * result;
-	
-	/* return if the hash reference is null */
-	axl_return_val_if_fail (hash, NULL);
-	axl_return_val_if_fail (key_copy, NULL);
-	axl_return_val_if_fail (value_copy, NULL);
-
-	/* create the hash */
-	result = axl_hash_new_full (hash->hash, 
-				    hash->equal,
-				    /* make initial step to be equal
-				     * to the current hash size copied
-				     * to avoid resizing operations
-				     * during the foreach. */
-				    hash->items);
-	/* restore step */
-	result->step = hash->step;
-
-	/* check empty hash value */
-	if (hash->hash_size == 0)
-		return result;
-
-	/* copy all items */
-	axl_hash_foreach4 (hash, __axl_hash_copy_foreach, hash, result, key_copy, value_copy);
-
-
-	/* return created hash */
-	return result;
+	/* call complete version */
+	return __axl_hash_copy_full_common (hash, key_copy, value_copy, axl_false, NULL, NULL);
 }
 	
 /** 
