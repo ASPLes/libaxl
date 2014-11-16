@@ -44,6 +44,7 @@ __axl_dtd_validate_element_type_pcdata
 __axl_dtd_validate_item_list
 __axl_dtd_validate_sequence
 __axl_hash_copy_foreach
+__axl_hash_copy_full_common
 __axl_hash_cursor_init
 __axl_hash_foreach
 __axl_hash_internal_lookup
@@ -175,6 +176,7 @@ axl_factory_spare_next
 axl_free
 axl_hash_capacity
 axl_hash_copy
+axl_hash_copy_full
 axl_hash_cursor_first
 axl_hash_cursor_free
 axl_hash_cursor_get_key

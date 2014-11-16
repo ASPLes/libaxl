@@ -26,6 +26,136 @@
 
 #define test_41_iso_8859_15_value "Esto es una prueba: camión, españa, y la tabla de caráteres!\"#$%()*+,-./0123456789:;=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~ ¡¢£€¥Š§š©ª«¬­®¯°±²³Žµ¶·ž¹º»ŒœŸ¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ"
 
+axl_bool test_49_check_attributes (axlNode * node)
+{
+	/* check node name */
+	if (! NODE_CMP_NAME (node, "field1")) {
+		printf ("ERROR: expected field1 name but found %s\n", axl_node_get_name (node));
+		return axl_false;
+	}
+
+	if (! HAS_ATTR_VALUE (node, "l20", "true")) {
+		printf ("ERROR: expected attribute l20 to be present with value true..\n");
+		return axl_false;
+	}
+
+	if (! HAS_ATTR_VALUE (node, "l21", "true")) {
+		printf ("ERROR: expected attribute l20 to be present with value true..\n");
+		return axl_false;
+	}
+
+	if (! HAS_ATTR_VALUE (node, "l11", "true")) {
+		printf ("ERROR: expected attribute l20 to be present with value true..\n");
+		return axl_false;
+	}
+
+	if (! HAS_ATTR_VALUE (node, "l22", "true")) {
+		printf ("ERROR: expected attribute l20 to be present with value true..\n");
+		return axl_false;
+	}
+
+	if (! HAS_ATTR_VALUE (node, "l12", "true")) {
+		printf ("ERROR: expected attribute l20 to be present with value true..\n");
+		return axl_false;
+	}
+
+	if (! HAS_ATTR_VALUE (node, "l13", "true")) {
+		printf ("ERROR: expected attribute l20 to be present with value true..\n");
+		return axl_false;
+	}
+
+	if (! HAS_ATTR_VALUE (node, "l14", "true")) {
+		printf ("ERROR: expected attribute l20 to be present with value true..\n");
+		return axl_false;
+	}
+
+	if (! HAS_ATTR_VALUE (node, "l15", "true")) {
+		printf ("ERROR: expected attribute l20 to be present with value true..\n");
+		return axl_false;
+	}
+
+	if (! HAS_ATTR_VALUE (node, "l16", "true")) {
+		printf ("ERROR: expected attribute l20 to be present with value true..\n");
+		return axl_false;
+	}
+
+	if (! HAS_ATTR_VALUE (node, "l17", "true")) {
+		printf ("ERROR: expected attribute l20 to be present with value true..\n");
+		return axl_false;
+	}
+
+	if (! HAS_ATTR_VALUE (node, "l07", "true")) {
+		printf ("ERROR: expected attribute l20 to be present with value true..\n");
+		return axl_false;
+	}
+
+	if (! HAS_ATTR_VALUE (node, "l18", "true")) {
+		printf ("ERROR: expected attribute l20 to be present with value true..\n");
+		return axl_false;
+	}
+
+	if (! HAS_ATTR_VALUE (node, "l08", "true")) {
+		printf ("ERROR: expected attribute l20 to be present with value true..\n");
+		return axl_false;
+	}
+
+	if (! HAS_ATTR_VALUE (node, "l19", "true")) {
+		printf ("ERROR: expected attribute l20 to be present with value true..\n");
+		return axl_false;
+	}
+
+	if (! HAS_ATTR_VALUE (node, "l09", "true")) {
+		printf ("ERROR: expected attribute l20 to be present with value true..\n");
+		return axl_false;
+	}
+
+	return axl_true;
+}
+
+axl_bool test_49 (axlError ** _error)
+{
+	axlDoc   * doc;
+	axlNode  * node;
+	axlError * error = NULL;
+
+	/* parse the document found */
+	doc = axl_doc_parse_from_file ("many-attributes.xml", &error);
+	if (doc == NULL) {
+		printf ("ERROR: unable to open file, (code: %d) error was: %s\n", 
+			axl_error_get_code (error), axl_error_get (error));
+		return axl_false;	
+	}
+
+	/* get node inside document */
+	node = axl_doc_get (doc, "/document/field1");
+	if (node == NULL) {
+		printf ("ERROR: failed to get expected node, NULL pointer received\n");
+		return axl_false;
+	} /* end if */
+
+	/* check attributes */
+	if (! test_49_check_attributes (node))
+		return axl_false;
+
+	printf ("Test 49: all attributes ok..\n");
+
+	/* now copy node */
+	node = axl_node_copy (node, axl_true, axl_true);
+
+	/* check attributes */
+	if (! test_49_check_attributes (node))
+		return axl_false;
+
+	printf ("test 49: all attributes in node copied are ok too..\n");
+
+	/* release document */
+	axl_doc_free (doc);
+
+	axl_node_free (node);
+
+	return axl_true;
+}
+
 /** 
  * @brief Check to support UTF-8 bom
  */
@@ -9500,6 +9630,15 @@ int main (int argc, char ** argv)
 		printf ("Test 48: Check utf-8 bom [   OK   ]\n");
 	}else {
 		printf ("Test 48: Check utf-8 bom [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}
+
+	if (test_49 (&error)) {
+		printf ("Test 49: Check nodes with lot of attributes.. [   OK   ]\n");
+	}else {
+		printf ("Test 49: Check nodes with lot of attributes.. [ FAILED ]\n  (CODE: %d) %s\n",
 			axl_error_get_code (error), axl_error_get (error));
 		axl_error_free (error);
 		return -1;
