@@ -118,6 +118,9 @@ unsigned int axl_hash_string (axlPointer _key)
 	int    g, h = 0;
 	char * key  = _key;
 
+	if (_key == NULL)
+		return 0;
+
 	/* hashing taken from the Red Dragon book!! */
 	while (*key) {
 		h = (h << 4) + *key;
