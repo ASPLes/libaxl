@@ -155,6 +155,11 @@ int             axl_hash_equal_string (axlPointer keya,
 	char * _keyb = keyb;
 	int    i     = 0;
 
+	if (keya == NULL)
+		return (keyb == NULL);
+	if (keyb == NULL)
+		return (keya == NULL);
+
 	while (_keya [i] != 0 && _keyb [i] != 0) {
 
 		/* check values */
