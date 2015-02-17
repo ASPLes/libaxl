@@ -1,0 +1,91 @@
+          ########################################
+          #             Axl Library              #
+          #            Goats in trees            #
+          #                0.6.9                 #
+          ########################################
+
+Advanced Software Production Line is proud to announce a new Axl
+Library release.
+
+Axl Library is a small and efficient XML toolkit, written in ANSI C,
+with support for Python bindings and released under the LGPL. It
+allows to produce efficient and clear code that handle XML data.
+
+The library was created to support XML requirements needed by software
+developed by Advanced Software Production Line, S.L.
+
+At this moment the library is being used by Vortex Library,
+Turbulence, Ju-Doc, Core-Admin and many more...
+
+Resources
+~~~~~~~~~
+
+   Axl Homepage
+   [ http://www.aspl.es/xml ]
+
+   Advanced Software Production Line, S.L.
+   [ http://www.aspl.es ]
+
+This release in short
+~~~~~~~~~~~~~~~~~~~~~
+  
+  - Minor stable release that includes a memory leak fix and a missing
+    check while handling NULL values in some cases at string hashing
+    code.
+
+Thanks to
+~~~~~~~~~
+
+  - Ralf Konush (reported typo declaration causing Xcode to fail).
+
+  - Maxime Mugard (reported memory leak on hash duplication when
+    storing more than 10 items).
+
+Changes from previous release 0.6.8
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* [fix] Added SSP by default on linux and/or gcc based platforms.
+
+* [fix] Added missing documentation to axl_casecmp..
+
+* [fix] Removed double parent declaration around 1437 causing Xcode to
+  complain. Reported by Ralf Konush.
+
+* [fix] Fixed axlHash deep copy support to have the capability to also
+  force key destroy and data destroy functions to be used. API added:
+  
+  - axl_hash_copy_full
+
+  Used this new support to fix those cases where a node is copied from
+  a document where it has more than 10 attributes causing internally
+  to use hash to store them. However, the source hash do not have key
+  and data destroy function causing a memory leak the copied node is
+  released.  Added regression test 49. <<Bug reported by Maxime
+  Mugard>>
+
+* [fix] Making axl_hash_string to return 0 when received _key == NULL.
+
+* [fix] Added some additional checks inside axl_hash_string to clarify
+  NULL key handling.
+
+About Advanced Software Production Line, S.L. (ASPL)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Advanced Software Production Line (ASPL) provides GNU/Linux support
+  and consulting services to enable organization to introduce
+  GNU/Linux into their processes, making other platforms to properly
+  interact with it.
+
+  Contact us, using English or Spanish, to get commercial support
+  and/or XML based development services.
+
+  You can reach us:
+
+       http://www.aspl.es - info@aspl.es
+
+  We hope Axl Library help you. Enjoy Axl Library!
+
+--
+Francis Brosnan Blázquez           - francis@aspl.es
+Advanced Software Production Line  - http://www.aspl.es
+17th Feb 2015, Madrid (Spain)
