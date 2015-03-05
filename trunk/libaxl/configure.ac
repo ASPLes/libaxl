@@ -74,6 +74,8 @@ if test "$enable_py_axl_support" = "yes" ; then
    # find python-config
    PYTHON_CONFIG=`./get-python-config`
 
+   echo "Python pythondir is: ${pythondir}"
+
    # get site_packages
    python_dir_check=`eval ./check-python-dir.py ${pythondir}`
 
@@ -103,7 +105,7 @@ if test "$enable_py_axl_support" = "yes" ; then
    python_dir_temp=`eval echo ${pythondir}`
    # check python_install_dir and pythondir maches
    if test "$python_dir_check" != "ok" ; then
-      AC_MSG_ERROR([ERROR: pythondir variable is poiting to an unusable location: $python_dir_temp. Error detected: $python_dir_check. Fix your autoconf install or disable python building, for that, pass --disable-py-vortex to configure. This usually indicates a problem with automake package which provides the _AM_PATH_PYTHON_ macro.])
+      AC_MSG_ERROR([ERROR: pythondir variable is poiting to an unusable location: $python_dir_temp. Error detected: $python_dir_check. Fix your autoconf install or disable python building, for that, pass --disable-py-axl to configure. This usually indicates a problem with automake package which provides the _AM_PATH_PYTHON_ macro.])
    fi
    echo "Python install dir OK: $python_dir_temp"
 fi
@@ -119,7 +121,7 @@ AC_SUBST(compiler_options)
 
 AC_CHECK_PROG(PKG_CONFIG, pkg-config, "yes", "no")
 if test "$PKG_CONFIG" = "no" ; then
-  AC_MSG_ERROR([You need to install pkg-config to compile Vortex 1.1. See: http://pkgconfig.freedesktop.org/releases/])
+  AC_MSG_ERROR([You need to install pkg-config to compile python-axl. See: http://pkgconfig.freedesktop.org/releases/])
 fi
 
 
