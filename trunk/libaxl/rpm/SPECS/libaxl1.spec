@@ -6,7 +6,7 @@ Group:          System Environment/Libraries
 License:        LGPLv2+ 
 URL:            http://www.aspl.es/xml
 Source:         %{name}-%{version}.tar.gz
-topdir: 	/usr/src/libaxl/rpm
+# %_topdir 	/usr/src/libaxl/rpm
 # BuildRequires:  libidn-devel
 # BuildRequires:  krb5-devel
 # BuildRequires:  libntlm-devel
@@ -51,6 +51,7 @@ find %{buildroot} -name '*.la' -exec rm -f {} ';'
 Summary: Command line tool built on top of Axl Library
 Group: System Environment/Libraries
 Requires: libaxl1
+Requires: libaxlns1
 %description  -n axl-knife
 Command line tool built on top of Axl Library that allows
 to implement varios operations from the command line.
@@ -131,6 +132,7 @@ Fast and efficient XML 1.0 implementation (devel files)
 %package -n libaxl1
 Summary: Fast and efficient XML 1.0 implementation
 Group: System Environment/Libraries
+Requires: glibc
 %description  -n libaxl1
 Fast and efficient XML 1.0 implementation
 %files -n libaxl1
