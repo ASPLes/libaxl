@@ -1,5 +1,7 @@
+%define axl_version %(cat VERSION)
+
 Name:           axl
-Version:        0.6.9.b5308.g5312
+Version:        %{axl_version}
 Release:        5%{?dist}
 Summary:        LibAxl Fast and efficient XML 1.0 implementation
 Group:          System Environment/Libraries
