@@ -1,3 +1,4 @@
+%define release_date %(date +"%a %b %d %Y")
 %define axl_version %(cat VERSION)
 
 Name:           axl
@@ -162,6 +163,5 @@ Fast and efficient XML 1.0 implementation (extended encoding support)
 
 
 %changelog
-* Sun Aug 17 2014 Francis Brosnan Blázquez <francis@aspl.es> - 0.6.9.b5308.g5312
-- New upstream release
+%include rpm/SPECS/changelog.inc
 
