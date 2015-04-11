@@ -241,8 +241,18 @@ struct _axlStrBlock {
 };
 
 struct _axlStrFactory {
+	/* the following points into the following free region inside
+	   the current [block] which has a size indicated by [size] */
 	int           index;
+
+	/* the following tracks the amount of memory that is allocated
+	   at once every time we run out of memory in the factory. The
+	   idea is to avoid calling the allocator for every single
+	   piece of memory but grab that piece of memory out of a
+	   bigger slot with which is allocated by the proposed [step] */
 	int           step;
+	/* the following tracks the [size] of the current block used by
+	   the factory to serve memory  */
 	int           size;
 	axlStrBlock * block;
 };
@@ -288,7 +298,6 @@ char          * axl_string_factory_alloc  (axlStrFactory * factory, int size)
 	/* check that we could satisfy the size request with current
 	 * block */
 	if ((factory->size - factory->index - 1) < size ) {
-		
 		/* alloc a new block */
 		block = axl_new (axlStrBlock, 1);
 
@@ -297,8 +306,9 @@ char          * axl_string_factory_alloc  (axlStrFactory * factory, int size)
 			block->buffer = axl_new (char, size + 1);
 			factory->size = size + 1;
 		} else {
-			/* store step allocation */
-			factory->size = factory->step;
+			/* store step allocation or the size requested
+			   if it is bigger than preconfigured step */
+			factory->size = (size > factory->step) ? size : factory->step;
 			block->buffer = axl_new (char, factory->size + 1);
 		}
 
