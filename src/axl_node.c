@@ -1401,7 +1401,7 @@ void      axl_node_remove_attribute         (axlNode    * node,
 		/* release hash */
 		axl_hash_free (temp);
 
-		printf ("Number of items after reinserting..%d\n", node->attr_num);
+		/* printf ("Number of items after reinserting..%d\n", node->attr_num); */
 	} /* end if */
 	
 	return;

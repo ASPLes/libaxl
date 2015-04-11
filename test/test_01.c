@@ -26,6 +26,22 @@
 
 #define test_41_iso_8859_15_value "Esto es una prueba: camión, españa, y la tabla de caráteres!\"#$%()*+,-./0123456789:;=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~ ¡¢£€¥Š§š©ª«¬­®¯°±²³Žµ¶·ž¹º»ŒœŸ¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ"
 
+axl_bool test_50 (axlError ** _error) {
+	axlDoc * doc;
+
+	/* get current doc reference */
+        doc = axl_doc_parse_from_file ("testcase_test_50.xml", _error);
+        if (doc == NULL) {
+                printf("ERROR: Parse error!\n");
+                return axl_false;
+        } /* end if */
+
+        /* release the document */
+        axl_doc_free (doc);
+
+	return axl_true;
+}
+
 axl_bool test_49_check_attributes (axlNode * node)
 {
 	/* check node name */
@@ -9023,7 +9039,6 @@ int main (int argc, char ** argv)
 	printf ("** Report bugs to:\n**\n");
 	printf ("**     <axl@lists.aspl.es> Axl mailing list\n**\n");
 
-
 	/* initialize axl library */
 	if (! axl_init ()) {
 		printf ("Unable to initialize Axl library\n");
@@ -9639,6 +9654,15 @@ int main (int argc, char ** argv)
 		printf ("Test 49: Check nodes with lot of attributes.. [   OK   ]\n");
 	}else {
 		printf ("Test 49: Check nodes with lot of attributes.. [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}
+
+	if (test_50 (&error)) {
+		printf ("Test 50: Allocating more that factory->step.. [   OK   ]\n");
+	}else {
+		printf ("Test 50: Allocating more that factory->step.. [ FAILED ]\n  (CODE: %d) %s\n",
 			axl_error_get_code (error), axl_error_get (error));
 		axl_error_free (error);
 		return -1;
