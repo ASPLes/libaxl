@@ -55,7 +55,7 @@ About Advanced Software Production Line, S.L. (ASPL)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   Advanced Software Production Line (ASPL) provides GNU/Linux support
-  and consulting services to enable organization to introduce
+  and consulting services to enable organisation to introduce
   GNU/Linux into their processes, making other platforms to properly
   interact with it.
 
