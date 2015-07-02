@@ -68,6 +68,7 @@ AC_ARG_ENABLE(py-axl,   [   --disable-py-axl       Makes Axl Library to be build
               enable_py_axl_support="$enableval",
 	      enable_py_axl_support=yes)
 AM_CONDITIONAL(ENABLE_PY_AXL_SUPPORT, test "x$enable_py_axl_support" = "xyes")
+AM_PATH_PYTHON([2.3],, enable_py_axl_support=no)
 if test "$enable_py_axl_support" = "yes" ; then
    AM_PATH_PYTHON([2.3])
 
@@ -119,9 +120,11 @@ if test "$compiler" = "gcc" ; then
 fi
 AC_SUBST(compiler_options)
 
-AC_CHECK_PROG(PKG_CONFIG, pkg-config, "yes", "no")
-if test "$PKG_CONFIG" = "no" ; then
-  AC_MSG_ERROR([You need to install pkg-config to compile python-axl. See: http://pkgconfig.freedesktop.org/releases/])
+if test "$enable_py_axl_support" = "yes" ; then
+  AC_CHECK_PROG(PKG_CONFIG, pkg-config, "yes", "no")
+  if test "$PKG_CONFIG" = "no" ; then
+    AC_MSG_ERROR([You need to install pkg-config to compile python-axl. See: http://pkgconfig.freedesktop.org/releases/])
+  fi
 fi
 
 
