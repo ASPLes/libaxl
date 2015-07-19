@@ -678,8 +678,8 @@ axl_bool            __axl_hash_remove_common       (axlHash    * hash,
  * @brief Allows to remove the selected pair key/value on the provided
  * hash table.
  * 
- * The function will remevo the item but it will not resize the table
- * due to it. The function will call to the key destroy and data
+ * The function will remove the item but it will not resize the table
+ * because of this. The function will call to the key destroy and data
  * destroy function if they were defined at the insertion time (\ref
  * axl_hash_insert_full).
  *
