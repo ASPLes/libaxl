@@ -53,7 +53,7 @@ axl_bool        console_debug          = axl_false;
 axl_bool        console_debug2         = axl_false;
 axl_bool        console_debug3         = axl_false;
 axl_bool        console_color_debug    = axl_false;
-int         axl_knife_pid          = -1;
+int             axl_knife_pid          = -1;
 
 /** 
  * @internal Simple macro to check if the console output is activated
@@ -66,6 +66,15 @@ int         axl_knife_pid          = -1;
  * or not.
  */
 #define CONSOLEV if (console_enabled) vfprintf
+
+char * __translate_content (char * content)
+{
+	content = axl_strdup (content);
+	axl_replace (content, "<", "&lt;");
+	axl_replace (content, ">", "&gt;");
+	
+	return content;
+}
 
 /** 
  * @brief Allows to get the file part from the provided path.
@@ -340,6 +349,8 @@ axl_bool axl_knife_htmlize_iterator_node (FILE * fstream, axlNode * node, int le
 	axlAttrCursor * cursor;
 	int             iterator;
 	axl_bool        found_content;
+	const char    * enter_label;
+	char          * ref;
 	
 	/* introduce indentation level */
 	axl_knife_introduce_indentation (fstream, level);
@@ -376,7 +387,9 @@ axl_bool axl_knife_htmlize_iterator_node (FILE * fstream, axlNode * node, int le
 
 				/* before getting the next */
 				if (axl_node_attr_cursor_has_item (cursor)) {
-					fprintf (fstream, "\n");
+					/* write \n in the case is not defined skip first enter for content */
+					if (! exarg_is_defined ("htmlize-skip-first-enter-for-content")) 
+						fprintf (fstream, "\n");
 
 					/* introduce indentation level */
 					axl_knife_introduce_indentation (fstream, level);
@@ -394,19 +407,32 @@ axl_bool axl_knife_htmlize_iterator_node (FILE * fstream, axlNode * node, int le
 		/* free cursor */
 		axl_node_attr_cursor_free (cursor);
 
+		/* enter label */
+		enter_label = "\n";
+		if (exarg_is_defined ("htmlize-skip-first-enter-for-content")) 
+			enter_label = "";
+
 		/* check if the node have not child on any kind ... */
 		if (axl_item_get_first_child (node) == NULL) {
-			fprintf (fstream, "/>\n");
+
+			fprintf (fstream, "/>%s", enter_label);
 			return axl_true;
 		} else {
-			fprintf (fstream, ">\n");
+			fprintf (fstream, ">%s", enter_label);
 		}
 		
 	} else {
 		/* check if the node has childs or only content to avoid placing a \n */
-		fprintf (fstream, "&lt;<span class=\"node\">%s</span>>%s",
-			 axl_node_get_name (node),
-			 axl_node_have_childs (node) ? "\n" : "");
+		/* printf ("Defined? %d\n", exarg_is_defined ("htmlize-skip-first-enter-for-content"));
+		   printf ("Status? %d\n", (axl_node_have_childs (node) && ! exarg_is_defined ("htmlize-skip-first-enter-for-content"))); */
+
+		ref = axl_strdup_printf ("&lt;<span class=\"node\">%s</span>>%s",
+					 axl_node_get_name (node),
+					 (axl_node_have_childs (node) && ! exarg_is_defined ("htmlize-skip-first-enter-for-content")) ? "\n" : "");
+
+		/* printf (" Node: [%s]\n", ref); */
+		fwrite (ref, strlen (ref), 1, fstream);
+		axl_free (ref);
 	}
 
 	/* call to produce internal content representation */
@@ -422,7 +448,15 @@ axl_bool axl_knife_htmlize_iterator_node (FILE * fstream, axlNode * node, int le
 			break;
 		case ITEM_CONTENT_FROM_FACTORY:
 		case ITEM_CONTENT:
-			fprintf (fstream, "%s", axl_item_get_content (item, NULL));
+			/* get reference to the content to be translated */
+			ref = axl_item_get_content (item, NULL);
+			ref = __translate_content (ref);
+
+			/* printf ("Content [%s]\n", ref); */
+
+			fprintf (fstream, "%s", ref);
+
+			axl_free (ref);
 			break;
 		case ITEM_PI:
 			break;
@@ -432,14 +466,30 @@ axl_bool axl_knife_htmlize_iterator_node (FILE * fstream, axlNode * node, int le
 		case ITEM_COMMENT:
 			/* introduce indentation level */
 			axl_knife_introduce_indentation (fstream, level + 1);
-			fprintf (fstream, "<span class=\"comment\">&lt;!-- %s --></span>\n",
-				 axl_item_get_content (item, NULL));
+
+			/* get reference to the content to be translated */
+			ref = axl_item_get_content (item, NULL);
+			ref = __translate_content (ref);
+
+			/* printf ("Content [%s]\n", ref); */
+
+			fprintf (fstream, "<span class=\"comment\">&lt;!-- %s --></span>\n", ref);
+
+			axl_free (ref);
 			break;
 		case ITEM_REF:
 			break;
 		case ITEM_CDATA:
-			fprintf (fstream, "<span class=\"cdata\">&lt;![CDATA[</span>%s<span class=\"cdata\">]]></span>",
-				 axl_item_get_content (item, NULL));
+
+			/* get reference to the content to be translated */
+			ref = axl_item_get_content (item, NULL);
+			ref = __translate_content (ref);
+
+			/* printf ("Content [%s]\n", ref); */
+
+			fprintf (fstream, "<span class=\"cdata\">&lt;![CDATA[</span>%s<span class=\"cdata\">]]></span>", ref);
+			
+			axl_free (ref);
 			break;
 		} /* end switch */
 
@@ -662,6 +712,9 @@ int main (int argc, char ** argv)
 
 	exarg_install_arg ("htmlize", "e", EXARG_NONE,
 			   "Takes an input xml document and produces an transformation preparing the document to be included into an html web page");
+
+	exarg_install_arg ("htmlize-skip-first-enter-for-content", "r", EXARG_NONE,
+			   "When used in conjuntion with --htmlize/-e, allows to skip a default enter that is introduced before any content inside any node. ");
 
 	exarg_install_arg ("pre-class", "p", EXARG_STRING,
 			   "In conjunction with --htmlize option, which option allows to configure the CSS class to be placed on top most <pre> node.");
