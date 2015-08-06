@@ -73,12 +73,14 @@ if test "$enable_py_axl_support" = "yes" ; then
    AM_PATH_PYTHON([2.3])
 
    # find python-config
-   PYTHON_CONFIG=`sh ./get-python-config`
+   # AC_SUBST(PYTHON_CONFIG, m4_esyscmd([./get-python-config]))
+   PYTHON_CONFIG=`./get-python-config`
 
    echo "Python pythondir is: ${pythondir}"
 
    # get site_packages
-   python_dir_check=`eval python ./check-python-dir.py ${pythondir}`
+   # AC_SUBST(python_dir_check, m4_esyscmd([./check-python-dir.py $pythondir]))
+   python_dir_check=`./check-python-dir.py ${pythondir}`
 
    # get python includes 
    PYTHON_INCLUDES=`$PYTHON_CONFIG --includes 2>/dev/null`
