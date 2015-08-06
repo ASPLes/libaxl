@@ -74,7 +74,13 @@ if test "$enable_py_axl_support" = "yes" ; then
 
    # find python-config
    # AC_SUBST(PYTHON_CONFIG, m4_esyscmd([./get-python-config]))
-   PYTHON_CONFIG=`./get-python-config`
+   if test -f "/bin/bash" ; then
+      PYTHON_CONFIG=`./get-python-config`
+   else
+      bash_location=`which bash`
+      echo "Bash location found: $bash_location"
+      PYTHON_CONFIG=`${bash_location} ./get-python-config`
+   fi 
 
    echo "Python pythondir is: ${pythondir}"
    echo "Python found: ${PYTHON}"
