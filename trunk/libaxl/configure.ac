@@ -77,10 +77,15 @@ if test "$enable_py_axl_support" = "yes" ; then
    PYTHON_CONFIG=`./get-python-config`
 
    echo "Python pythondir is: ${pythondir}"
+   echo "Python found: ${PYTHON}"
 
    # get site_packages
    # AC_SUBST(python_dir_check, m4_esyscmd([./check-python-dir.py $pythondir]))
-   python_dir_check=`./check-python-dir.py ${pythondir}`
+   if test "${PYTHON}" = "/usr/bin/python" ; then
+      python_dir_check=`./check-python-dir.py ${pythondir}`
+   else
+      python_dir_check=`python ./check-python-dir.py ${pythondir}`
+   fi
 
    # get python includes 
    PYTHON_INCLUDES=`$PYTHON_CONFIG --includes 2>/dev/null`
