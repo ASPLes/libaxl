@@ -73,12 +73,12 @@ if test "$enable_py_axl_support" = "yes" ; then
    AM_PATH_PYTHON([2.3])
 
    # find python-config
-   PYTHON_CONFIG=`./get-python-config`
+   PYTHON_CONFIG=`sh ./get-python-config`
 
    echo "Python pythondir is: ${pythondir}"
 
    # get site_packages
-   python_dir_check=`eval ./check-python-dir.py ${pythondir}`
+   python_dir_check=`eval python ./check-python-dir.py ${pythondir}`
 
    # get python includes 
    PYTHON_INCLUDES=`$PYTHON_CONFIG --includes 2>/dev/null`
@@ -123,7 +123,11 @@ AC_SUBST(compiler_options)
 if test "$enable_py_axl_support" = "yes" ; then
   AC_CHECK_PROG(PKG_CONFIG, pkg-config, "yes", "no")
   if test "$PKG_CONFIG" = "no" ; then
-    AC_MSG_ERROR([You need to install pkg-config to compile python-axl. See: http://pkgconfig.freedesktop.org/releases/])
+    dnl now check pkgconf which seems to be a replacement in free-bsd
+    AC_CHECK_PROG(PKG_CONFIG, pkgconf, "yes", "no")
+    if test "$PKG_CONFIG" = "no" ; then
+       AC_MSG_ERROR([You need to install pkg-config/pkgconf to compile python-axl. See: http://pkgconfig.freedesktop.org/releases/ or https://github.com/pkgconf/pkgconf])
+    fi  			      	 	 
   fi
 fi
 
