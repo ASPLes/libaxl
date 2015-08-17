@@ -1,0 +1,27 @@
+{
+    "name":"libaxl1",
+    "origin":"textproc/axl",
+    "version":"@VERSION@",
+    "comment":"Fast and efficient XML 1.0 implementation",
+    "maintainer":"info@aspl.es",
+    "www":"http://www.aspl.es/xml/",
+    "abi":"FreeBSD:9:amd64",
+    "arch":"freebsd:9:x86:64",
+    "prefix":"/usr/local",
+    "flatsize":@FLATSIZE@,
+    "licenselogic":"single",
+    "licenses":["LGPL21"],
+    "desc":"Fast and efficient XML 1.0 implementation",
+    "categories":["textproc"],
+    "shlibs_provided":["libaxl.so.0"],
+    "options":{"CURVE":"on","DEBUG":"off","PGM":"on"},
+    "files":{
+    @LIST_OF_FILES@
+    },
+    "scripts":
+       {
+        "post-install":"/sbin/ldconfig -m /usr/local/lib",
+        "post-deinstall":"/sbin/ldconfig -R"
+       }
+},
+
