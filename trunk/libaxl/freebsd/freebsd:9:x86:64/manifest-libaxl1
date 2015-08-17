@@ -14,7 +14,6 @@
     "desc":"Fast and efficient XML 1.0 implementation",
     "categories":["textproc"],
     "shlibs_provided":[@SHLIBS_PROVIDED@],
-    "options":{"CURVE":"on","DEBUG":"off","PGM":"on"},
     "files":{
     @LIST_OF_FILES@
     },
