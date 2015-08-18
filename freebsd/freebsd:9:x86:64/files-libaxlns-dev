@@ -1,0 +1,5 @@
+usr/local/lib/pkgconfig/axl-ns.pc
+usr/local/include/axl/axl_ns.h
+usr/local/include/axl/axl_ns_doc.h
+usr/local/include/axl/axl_ns_node.h
+
