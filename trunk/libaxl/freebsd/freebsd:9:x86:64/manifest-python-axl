@@ -17,11 +17,6 @@
     @SHLIBS_PROVIDED@
     "files":{
     @LIST_OF_FILES@
-    },
-    "scripts":
-       {
-        "post-install":"/sbin/ldconfig -m /usr/local/lib",
-        "post-deinstall":"/sbin/ldconfig -R"
-       }
+    }
 },
 
