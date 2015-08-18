@@ -2,7 +2,7 @@
     "name":"@PACKAGENAME@",
     "origin":"textproc/@PACKAGENAME@",
     "version":"@VERSION@",
-    "comment":"@DESCRIPTION@",
+    "comment":"Command line tool built on top of Axl Library",
     "maintainer":"info@aspl.es",
     "www":"http://www.aspl.es/xml/",
     "abi":"@ABI@",
@@ -11,16 +11,12 @@
     "flatsize":@FLATSIZE@,
     "licenselogic":"single",
     "licenses":["LGPL21"],
-    "desc":"@DESCRIPTION@",
+    "desc":"Command line tool built on top of Axl Library",
+    "deps" : {"libaxl1" : {"origin" : "textproc/libaxl1", "version" : "@VERSION@"}},
     "categories":["textproc"],
     @SHLIBS_PROVIDED@
     "files":{
     @LIST_OF_FILES@
-    },
-    "scripts":
-       {
-        "post-install":"/sbin/ldconfig -m /usr/local/lib",
-        "post-deinstall":"/sbin/ldconfig -R"
-       }
+    }
 },
 
