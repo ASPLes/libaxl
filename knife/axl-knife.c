@@ -429,9 +429,12 @@ axl_bool axl_knife_htmlize_iterator_node (FILE * fstream, axlNode * node, int le
 		ref = axl_strdup_printf ("&lt;<span class=\"node\">%s</span>>%s",
 					 axl_node_get_name (node),
 					 (axl_node_have_childs (node) && ! exarg_is_defined ("htmlize-skip-first-enter-for-content")) ? "\n" : "");
-
+		
 		/* printf (" Node: [%s]\n", ref); */
-		fwrite (ref, strlen (ref), 1, fstream);
+		if (fwrite (ref, 1, strlen (ref), fstream) != strlen (ref)) {
+		      printf ("ERROR: failed to write expected bytes (%d), unable to continue..\n", (int) strlen (ref));
+		      exit (-1);
+		} /* end if */
 		axl_free (ref);
 	}
 
