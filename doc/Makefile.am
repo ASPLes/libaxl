@@ -22,6 +22,7 @@ build_doc:
 	rm -rf html/
 	@echo "Generating module documentation..";
 	doxygen axl-doc.doxygen
+	cp $(top_srcdir)/doc/hacha-100x171.png html
 	cp $(top_srcdir)/doc/axl.css html
 	cp $(top_srcdir)/doc/bg.png html
 	cp $(top_srcdir)/doc/main-page-logo.png html
