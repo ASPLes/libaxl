@@ -5,10 +5,10 @@ It was downloaded from http://xml.asp.l.es
 
 Upstream Author: Advanced Software Production Line, S.L.
 
-Copyright: 2006 Advanced Software Production Line, S.L.
+Copyright: 2015 Advanced Software Production Line, S.L.
 
-License: Axl Library is license under the LGPL.
+License: Axl Library is license under the LGPL2.1
 
-The Debian packaging is (C) 2007, Francis Brosnan <francis@aspl.es> and
-is licensed under the GPL, see `/usr/share/common-licenses/GPL'.
+The Debian packaging is (C) 2015, Francis Brosnan <francis@aspl.es> and
+
 
