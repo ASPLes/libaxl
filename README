@@ -1,6 +1,7 @@
                        --== Axl Library ==--
                        
-LibAxl (or just Axl) is an implementation of the XML 1.0 standard specification, 
-developed by the ASPL to support many of its XML software requirements.
+LibAxl (or just Axl) is an implementation of the XML 1.0 standard 
+specification, developed by the ASPL to support many of its XML 
+software requirements.
 
 See more about Axl Library at: http://www.aspl.es/xml
