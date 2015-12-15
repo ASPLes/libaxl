@@ -1,5 +1,5 @@
 # py-axl package version
-VERSION = "0.6.9.b5308.g5312"
+VERSION = "0.7.1.b3508"
 
 # only import base library
 from libpy_axl import *
