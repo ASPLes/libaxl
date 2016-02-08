@@ -181,7 +181,8 @@ AC_TRY_LINK([#define _GNU_SOURCE
 #include <stdio.h>], 
 [
   char * result;
-  return vasprintf (&result, "This is a test: %d", NULL);
+  va_list args;
+  return vasprintf (&result, "This is a test: %d", args);
 ], [have_vasprintf=yes],[have_vasprintf=no])
 echo "Checking vasprintf support: $have_vasprintf"
 
