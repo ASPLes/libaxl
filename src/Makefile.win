@@ -1,3 +1,4 @@
+# Hey emacs this this -*- makefile -*- 
 # Makefile for windows (mingw)
 OBJ  = axl.o \
        axl_decl.o \
