@@ -42,3 +42,5 @@ export readline_flags = -Ic:/readline/readline-6.2/include
 # makensis              = c:/ARCHIV~1/NSIS/makensis.exe
 makensis		= "C:/Program Files (x86)/NSIS/makensis.exe"
 
+# cc compiler to use usually gcc.exe
+export CC          = x86_64-w64-mingw32-gcc.exe

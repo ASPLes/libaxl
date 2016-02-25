@@ -1,6 +1,5 @@
-# Project: vortex-listener vortex-client
+# Project: libaxl test
 
-CC       = gcc.exe -g -Wall
 OBJ      = test_01.o 
 
 PROGRAMS = test_01.exe 

@@ -39,3 +39,5 @@ export readline_libs = c:/af-arch-depends/bin/readline5.dll
 makensis              = c:/ARCHIV~1/NSIS/makensis.exe
 # makensis		= "C:/Program Files (x86)/NSIS/makensis.exe"
 
+# cc compiler to use usually gcc.exe
+export CC          = gcc.exe

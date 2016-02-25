@@ -22,9 +22,6 @@ axl_version = 0.7.1.b3508
 
 # While especifiying directories do not append the trailing slash
 
-# cc compiler to use usually gcc.exe
-export CC          = gcc.exe
-
 # general configuration
 export enable_gcc_debug = -g
 

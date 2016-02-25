@@ -1,6 +1,5 @@
 # Project: vortex-listener vortex-client
 
-CC       = gcc.exe -g -Wall
 OBJ      = axl-knife.o exarg.o
 
 PROGRAM = axl-knife.exe 
