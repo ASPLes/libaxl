@@ -6,21 +6,22 @@
 # 
 # 1) To compile the project run:
 #
-#    >> make -f Makefile.win build
+#    >> make -f Makefile.win build_axl
 # 
 # 2) To clean the project run:
 # 
-#    >> make -f Makefile.win clean
+#    >> make -f Makefile.win clean_axl
 #
 #  Requirements: mingw, msys, make and gcc
 # 
-
-include config.mk
 
 # version
 axl_version = 0.7.1.b3508
 
 # While especifiying directories do not append the trailing slash
+
+# cc compiler to use usually gcc.exe
+export CC          = gcc.exe
 
 # general configuration
 export enable_gcc_debug = -g
@@ -39,6 +40,7 @@ export MODE        = windows
 #############################################
 # after this line lines shouldn't be edited #
 #############################################
+top_srcdir               = ../..
 version_prefix           = -MinGW32
 export search_lib_path   = 
 
@@ -53,36 +55,22 @@ export axl_dll                 = libaxl
 
 all: build_axl
 
-build: build_axl
-build_axl: prepare_axl
+build_axl: 
 	@echo
 	@echo "Building libaxl.."
-	@cd $(axl); AXL_VERSION=$(axl_version) make -f Makefile.win; cd -
+	@cd $(axl); AXL_VERSION=$(axl_version) make -f Makefile.win; cd $(top_srcdir)
 	@echo "Building libaxl (Namespaces).."
-	@cd $(axl_ns); AXL_VERSION=$(axl_version) make -f Makefile.win; cd -
+	@cd $(axl_ns); AXL_VERSION=$(axl_version) make -f Makefile.win; cd $(top_srcdir)
 	@echo "Building libaxl (BABEL).."
-	@cd $(axl_babel); AXL_VERSION=$(axl_version) make -f Makefile.win; cd -
+	@cd $(axl_babel); AXL_VERSION=$(axl_version) make -f Makefile.win; cd $(top_srcdir)
 	@echo "Building axl-knife.."
-	@cd $(axl_knife); AXL_VERSION=$(axl_version) make -f Makefile.win; cd -
+	@cd $(axl_knife); AXL_VERSION=$(axl_version) make -f Makefile.win; cd $(top_srcdir)
 	@echo "Building libaxl tests.."
-	@cd $(axl_test); AXL_VERSION=$(axl_version) make -f Makefile.win; cd -
+	@cd $(axl_test); AXL_VERSION=$(axl_version) make -f Makefile.win; cd $(top_srcdir)
 
-prepare_axl:
-	export axl_version=`cat VERSION`
-	./prepare-nsh.sh  $(platform_bits)
-
-bundle: axl_bundle
-axl_bundle: prepare_axl
-	@echo "generando fichero de instalación"
-	cp src/axl_config_win$(platform_bits).h src/axl_config.h
-	$(makensis) axl.nsi
-
-
-clean: clean_axl
 clean_axl:
-	cd $(axl);             make -f Makefile.win clean; cd -
-	cd $(axl_ns);          make -f Makefile.win clean; cd -
-	cd $(axl_babel);       make -f Makefile.win clean; cd -
-	cd $(axl_test);        make -f Makefile.win clean; cd -
-
+	cd $(axl);             make -f Makefile.win clean; cd $(top_srcdir)
+	cd $(axl_ns);          make -f Makefile.win clean; cd $(top_srcdir)
+	cd $(axl_babel);       make -f Makefile.win clean; cd $(top_srcdir)
+	cd $(axl_test);        make -f Makefile.win clean; cd $(top_srcdir)
 
