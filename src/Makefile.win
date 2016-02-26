@@ -44,7 +44,7 @@ $(DLL): $(OBJ)
 # -Wl,--out-implib,libaxl.lib
 	$(CC) -m$(MODE) -shared -Wl,--out-implib,$(IMPORT_DLL) $(export_all_symbols) -lm \
 		  $(OBJ) -o $(DLL)        $(LIBS)
-	lib.exe /def:libaxl.def
+	lib.exe /machine:$(link_machine) /def:libaxl.def
 	strip --strip-unneeded $(DLL)
 
 %.o: %.c

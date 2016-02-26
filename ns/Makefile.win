@@ -1,3 +1,4 @@
+# Hey emacs this this -*- makefile -*- 
 # Makefile for windows (mingw)
 OBJ  = axl_ns_doc.o axl_ns_node.o
 
@@ -29,7 +30,7 @@ $(DLL): $(OBJ)
 # -Wl,--out-implib,libaxl.lib
 	$(CC) -m$(MODE) -shared -Wl,--out-implib,$(IMPORT_DLL) $(export_all_symbols) \
 		  $(OBJ) -o $(DLL)        $(LIBS)
-	lib.exe /def:$(axl_dll)-ns.def
+	lib.exe  /machine:$(link_machine) /def:$(axl_dll)-ns.def
 	strip --strip-unneeded $(DLL)
 
 %.o: %.c
