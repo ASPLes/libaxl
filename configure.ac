@@ -198,7 +198,7 @@ AC_CONFIG_COMMANDS([axl_config.h],
  * Axl Library axl_config.h
  * Platform dependant definitions.
  *
- * This is a generated file.  Please modify 'configure.in'
+ * This is a generated file.  Please modify 'configure.ac'
  */
 
 #ifndef __AXL_CONFIG_H__
