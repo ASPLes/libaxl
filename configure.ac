@@ -356,7 +356,7 @@ echo "   Build Axl Namespace support:  [$enable_axl_ns]"
 echo "   Build Axl Library tests:      [$enable_axl_test]"
 echo "   Build Axl Knife:              [$enable_axl_knife]"
 echo "   Build Axl Library debug log:  [$enable_axl_log]"
-echo "   Build PyAxl:                  [$enable_py_axl_support]"
+echo "   Build PyAxl:                  [$python_devel_found]"
 if test x$DOXYGEN = xyes ; then
    echo "   Build Axl Library doc:        enabled"
 else	    
