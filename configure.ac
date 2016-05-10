@@ -331,7 +331,6 @@ AC_SUBST(SHARED_EXTENSION)
 
 AC_OUTPUT([
 Makefile
-Makefile.win
 src/Makefile
 ns/Makefile
 doc/Makefile
