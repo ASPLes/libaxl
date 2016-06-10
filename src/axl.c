@@ -950,15 +950,40 @@
  * href="http://www.aspl.es/axl/doc.html">this section to know more
  * about this.</a>
  *
+ * Ensure you have the following dependencies (<b>pkg-config</b>, <b>libtool</b>)
+ * and optionally <b>python-dev</b> for PyAxl
+ *
  * Then use the standard procedure to get compiled an autotool ready
  * package. Here are the steps:
  *
  * \code
- *  >> tar xzvf axl-0.2.1.b1984.g1985.tar.gz
- *  >> cd axl-0.2.1.b1984.g1985/
+ *  >> tar xzvf axl-0.7.1.b3508.tar.gz
+ *  >> cd axl-0.7.1.b3508/
  *  >> ./configure
  *  >> make
+ *  >> cd test && ./test_01
  *  >> make install
+ * \endcode
+ *
+ * \section axl_on_unix_github GNU/Linux (or any posix OS) installation instructions from github
+ *
+ * Use the following instructions to download and build from github.com:
+ *
+ * First, download source code using subversion or git:
+ * \code
+ * >> svn co https://github.com/asples/libaxl/trunk libaxl
+ * ...or...
+ * >> git clone https://github.com/asples/libaxl
+ * \endcode
+ *
+ * After that, follow similar commands to build:
+ *
+ * \code
+ * >> cd libaxl
+ * >> ./autogen.sh
+ * >> make
+ * >> cd test && ./test_01
+ * >> make install
  * \endcode
  * 
  * \section checking_axl Checking Axl Library compilation (regression test)
