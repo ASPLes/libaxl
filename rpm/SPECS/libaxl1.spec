@@ -69,7 +69,12 @@ Requires: libaxl1
 %description  -n python-axl
 Python bindings for Axl Library
 %files -n python-axl
+%if 0%{?el6}
 /usr/lib/python2.6/site-packages/axl/*
+%endif
+%if 0%{?el7}
+/usr/lib/python2.7/site-packages/axl/*
+%endif
 
 # python-axl-dev package
 %package -n python-axl-dev
