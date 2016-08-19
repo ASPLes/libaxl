@@ -1,6 +1,6 @@
 EXTRA_DIST = axl-doc.doxygen axl.css main-page-logo.png body_back.gif \
              axl-doc-footer.html axl_babel_reading.png axl-components.png \
-	     axl-doc-header.html image01.png ns_example.c ns_shaper.xml bg.png aspl-logo.png
+	     axl-doc-header.html image01.png ns_example.c ns_shaper.xml bg.png aspl-logo.png hacha-100x171.png
 
 bin_SCRIPTS = initial_build_doc
 
@@ -22,6 +22,9 @@ build_doc:
 	rm -rf html/
 	@echo "Generating module documentation..";
 	doxygen axl-doc.doxygen
+	pwd=$(shell pwd)
+	@echo "Current working top_srcdir=${top_srcdir} ${pwd}"
+
 	cp $(top_srcdir)/doc/hacha-100x171.png html
 	cp $(top_srcdir)/doc/axl.css html
 	cp $(top_srcdir)/doc/bg.png html
