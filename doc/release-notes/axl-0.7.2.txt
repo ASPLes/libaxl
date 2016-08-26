@@ -1,0 +1,93 @@
+          ########################################
+          #             Axl Library              #
+          #     Journey to proxima centaury      #
+          #                0.7.2                 #
+          ########################################
+
+Advanced Software Production Line is proud to announce a new Axl
+Library release.
+
+Axl Library is a small and efficient XML toolkit, written in ANSI C,
+with support for Python bindings and released under the LGPL. It
+allows to produce efficient and clear code that handle XML data.
+
+The library was created to support XML requirements needed by software
+developed by Advanced Software Production Line, S.L.
+
+At this moment the library is being used by Vortex Library,
+Turbulence, Core-Admin, MyQtt and many more...
+
+Resources
+~~~~~~~~~
+
+   Axl Homepage
+   [ http://www.aspl.es/xml ]
+
+   Advanced Software Production Line, S.L.
+   [ http://www.aspl.es ]
+
+   Featured project: Core-Admin
+   [ http://www.core-admin.com ]
+
+This release in short
+~~~~~~~~~~~~~~~~~~~~~
+
+  - Added official support for Debian Jessie 8.X, Ubuntu Xenial 16.04
+    and Centos 7
+
+  - Minor stable release including building corrections and wrong
+    variable initialization at axl_node_get_content_copy
+
+Changes from previous release 0.7.1
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* [fix] Fixed Raspberry (raspbian wheezy) vasprintf detection.
+  Updated regression test to fix (double) ".%f" detection.
+
+* [fix] More updates to allow selecting compiler for w64 platforms..
+
+* [fix] Updated configure.ac to generate a axl_config.h with an
+  indication to configure.ac rather than .in file.
+
+* [fix] Updated configure.ac to notify that Python Axl building was
+  detected or not..
+
+* [fix] Added support for ubuntu xenial 16.04..
+
+* [fix] Added initial files to support debian jessie
+
+* [fix] Updated configure.ac to avoid updating Makefile.win since it
+  is not going to be used by platforms using auto-tools and auto-conf
+
+* [fix] Fixed wrong variable initialization inside
+  axl_node_get_content_copy (reported by gcc 5.3)
+
+* [fix] Removed old reference to Makefile.win.in file at Makefile.am
+  spotted by Centos7 support
+
+* [fix] Updated libaxl1.spec to support Centos7 (el7)
+
+* [fix] Updated	buildrpm.sh to check error code	and stop failing
+  reporting that error..
+
+About Advanced Software Production Line, S.L. (ASPL)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Advanced Software Production Line (ASPL) provides GNU/Linux support
+  and consulting services to enable organisation to introduce
+  GNU/Linux into their processes, making other platforms to properly
+  interact with it.
+
+  Contact us, using English or Spanish, to get commercial support
+  and/or XML based development services.
+
+  You can reach us:
+
+       http://www.aspl.es - info@aspl.es
+
+  We hope Axl Library help you. Enjoy Axl Library!
+
+--
+Francis Brosnan Blázquez           - francis@aspl.es
+Advanced Software Production Line  - http://www.aspl.es
+26th Aug 2016, Madrid (Spain)
