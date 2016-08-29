@@ -26,6 +26,8 @@
 
 #define test_41_iso_8859_15_value "Esto es una prueba: camión, españa, y la tabla de caráteres!\"#$%()*+,-./0123456789:;=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~ ¡¢£€¥Š§š©ª«¬­®¯°±²³Žµ¶·ž¹º»ŒœŸ¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ"
 
+#define ROUNDING_TOLERANCE 0.00001
+
 axl_bool test_50 (axlError ** _error) {
 	axlDoc * doc;
 
@@ -2786,13 +2788,14 @@ axl_bool test_20 (axlError ** error)
 		axl_error_new (-1, "Expected to find an integer value (14), but it wasn't found", NULL, error);
 		return axl_false;
 	}
-
-	axl_node_annotate_double (root, "double-value", 58.20);
-
-	if (axl_node_annotate_get_double (root, "double-value", axl_false) != 58.20) {
-		axl_error_new (-1, "Expected to find an double value (58.20), but it wasn't found", NULL, error);
-		return axl_false;
-	}
+    
+    axl_node_annotate_double (root, "double-value", 58.20);
+    
+    if ( (axl_node_annotate_get_double (root, "double-value", axl_false) - 58.20) > ROUNDING_TOLERANCE) {
+        
+        axl_error_new (-1, "Expected to find an double value (58.20), but it wasn't found", NULL, error);
+        return axl_false;
+    }
 
 	axl_node_annotate_string (root, "string-value", "this is a test string");
 
