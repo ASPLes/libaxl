@@ -80,13 +80,13 @@ test_03a_LDADD   = $(top_builddir)/src/libaxl.la
 # copy all test files 
 prepare_files: 
 	test -e test.xml || cp $(top_srcdir)/test/*.xml $(top_srcdir)/test/*.xdl $(top_srcdir)/test/*.dtd .
-	@cd ../py-axl; make; cd -
-	@test -d axl || mkdir axl
+	cd ../py-axl; make; cd -
+	test -d axl || mkdir axl
         # copy dynamic libraries
-	@cp `find ../py-axl -name libpy_axl$(SHARED_EXTENSION) -type l` axl/
+	find ../py-axl -name libpy_axl$(SHARED_EXTENSION) -type l -exec cp -f {} axl/ \;
         # copy python imports
-	@test -e axl/__init__.py || cp ../py-axl/__init__.py axl/
-	@diff axl/__init__.py ../py-axl/__init__.py || cp ../py-axl/__init__.py axl/
+	test -e axl/__init__.py || cp ../py-axl/__init__.py axl/
+	diff axl/__init__.py ../py-axl/__init__.py || cp ../py-axl/__init__.py axl/
 
 refresh: 
 	$(top_builddir)/knife/axl-knife --input fact.dtd --dtd-to-c --output fact.dtd.h --ifnewer
