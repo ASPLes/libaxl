@@ -605,6 +605,7 @@ axl_bool            __axl_hash_remove_common       (axlHash          * hash,
 						    axlPointer         key,
 						    axl_bool           remove,
 						    axl_bool           defer,
+						    axlPointer       * key_orig,
 						    axlDestroyFunc   * destroy_key,
 						    axlPointer       * data,
 						    axlDestroyFunc   * destroy_data)
@@ -617,6 +618,8 @@ axl_bool            __axl_hash_remove_common       (axlHash          * hash,
 	
 	if (defer) {
 		/* clear incoming references */
+		if (key_orig)
+			(*key_orig) = NULL;
 		if (destroy_key)
 			(*destroy_key) = NULL;
 		if (data)
@@ -649,6 +652,9 @@ axl_bool            __axl_hash_remove_common       (axlHash          * hash,
 		hash->items--;
 
 		if (defer) {
+			/* set key destroy handler */
+			if (key_orig && node->key)
+				(*key_orig) = node->key;
 			/* set key destroy handler */
 			if (destroy_key && node->key_destroy)
 				(*destroy_key) = node->key_destroy;
@@ -725,7 +731,7 @@ axl_bool            axl_hash_remove       (axlHash    * hash,
 {
 	/* call common implementation deleting data with destroy
 	 * functions defined */
-	return __axl_hash_remove_common (hash, key, axl_true, axl_false, NULL, NULL, NULL);
+	return __axl_hash_remove_common (hash, key, axl_true, axl_false, NULL, NULL, NULL, NULL);
 }
 
 /** 
@@ -752,13 +758,38 @@ axl_bool            axl_hash_remove       (axlHash    * hash,
  */
 axl_bool        axl_hash_remove_deferred       (axlHash          * hash,
 						axlPointer         key,
+						axlPointer       * key_orig,
 						axlDestroyFunc   * destroy_key,
 						axlPointer       * data,
 						axlDestroyFunc   * destroy_data)
 {
 	/* call common implementation deleting data with destroy
 	 * functions defined */
-	return __axl_hash_remove_common (hash, key, axl_true, axl_true, destroy_key, data, destroy_data);
+	return __axl_hash_remove_common (hash, key, axl_true, axl_true, key_orig, destroy_key, data, destroy_data);
+}
+
+/** 
+ * @brief Allows to release key and data if optionally destroy_key and
+ * destroy_data are defined.
+ *
+ * This function is to be used along with \ref axl_hash_remove_deferred
+ *
+ * See \ref axl_hash_remove_deferred for a working example.
+ */
+void            axl_hash_deferred_cleanup (axlPointer         key,
+					   axlDestroyFunc     destroy_key,
+					   axlPointer         data,
+					   axlDestroyFunc     destroy_data)
+{
+	/* call to destroy key if key and destroy function are defined */
+	if (key && destroy_key)
+		destroy_key (key);
+
+	/* call to destroy data if data and destroy function are defined */
+	if (data && destroy_data)
+		destroy_data (data);
+	
+	return;
 }
 
 /** 
@@ -786,7 +817,7 @@ axl_bool            axl_hash_delete       (axlHash    * hash,
 {
 	/* call common implementation, without calling destroy
 	 * functions defined */
-	return __axl_hash_remove_common (hash, key, axl_false, axl_false, NULL, NULL, NULL);
+	return __axl_hash_remove_common (hash, key, axl_false, axl_false, NULL, NULL, NULL, NULL);
 }
 
 /** 

@@ -75,9 +75,15 @@ axl_bool        axl_hash_remove       (axlHash    * hash,
 
 axl_bool        axl_hash_remove_deferred       (axlHash          * hash,
 						axlPointer         key,
+						axlPointer       * key_orig,
 						axlDestroyFunc   * destroy_key,
 						axlPointer       * data,
 						axlDestroyFunc   * destroy_data);
+
+void            axl_hash_deferred_cleanup (axlPointer         key,
+					   axlDestroyFunc     destroy_key,
+					   axlPointer         data,
+					   axlDestroyFunc     destroy_data);
 
 axl_bool        axl_hash_delete       (axlHash    * hash,
 				       axlPointer   key);

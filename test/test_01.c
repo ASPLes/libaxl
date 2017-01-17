@@ -8284,7 +8284,10 @@ axl_bool test_02_01 (void)
 	}
 
 	/* perform a remove operation */
-	axl_hash_remove (hash, "value");
+	if (axl_hash_remove (hash, "value") ) {
+		printf ("Error: axl_hash_remove returned axl_true when it was expected axl_false..\n");
+		return axl_false;
+	} /* end if */
 
 	/* get data associated */
 	data = axl_hash_get (hash, "value");
@@ -8360,7 +8363,11 @@ axl_bool test_02_03 (void)
 
 axl_bool test_02_03a (void)
 {
-	axlHash * hash;
+	axlHash          * hash;
+	axlPointer         key;
+	axlDestroyFunc     destroy_key;
+	axlPointer         data;
+	axlDestroyFunc     destroy_data;
 
 	hash = axl_hash_new (axl_hash_int, axl_hash_equal_int);
 
@@ -8418,6 +8425,46 @@ axl_bool test_02_03a (void)
 		return axl_false;
 	}
 
+	/* call to free hash */
+	axl_hash_free (hash);
+
+	/* create the hash */
+	hash = axl_hash_new (axl_hash_string, axl_hash_equal_string);
+
+	/* call to insert into hash */
+	axl_hash_insert_full (hash, axl_strdup ("this-is-a-test"), axl_free, axl_strdup ("this-is-data"), axl_free);
+	axl_hash_insert_full (hash, axl_strdup ("this-is-a-test-02"), axl_free, axl_strdup ("this-is-data-02"), axl_free);
+	axl_hash_insert_full (hash, axl_strdup ("this-is-a-test-03"), axl_free, axl_strdup ("this-is-data-03"), axl_free);
+	axl_hash_insert_full (hash, axl_strdup ("this-is-a-test-04"), axl_free, axl_strdup ("this-is-data-04"), axl_free);
+
+	/* call to remove deferred */
+	if (! axl_hash_remove_deferred (hash, "this-is-a-test", &key, &destroy_key, &data, &destroy_data)) {
+		printf ("Error, expected to find (7) axl_true for axl_hash_remove_deferred but axl_false was found..\n");
+		return axl_false;
+	} /* end if */
+	axl_hash_deferred_cleanup (key, destroy_key, data, destroy_data);
+
+	/* call to remove deferred */
+	if (! axl_hash_remove_deferred (hash, "this-is-a-test-02", &key, &destroy_key, &data, &destroy_data)) {
+		printf ("Error, expected to find (7.1) axl_true for axl_hash_remove_deferred but axl_false was found..\n");
+		return axl_false;
+	} /* end if */
+	axl_hash_deferred_cleanup (key, destroy_key, data, destroy_data);
+
+	/* call to remove deferred */
+	if (! axl_hash_remove_deferred (hash, "this-is-a-test-03", &key, &destroy_key, &data, &destroy_data)) {
+		printf ("Error, expected to find (7.2) axl_true for axl_hash_remove_deferred but axl_false was found..\n");
+		return axl_false;
+	} /* end if */
+	axl_hash_deferred_cleanup (key, destroy_key, data, destroy_data);
+
+	/* call to remove deferred */
+	if (! axl_hash_remove_deferred (hash, "this-is-a-test-04", &key, &destroy_key, &data, &destroy_data)) {
+		printf ("Error, expected to find (7.3) axl_true for axl_hash_remove_deferred but axl_false was found..\n");
+		return axl_false;
+	} /* end if */
+	axl_hash_deferred_cleanup (key, destroy_key, data, destroy_data); 
+	
 	axl_hash_free (hash);
 
 	return axl_true;
