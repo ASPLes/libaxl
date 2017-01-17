@@ -8463,6 +8463,11 @@ axl_bool test_02_03a (void)
 		printf ("Error, expected to find (7.3) axl_true for axl_hash_remove_deferred but axl_false was found..\n");
 		return axl_false;
 	} /* end if */
+	axl_hash_deferred_cleanup (key, destroy_key, data, destroy_data);
+
+	axl_hash_remove_deferred (hash, "this-is-a-test-04", &key, &destroy_key, &data, &destroy_data);
+	axl_hash_deferred_cleanup (key, destroy_key, data, destroy_data);
+	axl_hash_remove_deferred (hash, "this-is-a-test-04", &key, &destroy_key, &data, &destroy_data);
 	axl_hash_deferred_cleanup (key, destroy_key, data, destroy_data); 
 	
 	axl_hash_free (hash);
