@@ -601,9 +601,13 @@ void       axl_hash_insert_full (axlHash        * hash,
  * The function returns axl_true if an item was removed due to the call
  * done.
  */
-axl_bool            __axl_hash_remove_common       (axlHash    * hash,
-						    axlPointer   key,
-						    axl_bool     remove)
+axl_bool            __axl_hash_remove_common       (axlHash          * hash, 
+						    axlPointer         key,
+						    axl_bool           remove,
+						    axl_bool           defer,
+						    axlDestroyFunc   * destroy_key,
+						    axlPointer       * data,
+						    axlDestroyFunc   * destroy_data)
 {
 	axlHashNode * node;
 	axlHashNode * aux;
@@ -611,6 +615,16 @@ axl_bool            __axl_hash_remove_common       (axlHash    * hash,
 
 	axl_return_val_if_fail (hash, axl_false);
 	
+	if (defer) {
+		/* clear incoming references */
+		if (destroy_key)
+			(*destroy_key) = NULL;
+		if (data)
+			(*data) = NULL;
+		if (destroy_data)
+			(*destroy_data) = NULL;
+	} /* end if */
+
 	/* do not perform any operation if the hash is empty */
 	if (hash->hash_size == 0)
 		return axl_false;
@@ -634,14 +648,27 @@ axl_bool            __axl_hash_remove_common       (axlHash    * hash,
 		/* decreases elements found */
 		hash->items--;
 
-		/* key destruction is defined */
-		if (node->key_destroy != NULL && remove)
-			node->key_destroy (node->key);
-		
-		/* if data destruction is defined */
-		if (node->data_destroy != NULL && remove)
-			node->data_destroy (node->data);
+		if (defer) {
+			/* set key destroy handler */
+			if (destroy_key && node->key_destroy)
+				(*destroy_key) = node->key_destroy;
+			/* set data destroy handler */
+			if (destroy_data && node->data_destroy)
+				(*destroy_data) = node->data_destroy;
+			/* set data reference */
+			if (data && node->data)
+				(*data) = node->data;
 
+		} else {
+			/* key destruction is defined */
+			if (node->key_destroy != NULL && remove)
+				node->key_destroy (node->key);
+			
+			/* if data destruction is defined */
+			if (node->data_destroy != NULL && remove)
+				node->data_destroy (node->data);
+		} /* end if */
+			
 		/* delete the node */
 		axl_factory_release_spare (hash->factory, node);  
 		/* axl_free (node); */
@@ -675,8 +702,8 @@ axl_bool            __axl_hash_remove_common       (axlHash    * hash,
 }
 
 /** 
- * @brief Allows to remove the selected pair key/value on the provided
- * hash table.
+ * @brief Allows to remove the selected pair key/value from the
+ * provided hash table.
  * 
  * The function will remove the item but it will not resize the table
  * because of this. The function will call to the key destroy and data
@@ -698,11 +725,44 @@ axl_bool            axl_hash_remove       (axlHash    * hash,
 {
 	/* call common implementation deleting data with destroy
 	 * functions defined */
-	return __axl_hash_remove_common (hash, key, axl_true);
+	return __axl_hash_remove_common (hash, key, axl_true, axl_false, NULL, NULL, NULL);
 }
 
 /** 
- * @brief Allows to remove the selected pair key/value on the provided
+ * @brief Allows to remove the selected pair key/value from the
+ * provided hash table but without calling release functions, but
+ * returning them to the caller so they can be called at a more
+ * convenient moment.
+ * 
+ * This function works the same as \ref axl_hash_remove but allowing
+ * caller to decide when to call release functions instead of allowing
+ * the axl_hash module to do it right away.
+ *
+ * 
+ * @param hash The hash table where the removal operation will be
+ * performed.
+ *
+ * @param key The key to lookup to be removed. 
+ *
+ * @return The function returns axl_true if the item was removed,
+ * otherwise axl_false is returned. If the function returns axl_true,
+ * it means the object was stored in the hash before calling to remove
+ * it. If there is no destroy_key or destroy_data handler, they will
+ * be NULL.
+ */
+axl_bool        axl_hash_remove_deferred       (axlHash          * hash,
+						axlPointer         key,
+						axlDestroyFunc   * destroy_key,
+						axlPointer       * data,
+						axlDestroyFunc   * destroy_data)
+{
+	/* call common implementation deleting data with destroy
+	 * functions defined */
+	return __axl_hash_remove_common (hash, key, axl_true, axl_true, destroy_key, data, destroy_data);
+}
+
+/** 
+ * @brief Allows to remove the selected pair key/value from the provided
  * hash table, without calling to destroy functions.
  * 
  * The function will remove the item but it will not resize the table
@@ -726,7 +786,7 @@ axl_bool            axl_hash_delete       (axlHash    * hash,
 {
 	/* call common implementation, without calling destroy
 	 * functions defined */
-	return __axl_hash_remove_common (hash, key, axl_false);
+	return __axl_hash_remove_common (hash, key, axl_false, axl_false, NULL, NULL, NULL);
 }
 
 /** 
@@ -1190,7 +1250,7 @@ axlHash       * axl_hash_copy         (axlHash         * hash,
 }
 	
 /** 
- * @brief Returns the number of items already stored on the provided
+ * @brief Returns the number of items already stored from the provided
  * hash. 
  * 
  * @param hash The hash that is being requested for the number of

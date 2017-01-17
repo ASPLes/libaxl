@@ -73,6 +73,12 @@ void            axl_hash_insert_full  (axlHash        * hash,
 axl_bool        axl_hash_remove       (axlHash    * hash,
 				       axlPointer   key);
 
+axl_bool        axl_hash_remove_deferred       (axlHash          * hash,
+						axlPointer         key,
+						axlDestroyFunc   * destroy_key,
+						axlPointer       * data,
+						axlDestroyFunc   * destroy_data);
+
 axl_bool        axl_hash_delete       (axlHash    * hash,
 				       axlPointer   key);
 
