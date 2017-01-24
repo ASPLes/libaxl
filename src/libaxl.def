@@ -188,6 +188,7 @@ axl_hash_cursor_last
 axl_hash_cursor_new
 axl_hash_cursor_next
 axl_hash_cursor_remove
+axl_hash_deferred_cleanup
 axl_hash_delete
 axl_hash_equal_int
 axl_hash_equal_string
@@ -205,6 +206,7 @@ axl_hash_items
 axl_hash_new
 axl_hash_new_full
 axl_hash_remove
+axl_hash_remove_deferred
 axl_hash_show_status
 axl_hash_show_status_full
 axl_hash_string
