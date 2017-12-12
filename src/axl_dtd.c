@@ -3396,7 +3396,7 @@ axl_bool                 axl_dtd_are_equal        (axlDtd * dtd,
 				node  = axl_list_get_nth (element->list->itemList, iterator2);
 				node2 = axl_list_get_nth (element2->list->itemList, iterator2);
 
-				if (node->type != node->type)
+				if (node->type != node2->type)
 					return axl_false;
 				if (node->times != node2->times)
 					return axl_false;
