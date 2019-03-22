@@ -1,0 +1,82 @@
+Source: libaxl
+Priority: extra
+Maintainer: Francis Brosnan <francis@aspl.es>
+Build-Depends: debhelper (>= 5), autotools-dev
+Standards-Version: 3.7.2
+Section: libs
+
+Package: libaxl-dev
+Section: libdevel
+Architecture: any
+Depends: libaxl1 (= ${Source-Version})
+Description: Fast and efficient XML 1.0 implementation
+ Libaxl is a XML 1.0 implementation written in C which aims
+ to be fast, efficient and small. This is the development
+ package.
+
+Package: libaxl1
+Section: libs
+Architecture: any
+Depends: libc6
+Description: Fast and efficient XML 1.0 implementation
+ Libaxl is a XML 1.0 implementation written in C which aims
+ to be fast, efficient and small. This is the development
+ package.
+
+Package: libaxlns-dev
+Section: libdevel
+Architecture: any
+Depends: libaxl-dev (= ${Source-Version}), libaxlns1 (= ${Source-Version})
+Description: Fast and efficient XML 1.0 implementation
+ Namespace 1.0 support for LibAxl. Development package.
+
+
+Package: libaxlns1
+Section: libs
+Architecture: any
+Depends: libaxl1 (= ${Source-Version})
+Description: Fast and efficient XML 1.0 implementation
+ Namespace 1.0 support for LibAxl.
+
+Package: libaxlbabel1
+Section: libs
+Architecture: any
+Depends: libaxl1 (= ${Source-Version})
+Description: Fast and efficient XML 1.0 implementation
+ Extended encodings support for for LibAxl.
+
+Package: libaxlbabel-dev
+Section: libdevel
+Architecture: any
+Depends: libaxl-dev (= ${Source-Version})
+Description: Fast and efficient XML 1.0 implementation
+  Extended encodings support for for LibAxl. Development package.
+
+Package: axl-knife
+Section: text
+Architecture: any
+Depends: libaxl1 (= ${Source-Version}), libaxlns1 (= ${Source-Version}),
+ libaxlbabel1 (= ${Source-Version})
+Description: Command line tool built on top of Axl Library
+  Extended encodings support for for LibAxl. Development package.
+
+Package: libaxl-doc
+Section: libs
+Architecture: any
+Description: Fast and efficient XML 1.0 implementation
+ Libaxl package documentation (html doxygen generated)
+
+Package: python-axl
+Section: libs
+Architecture: any
+Depends: libaxl1 (= ${Source-Version}), python
+Description: Python bindings for Axl Library
+ Python bindings for LibAxl library.
+
+
+Package: python-axl-dev
+Section: libdevel
+Architecture: any
+Depends: libaxl-dev (= ${Source-Version}), python-axl
+Description: Development headers for Axl Python bindings
+  Python Axl bindings development headers.
