@@ -653,17 +653,25 @@ axl_bool            __axl_hash_remove_common       (axlHash          * hash,
 
 		if (defer) {
 			/* set key destroy handler */
-			if (key_orig && node->key)
+			if (key_orig && node->key) {
 				(*key_orig) = node->key;
+				node->key = NULL;
+			} /* end if */
 			/* set key destroy handler */
-			if (destroy_key && node->key_destroy)
+			if (destroy_key && node->key_destroy) {
 				(*destroy_key) = node->key_destroy;
+				node->key_destroy = NULL;
+			} /* end if */
 			/* set data destroy handler */
-			if (destroy_data && node->data_destroy)
+			if (destroy_data && node->data_destroy) {
 				(*destroy_data) = node->data_destroy;
+				node->data_destroy = NULL;
+			} /* end if */
 			/* set data reference */
-			if (data && node->data)
+			if (data && node->data) {
 				(*data) = node->data;
+				node->data = NULL;
+			} /* end if */
 
 		} else {
 			/* key destruction is defined */
@@ -755,6 +763,29 @@ axl_bool            axl_hash_remove       (axlHash    * hash,
  * it means the object was stored in the hash before calling to remove
  * it. If there is no destroy_key or destroy_data handler, they will
  * be NULL.
+ *
+ * You can use \ref axl_hash_deferred_cleanup helper function to
+ * trigger remove with data reported by this function. Here is an example:
+ *
+ * \code
+ * // declare variables needed
+ * axlPointer     old_key = NULL;
+ * axlDestroyFunc destroy_key = NULL;
+ *
+ * axlPointer     old_value = NULL;
+ * axlDestroyFunc destroy_value = NULL;
+ *
+ * // do some lock operation here
+ *
+ * // call to remove deferred (remove without calling delete functions but reporting them) 
+ * axl_hash_remove_deferred (hash_table->table, key, &old_key, &destroy_key, &old_value, &destroy_value);	
+ *
+ * // do some unlock or update
+ *
+ * // release before unlocking 
+ * axl_hash_deferred_cleanup (old_key, destroy_key, old_value, destroy_value);	
+ *
+ * \endcode
  */
 axl_bool        axl_hash_remove_deferred       (axlHash          * hash,
 						axlPointer         key,
