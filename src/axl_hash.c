@@ -1446,6 +1446,26 @@ void            axl_hash_show_status_full (axlHash * hash,
 	return;
 }
 
+void __axl_hash_free_data (axlHashNode * node, axlPointer key, axlDestroyFunc key_destroy, axlPointer data, axlDestroyFunc data_destroy) {
+  
+        /* key destruction is defined */
+        if (key && key_destroy)
+	  key_destroy (key);
+  
+	/* if data destruction is defined */
+	if (data && data_destroy)
+	  data_destroy (data);
+
+	/* nullify all */
+	node->key = NULL;
+	node->key_destroy = NULL;
+	node->data = NULL;
+	node->data_destroy = NULL;
+  
+	return;
+}
+  
+
 /** 
  * @brief Allows to deallocate the hash provided.
  * 
@@ -1469,13 +1489,9 @@ void       axl_hash_free        (axlHash *  hash)
 			node = hash->table[iterator];
 			if (node != NULL) {
 				do {
-					/* key destruction is defined */
-					if (node->key_destroy != NULL)
-						node->key_destroy (node->key);
-					
-					/* if data destruction is defined */
-					if (node->data_destroy != NULL)
-						node->data_destroy (node->data);
+
+				        /* check and release node data (call independent function to better BT trace) */
+				        __axl_hash_free_data (node, node->key, node->key_destroy, node->data, node->data_destroy);
 					
 					/* check data */
 					node = node->next;
