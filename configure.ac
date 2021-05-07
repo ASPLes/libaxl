@@ -365,6 +365,10 @@ else
    echo "     configure process."
 fi
 echo "   vasprintf support:            [$have_vasprintf]"
+echo
+echo "   To build without optimizer use: "
+echo "   >> make CFLAGS='-g -O0' CXXFLAGS='-g -O0' clean all"
+echo
 echo "------------------------------------------"
 echo "--     NOW TYPE: make; make install     --"
 echo "------------------------------------------"
