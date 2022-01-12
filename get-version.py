@@ -5,7 +5,7 @@ import sys
 
 (osname, oslongname, osversion) = support.get_os ()
 release_name = osversion.split (" ")[1]
-no_github_com_access = ["lenny", "squeeze"]
+no_github_com_access = ["lenny", "squeeze", "wheezy", "centos6", "precise"]
 
 if release_name in no_github_com_access:
     command.run ("cp -f LATEST-VERSION VERSION")
@@ -28,7 +28,5 @@ print "INFO: Updated vesion to: %s" % version
 open ("VERSION", "w").write ("%s\n" % version)
 open ("LATEST-VERSION", "w").write ("%s\n" % version)
 
-
-
-
-
+# also update Changelog
+command.run ("svn log > Changelog")
