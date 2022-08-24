@@ -1,6 +1,6 @@
 /**
  * Axl Babel: encoding support for axl: iso-8859-6 coding
- * Copyright (C) 2020 Advanced Software Production Line, S.L.
+ * Copyright (C) 2022 Advanced Software Production Line, S.L.
  */
 
 /* include base header */

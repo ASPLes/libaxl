@@ -796,7 +796,7 @@ tests = [
 ]
 
 info (" LibAxl: Another XML library (regression test).")
-info (" Copyright (C) 2008 Advanced Software Production Line, S.L.")
+info (" Copyright (C) 2022 Advanced Software Production Line, S.L.")
 info (" Axl regression tests: version=" + axl.VERSION)
 info (" To gather information about time performance you can use:")
 info ("")
