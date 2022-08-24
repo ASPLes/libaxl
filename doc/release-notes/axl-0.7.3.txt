@@ -1,0 +1,112 @@
+          ########################################
+          #             Axl Library              #
+          #             Black Tulip              #
+          #                0.7.3                 #
+          ########################################
+
+Advanced Software Production Line is proud to announce a new Axl
+Library release.
+
+Axl Library is a small and efficient XML toolkit, written in ANSI C,
+with support for Python bindings and released under the LGPL. It
+allows to produce efficient and clear code that handle XML data.
+
+The library was created to support XML requirements needed by software
+developed by Advanced Software Production Line, S.L.
+
+At this moment the library is being used by Vortex Library,
+Turbulence, Core-Admin and many more...
+
+Resources
+~~~~~~~~~
+
+   Axl Homepage
+   [ http://www.aspl.es/xml ]
+
+   Advanced Software Production Line, S.L.
+   [ http://www.asplhosting.com ]
+   [ http://www.aspl.es ]
+
+   Featured project: Core-Admin
+   [ http://www.core-admin.com ]
+
+This release in short
+~~~~~~~~~~~~~~~~~~~~~
+
+  * [fix] Added oficial support for debian bullseye, debian buster, ubuntu focal, ubuntu bionic.
+
+  * [fix] Added deferred deallocation support for axlhash.
+
+  * [fix] Improved regression tests and bug fixes
+
+Changes from previous release 0.7.2
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* [fix] Fixed the regression test20 for 32-Bit machines.
+
+  Merge pull request #1 from akristmann/master
+
+  Fixed the regression test20 for 32-Bit machines (by Arthur KristMann).
+
+* [fix] Updated AxlHash API to include a new function to allow removing
+  an item from the hash, allowing to defer deallocation by returning to
+  the caller optionally defined handlers for key and data destroy. API
+  added:
+
+  - axl_hash_remove_deferred
+
+* [fix] Added new API to complement axl_hash_remove_deferred:
+
+  - axl_hash_deferred_cleanup
+
+  Added regression test to check both..
+
+* [fix] Updated test_01.c to also check axl_hash_deferred_cleanup when it
+  is called after failing axl_hash_remove_deferred
+
+* [fix] Updating libaxl.def file.. (new symbols..)
+
+* [fix] Fixed DTD warning spotted by gcc
+
+* [fix] Adding support for Debian Stretch Amd64. 
+
+* [fix] Added package support for Ubuntu Bionic 18.04
+
+* [fix] Added file to track latest version for building machines
+  without github access.
+
+* [fix] Adding files to support debian buster building
+
+* [fix] Reorganized get-pyhthon-config to support pyhton2.7 in environments
+  where python3.X is the default
+
+* [fix] Adding initial working files to support Ubuntu Focal 20.04
+
+* [fix] Several updates to explain how to use deferred removal. Added
+  code examples. Added some code to nullify references that are reported
+  for removed deferred.
+
+* [fix] Updated axl hash internal node data release in an independant
+  function to help implementing additional checks and to better expose
+  parameter information on live backtraces
+  
+
+About Advanced Software Production Line, S.L. (ASPL, ASPLhosting)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  Advanced Software Production Line (ASPL) provides Linux Cloud Services
+  through https://asplhosting.com, to enable organisation to introduce
+  GNU/Linux into their processes, making other platforms to properly
+  interact with it.
+
+  You can reach us:
+
+       https://www.asplhosting.com - info@aspl.es
+
+  We hope Axl Library help you. Enjoy Axl Library!
+
+--
+Francis Brosnan Blázquez           - francis@aspl.es
+Advanced Software Production Line  - https://www.asplhosting.com
+                                   - https://www.aspl.es
+24th Aug 2022, Madrid (Spain)
