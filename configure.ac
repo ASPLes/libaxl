@@ -90,8 +90,16 @@ if test "$enable_py_axl_support" = "yes" ; then
    if test "${PYTHON}" = "/usr/bin/python" ; then
       python_dir_check=`./check-python-dir.py ${pythondir}`
    else
-      python_dir_check=`python ./check-python-dir.py ${pythondir}`
-   fi
+      if test "${PYTHON}" = "/usr/bin/python2" ; then
+         python_dir_check=`/usr/bin/python2 ./check-python-dir.py ${pythondir}`
+      else
+        if test "${PYTHON}" = "/usr/bin/python2.7" ; then
+           python_dir_check=`/usr/bin/python2.7 ./check-python-dir.py ${pythondir}`
+        else
+           python_dir_check=`python ./check-python-dir.py ${pythondir}`
+        fi
+      fi
+   fi     
 
    # get python includes 
    PYTHON_INCLUDES=`$PYTHON_CONFIG --includes 2>/dev/null`
