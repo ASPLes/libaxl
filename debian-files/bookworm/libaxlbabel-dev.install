@@ -1,0 +1,12 @@
+usr/lib/pkgconfig/axl-babel.pc
+usr/include/axl/axl_babel.h
+usr/include/axl/axl_babel_iso88591.h
+usr/include/axl/axl_babel_iso88592.h
+usr/include/axl/axl_babel_iso88593.h
+usr/include/axl/axl_babel_iso88594.h
+usr/include/axl/axl_babel_iso88595.h
+usr/include/axl/axl_babel_iso88596.h
+usr/include/axl/axl_babel_iso88597.h
+usr/include/axl/axl_babel_iso88598.h
+usr/include/axl/axl_babel_iso88599.h
+usr/include/axl/axl_babel_iso885915.h
