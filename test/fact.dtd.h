@@ -5,7 +5,7 @@
 #define __FACT_DTD_H__
 #define FACT_DTD "\n\
 <!--                                                                                    \
-   Copyright (C) 2022 Advanced Software Production Line, S.L.                          \
+   Copyright (C) 2025 Advanced Software Production Line, S.L.                          \
    Af-Arch Message definition to perform remote service invocation.                     \
   -->                                                                                   \
 <!ELEMENT  general_message (protocol_version, (request_service | response_service)) >   \

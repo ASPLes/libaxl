@@ -1,6 +1,6 @@
 /**
  *  LibAxl:  Another XML library (regression test)
- *  Copyright (C) 2022 Advanced Software Production Line, S.L.
+ *  Copyright (C) 2025 Advanced Software Production Line, S.L.
  */
 #include <axl.h>
 #include <axl_ns.h>
@@ -9084,7 +9084,7 @@ int main (int argc, char ** argv)
 	axlError * error;
 
 	printf ("** LibAxl: Another XML library (regression test).\n");
-	printf ("** Copyright (C) 2022 Advanced Software Production Line, S.L.\n**\n");
+	printf ("** Copyright (C) 2025 Advanced Software Production Line, S.L.\n**\n");
 	printf ("** Axl regression tests: version=%s\n**\n",
 		VERSION);
 	printf ("** To gather information about time performance you can use:\n**\n");

@@ -54,7 +54,7 @@ int main (int argc, char ** argv)
 
 	fprintf (output, "/**\n");
 	fprintf (output, " * Axl Babel: encoding support for axl: %s coding\n", encoding);
-	fprintf (output, " * Copyright (C) 2022 Advanced Software Production Line, S.L.\n");
+	fprintf (output, " * Copyright (C) 2025 Advanced Software Production Line, S.L.\n");
 	fprintf (output, " */\n\n");
 	fprintf (output, "/* include base header */\n");
 	fprintf (output, "#include <axl_babel_%s.h>\n\n", tolower_encoding);
@@ -193,7 +193,7 @@ int main (int argc, char ** argv)
 
 	fprintf (output, "/**\n");
 	fprintf (output, " * Axl Babel: encoding support for axl: %s coding\n", encoding);
-	fprintf (output, " * Copyright (C) 2022 Advanced Software Production Line, S.L.\n");
+	fprintf (output, " * Copyright (C) 2025 Advanced Software Production Line, S.L.\n");
 	fprintf (output, " */\n\n");
 	fprintf (output, "/* include base header */\n");
 	fprintf (output, "#include <axl_babel.h>\n\n");
