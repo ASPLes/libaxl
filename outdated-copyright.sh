@@ -1,19 +1,19 @@
 #!/bin/bash
 
 # cleanup sources to avoid reporting generated content
-make clean
-rm -rf doc/html
-rm -rf debian/libaxl-doc
-rm -rf debian/libaxlbabel-dev
-rm -rf debian/libaxl1
-rm -rf debian/python-axl
-rm -rf debian/axl-knife
-rm -rf debian/python-axl-dev
-rm -rf debian/libaxl-dev
-rm -rf debian/libaxlns-dev
-rm -rf debian/libaxlns1
-rm -rf debian/libaxlbabel1
-rm -rf debian/tmp
+make clean > /dev/null 2>&1
+rm -rf doc/html > /dev/null 2>&1
+rm -rf debian/libaxl-doc > /dev/null 2>&1
+rm -rf debian/libaxlbabel-dev > /dev/null 2>&1
+rm -rf debian/libaxl1 > /dev/null 2>&1
+rm -rf debian/python-axl > /dev/null 2>&1
+rm -rf debian/axl-knife > /dev/null 2>&1
+rm -rf debian/python-axl-dev > /dev/null 2>&1
+rm -rf debian/libaxl-dev > /dev/null 2>&1
+rm -rf debian/libaxlns-dev > /dev/null 2>&1
+rm -rf debian/libaxlns1 > /dev/null 2>&1
+rm -rf debian/libaxlbabel1 > /dev/null 2>&1
+rm -rf debian/tmp > /dev/null 2>&1
 
 # find all files that have copy right declaration associated to Aspl that don't have 
 # the following declaration year
