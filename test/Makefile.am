@@ -1,7 +1,6 @@
 h_files = fact.dtd.h channel.dtd.h xml-rpc.dtd.h tls.dtd.h 
-c_files = gen-codes.c gen-table.c read-codes.c test_01.c 
-	test_01a.c test_02a.c test_02b.c test_03a.c test_03c.c \
-	test_04a.c test_04b.c 
+c_files = gen-codes.c gen-table.c read-codes.c test_01.c \
+	test_01a.c test_01b.c test_02a.c test_02b.c test_03a.c test_03c.c
 dtd_files = channel.dtd fact.dtd test_30b.dtd test_30.dtd test_31a.dtd \
 	test_31.dtd test_32.dtd test_38.dtd test3.dtd \
 	test4.dtd test5.1.dtd test5.dtd test.dtd tls.dtd xml-rpc.dtd 
@@ -27,17 +26,17 @@ xml_files = \
 	test5.xml test3.xml test4.xml gmovil3.xml gmovil.xml small.xml  \
 	test2.xml test.xml  test_22.xml test_22b.xml test_22c.xml \
 	test_44.xml test_44.dtd test_44_b.xml many-attributes.xml \
-	testcase_test_50.xml
-xdl_files = test17.xdl test03.xdl test04.xdl test01.xdl test02.xdl 
-misc_files = Makefile.win test_01.vcproj
-
-EXTRA_DIST      = $(h_files) $(c_files) $(dtd_files) $(xml_files) $(misc_files) $(xdl_files) test_01.py test-axl-knife.pl
+	testcase_test_50.xml utf-8.bom.xml
+xdl_files = test17.xdl test03.xdl test04.xdl test01.xdl test02.xdl
+misc_files = Makefile.win test_01.vcproj suppressions.valgrind
 
 knife_files = \
 	knife.test_01.xml knife.test_01.ref \
 	knife.test_01.b.xml knife.test_01.b.ref \
 	knife.test_01.c.xml knife.test_01.c.ref \
-	knife.test_01.d.xml knife.test_01.d.ref 
+	knife.test_01.d.xml knife.test_01.d.ref
+
+EXTRA_DIST      = $(h_files) $(c_files) $(dtd_files) $(xml_files) $(misc_files) $(xdl_files) $(knife_files) test_01.py test-axl-knife.pl
 
 if ENABLE_AXL_LOG
 LOG = -DSHOW_DEBUG_LOG
