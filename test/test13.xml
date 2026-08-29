@@ -5,6 +5,6 @@
   <internal>
      <value />
      <value2></value2>
-     <value3 action="value" tecnical="peter"><value4>40</value4><value5>40</value5><value6><test value='1' value2='2' /></value6></value3>
+     <value3 action="value" tecnical="user1"><value4>40</value4><value5>40</value5><value6><test value='1' value2='2' /></value6></value3>
   </internal>
 </complex>
