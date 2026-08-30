@@ -9076,7 +9076,1625 @@ axl_bool test_02_06 (void)
 	return axl_true;
 }
 
-/** 
+/**
+ * @brief Checks the processing instruction API (axlPI), both at the
+ * document and at the node level.
+ */
+axl_bool test_51 (axlError ** error)
+{
+	axlDoc  * doc;
+	axlNode * node;
+	axlPI   * pi;
+	axlPI   * pi_copy;
+	axlList * list;
+
+	/* create a processing instruction outside any document */
+	pi = axl_pi_create ("target1", "content1");
+	if (pi == NULL) {
+		axl_error_new (-1, "Expected to create a processing instruction", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	if (! axl_cmp (axl_pi_get_name (pi), "target1")) {
+		axl_error_new (-1, "Expected to find target1 as processing instruction name", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	if (! axl_cmp (axl_pi_get_content (pi), "content1")) {
+		axl_error_new (-1, "Expected to find content1 as processing instruction content", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* size reported must be the one required to dump
+	 * <?target1 content1?> */
+	if (axl_pi_get_size (pi) != 20) {
+		axl_error_new (-1, "Expected to find size 20 for the processing instruction", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* the copy must be equal to the source */
+	pi_copy = axl_pi_copy (pi);
+	if (pi_copy == NULL) {
+		axl_error_new (-1, "Expected to copy the processing instruction", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	if (! axl_pi_are_equal (pi, pi_copy)) {
+		axl_error_new (-1, "Expected to find both processing instructions to be equal", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* release the source: the copy must own its own data */
+	axl_pi_free (pi);
+
+	if (! axl_cmp (axl_pi_get_name (pi_copy), "target1") ||
+	    ! axl_cmp (axl_pi_get_content (pi_copy), "content1")) {
+		axl_error_new (-1, "Expected the copy to survive the release of the source", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* a processing instruction with a different content must not
+	 * be reported as equal */
+	pi = axl_pi_create ("target1", "content2");
+	if (axl_pi_are_equal (pi, pi_copy)) {
+		axl_error_new (-1, "Expected to find processing instructions to be different", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	axl_pi_free (pi);
+	axl_pi_free (pi_copy);
+
+	/* now check processing instructions inside a document */
+	doc = axl_doc_parse_strings (error,
+				     "<?xml version='1.0' ?>",
+				     "<?doc-pi doc-content ?>",
+				     "<complex>",
+				     "  <?node-pi node-content ?>",
+				     "  <data>test</data>",
+				     "</complex>",
+				     NULL);
+	if (doc == NULL)
+		return axl_false;
+
+	if (! axl_doc_has_pi_target (doc, "doc-pi")) {
+		axl_error_new (-1, "Expected to find doc-pi processing instruction at the document", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	if (! axl_cmp (axl_doc_get_pi_target_content (doc, "doc-pi"), "doc-content")) {
+		axl_error_new (-1, "Expected to find doc-content as content for doc-pi", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* add a new processing instruction to the document */
+	axl_doc_add_pi_target (doc, "added-pi", "added-content");
+
+	if (! axl_doc_has_pi_target (doc, "added-pi")) {
+		axl_error_new (-1, "Expected to find the processing instruction just added", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* the list returned is owned by the document: it must not be
+	 * released by the caller */
+	list = axl_doc_get_pi_target_list (doc);
+	if (list == NULL) {
+		axl_error_new (-1, "Expected to find a processing instruction list at the document", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	if (axl_list_length (list) != 2) {
+		axl_error_new (-1, "Expected to find 2 processing instructions at the document", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* check the node level */
+	node = axl_doc_get_root (doc);
+	if (! axl_node_has_pi_target (node, "node-pi")) {
+		axl_error_new (-1, "Expected to find node-pi processing instruction at the root node", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	if (! axl_cmp (axl_node_get_pi_target_content (node, "node-pi"), "node-content")) {
+		axl_error_new (-1, "Expected to find node-content as content for node-pi", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	axl_node_add_pi_target (node, "node-pi2", "node-content2");
+
+	if (! axl_node_has_pi_target (node, "node-pi2")) {
+		axl_error_new (-1, "Expected to find the node processing instruction just added", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	list = axl_node_get_pi_target_list (node);
+	if (list == NULL) {
+		axl_error_new (-1, "Expected to find a processing instruction list at the node", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	if (axl_list_length (list) != 2) {
+		axl_error_new (-1, "Expected to find 2 processing instructions at the node", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* the list must be released by the caller but it holds
+	 * references still owned by the node: drop the destroy
+	 * function before releasing it to avoid releasing them
+	 * twice */
+	axl_list_set_destroy_func (list, NULL);
+	axl_list_free (list);
+
+	/* release the document */
+	axl_doc_free (doc);
+
+	return axl_true;
+}
+
+/**
+ * @brief Checks the node level dump API and the flat size
+ * calculation that backs it.
+ */
+axl_bool test_52 (axlError ** error)
+{
+	axlDoc  * doc;
+	axlDoc  * doc2;
+	axlNode * node;
+	axlNode * node2;
+	char    * content;
+	int       size;
+	int       flat_size;
+
+	doc = axl_doc_parse_strings (error,
+				     "<?xml version='1.0' ?>",
+				     "<complex attr='value'>",
+				     "  <data><row>10</row><row>20</row></data>",
+				     "  <empty />",
+				     "</complex>",
+				     NULL);
+	if (doc == NULL)
+		return axl_false;
+
+	node = axl_doc_get_root (doc);
+
+	/* the size announced must be the size finally written */
+	flat_size = axl_node_get_flat_size (node, axl_false, 0, 0);
+	if (flat_size <= 0) {
+		axl_error_new (-1, "Expected to find a positive flat size for the node", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	if (! axl_node_dump (node, &content, &size)) {
+		axl_error_new (-1, "Failed to dump the node, while expected a proper execution", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	if (size != flat_size) {
+		axl_error_new (-1, "Expected to find the same size announced by axl_node_get_flat_size and the one dumped", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* the fragment dumped must be parseable and equal to the
+	 * source node */
+	doc2 = axl_doc_parse (content, size, error);
+	if (doc2 == NULL)
+		return axl_false;
+
+	node2 = axl_doc_get_root (doc2);
+	if (! axl_node_are_equal (node, node2)) {
+		axl_error_new (-1, "Expected to find the node dumped to be equal to the source node", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	axl_free (content);
+	axl_doc_free (doc2);
+
+	/* now the pretty print variant */
+	if (! axl_node_dump_pretty (node, &content, &size, 4)) {
+		axl_error_new (-1, "Failed to pretty dump the node, while expected a proper execution", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	flat_size = axl_node_get_flat_size (node, axl_true, 0, 4);
+	if (size != flat_size) {
+		axl_error_new (-1, "Expected to find the same pretty size announced and dumped", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	doc2 = axl_doc_parse (content, size, error);
+	if (doc2 == NULL)
+		return axl_false;
+
+	axl_free (content);
+	axl_doc_free (doc2);
+
+	/* dump to file, both plain and pretty */
+	if (! axl_node_dump_to_file (node, "test_52.node.xml")) {
+		axl_error_new (-1, "Failed to dump the node to a file", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	doc2 = axl_doc_parse_from_file ("test_52.node.xml", error);
+	if (doc2 == NULL)
+		return axl_false;
+
+	if (! axl_node_are_equal (node, axl_doc_get_root (doc2))) {
+		axl_error_new (-1, "Expected to find the node dumped to a file to be equal to the source node", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	axl_doc_free (doc2);
+
+	if (! axl_node_dump_pretty_to_file (node, "test_52.node-pretty.xml", 4)) {
+		axl_error_new (-1, "Failed to pretty dump the node to a file", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	doc2 = axl_doc_parse_from_file ("test_52.node-pretty.xml", error);
+	if (doc2 == NULL)
+		return axl_false;
+
+	axl_doc_free (doc2);
+
+	/* dump at a particular position of a buffer provided by the
+	 * caller */
+	size    = axl_node_get_flat_size (node, axl_false, 0, 0);
+	content = axl_new (char, size + 11);
+	memcpy (content, "0123456789", 10);
+
+	if (axl_node_dump_at (node, content, 10, axl_false, 0, 0) != (size + 10)) {
+		axl_error_new (-1, "Expected to find the node dumped at the displacement requested", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	if (! axl_memcmp (content, "0123456789", 10)) {
+		axl_error_new (-1, "Expected to find the content placed before the displacement untouched", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	doc2 = axl_doc_parse (content + 10, size, error);
+	if (doc2 == NULL)
+		return axl_false;
+
+	axl_doc_free (doc2);
+	axl_free (content);
+
+	/* release the document */
+	axl_doc_free (doc);
+
+	return axl_true;
+}
+
+/**
+ * @brief Checks the _ref family, that is, the functions that take
+ * ownership of the string received instead of copying it.
+ */
+axl_bool test_53 (axlError ** error)
+{
+	axlNode * node;
+	axlNode * child;
+	axlNode * parent;
+	axlList * childs;
+	char    * content;
+	int       size;
+
+	/* the node takes ownership of the name */
+	node = axl_node_create_ref (axl_strdup ("test"));
+	if (node == NULL) {
+		axl_error_new (-1, "Expected to create a node holding a reference to its name", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	if (! NODE_CMP_NAME (node, "test")) {
+		axl_error_new (-1, "Expected to find test as node name", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* replace the name: the previous one must be released by the
+	 * node */
+	axl_node_set_name_ref (node, axl_strdup ("test2"));
+	if (! NODE_CMP_NAME (node, "test2")) {
+		axl_error_new (-1, "Expected to find test2 as node name", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* the node takes ownership of the content too */
+	axl_node_set_content_ref (node, axl_strdup ("node content"), -1);
+	if (! axl_cmp (axl_node_get_content (node, &size), "node content")) {
+		axl_error_new (-1, "Expected to find the content set by reference", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	if (size != 12) {
+		axl_error_new (-1, "Expected to find size 12 for the content set by reference", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* and of both the attribute name and its value */
+	axl_node_set_attribute_ref (node, axl_strdup ("attr1"), axl_strdup ("value1"));
+	if (! axl_cmp (axl_node_get_attribute_value (node, "attr1"), "value1")) {
+		axl_error_new (-1, "Expected to find the attribute set by reference", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	if (! axl_node_has_attributes (node)) {
+		axl_error_new (-1, "Expected to find the node reporting it has attributes", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	if (! axl_node_has_attribute_value (node, "attr1", "value1")) {
+		axl_error_new (-1, "Expected to find the attribute value reported by axl_node_has_attribute_value", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	if (axl_node_has_attribute_value (node, "attr1", "value2")) {
+		axl_error_new (-1, "Expected to not find a wrong attribute value", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* a node without childs must report it */
+	if (axl_node_have_childs (node)) {
+		axl_error_new (-1, "Expected to find a node without childs", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* releasing the node must release every adopted string */
+	axl_node_free (node);
+
+	/* check childs handling and the transfer operation */
+	parent = axl_node_create ("parent");
+	child  = axl_node_create ("child1");
+	axl_node_set_child (parent, child);
+	axl_node_set_child (parent, axl_node_create ("child2"));
+
+	if (! axl_node_have_childs (parent)) {
+		axl_error_new (-1, "Expected to find a node with childs", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* the list returned holds no destroy function: releasing it
+	 * does not release the childs it points to */
+	childs = axl_node_get_childs (parent);
+	if (axl_list_length (childs) != 2) {
+		axl_error_new (-1, "Expected to find 2 childs at the parent node", NULL, error);
+		return axl_false;
+	} /* end if */
+	axl_list_free (childs);
+
+	if (! NODE_CMP_NAME (axl_node_get_last_child (parent), "child2")) {
+		axl_error_new (-1, "Expected to find child2 as last child", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* move every child to a new parent */
+	node = axl_node_create ("parent2");
+	axl_node_transfer_childs (parent, node);
+
+	if (axl_node_have_childs (parent)) {
+		axl_error_new (-1, "Expected to find the old parent without childs after the transfer", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	childs = axl_node_get_childs (node);
+	if (axl_list_length (childs) != 2) {
+		axl_error_new (-1, "Expected to find 2 childs at the new parent node", NULL, error);
+		return axl_false;
+	} /* end if */
+	axl_list_free (childs);
+
+	if (! NODE_CMP_NAME (axl_node_get_first_child (node), "child1")) {
+		axl_error_new (-1, "Expected to find child1 as first child of the new parent", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* the fragment moved must still be dumpable */
+	if (! axl_node_dump (node, &content, &size)) {
+		axl_error_new (-1, "Failed to dump the node receiving the childs", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	axl_free (content);
+
+	/* release both parents. axl_node_free is the call that also
+	 * releases the childs held by the node */
+	axl_node_free (parent);
+	axl_node_free (node);
+
+	return axl_true;
+}
+
+/**
+ * @brief Checks the axlItem layer, that is, the interface that
+ * handles nodes, comments, content and processing instructions
+ * living at the same level.
+ */
+axl_bool test_54 (axlError ** error)
+{
+	axlDoc      * doc;
+	axlNode     * root;
+	axlNode     * node;
+	axlItem     * item;
+	axlItem     * item2;
+	axlItem     * copy;
+	int           count;
+
+	doc = axl_doc_parse_strings (error,
+				     "<?xml version='1.0' ?>",
+				     "<document>text1<child1 />text2<!-- comment -->text3<child2 /></document>",
+				     NULL);
+	if (doc == NULL)
+		return axl_false;
+
+	root = axl_doc_get_root (doc);
+
+	/* walk the mixed content counting the items found */
+	count = 0;
+	item  = axl_item_get_first_child (root);
+	while (item != NULL) {
+		count++;
+		item = axl_item_get_next (item);
+	} /* end while */
+
+	if (count != 6) {
+		axl_error_new (-1, "Expected to find 6 items inside the root node", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* the last child must be reachable directly and be a node */
+	item = axl_item_get_last_child (root);
+	if (axl_item_get_type (item) != ITEM_NODE) {
+		axl_error_new (-1, "Expected to find a node as last item", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* walking backwards from the last item must find the same
+	 * number of items */
+	count = 0;
+	while (item != NULL) {
+		count++;
+		item = axl_item_get_previous (item);
+	} /* end while */
+
+	if (count != 6) {
+		axl_error_new (-1, "Expected to find 6 items walking backwards", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* the parent and the document must be reachable from the
+	 * item */
+	item = axl_item_get_first_child (root);
+	if (axl_item_get_parent (item) != root) {
+		axl_error_new (-1, "Expected to find the root node as item parent", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	if (axl_item_get_doc (item) != doc) {
+		axl_error_new (-1, "Expected to find the document holding the item", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* the item holding a node must be reachable from the node
+	 * itself, and so must its previous item */
+	node = axl_doc_get_root (doc);
+	node = axl_node_get_first_child (node);
+	if (! NODE_CMP_NAME (node, "child1")) {
+		axl_error_new (-1, "Expected to find child1 as first child node", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	item = axl_item_node_previous (node);
+	if (item == NULL || axl_item_get_type (item) != ITEM_CONTENT) {
+		axl_error_new (-1, "Expected to find a content item before child1", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* two items holding the same content must be reported equal */
+	item2 = axl_item_new (ITEM_CONTENT, "text1");
+	if (! axl_item_are_equal (item, item2, axl_false)) {
+		axl_error_new (-1, "Expected to find both content items to be equal", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	if (! axl_item_are_equal_full (item, item2, axl_false, error)) {
+		axl_error_new (-1, "Expected to find both content items to be equal (full)", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	axl_item_free (item2, axl_true);
+
+	/* copying an item must produce an independent item */
+	copy = axl_item_copy (item, NULL);
+	if (copy == NULL) {
+		axl_error_new (-1, "Expected to copy the item", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	if (! axl_item_are_equal (item, copy, axl_false)) {
+		axl_error_new (-1, "Expected to find the copied item to be equal to the source", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	axl_item_free (copy, axl_true);
+
+	/* insert a new item right after the first one. The data
+	 * passed must be the representation associated to the type,
+	 * so a node is used here */
+	axl_item_set_after (item, ITEM_NODE, axl_node_create ("inserted"));
+
+	count = 0;
+	item  = axl_item_get_first_child (root);
+	while (item != NULL) {
+		count++;
+		item = axl_item_get_next (item);
+	} /* end while */
+
+	if (count != 7) {
+		axl_error_new (-1, "Expected to find 7 items after inserting one", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* remove the item just inserted, deallocating it */
+	item = axl_item_get_next (axl_item_get_first_child (root));
+	axl_item_remove (item, axl_true);
+
+	count = 0;
+	item  = axl_item_get_first_child (root);
+	while (item != NULL) {
+		count++;
+		item = axl_item_get_next (item);
+	} /* end while */
+
+	if (count != 6) {
+		axl_error_new (-1, "Expected to find 6 items after removing the one inserted", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* the document must still be dumpable after the surgery */
+	if (! axl_doc_dump_to_file (doc, "test_54.xml")) {
+		axl_error_new (-1, "Failed to dump the document after removing an item", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	axl_doc_free (doc);
+
+	return axl_true;
+}
+
+/**
+ * @brief Checks the content escaping routines used while dumping.
+ */
+axl_bool test_55 (axlError ** error)
+{
+	char     * content;
+	int        size;
+	int        added;
+	axl_bool   result;
+
+	/* content without special characters requires no additional
+	 * size and must be copied unmodified */
+	added = 0;
+	if (axl_node_has_invalid_chars ("simple content", 14, &added)) {
+		axl_error_new (-1, "Expected to find no invalid chars at a plain content", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	content = axl_node_content_copy_and_escape ("simple content", 14, added);
+	if (! axl_cmp (content, "simple content")) {
+		axl_error_new (-1, "Expected to find the content copied without changes", NULL, error);
+		return axl_false;
+	} /* end if */
+	axl_free (content);
+
+	/* every character with a meaning inside a document must be
+	 * escaped. The additional size required is the one reported
+	 * by axl_node_has_invalid_chars */
+	added = 0;
+	if (! axl_node_has_invalid_chars ("&", 1, &added)) {
+		axl_error_new (-1, "Expected to find invalid chars at the content &", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	if (added != 4) {
+		axl_error_new (-1, "Expected to find 4 additional bytes required to escape &", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	content = axl_node_content_copy_and_escape ("&", 1, added);
+	if (! axl_cmp (content, "&amp;")) {
+		axl_error_new (-1, "Expected to find & escaped as &amp;", NULL, error);
+		return axl_false;
+	} /* end if */
+	axl_free (content);
+
+	added = 0;
+	axl_node_has_invalid_chars ("<node>", 6, &added);
+	content = axl_node_content_copy_and_escape ("<node>", 6, added);
+	if (! axl_cmp (content, "&lt;node&gt;")) {
+		axl_error_new (-1, "Expected to find < and > escaped", NULL, error);
+		return axl_false;
+	} /* end if */
+	axl_free (content);
+
+	added = 0;
+	axl_node_has_invalid_chars ("it's \"quoted\"", 13, &added);
+	content = axl_node_content_copy_and_escape ("it's \"quoted\"", 13, added);
+	if (! axl_cmp (content, "it&apos;s &quot;quoted&quot;")) {
+		axl_error_new (-1, "Expected to find quotes escaped", NULL, error);
+		return axl_false;
+	} /* end if */
+	axl_free (content);
+
+	/* an already escaped content must be escaped again: the
+	 * function does not try to guess */
+	added = 0;
+	axl_node_has_invalid_chars ("&amp;", 5, &added);
+	content = axl_node_content_copy_and_escape ("&amp;", 5, added);
+	if (! axl_cmp (content, "&amp;amp;")) {
+		axl_error_new (-1, "Expected to find an already escaped content escaped again", NULL, error);
+		return axl_false;
+	} /* end if */
+	axl_free (content);
+
+	/* translating back must restore the original content */
+	content = axl_strdup ("&lt;node&gt; &amp; &quot;more&quot;");
+	size    = strlen (content);
+	content = axl_node_content_translate_defaults (content, &size);
+	if (! axl_cmp (content, "<node> & \"more\"")) {
+		axl_error_new (-1, "Expected to find the entity references translated back", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	if (size != 15) {
+		axl_error_new (-1, "Expected to find size 15 after translating the entity references", NULL, error);
+		return axl_false;
+	} /* end if */
+	axl_free (content);
+
+	/* a content without the CDATA terminator can be placed
+	 * inside a CDATA section as is */
+	added  = 0;
+	result = axl_node_has_invalid_chars_cdata ("plain content", 13, &added);
+	if (result) {
+		axl_error_new (-1, "Expected to find a content valid for a CDATA section", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* one holding the terminator can not */
+	added  = 0;
+	result = axl_node_has_invalid_chars_cdata ("content with ]]> inside", 23, &added);
+	if (! result) {
+		axl_error_new (-1, "Expected to find a content not valid for a CDATA section", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	if (added <= 0) {
+		axl_error_new (-1, "Expected to find additional size required to escape the CDATA content", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* and escaping it must produce a content that no longer
+	 * closes the section */
+	content = axl_node_content_copy_and_escape_cdata ("content with ]]> inside", 23, added);
+	if (content == NULL) {
+		axl_error_new (-1, "Expected to escape the CDATA content", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	if (strstr (content, "]]>") == NULL) {
+		axl_error_new (-1, "Expected to find the CDATA content splitted, not removed", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	if (axl_cmp (content, "content with ]]> inside")) {
+		axl_error_new (-1, "Expected to find the CDATA content modified", NULL, error);
+		return axl_false;
+	} /* end if */
+	axl_free (content);
+
+	return axl_true;
+}
+
+/* callbacks used by test_56 to check every foreach variant */
+axl_bool test_56_foreach (axlPointer key, axlPointer data, axlPointer user_data)
+{
+	int * count = user_data;
+	(*count)++;
+	return axl_false;
+}
+
+axl_bool test_56_foreach2 (axlPointer key, axlPointer data, axlPointer user_data, axlPointer user_data2)
+{
+	int * count = user_data;
+	int * count2 = user_data2;
+	(*count)++;
+	(*count2)++;
+	return axl_false;
+}
+
+axl_bool test_56_foreach3 (axlPointer key, axlPointer data, axlPointer user_data,
+			   axlPointer user_data2, axlPointer user_data3)
+{
+	int * count = user_data;
+	int * count2 = user_data2;
+	int * count3 = user_data3;
+	(*count)++;
+	(*count2)++;
+	(*count3)++;
+	return axl_false;
+}
+
+axl_bool test_56_foreach4 (axlPointer key, axlPointer data, axlPointer user_data,
+			   axlPointer user_data2, axlPointer user_data3, axlPointer user_data4)
+{
+	int * count = user_data;
+	int * count2 = user_data2;
+	int * count3 = user_data3;
+	int * count4 = user_data4;
+	(*count)++;
+	(*count2)++;
+	(*count3)++;
+	(*count4)++;
+	return axl_false;
+}
+
+/* stops the iteration at the first item found */
+axl_bool test_56_foreach_stop (axlPointer key, axlPointer data, axlPointer user_data)
+{
+	int * count = user_data;
+	(*count)++;
+	return axl_true;
+}
+
+axl_bool test_56_stack_foreach3 (axlPointer stack_data, axlPointer user_data,
+				 axlPointer user_data2, axlPointer user_data3)
+{
+	int * count = user_data;
+	(*count)++;
+	return axl_false;
+}
+
+/**
+ * @brief Checks reverse cursor traversal and the foreach family of
+ * the container API.
+ */
+axl_bool test_56 (axlError ** error)
+{
+	axlList       * list;
+	axlListCursor * cursor;
+	axlHash       * hash;
+	axlStack      * stack;
+	axlBinaryStack * bstack;
+	int             count;
+	int             count2;
+	int             count3;
+	int             count4;
+
+	/* create a list with three items */
+	list = axl_list_new (axl_list_always_return_1, NULL);
+	axl_list_add (list, "item1");
+	axl_list_add (list, "item2");
+	axl_list_add (list, "item3");
+
+	if (! axl_cmp (axl_list_get_last (list), "item3")) {
+		axl_error_new (-1, "Expected to find item3 as last item of the list", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* walk the list forwards */
+	cursor = axl_list_cursor_new (list);
+	count  = 0;
+	while (axl_list_cursor_has_item (cursor)) {
+		count++;
+		axl_list_cursor_next (cursor);
+	} /* end while */
+
+	if (count != 3) {
+		axl_error_new (-1, "Expected to find 3 items walking the list forwards", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* the cursor must report the list it iterates */
+	if (axl_list_cursor_list (cursor) != list) {
+		axl_error_new (-1, "Expected to find the list associated to the cursor", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* now walk it backwards, from the last item */
+	axl_list_cursor_last (cursor);
+	if (! axl_cmp (axl_list_cursor_get (cursor), "item3")) {
+		axl_error_new (-1, "Expected to find item3 after moving the cursor to the last item", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	if (axl_list_cursor_has_next (cursor)) {
+		axl_error_new (-1, "Expected to find no next item at the last position", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	if (! axl_list_cursor_has_previous (cursor)) {
+		axl_error_new (-1, "Expected to find a previous item at the last position", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	count = 0;
+	while (axl_list_cursor_has_item (cursor)) {
+		count++;
+		axl_list_cursor_previous (cursor);
+	} /* end while */
+
+	if (count != 3) {
+		axl_error_new (-1, "Expected to find 3 items walking the list backwards", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* remove the item under the cursor without invalidating it */
+	axl_list_cursor_first (cursor);
+	axl_list_cursor_unlink (cursor);
+
+	if (axl_list_length (list) != 2) {
+		axl_error_new (-1, "Expected to find 2 items after unlinking one through the cursor", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	if (! axl_cmp (axl_list_cursor_get (cursor), "item2")) {
+		axl_error_new (-1, "Expected to find item2 under the cursor after unlinking item1", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	axl_list_cursor_free (cursor);
+	axl_list_free (list);
+
+	/* now the hash foreach family */
+	hash = axl_hash_new (axl_hash_string, axl_hash_equal_string);
+	axl_hash_insert (hash, "key1", "value1");
+	axl_hash_insert (hash, "key2", "value2");
+	axl_hash_insert (hash, "key3", "value3");
+
+	count = 0;
+	axl_hash_foreach (hash, test_56_foreach, &count);
+	if (count != 3) {
+		axl_error_new (-1, "Expected to visit 3 items with axl_hash_foreach", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* returning axl_true must stop the iteration */
+	count = 0;
+	axl_hash_foreach (hash, test_56_foreach_stop, &count);
+	if (count != 1) {
+		axl_error_new (-1, "Expected to stop the iteration at the first item", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	count = count2 = 0;
+	axl_hash_foreach2 (hash, test_56_foreach2, &count, &count2);
+	if (count != 3 || count2 != 3) {
+		axl_error_new (-1, "Expected to receive both user pointers at axl_hash_foreach2", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	count = count2 = count3 = 0;
+	axl_hash_foreach3 (hash, test_56_foreach3, &count, &count2, &count3);
+	if (count != 3 || count2 != 3 || count3 != 3) {
+		axl_error_new (-1, "Expected to receive the three user pointers at axl_hash_foreach3", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	count = count2 = count3 = count4 = 0;
+	axl_hash_foreach4 (hash, test_56_foreach4, &count, &count2, &count3, &count4);
+	if (count != 3 || count2 != 3 || count3 != 3 || count4 != 3) {
+		axl_error_new (-1, "Expected to receive the four user pointers at axl_hash_foreach4", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* remove one item without deallocating it */
+	if (! axl_hash_delete (hash, "key1")) {
+		axl_error_new (-1, "Expected to delete key1 from the hash", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	if (axl_hash_exists (hash, "key1")) {
+		axl_error_new (-1, "Expected to not find key1 after deleting it", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	if (axl_hash_items (hash) != 2) {
+		axl_error_new (-1, "Expected to find 2 items after deleting one", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* deleting a key that is not stored must be reported */
+	if (axl_hash_delete (hash, "key1")) {
+		axl_error_new (-1, "Expected to not delete a key already removed", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	axl_hash_free (hash);
+
+	/* the stack must allow looking at the top without popping */
+	stack = axl_stack_new (NULL);
+	axl_stack_push (stack, "first");
+	axl_stack_push (stack, "second");
+
+	if (! axl_cmp (axl_stack_peek (stack), "second")) {
+		axl_error_new (-1, "Expected to find second at the top of the stack", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	if (axl_stack_size (stack) != 2) {
+		axl_error_new (-1, "Expected to not remove the item peeked", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	count = 0;
+	axl_stack_foreach3 (stack, test_56_stack_foreach3, &count, NULL, NULL);
+	if (count != 2) {
+		axl_error_new (-1, "Expected to visit 2 items with axl_stack_foreach3", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	axl_stack_free (stack);
+
+	/* and the binary stack the same */
+	bstack = axl_binary_stack_new ();
+	if (! axl_binary_stack_is_empty (bstack)) {
+		axl_error_new (-1, "Expected to find an empty binary stack", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	axl_binary_stack_push (bstack, axl_true);
+	if (axl_binary_stack_is_empty (bstack)) {
+		axl_error_new (-1, "Expected to find a non empty binary stack", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	if (! axl_binary_stack_peek (bstack)) {
+		axl_error_new (-1, "Expected to find axl_true at the top of the binary stack", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* push the same value found at the top */
+	axl_binary_stack_push_the_same (bstack);
+	if (! axl_binary_stack_peek (bstack)) {
+		axl_error_new (-1, "Expected to find axl_true pushed again", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	if (axl_binary_stack_size (bstack) != 2) {
+		axl_error_new (-1, "Expected to find 2 items at the binary stack", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	axl_binary_stack_free (bstack);
+
+	return axl_true;
+}
+
+/* collects every attribute visited by axl_node_attr_foreach */
+axl_bool test_57_attr_foreach (const char * key, const char * value, axlPointer data, axlPointer data2)
+{
+	int  * count = data;
+	int  * found = data2;
+
+	(*count)++;
+	if (axl_cmp (key, "attr2") && axl_cmp (value, "value2"))
+		(*found)++;
+
+	return axl_false;
+}
+
+/**
+ * @brief Checks the attribute access variants and the attribute
+ * iteration API.
+ */
+axl_bool test_57 (axlError ** error)
+{
+	axlDoc        * doc;
+	axlNode       * node;
+	axlAttrCursor * cursor;
+	char          * copy;
+	const char    * value;
+	int             count;
+	int             found;
+
+	doc = axl_doc_parse_strings (error,
+				     "<?xml version='1.0' ?>",
+				     "<document attr1='  spaced  ' attr2='value2' attr3='a &amp; b' />",
+				     NULL);
+	if (doc == NULL)
+		return axl_false;
+
+	node = axl_doc_get_root (doc);
+
+	if (! axl_node_has_attributes (node)) {
+		axl_error_new (-1, "Expected to find a node with attributes", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* the copy variant returns memory owned by the caller */
+	copy = axl_node_get_attribute_value_copy (node, "attr2");
+	if (! axl_cmp (copy, "value2")) {
+		axl_error_new (-1, "Expected to find value2 as copied attribute value", NULL, error);
+		return axl_false;
+	} /* end if */
+	axl_free (copy);
+
+	/* the trimmed variant removes leading and trailing white
+	 * spaces */
+	value = axl_node_get_attribute_value_trimmed (node, "attr1");
+	if (! axl_cmp (value, "spaced")) {
+		axl_error_new (-1, "Expected to find the attribute value trimmed", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* the trans variant translates entity references, returning
+	 * memory owned by the caller */
+	copy = axl_node_get_attribute_value_trans (node, "attr3");
+	if (! axl_cmp (copy, "a & b")) {
+		axl_error_new (-1, "Expected to find the entity reference translated at the attribute value", NULL, error);
+		return axl_false;
+	} /* end if */
+	axl_free (copy);
+
+	/* an attribute not defined must be reported as such by every
+	 * variant */
+	if (axl_node_get_attribute_value (node, "not-defined") != NULL) {
+		axl_error_new (-1, "Expected to not find a value for an attribute not defined", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	if (axl_node_get_attribute_value_copy (node, "not-defined") != NULL) {
+		axl_error_new (-1, "Expected to not find a copied value for an attribute not defined", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* walk every attribute through the callback */
+	count = 0;
+	found = 0;
+	axl_node_attr_foreach (node, test_57_attr_foreach, &count, &found);
+
+	if (count != 3) {
+		axl_error_new (-1, "Expected to visit 3 attributes", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	if (found != 1) {
+		axl_error_new (-1, "Expected to receive both user pointers at the attribute foreach", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* and through the cursor, checking it can be rewound */
+	cursor = axl_node_attr_cursor_new (node);
+	count  = 0;
+	while (axl_node_attr_cursor_has_item (cursor)) {
+		count++;
+		if (! axl_node_attr_cursor_has_next (cursor))
+			break;
+		axl_node_attr_cursor_next (cursor);
+	} /* end while */
+
+	if (count != 3) {
+		axl_error_new (-1, "Expected to walk 3 attributes with the cursor", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* going back to the first attribute must allow walking it
+	 * again */
+	axl_node_attr_cursor_first (cursor);
+	if (! axl_node_attr_cursor_has_item (cursor)) {
+		axl_error_new (-1, "Expected to find an attribute after rewinding the cursor", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	count = 0;
+	while (axl_node_attr_cursor_has_item (cursor)) {
+		count++;
+		axl_node_attr_cursor_next (cursor);
+	} /* end while */
+
+	if (count != 3) {
+		axl_error_new (-1, "Expected to walk 3 attributes after rewinding the cursor", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	axl_node_attr_cursor_free (cursor);
+	axl_doc_free (doc);
+
+	return axl_true;
+}
+
+/* counts the nodes visited by axl_doc_iterate */
+axl_bool test_58_iterate (axlNode * node, axlNode * parent, axlDoc * doc,
+			  axl_bool * was_removed, axlPointer ptr)
+{
+	int * count = ptr;
+	(*count)++;
+	return axl_true;
+}
+
+/* counts the nodes visited by axl_doc_iterate_full_from */
+axl_bool test_58_iterate2 (axlNode * node, axlNode * parent, axlDoc * doc,
+			   axl_bool * was_removed, axlPointer ptr, axlPointer ptr2)
+{
+	int * count = ptr;
+	(*count)++;
+	return axl_true;
+}
+
+/**
+ * @brief Checks document iteration and the comparison variants that
+ * accept options.
+ */
+axl_bool test_58 (axlError ** error)
+{
+	axlDoc     * doc;
+	axlDoc     * doc2;
+	axlNode    * node;
+	axlList    * list;
+	const char * content;
+	int          count;
+	int          size;
+
+	doc = axl_doc_parse_strings (error,
+				     "<?xml version='1.0' ?>",
+				     "<document>",
+				     "  <child><row>10</row><row>20</row></child>",
+				     "  <child><row>30</row></child>",
+				     "</document>",
+				     NULL);
+	if (doc == NULL)
+		return axl_false;
+
+	/* the simple iteration must visit every node of the
+	 * document, including the root one */
+	count = 0;
+	if (! axl_doc_iterate (doc, DEEP_ITERATION, test_58_iterate, &count)) {
+		axl_error_new (-1, "Failed to iterate the document", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	if (count != 6) {
+		axl_error_new (-1, "Expected to visit 6 nodes iterating the document", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* iterating from a particular node must visit that node and
+	 * its childs only */
+	node  = axl_doc_get (doc, "/document/child");
+	if (node == NULL) {
+		axl_error_new (-1, "Expected to find /document/child", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	count = 0;
+	if (! axl_doc_iterate_full_from (doc, node, DEEP_ITERATION, test_58_iterate2, &count, NULL)) {
+		axl_error_new (-1, "Failed to iterate the document from a particular node", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	if (count != 3) {
+		axl_error_new (-1, "Expected to visit 3 nodes iterating from the first child", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* the path based lookup must return the node selected. Note
+	 * the wildcard forms documented are not supported by the
+	 * current implementation: they return NULL */
+	list = axl_doc_get_list (doc, "/document/child");
+	if (list == NULL) {
+		axl_error_new (-1, "Expected to find a list of nodes at /document/child", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	if (axl_list_length (list) < 1) {
+		axl_error_new (-1, "Expected to find at least one node at /document/child", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	if (! NODE_CMP_NAME (axl_list_get_nth (list, 0), "child")) {
+		axl_error_new (-1, "Expected to find the child node at the list returned", NULL, error);
+		return axl_false;
+	} /* end if */
+	axl_list_free (list);
+
+	/* and the content at a particular path must be reachable */
+	content = axl_doc_get_content_at (doc, "/document/child/row", &size);
+	if (! axl_cmp (content, "10")) {
+		axl_error_new (-1, "Expected to find 10 as content at /document/child/row", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	if (size != 2) {
+		axl_error_new (-1, "Expected to find size 2 for the content found", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* the flat size announced must match the dump produced */
+	size = axl_doc_get_flat_size (doc);
+	if (size <= 0) {
+		axl_error_new (-1, "Expected to find a positive flat size for the document", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	if (axl_doc_get_flat_size_pretty (doc, 4) <= size) {
+		axl_error_new (-1, "Expected the pretty flat size to be bigger than the plain one", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* the same document with a different spacing must be
+	 * reported different when compared strictly, and equal when
+	 * compared trimmed */
+	doc2 = axl_doc_parse_strings (error,
+				      "<?xml version='1.0' ?>",
+				      "<document>",
+				      "  <child><row>10   </row><row>   20</row></child>",
+				      "  <child><row>  30  </row></child>",
+				      "</document>",
+				      NULL);
+	if (doc2 == NULL)
+		return axl_false;
+
+	/* the strict comparison is only reachable through
+	 * axl_doc_are_equal_full passing axl_false: both
+	 * axl_doc_are_equal and axl_doc_are_equal_trimmed activate
+	 * trimming */
+	if (axl_doc_are_equal_full (doc, doc2, axl_false, NULL)) {
+		axl_error_new (-1, "Expected to find both documents to be different when compared strictly", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	if (! axl_doc_are_equal_full (doc, doc2, axl_true, error)) {
+		axl_error_new (-1, "Expected to find both documents to be equal once trimmed", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	if (! axl_doc_are_equal (doc, doc2)) {
+		axl_error_new (-1, "Expected axl_doc_are_equal to report both documents equal", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	if (! axl_doc_are_equal_trimmed (doc, doc2)) {
+		axl_error_new (-1, "Expected axl_doc_are_equal_trimmed to report both documents equal", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* the same at the node level */
+	if (! axl_node_are_equal_full (axl_doc_get_root (doc), axl_doc_get_root (doc), error)) {
+		axl_error_new (-1, "Expected to find the root node equal to itself", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	axl_doc_free (doc2);
+	axl_doc_free (doc);
+
+	return axl_true;
+}
+
+/**
+ * @brief Checks the general purpose string helpers exported by the
+ * stream module.
+ */
+axl_bool test_59 (axlError ** error)
+{
+	char  * value;
+	char ** split;
+	int     size;
+
+	/* plain duplication */
+	value = axl_stream_strdup ("a string");
+	if (! axl_cmp (value, "a string")) {
+		axl_error_new (-1, "Expected to duplicate the string received", NULL, error);
+		return axl_false;
+	} /* end if */
+	axl_free (value);
+
+	/* duplication limited to the first n bytes */
+	value = axl_stream_strdup_n ("a string", 1);
+	if (! axl_cmp (value, "a")) {
+		axl_error_new (-1, "Expected to duplicate only the first byte", NULL, error);
+		return axl_false;
+	} /* end if */
+	axl_free (value);
+
+	/* formatted duplication, also reporting the size produced */
+	value = axl_stream_strdup_printf ("%s-%d", "value", 10);
+	if (! axl_cmp (value, "value-10")) {
+		axl_error_new (-1, "Expected to find value-10 as formatted string", NULL, error);
+		return axl_false;
+	} /* end if */
+	axl_free (value);
+
+	size  = 0;
+	value = axl_stream_strdup_printf_len ("%s-%d", &size, "value", 10);
+	if (! axl_cmp (value, "value-10")) {
+		axl_error_new (-1, "Expected to find value-10 as formatted string (len)", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	if (size != 8) {
+		axl_error_new (-1, "Expected to find size 8 reported for the formatted string", NULL, error);
+		return axl_false;
+	} /* end if */
+	axl_free (value);
+
+	/* concatenation */
+	value = axl_stream_concat ("first", "-second");
+	if (! axl_cmp (value, "first-second")) {
+		axl_error_new (-1, "Expected to find both strings concatenated", NULL, error);
+		return axl_false;
+	} /* end if */
+	axl_free (value);
+
+	/* case conversion */
+	value = axl_stream_to_upper_copy ("MiXeD");
+	if (! axl_cmp (value, "MIXED")) {
+		axl_error_new (-1, "Expected to find the string converted to upper case", NULL, error);
+		return axl_false;
+	} /* end if */
+	axl_free (value);
+
+	value = axl_stream_to_lower_copy ("MiXeD");
+	if (! axl_cmp (value, "mixed")) {
+		axl_error_new (-1, "Expected to find the string converted to lower case", NULL, error);
+		return axl_false;
+	} /* end if */
+	axl_free (value);
+
+	/* splitting, including the empty items produced by a
+	 * separator at the beginning and at the end */
+	split = axl_stream_split (":a:b:", 1, ":");
+	if (split == NULL) {
+		axl_error_new (-1, "Expected to split the string received", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	size = 0;
+	while (split[size] != NULL)
+		size++;
+
+	if (size != 4) {
+		axl_error_new (-1, "Expected to find 4 items after splitting", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	if (! axl_cmp (split[0], "") || ! axl_cmp (split[1], "a") ||
+	    ! axl_cmp (split[2], "b") || ! axl_cmp (split[3], "")) {
+		axl_error_new (-1, "Expected to find the empty items produced by the separators at the borders", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* clean_split removes the empty items in place */
+	axl_stream_clean_split (split);
+
+	size = 0;
+	while (split[size] != NULL)
+		size++;
+
+	if (size != 2) {
+		axl_error_new (-1, "Expected to find 2 items after cleaning the split", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	if (! axl_cmp (split[0], "a") || ! axl_cmp (split[1], "b")) {
+		axl_error_new (-1, "Expected to find the non empty items after cleaning the split", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	axl_stream_freev (split);
+
+	/* white space detection */
+	if (! axl_stream_is_white_space (" ") || ! axl_stream_is_white_space ("\t")) {
+		axl_error_new (-1, "Expected to find white spaces reported as such", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	if (axl_stream_is_white_space ("a")) {
+		axl_error_new (-1, "Expected to not find a reported as white space", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* memory comparison limited to the size provided */
+	if (! axl_memcmp ("abcdef", "abcXXX", 3)) {
+		axl_error_new (-1, "Expected to find both buffers equal in their first 3 bytes", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	if (axl_memcmp ("abcdef", "abcXXX", 4)) {
+		axl_error_new (-1, "Expected to find both buffers different in their first 4 bytes", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	return axl_true;
+}
+
+#ifdef AXL_NS_SUPPORT
+/**
+ * @brief Checks the namespace queries not covered by the node lookup
+ * functions.
+ */
+axl_bool test_60 (axlError ** error)
+{
+	axlDoc  * doc;
+	axlNode * node;
+	axlNode * child;
+	int       position;
+
+	doc = axl_doc_parse_strings (error,
+				     "<?xml version='1.0' ?>",
+				     "<doc:document xmlns:doc='http://fact.aspl.es/doc' xmlns='http://fact.aspl.es/default'>",
+				     "  <doc:child />",
+				     "  <plain />",
+				     "  <doc:child />",
+				     "</doc:document>",
+				     NULL);
+	if (doc == NULL)
+		return axl_false;
+
+	if (! axl_ns_doc_validate (doc, error))
+		return axl_false;
+
+	node = axl_doc_get_root (doc);
+
+	/* a node using a prefix must be reported as prefixed, and
+	 * the position of the separator returned */
+	position = 0;
+	if (! axl_ns_node_is_prefixed (node, &position)) {
+		axl_error_new (-1, "Expected to find the root node prefixed", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	if (position != 3) {
+		axl_error_new (-1, "Expected to find the prefix separator at position 3", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* the node declares the prefix, so the check must succeed */
+	if (! axl_ns_doc_node_check (node, "doc", "http://fact.aspl.es/doc")) {
+		axl_error_new (-1, "Expected to find the doc prefix bound to its namespace", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	if (axl_ns_doc_node_check (node, "doc", "http://fact.aspl.es/other")) {
+		axl_error_new (-1, "Expected to not find the doc prefix bound to a different namespace", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* and the default namespace must be the one declared */
+	if (! axl_ns_doc_check_default (node, "http://fact.aspl.es/default")) {
+		axl_error_new (-1, "Expected to find the default namespace declared", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* a node without prefix must be reported as such */
+	child = axl_node_get_first_child (node);
+	child = axl_node_get_next_called (child, "plain");
+	if (child == NULL) {
+		axl_error_new (-1, "Expected to find the plain node", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	if (axl_ns_node_is_prefixed (child, NULL)) {
+		axl_error_new (-1, "Expected to find the plain node without prefix", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* looking backwards for a node in a namespace must find the
+	 * previous sibling matching */
+	child = axl_ns_node_get_previous_called (child, "http://fact.aspl.es/doc", "child");
+	if (child == NULL) {
+		axl_error_new (-1, "Expected to find the previous doc:child node", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	axl_doc_free (doc);
+
+	return axl_true;
+}
+#endif
+
+/**
+ * @brief Checks the log configuration API and the factory
+ * introspection.
+ */
+axl_bool test_61 (axlError ** error)
+{
+	axlFactory * factory;
+	axlPointer   item;
+	axlPointer   item2;
+	axl_bool     previous;
+	axl_bool     previous_color;
+
+	/* remember the state configured so the rest of the suite is
+	 * not affected */
+	previous       = axl_log_is_enabled ();
+	previous_color = axl_log_color_is_enabled ();
+
+	/* enabling and disabling must be symmetric */
+	axl_log_enable (axl_true);
+	if (! axl_log_is_enabled ()) {
+		axl_error_new (-1, "Expected to find the log enabled", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	axl_log_enable (axl_false);
+	if (axl_log_is_enabled ()) {
+		axl_error_new (-1, "Expected to find the log disabled", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	axl_log_color_enable (axl_true);
+	if (! axl_log_color_is_enabled ()) {
+		axl_error_new (-1, "Expected to find the log color enabled", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	axl_log_color_enable (axl_false);
+	if (axl_log_color_is_enabled ()) {
+		axl_error_new (-1, "Expected to find the log color disabled", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* restore the previous state */
+	axl_log_enable (previous);
+	axl_log_color_enable (previous_color);
+
+	/* a fresh factory must report no spare items in use */
+	factory = axl_factory_create (sizeof (int));
+	if (factory == NULL) {
+		axl_error_new (-1, "Expected to create a factory", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* the spare storage is only reserved once an item is
+	 * released back to the factory */
+	if (axl_factory_spare_max (factory) != 0) {
+		axl_error_new (-1, "Expected to find no spare capacity at a fresh factory", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* take two items before releasing any, so the second get
+	 * does not consume the spare left by the first release */
+	item  = axl_factory_get (factory);
+	item2 = axl_factory_get (factory);
+
+	if (item == NULL || item2 == NULL) {
+		axl_error_new (-1, "Expected to get two items from the factory", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* the first release reserves the spare storage and leaves
+	 * the index of the next spare to reuse pointing to the item
+	 * just released */
+	axl_factory_release_spare (factory, item);
+
+	if (axl_factory_spare_max (factory) <= 0) {
+		axl_error_new (-1, "Expected to find spare capacity reserved after releasing one item", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	if (axl_factory_spare_next (factory) != 0) {
+		axl_error_new (-1, "Expected to find the spare index at 0 after releasing one item", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* each additional release moves the index forward */
+	axl_factory_release_spare (factory, item2);
+
+	if (axl_factory_spare_next (factory) != 1) {
+		axl_error_new (-1, "Expected to find the spare index at 1 after releasing a second item", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* and getting an item again reuses the last spare released */
+	if (axl_factory_get (factory) != item2) {
+		axl_error_new (-1, "Expected to reuse the last spare released", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	axl_factory_free (factory);
+
+	return axl_true;
+}
+
+/**
  * Test01: Initial xml header checking.
  */
 int main (int argc, char ** argv)
@@ -9719,6 +11337,107 @@ int main (int argc, char ** argv)
 		printf ("Test 50: Allocating more that factory->step.. [   OK   ]\n");
 	}else {
 		printf ("Test 50: Allocating more that factory->step.. [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}
+
+	if (test_51 (&error)) {
+		printf ("Test 51: Processing instruction API (axlPI) [   OK   ]\n");
+	}else {
+		printf ("Test 51: Processing instruction API (axlPI) [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}
+
+	if (test_52 (&error)) {
+		printf ("Test 52: Node level dump and flat size [   OK   ]\n");
+	}else {
+		printf ("Test 52: Node level dump and flat size [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}
+
+	if (test_53 (&error)) {
+		printf ("Test 53: Reference taking API (_ref family) [   OK   ]\n");
+	}else {
+		printf ("Test 53: Reference taking API (_ref family) [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}
+
+	if (test_54 (&error)) {
+		printf ("Test 54: Item layer (axlItem) [   OK   ]\n");
+	}else {
+		printf ("Test 54: Item layer (axlItem) [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}
+
+	if (test_55 (&error)) {
+		printf ("Test 55: Content escaping and CDATA [   OK   ]\n");
+	}else {
+		printf ("Test 55: Content escaping and CDATA [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}
+
+	if (test_56 (&error)) {
+		printf ("Test 56: Reverse cursors and foreach family [   OK   ]\n");
+	}else {
+		printf ("Test 56: Reverse cursors and foreach family [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}
+
+	if (test_57 (&error)) {
+		printf ("Test 57: Attribute access variants [   OK   ]\n");
+	}else {
+		printf ("Test 57: Attribute access variants [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}
+
+	if (test_58 (&error)) {
+		printf ("Test 58: Document iteration and full comparison [   OK   ]\n");
+	}else {
+		printf ("Test 58: Document iteration and full comparison [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}
+
+	if (test_59 (&error)) {
+		printf ("Test 59: Stream string helpers [   OK   ]\n");
+	}else {
+		printf ("Test 59: Stream string helpers [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}
+
+#ifdef AXL_NS_SUPPORT
+	if (test_60 (&error)) {
+		printf ("Test 60: Namespace prefix queries [   OK   ]\n");
+	}else {
+		printf ("Test 60: Namespace prefix queries [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}
+#endif
+
+	if (test_61 (&error)) {
+		printf ("Test 61: Log configuration and factory introspection [   OK   ]\n");
+	}else {
+		printf ("Test 61: Log configuration and factory introspection [ FAILED ]\n  (CODE: %d) %s\n",
 			axl_error_get_code (error), axl_error_get (error));
 		axl_error_free (error);
 		return -1;
