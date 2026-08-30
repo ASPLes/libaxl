@@ -4505,7 +4505,11 @@ axl_bool      axl_node_dump_pretty_to_file     (axlNode  * node,
  * 
  * @return A reference to the list of processing instruction that the
  * xml node (\ref axlNode) has. The returned list, if defined, must be
- * deallocated.
+ * deallocated with \ref axl_list_free.
+ *
+ * NOTE: only the list must be deallocated. The \ref axlPI references
+ * it holds are still owned by the node and are released along with
+ * it.
  */
 axlList * axl_node_get_pi_target_list       (axlNode * node)
 {
@@ -4521,9 +4525,12 @@ axlList * axl_node_get_pi_target_list       (axlNode * node)
 		
 		/* check the type */
 		if (axl_item_get_type (item) == ITEM_PI) {
-			/* create the result list */
+			/* create the result list. No destroy function
+			 * is configured because the items added are
+			 * still owned by the node: releasing the list
+			 * must not release them */
 			if (result == NULL)
-				result = axl_list_new (axl_list_always_return_1, (axlDestroyFunc) axl_pi_free);	 
+				result = axl_list_new (axl_list_always_return_1, NULL);
 
 			/* add the list */
 			axl_list_add (result, item->data);
@@ -4900,15 +4907,21 @@ int __axl_node_dump_items (axlItem * item, char * content, int level, axl_bool p
 			memcpy (content + desp, string_aux, strlen (string_aux));
 			desp += strlen (string_aux);
 			
-			/* write pi start */
-			memcpy (content + desp, " ", 1);
-			desp += 1;
-			
-			/* write pi content */
+			/* write pi content, if defined. A process
+			 * instruction may have no content associated,
+			 * in that case neither the separator nor the
+			 * content are written. This must be kept in
+			 * sync with axl_pi_get_size */
 			string_aux = axl_pi_get_content (item->data);
-			memcpy (content + desp, string_aux, strlen (string_aux));
-			desp += strlen (string_aux);
-			
+			if (string_aux != NULL) {
+				/* write the separator */
+				memcpy (content + desp, " ", 1);
+				desp += 1;
+
+				memcpy (content + desp, string_aux, strlen (string_aux));
+				desp += strlen (string_aux);
+			} /* end if */
+
 			/* write pi start */
 			memcpy (content + desp, "?>", 2);
 			desp += 2;
@@ -5484,7 +5497,13 @@ void axl_node_free (axlNode * node)
  * @param node The node to deallocate.
  *
  * @param also_childs Signal the function to also dealloc childs or
- * not.
+ * not. Calling with \ref axl_true is equivalent to \ref
+ * axl_node_free.
+ *
+ * NOTE: passing \ref axl_false leaves untouched every item held by
+ * the node (childs, content, comments and processing instructions),
+ * so the caller must have moved them somewhere else to avoid leaking
+ * them.
  */
 void      axl_node_free_full       (axlNode * node, axl_bool also_childs)
 {
@@ -5494,8 +5513,8 @@ void      axl_node_free_full       (axlNode * node, axl_bool also_childs)
 	/* get a reference to the hash */
 	hash = node->annotate_data;
 
-	/* free node */
-	__axl_node_free_internal (node, axl_false);
+	/* free node, honouring the caller request about childs */
+	__axl_node_free_internal (node, also_childs);
 
 	/* free the node itself */
 	if (!(node->conf & NODE_FROM_FACTORY))

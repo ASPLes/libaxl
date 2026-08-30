@@ -2883,6 +2883,12 @@ axl_bool      axl_pi_are_equal                 (axlPI * pi,
 	if (! axl_cmp (pi->name, pi2->name))
 		return axl_false;
 
+	/* a process instruction may have no content associated: two
+	 * of them without content are equal, and one with content is
+	 * never equal to one without it */
+	if (pi->content == NULL || pi2->content == NULL)
+		return (pi->content == pi2->content);
+
 	/* final check, both content must be equal */
 	return axl_cmp (pi->content, pi2->content);
 }
@@ -2949,6 +2955,11 @@ void axl_pi_free (axlPI * pi)
 int       axl_pi_get_size                  (axlPI  * pi)
 {
 	axl_return_val_if_fail (pi, -1);
+
+	/* <?name?> : a process instruction may have no content
+	 * associated */
+	if (pi->content == NULL)
+		return strlen (pi->name) + 4;
 
 	/* <?name content?> */
 	return strlen (pi->name) + strlen (pi->content) + 5;

@@ -9087,6 +9087,8 @@ axl_bool test_51 (axlError ** error)
 	axlPI   * pi;
 	axlPI   * pi_copy;
 	axlList * list;
+	char    * content;
+	int       size;
 
 	/* create a processing instruction outside any document */
 	pi = axl_pi_create ("target1", "content1");
@@ -9217,14 +9219,63 @@ axl_bool test_51 (axlError ** error)
 		return axl_false;
 	} /* end if */
 
-	/* the list must be released by the caller but it holds
-	 * references still owned by the node: drop the destroy
-	 * function before releasing it to avoid releasing them
-	 * twice */
-	axl_list_set_destroy_func (list, NULL);
+	/* only the list must be released by the caller: the process
+	 * instructions it holds are still owned by the node */
 	axl_list_free (list);
 
 	/* release the document */
+	axl_doc_free (doc);
+
+	/* a process instruction may carry no content at all */
+	pi = axl_pi_create ("empty-target", NULL);
+	if (pi == NULL) {
+		axl_error_new (-1, "Expected to create a processing instruction without content", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	if (axl_pi_get_content (pi) != NULL) {
+		axl_error_new (-1, "Expected to find no content at the processing instruction", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	/* size required to dump <?empty-target?> */
+	if (axl_pi_get_size (pi) != 16) {
+		axl_error_new (-1, "Expected to find size 16 for the processing instruction without content", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	pi_copy = axl_pi_copy (pi);
+	if (! axl_pi_are_equal (pi, pi_copy)) {
+		axl_error_new (-1, "Expected to find both empty processing instructions to be equal", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	axl_pi_free (pi_copy);
+	axl_pi_free (pi);
+
+	/* and such a processing instruction must be dumpable inside
+	 * a document */
+	doc = axl_doc_parse_strings (error,
+				     "<?xml version='1.0' ?>",
+				     "<complex><data /></complex>",
+				     NULL);
+	if (doc == NULL)
+		return axl_false;
+
+	node = axl_doc_get_root (doc);
+	axl_node_add_pi_target (node, "empty-target", NULL);
+
+	if (! axl_doc_dump (doc, &content, &size)) {
+		axl_error_new (-1, "Failed to dump a document holding a processing instruction without content", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	if (strstr (content, "<?empty-target?>") == NULL) {
+		axl_error_new (-1, "Expected to find the processing instruction without content dumped", NULL, error);
+		return axl_false;
+	} /* end if */
+
+	axl_free (content);
 	axl_doc_free (doc);
 
 	return axl_true;
@@ -9498,6 +9549,27 @@ axl_bool test_53 (axlError ** error)
 	 * releases the childs held by the node */
 	axl_node_free (parent);
 	axl_node_free (node);
+
+	/* axl_node_free_full with axl_true must behave as
+	 * axl_node_free, releasing every item held by the node */
+	node = axl_node_create ("parent3");
+	axl_node_set_child (node, axl_node_create ("child1"));
+	axl_node_set_child (node, axl_node_create ("child2"));
+	axl_node_set_content (node, "content", -1);
+
+	axl_node_free_full (node, axl_true);
+
+	/* with axl_false the items are left to the caller, so they
+	 * are moved somewhere else before releasing the node */
+	node   = axl_node_create ("parent4");
+	child  = axl_node_create ("child1");
+	axl_node_set_child (node, child);
+
+	parent = axl_node_create ("parent5");
+	axl_node_transfer_childs (node, parent);
+
+	axl_node_free_full (node, axl_false);
+	axl_node_free (parent);
 
 	return axl_true;
 }
