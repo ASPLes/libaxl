@@ -10766,6 +10766,285 @@ axl_bool test_61 (axlError ** error)
 	return axl_true;
 }
 
+/* a malformed input along with the reason it must be rejected */
+typedef struct _test_62_case {
+	const char * label;
+	const char * dtd;
+	const char * doc;
+} test_62_case;
+
+/* reports a failure using the label of the case being checked */
+axl_bool test_62_fail (const char * label, const char * reason, axlError ** error)
+{
+	char * err_msg;
+
+	err_msg = axl_strdup_printf ("%s: %s", label, reason);
+	axl_error_new (-1, err_msg, NULL, error);
+	axl_free (err_msg);
+
+	return axl_false;
+}
+
+/* checks the DTD provided is rejected while parsing it, reporting an
+ * error */
+axl_bool test_62_dtd_rejected (const char * label, const char * content, axlError ** error)
+{
+	axlDtd   * dtd;
+	axlError * local = NULL;
+
+	dtd = axl_dtd_parse (content, -1, &local);
+	if (dtd != NULL) {
+		axl_dtd_free (dtd);
+		return test_62_fail (label, "expected to reject the DTD, but it was accepted", error);
+	} /* end if */
+
+	if (local == NULL)
+		return test_62_fail (label, "DTD rejected but no error was reported", error);
+
+	axl_error_free (local);
+	return axl_true;
+}
+
+/* checks the document provided does not validate against the DTD
+ * provided, reporting an error */
+axl_bool test_62_doc_rejected (const char * label, const char * dtd_content,
+			       const char * doc_content, axlError ** error)
+{
+	axlDtd   * dtd;
+	axlDoc   * doc;
+	axlError * local  = NULL;
+	axl_bool   result;
+
+	dtd = axl_dtd_parse (dtd_content, -1, &local);
+	if (dtd == NULL) {
+		if (local != NULL)
+			axl_error_free (local);
+		return test_62_fail (label, "the DTD used by the case must parse", error);
+	} /* end if */
+
+	doc = axl_doc_parse (doc_content, -1, &local);
+	if (doc == NULL) {
+		axl_dtd_free (dtd);
+		if (local != NULL)
+			axl_error_free (local);
+		return test_62_fail (label, "the document used by the case must parse", error);
+	} /* end if */
+
+	result = axl_dtd_validate (doc, dtd, &local);
+
+	axl_doc_free (doc);
+	axl_dtd_free (dtd);
+
+	if (result)
+		return test_62_fail (label, "expected to reject the document, but it validated", error);
+
+	if (local == NULL)
+		return test_62_fail (label, "document rejected but no error was reported", error);
+
+	axl_error_free (local);
+	return axl_true;
+}
+
+/* checks the document provided validates against the DTD provided */
+axl_bool test_62_doc_accepted (const char * label, const char * dtd_content,
+			       const char * doc_content, axlError ** error)
+{
+	axlDtd   * dtd;
+	axlDoc   * doc;
+	axlError * local  = NULL;
+	axl_bool   result;
+
+	dtd = axl_dtd_parse (dtd_content, -1, &local);
+	if (dtd == NULL) {
+		if (local != NULL)
+			axl_error_free (local);
+		return test_62_fail (label, "the DTD used by the case must parse", error);
+	} /* end if */
+
+	doc = axl_doc_parse (doc_content, -1, &local);
+	if (doc == NULL) {
+		axl_dtd_free (dtd);
+		if (local != NULL)
+			axl_error_free (local);
+		return test_62_fail (label, "the document used by the case must parse", error);
+	} /* end if */
+
+	result = axl_dtd_validate (doc, dtd, &local);
+
+	axl_doc_free (doc);
+	axl_dtd_free (dtd);
+
+	if (! result) {
+		if (local != NULL)
+			axl_error_free (local);
+		return test_62_fail (label, "expected the document to validate, but it was rejected", error);
+	} /* end if */
+
+	return axl_true;
+}
+
+/* checks the xml content provided is rejected while parsing it,
+ * reporting an error */
+axl_bool test_62_xml_rejected (const char * label, const char * content, axlError ** error)
+{
+	axlDoc   * doc;
+	axlError * local = NULL;
+
+	doc = axl_doc_parse (content, -1, &local);
+	if (doc != NULL) {
+		axl_doc_free (doc);
+		return test_62_fail (label, "expected to reject the document, but it was parsed", error);
+	} /* end if */
+
+	if (local == NULL)
+		return test_62_fail (label, "document rejected but no error was reported", error);
+
+	axl_error_free (local);
+	return axl_true;
+}
+
+/**
+ * @brief Feeds the parser and the DTD validator with deliberately
+ * broken input, checking every one of them is rejected reporting an
+ * error instead of being accepted or crashing.
+ */
+axl_bool test_62 (axlError ** error)
+{
+	int iterator;
+
+	/* DTD declarations that must not be accepted */
+	test_62_case broken_dtds[] = {
+		{"ELEMENT without a name",
+		 "<!ELEMENT >", NULL},
+		{"ELEMENT without content specification",
+		 "<!ELEMENT doc>", NULL},
+		{"ELEMENT without the opening parenthesis",
+		 "<!ELEMENT doc a)>", NULL},
+		{"element declared twice",
+		 "<!ELEMENT doc (a)><!ELEMENT a EMPTY><!ELEMENT doc (a)>", NULL},
+		{"content particule separators mixed at the same level",
+		 "<!ELEMENT doc (a|b,c)><!ELEMENT a EMPTY><!ELEMENT b EMPTY><!ELEMENT c EMPTY>", NULL},
+		{"declaration that is not ELEMENT, ATTLIST or ENTITY",
+		 "<!FOO doc (a)>", NULL},
+		{"ATTLIST without a name",
+		 "<!ELEMENT doc EMPTY><!ATTLIST >", NULL},
+		{"ATTLIST enumeration without the closing parenthesis",
+		 "<!ELEMENT doc EMPTY><!ATTLIST doc a (x|y #IMPLIED>", NULL},
+		{"ATTLIST with an unknown attribute type",
+		 "<!ELEMENT doc EMPTY><!ATTLIST doc a WEIRDTYPE #IMPLIED>", NULL},
+		{"IDREF declared without any ID declaration",
+		 "<!ELEMENT doc EMPTY><!ATTLIST doc ref IDREF #IMPLIED>", NULL},
+		{"ENTITY without a name",
+		 "<!ENTITY >", NULL},
+		{"ENTITY value without quotes",
+		 "<!ENTITY e value>", NULL},
+		{"ENTITY without the closing >",
+		 "<!ENTITY e \"value\"", NULL},
+		{NULL, NULL, NULL}
+	};
+
+	/* documents that must not validate against a correct DTD */
+	test_62_case invalid_docs[] = {
+		{"root node that does not match the DTD",
+		 "<!ELEMENT doc (a)><!ELEMENT a EMPTY>",
+		 "<?xml version='1.0' ?><other><a /></other>"},
+		{"node not declared at the DTD",
+		 "<!ELEMENT doc (a)><!ELEMENT a EMPTY>",
+		 "<?xml version='1.0' ?><doc><unknown /></doc>"},
+		{"more childs than the ones declared",
+		 "<!ELEMENT doc (a)><!ELEMENT a EMPTY>",
+		 "<?xml version='1.0' ?><doc><a /><a /></doc>"},
+		{"missing a mandatory child",
+		 "<!ELEMENT doc (a,b)><!ELEMENT a EMPTY><!ELEMENT b EMPTY>",
+		 "<?xml version='1.0' ?><doc><a /></doc>"},
+		{"childs out of the declared sequence order",
+		 "<!ELEMENT doc (a,b)><!ELEMENT a EMPTY><!ELEMENT b EMPTY>",
+		 "<?xml version='1.0' ?><doc><b /><a /></doc>"},
+		{"none of the choice alternatives present",
+		 "<!ELEMENT doc (a|b)><!ELEMENT a EMPTY><!ELEMENT b EMPTY><!ELEMENT c EMPTY>",
+		 "<?xml version='1.0' ?><doc><c /></doc>"},
+		{"EMPTY element holding childs",
+		 "<!ELEMENT doc EMPTY><!ELEMENT a EMPTY>",
+		 "<?xml version='1.0' ?><doc><a /></doc>"},
+		{"IDREF pointing to an ID that does not exist",
+		 "<!ELEMENT doc (a)><!ELEMENT a EMPTY><!ATTLIST a id ID #IMPLIED ref IDREF #IMPLIED>",
+		 "<?xml version='1.0' ?><doc><a id='x1' ref='not-defined' /></doc>"},
+		{"required attribute not provided",
+		 "<!ELEMENT doc EMPTY><!ATTLIST doc req CDATA #REQUIRED>",
+		 "<?xml version='1.0' ?><doc />"},
+		{"attribute value outside the declared enumeration",
+		 "<!ELEMENT doc EMPTY><!ATTLIST doc a (x|y) #IMPLIED>",
+		 "<?xml version='1.0' ?><doc a='z' />"},
+		{NULL, NULL, NULL}
+	};
+
+	/* mixed content, which must validate */
+	test_62_case valid_docs[] = {
+		{"mixed content holding text and nodes",
+		 "<!ELEMENT doc (#PCDATA|a)*><!ELEMENT a EMPTY>",
+		 "<?xml version='1.0' ?><doc>text<a />more text</doc>"},
+		{"mixed content holding only text",
+		 "<!ELEMENT doc (#PCDATA)><!ELEMENT a EMPTY>",
+		 "<?xml version='1.0' ?><doc>only text</doc>"},
+		{NULL, NULL, NULL}
+	};
+
+	/* xml content that must not be parsed */
+	test_62_case broken_xml[] = {
+		{"node left open", "<?xml version='1.0' ?><doc><a></doc>", NULL},
+		{"closing a node that was not open", "<?xml version='1.0' ?><doc></other>", NULL},
+		{"attribute without the closing quote", "<?xml version='1.0' ?><doc a='x />", NULL},
+		{"CDATA section left open", "<?xml version='1.0' ?><doc><![CDATA[no end</doc>", NULL},
+		{"comment left open", "<?xml version='1.0' ?><doc><!-- no end</doc>", NULL},
+		{"empty document", "", NULL},
+		{"header without a root node", "<?xml version='1.0' ?>", NULL},
+		{"header without the version", "<?xml ?><doc />", NULL},
+		{"processing instruction left open", "<?xml version='1.0' ?><doc><?target </doc>", NULL},
+		{"node with an empty name", "<?xml version='1.0' ?><></>", NULL},
+		{NULL, NULL, NULL}
+	};
+
+	/* every broken DTD must be rejected while parsing it */
+	iterator = 0;
+	while (broken_dtds[iterator].label != NULL) {
+		if (! test_62_dtd_rejected (broken_dtds[iterator].label,
+					    broken_dtds[iterator].dtd, error))
+			return axl_false;
+		iterator++;
+	} /* end while */
+
+	/* every invalid document must be rejected while validating it */
+	iterator = 0;
+	while (invalid_docs[iterator].label != NULL) {
+		if (! test_62_doc_rejected (invalid_docs[iterator].label,
+					    invalid_docs[iterator].dtd,
+					    invalid_docs[iterator].doc, error))
+			return axl_false;
+		iterator++;
+	} /* end while */
+
+	/* and the valid ones must be accepted */
+	iterator = 0;
+	while (valid_docs[iterator].label != NULL) {
+		if (! test_62_doc_accepted (valid_docs[iterator].label,
+					    valid_docs[iterator].dtd,
+					    valid_docs[iterator].doc, error))
+			return axl_false;
+		iterator++;
+	} /* end while */
+
+	/* every broken document must be rejected while parsing it */
+	iterator = 0;
+	while (broken_xml[iterator].label != NULL) {
+		if (! test_62_xml_rejected (broken_xml[iterator].label,
+					    broken_xml[iterator].dtd, error))
+			return axl_false;
+		iterator++;
+	} /* end while */
+
+	return axl_true;
+}
+
 /**
  * Test01: Initial xml header checking.
  */
@@ -11510,6 +11789,15 @@ int main (int argc, char ** argv)
 		printf ("Test 61: Log configuration and factory introspection [   OK   ]\n");
 	}else {
 		printf ("Test 61: Log configuration and factory introspection [ FAILED ]\n  (CODE: %d) %s\n",
+			axl_error_get_code (error), axl_error_get (error));
+		axl_error_free (error);
+		return -1;
+	}
+
+	if (test_62 (&error)) {
+		printf ("Test 62: Malformed input rejection (parser and DTD) [   OK   ]\n");
+	}else {
+		printf ("Test 62: Malformed input rejection (parser and DTD) [ FAILED ]\n  (CODE: %d) %s\n",
 			axl_error_get_code (error), axl_error_get (error));
 		axl_error_free (error);
 		return -1;

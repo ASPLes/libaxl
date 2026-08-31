@@ -1231,13 +1231,21 @@ axl_bool     __axl_dtd_parse_element (axlDtd * dtd, axlStream * stream, axlError
 		 * which leads to the two possible values: Mixed and
 		 * PcData */
 		element->type = ELEMENT_TYPE_CHILDREN;
-		if (!__axl_dtd_read_element_spec (stream, element, error))
+		if (!__axl_dtd_read_element_spec (stream, element, error)) {
+			/* the element is not stored at the DTD yet:
+			 * release it here to avoid leaking it */
+			axl_dtd_element_free (element);
 			return axl_false;
+		} /* end if */
 	}
 
 	/* add element found */
-	if (! __axl_dtd_add_element (dtd, element, stream, error))
+	if (! __axl_dtd_add_element (dtd, element, stream, error)) {
+		/* the element was rejected, so it is still owned by
+		 * this function */
+		axl_dtd_element_free (element);
 		return axl_false;
+	} /* end if */
 	
 	/* consume previous white spaces */
 	AXL_CONSUME_SPACES (stream);
@@ -3079,8 +3087,11 @@ axl_bool           axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 
 	/* check empty content spec */
 	if (axl_dtd_get_element_type (element) == ELEMENT_TYPE_EMPTY) {
-		/* check if the document provided have only one node */
-		result = axl_node_is_empty (parent) && !axl_node_have_childs (parent) && axl_dtd_attr_validate (parent, dtd, error, id_validation, idref_validation);
+		/* check if the document provided have only one node,
+		 * reusing the element type checking so a failure is
+		 * reported through the error provided */
+		result = __axl_dtd_validate_element_type_empty (element, parent, NULL, error) &&
+			axl_dtd_attr_validate (parent, dtd, error, id_validation, idref_validation);
 
 		/* check references */
 		if (result)

@@ -130,6 +130,8 @@ axl_bool axl_babel_detect_codification (axlStream        * stream,
 	 * parse */
 	if (axl_stream_get_size (stream) < 4) {
 		__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "unable to detect codification, stream received doesn't have enough content to parse");
+		axl_error_new (-1, "Unable to detect codification, the stream received doesn't have enough content to parse",
+			       stream, error);
 		return axl_false;
 	} /* end if */
 
