@@ -3196,9 +3196,13 @@ axl_bool           axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 			break;
 		case ELEMENT_TYPE_ANY:
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "  find  ANY dtd element");
-			/* the anything is allowed cased from this
-			 * parent node. */
-			goto continue_with_validation;
+			/* any content is allowed inside this parent
+			 * node, so no content specification is
+			 * checked for it. Its childs are still queued
+			 * below because, according to XML 1.0, an
+			 * element declared ANY may hold any element
+			 * that is itself declared at the DTD. */
+			break;
 		case ELEMENT_TYPE_MIXED:
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "  find  MIXED dtd element");
 
@@ -3232,7 +3236,6 @@ axl_bool           axl_dtd_validate        (axlDoc * doc, axlDtd * dtd,
 			
 		/* update the reference to the new parent node, only
 		 * if there are new parents on the stack */
-	continue_with_validation:
 		if (! axl_stack_is_empty (stack)) {
 
 

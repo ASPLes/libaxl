@@ -10975,10 +10975,15 @@ axl_bool test_62 (axlError ** error)
 		{"attribute value outside the declared enumeration",
 		 "<!ELEMENT doc EMPTY><!ATTLIST doc a (x|y) #IMPLIED>",
 		 "<?xml version='1.0' ?><doc a='z' />"},
+		{"ANY element holding a child not declared at the DTD",
+		 "<!ELEMENT doc ANY><!ELEMENT a EMPTY>",
+		 "<?xml version='1.0' ?><doc><not-declared /></doc>"},
 		{NULL, NULL, NULL}
 	};
 
-	/* mixed content, which must validate */
+	/* mixed and ANY content, which must validate. According to
+	 * XML 1.0 an element declared ANY accepts any content as long
+	 * as every element inside it is itself declared at the DTD */
 	test_62_case valid_docs[] = {
 		{"mixed content holding text and nodes",
 		 "<!ELEMENT doc (#PCDATA|a)*><!ELEMENT a EMPTY>",
@@ -10986,6 +10991,21 @@ axl_bool test_62 (axlError ** error)
 		{"mixed content holding only text",
 		 "<!ELEMENT doc (#PCDATA)><!ELEMENT a EMPTY>",
 		 "<?xml version='1.0' ?><doc>only text</doc>"},
+		{"ANY element without childs",
+		 "<!ELEMENT doc ANY>",
+		 "<?xml version='1.0' ?><doc />"},
+		{"ANY element holding declared childs",
+		 "<!ELEMENT doc ANY><!ELEMENT a EMPTY><!ELEMENT b EMPTY>",
+		 "<?xml version='1.0' ?><doc><a /><b /><a /></doc>"},
+		{"ANY element holding a declared subtree",
+		 "<!ELEMENT doc ANY><!ELEMENT a (b)><!ELEMENT b EMPTY>",
+		 "<?xml version='1.0' ?><doc><a><b /></a></doc>"},
+		{"ANY element holding text and declared nodes",
+		 "<!ELEMENT doc ANY><!ELEMENT a EMPTY>",
+		 "<?xml version='1.0' ?><doc>text<a />more text</doc>"},
+		{"ANY element nested inside another ANY element",
+		 "<!ELEMENT doc ANY><!ELEMENT a ANY><!ELEMENT b EMPTY>",
+		 "<?xml version='1.0' ?><doc><a><b /></a></doc>"},
 		{NULL, NULL, NULL}
 	};
 
