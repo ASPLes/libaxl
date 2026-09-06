@@ -629,7 +629,9 @@ axl_bool __axl_doc_parse_xml_header (axlStream * stream, axlDoc * doc, axlError 
 		/* consume spaces */
 		AXL_CONSUME_SPACES (stream);
 
-		if (! axl_stream_inspect (stream, "version=", 8)) {
+		/* compared against 0 because axl_stream_inspect
+		 * returns -1 when the stream is exhausted */
+		if (! (axl_stream_inspect (stream, "version=", 8) > 0)) {
 			axl_error_new (-2, "expected to find 'version=' declaration, not found.", stream, error);
 			axl_stream_free (stream);
 			return axl_false;
@@ -1303,6 +1305,21 @@ axlDoc * __axl_doc_parse_common (const char * entity, int entity_size,
 
 		return NULL;
 	}
+
+	/* consume the document epilog. According to the XML 1.0
+	 * standard, once the root node is closed only white spaces,
+	 * comments and processing instructions are allowed, so
+	 * anything else remaining makes the document not well formed
+	 * (a second root node, or trailing character data) */
+	if (! axl_doc_consume_comments (doc, stream, error))
+		return NULL;
+
+	if (axl_stream_remains (stream)) {
+		axl_error_new (-1, "Found content after the root node was closed, a well formed XML document must hold a single root node",
+			       stream, error);
+		axl_stream_free (stream);
+		return NULL;
+	} /* end if */
 
 	/* parse complete */
 	axl_stream_unlink (stream);

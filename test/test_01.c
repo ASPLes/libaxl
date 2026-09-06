@@ -251,7 +251,7 @@ axl_bool test_45 (axlError ** error)
 	axlNode       * node;
 	int             count;
 
-	doc = axl_doc_parse ("<root value='test1' />", 24, NULL);
+	doc = axl_doc_parse ("<root value='test1' />", 22, NULL);
 	if (doc == NULL) {
 		printf ("Expected to find proper document parsing but found NULL\n");
 		return axl_false;
@@ -3289,7 +3289,7 @@ axl_bool test_14 (axlError ** error)
 	/* free document */
 	axl_doc_free (doc);
 
-	doc = axl_doc_parse ("<?xml version='1.0' ?><test></test>", 37, error);
+	doc = axl_doc_parse ("<?xml version='1.0' ?><test></test>", 35, error);
 	if (doc == NULL) {
 		printf ("Expected to parse a document but it fails, error was: %s\n", axl_error_get (*error));
 		return axl_false;
@@ -4565,7 +4565,7 @@ axl_bool test_01 (axlError ** error)
 	/* release document parsed */
 	axl_doc_free (doc);
 
-	doc = axl_doc_parse ("<?xml    \n   \t \n \r version='1.0' ?>    <doc />", 50, error);
+	doc = axl_doc_parse ("<?xml    \n   \t \n \r version='1.0' ?>    <doc />", 46, error);
 	if (doc == NULL) {
 		return axl_false;
 	}
@@ -4573,7 +4573,7 @@ axl_bool test_01 (axlError ** error)
 	/* release document parsed */
 	axl_doc_free (doc);
 
-	doc = axl_doc_parse ("<?xml  version=\"1.0\"        ?>   \r \t \n<another />", 54, error);
+	doc = axl_doc_parse ("<?xml  version=\"1.0\"        ?>   \r \t \n<another />", 49, error);
 	if (doc == NULL) {
 		return axl_false;
 	}
@@ -4581,7 +4581,7 @@ axl_bool test_01 (axlError ** error)
 	/* release document parsed */
 	axl_doc_free (doc);
 
-	doc = axl_doc_parse ("<?xml  version=\"1.0\" \t \n \r encoding='utf-8\"   ?> <data />", 63, error);
+	doc = axl_doc_parse ("<?xml  version=\"1.0\" \t \n \r encoding='utf-8\"   ?> <data />", 57, error);
 	if (doc == NULL) {
 		return axl_false;
 	}
@@ -10883,6 +10883,40 @@ axl_bool test_62_doc_accepted (const char * label, const char * dtd_content,
 	return axl_true;
 }
 
+/* checks the DTD provided is accepted while parsing it */
+axl_bool test_62_dtd_accepted (const char * label, const char * content, axlError ** error)
+{
+	axlDtd   * dtd;
+	axlError * local = NULL;
+
+	dtd = axl_dtd_parse (content, -1, &local);
+	if (dtd == NULL) {
+		if (local != NULL)
+			axl_error_free (local);
+		return test_62_fail (label, "expected to accept the DTD, but it was rejected", error);
+	} /* end if */
+
+	axl_dtd_free (dtd);
+	return axl_true;
+}
+
+/* checks the xml content provided is accepted while parsing it */
+axl_bool test_62_xml_accepted (const char * label, const char * content, axlError ** error)
+{
+	axlDoc   * doc;
+	axlError * local = NULL;
+
+	doc = axl_doc_parse (content, -1, &local);
+	if (doc == NULL) {
+		if (local != NULL)
+			axl_error_free (local);
+		return test_62_fail (label, "expected to accept the document, but it was rejected", error);
+	} /* end if */
+
+	axl_doc_free (doc);
+	return axl_true;
+}
+
 /* checks the xml content provided is rejected while parsing it,
  * reporting an error */
 axl_bool test_62_xml_rejected (const char * label, const char * content, axlError ** error)
@@ -10940,6 +10974,26 @@ axl_bool test_62 (axlError ** error)
 		 "<!ENTITY e value>", NULL},
 		{"ENTITY without the closing >",
 		 "<!ENTITY e \"value\"", NULL},
+		{"ELEMENT declaration truncated before the closing >",
+		 "<!ELEMENT doc (a)", NULL},
+		{"empty content specification",
+		 "<!ELEMENT doc ()>", NULL},
+		{"repetition pattern without a content particule",
+		 "<!ELEMENT doc (*)>", NULL},
+		{"separator without content particules",
+		 "<!ELEMENT doc (,)>", NULL},
+		{NULL, NULL, NULL}
+	};
+
+	/* DTD declarations that must keep being accepted: nested item
+	 * lists open a content particule with no name of their own */
+	test_62_case valid_dtds[] = {
+		{"nested item lists",
+		 "<!ELEMENT doc ((a),(b))><!ELEMENT a EMPTY><!ELEMENT b EMPTY>", NULL},
+		{"nested choice inside a sequence",
+		 "<!ELEMENT doc ((a|b),c)><!ELEMENT a EMPTY><!ELEMENT b EMPTY><!ELEMENT c EMPTY>", NULL},
+		{"nested list with a repetition pattern",
+		 "<!ELEMENT doc (a,(b|c)*)><!ELEMENT a EMPTY><!ELEMENT b EMPTY><!ELEMENT c EMPTY>", NULL},
 		{NULL, NULL, NULL}
 	};
 
@@ -11021,6 +11075,21 @@ axl_bool test_62 (axlError ** error)
 		{"header without the version", "<?xml ?><doc />", NULL},
 		{"processing instruction left open", "<?xml version='1.0' ?><doc><?target </doc>", NULL},
 		{"node with an empty name", "<?xml version='1.0' ?><></>", NULL},
+		{"a second root node", "<?xml version='1.0' ?><a /><b />", NULL},
+		{"character data after the root node", "<?xml version='1.0' ?><a />trailing", NULL},
+		{NULL, NULL, NULL}
+	};
+
+	/* xml content that must be accepted. Once the root node is
+	 * closed the XML 1.0 standard still allows white spaces,
+	 * comments and processing instructions */
+	test_62_case valid_xml[] = {
+		{"comment after the root node",
+		 "<?xml version='1.0' ?><a /><!-- a comment -->", NULL},
+		{"processing instruction after the root node",
+		 "<?xml version='1.0' ?><a /><?target content?>", NULL},
+		{"white spaces after the root node",
+		 "<?xml version='1.0' ?><a />   \n  ", NULL},
 		{NULL, NULL, NULL}
 	};
 
@@ -11029,6 +11098,15 @@ axl_bool test_62 (axlError ** error)
 	while (broken_dtds[iterator].label != NULL) {
 		if (! test_62_dtd_rejected (broken_dtds[iterator].label,
 					    broken_dtds[iterator].dtd, error))
+			return axl_false;
+		iterator++;
+	} /* end while */
+
+	/* and the correct ones must keep being accepted */
+	iterator = 0;
+	while (valid_dtds[iterator].label != NULL) {
+		if (! test_62_dtd_accepted (valid_dtds[iterator].label,
+					    valid_dtds[iterator].dtd, error))
 			return axl_false;
 		iterator++;
 	} /* end while */
@@ -11058,6 +11136,15 @@ axl_bool test_62 (axlError ** error)
 	while (broken_xml[iterator].label != NULL) {
 		if (! test_62_xml_rejected (broken_xml[iterator].label,
 					    broken_xml[iterator].dtd, error))
+			return axl_false;
+		iterator++;
+	} /* end while */
+
+	/* and the well formed ones must be accepted */
+	iterator = 0;
+	while (valid_xml[iterator].label != NULL) {
+		if (! test_62_xml_accepted (valid_xml[iterator].label,
+					    valid_xml[iterator].dtd, error))
 			return axl_false;
 		iterator++;
 	} /* end while */

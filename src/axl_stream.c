@@ -252,8 +252,13 @@ struct _axlStream {
  */
 axl_bool axl_stream_prebuffer (axlStream * stream)
 {
-	int  bytes_read;
-	int  op_result;
+	/* both are only updated by axl_stream_decode, which is called
+	 * when there is pending content at the temporal decode
+	 * buffer. They are initialized here because they are read
+	 * afterwards even when that call is not reached, which
+	 * happens once the source is exhausted */
+	int  bytes_read = 0;
+	int  op_result  = 0;
 
 	/* check some environment conditions */
 	axl_return_val_if_fail (stream, axl_false);

@@ -47,6 +47,7 @@ __axl_hash_copy_foreach
 __axl_hash_copy_full_common
 __axl_hash_cursor_init
 __axl_hash_foreach
+__axl_hash_free_data
 __axl_hash_internal_lookup
 __axl_hash_remove_common
 __axl_hash_spare_max

@@ -20,9 +20,15 @@ libaxl_la_LDFLAGS = -no-undefined -export-symbols-regex '^(axl|__axl|_axl).*'
 
 # libaxl_la_LIBADD = -lm
 
-libaxl.def: update-def
+# libaxl.def is a checked-in file, refreshed by hand with "make
+# update-def" after adding or removing an exported symbol. It must not
+# be declared as a target depending on update-def: doing so makes
+# "make dist" try to regenerate it, which fails on a tree that was not
+# built yet.
+.PHONY: update-def
 
 update-def:
+	test -f .libs/libaxl.exp || { echo "ERROR: .libs/libaxl.exp not found, run make first"; exit 1; }
 	echo "EXPORTS" > libaxl.def
 	cat .libs/libaxl.exp >> libaxl.def
 

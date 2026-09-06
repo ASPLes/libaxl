@@ -43,9 +43,13 @@ libaxl_babel_la_LIBADD  = $(top_builddir)/src/libaxl.la
 
 libaxl_babel_la_LDFLAGS = -no-undefined -export-symbols-regex '^(axl|__axl|_axl).*'
 
-libaxl-babel.def: update-def
+# libaxl-babel.def is a checked-in file, refreshed by hand with "make
+# update-def". See the note at src/Makefile.am about why it must not
+# be declared as a target depending on update-def.
+.PHONY: update-def
 
 update-def:
+	test -f .libs/libaxl-babel.exp || { echo "ERROR: .libs/libaxl-babel.exp not found, run make first"; exit 1; }
 	echo "EXPORTS" > libaxl-babel.def
 	cat .libs/libaxl-babel.exp >> libaxl-babel.def
 

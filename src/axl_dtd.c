@@ -876,8 +876,10 @@ axl_bool     __axl_dtd_read_element_spec (axlStream * stream, axlDtdElement * dt
 	/* consume previous white spaces */
 	AXL_CONSUME_SPACES (stream);
 
-	/* check that the content specification have an ( */
-	if (! (axl_stream_inspect (stream, "(", 1))) {
+	/* check that the content specification have an (. The result
+	 * is compared against 0 because axl_stream_inspect returns -1
+	 * when the stream is exhausted */
+	if (! (axl_stream_inspect (stream, "(", 1) > 0)) {
 		axl_error_new (-1, "Expected to find a element content specification opener \"(\", but it wasn't found",
 			       stream, error);
 		axl_stack_free (dtd_item_stack);
@@ -958,6 +960,24 @@ axl_bool     __axl_dtd_read_element_spec (axlStream * stream, axlDtdElement * dt
 				   "current chunk matched before update (%d)",
 				   chunk_matched);
 		}
+
+		/* a content particule with no name is only acceptable
+		 * when it is opening a nested item list (chunk
+		 * matched 8, that is "("). Otherwise the declaration
+		 * is empty, like (), (*), (+), (?), (,) or (|), which
+		 * the XML 1.0 standard does not allow: a children
+		 * content specification requires at least one content
+		 * particule */
+		if (chunk_matched != 8 && (string_aux == NULL || strlen (string_aux) == 0)) {
+			axl_error_new (-1, "Found an empty content particule at the DTD element content specification, at least one content particule is required",
+				       stream, error);
+			/* the particule read was nullified from the
+			 * stream, so it is owned here */
+			axl_free (string_aux);
+			axl_stack_free (dtd_item_stack);
+			axl_stream_free (stream);
+			return axl_false;
+		} /* end if */
 
 		/* add the content particule found, this function
 		 * already detect that a white space was found and
@@ -1069,7 +1089,7 @@ axl_bool     __axl_dtd_read_element_spec (axlStream * stream, axlDtdElement * dt
 	/* set default content element separator */
 	if (dtd_item_list->type == STILL_UNDEF)
 		dtd_item_list->type = SEQUENCE;
-		
+
 	/* free the stack used */
 	axl_stack_free (dtd_item_stack);
 
@@ -1250,8 +1270,11 @@ axl_bool     __axl_dtd_parse_element (axlDtd * dtd, axlStream * stream, axlError
 	/* consume previous white spaces */
 	AXL_CONSUME_SPACES (stream);
 
-	/* check for the last DTD declaration */
-	if (! (axl_stream_inspect (stream, ">", 1))) {
+	/* check for the last DTD declaration. Note axl_stream_inspect
+	 * returns -1 when the stream is exhausted, so the result must
+	 * be compared against 0 to also reject a declaration that is
+	 * truncated right here */
+	if (! (axl_stream_inspect (stream, ">", 1) > 0)) {
 		axl_error_new (-1, "Unable to find last, > terminator for the DTD <!ELEMENT declaration", stream, error);
 		axl_stream_free (stream);
 		return axl_false;

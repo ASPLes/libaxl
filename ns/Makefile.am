@@ -19,9 +19,13 @@ libaxl_ns_la_LIBADD      = $(top_builddir)/src/libaxl.la
 
 libaxl_ns_la_LDFLAGS = -no-undefined -export-symbols-regex '^(axl|__axl|_axl).*'
 
-libaxl-ns.def: update-def
+# libaxl-ns.def is a checked-in file, refreshed by hand with "make
+# update-def". See the note at src/Makefile.am about why it must not
+# be declared as a target depending on update-def.
+.PHONY: update-def
 
 update-def:
+	test -f .libs/libaxl-ns.exp || { echo "ERROR: .libs/libaxl-ns.exp not found, run make first"; exit 1; }
 	echo "EXPORTS" > libaxl-ns.def
 	cat .libs/libaxl-ns.exp >> libaxl-ns.def
 

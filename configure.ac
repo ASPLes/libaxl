@@ -45,6 +45,12 @@ AM_INIT_AUTOMAKE(axl, $AXL_VERSION)
 AM_CONFIG_HEADER(config.h)
 AM_MAINTAINER_MODE
 
+dnl The _AM_PATH_PYTHON_ token below is quoted inside the text of an
+dnl AC_MSG_ERROR, it is not a macro to be expanded. Without this,
+dnl autoconf --warnings=error (used by autogen.sh) aborts reporting a
+dnl possibly undefined macro.
+m4_pattern_allow([^_AM_PATH_PYTHON_$])
+
 AC_PROG_CC
 AC_ISC_POSIX
 AC_HEADER_STDC
