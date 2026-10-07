@@ -13,7 +13,7 @@ def test_01():
         error ("Found error: " + str (err.code) + ", message: " + err.msg)
         return False
 
-    (doc, err) = axl.parse ("<?xml  version=\"1.0\" \t \n \r encoding='utf-8\"   ?> <data />", 63)
+    (doc, err) = axl.parse ("<?xml  version=\"1.0\" \t \n \r encoding='utf-8\"   ?> <data />", 57)
     if err:
         error ("Found error: " + str (err.code) + ", message: " + err.msg)
         return False
@@ -24,7 +24,7 @@ def test_01():
         return False
 
     # do a fail parse operation
-    (doc, err) = axl.parse ("aefadsadsf<?xml  version=\"1.0\" \t \n \r encoding='utf-8\"   ?> <data />", 73)
+    (doc, err) = axl.parse ("aefadsadsf<?xml  version=\"1.0\" \t \n \r encoding='utf-8\"   ?> <data />", 67)
     if not err:
         error ("Expected to find error but found no error report")
         return False
@@ -742,6 +742,163 @@ def py_test_05 ():
     
     
 
+def py_test_06 ():
+    # the module must report the version it was built with
+    if not axl.version ():
+        error ("Expected to find a version reported by the module")
+        return False
+
+    (doc, err) = axl.parse ("<?xml version='1.0' encoding='utf-8' standalone='yes' ?><doc><child a='x &amp; y'>p &amp; q</child><other /></doc>", -1)
+    if err:
+        error ("Found error: " + str (err.code) + ", message: " + err.msg)
+        return False
+
+    # stand_alone is an alias of standalone
+    if doc.stand_alone != doc.standalone:
+        error ("Expected stand_alone and standalone to report the same value")
+        return False
+
+    if not doc.stand_alone:
+        error ("Expected to find the document declared standalone")
+        return False
+
+    # find_called looks for a node anywhere below the one provided
+    node = doc.root.find_called ("other")
+    if node is None:
+        error ("Expected to find a node called other")
+        return False
+
+    if node.name != "other":
+        error ("Expected to find other as node name but found: " + node.name)
+        return False
+
+    if doc.root.find_called ("not-defined") is not None:
+        error ("Expected to not find a node that is not declared")
+        return False
+
+    # content is reported raw, trans reports it with the entity
+    # references translated, along with its size
+    child = doc.root.find_called ("child")
+    (raw, raw_size) = child.content
+    if raw != "p &amp; q":
+        error ("Expected to find the raw content but found: " + raw)
+        return False
+
+    if raw_size != len (raw):
+        error ("Expected to find size " + str (len (raw)) + " for the raw content but found: " + str (raw_size))
+        return False
+
+    (content, size) = child.trans
+    if content != "p & q":
+        error ("Expected to find the translated content but found: " + content)
+        return False
+
+    if size != len (content):
+        error ("Expected to find size " + str (len (content)) + " but found: " + str (size))
+        return False
+
+    # the same applies to attribute values
+    if child.attr ("a") != "x &amp; y":
+        error ("Expected to find the raw attribute value but found: " + child.attr ("a"))
+        return False
+
+    if child.attr_trans ("a") != "x & y":
+        error ("Expected to find the translated attribute value but found: " + child.attr_trans ("a"))
+        return False
+
+    # dump the document to a file and parse it back
+    if not doc.file_dump ("py_test_06.xml"):
+        error ("Expected to dump the document to a file")
+        return False
+
+    (doc2, err) = axl.file_parse ("py_test_06.xml")
+    if err:
+        error ("Found error while parsing the file dumped: " + err.msg)
+        return False
+
+    if doc2.root.name != "doc":
+        error ("Expected to find doc as root node of the file dumped")
+        return False
+
+    del doc2
+
+    # and with tabular configuration
+    if not doc.file_dump ("py_test_06-pretty.xml", 4):
+        error ("Expected to pretty dump the document to a file")
+        return False
+
+    (doc2, err) = axl.file_parse ("py_test_06-pretty.xml")
+    if err:
+        error ("Found error while parsing the pretty file dumped: " + err.msg)
+        return False
+
+    del doc2
+
+    # the attribute cursor must be able to report a next item and to
+    # be rewound to the first one
+    (doc3, err) = axl.parse ("<doc a='1' b='2' c='3' />", -1)
+    if err:
+        error ("Found error: " + err.msg)
+        return False
+
+    cursor = doc3.root.attr_cursor_new ()
+    count  = 0
+    while cursor.has_item ():
+        count += 1
+        if not cursor.has_next ():
+            break
+        cursor.next ()
+
+    if count != 3:
+        error ("Expected to walk 3 attributes but walked: " + str (count))
+        return False
+
+    # going back to the first one must allow walking them again
+    cursor.first ()
+    if not cursor.has_item ():
+        error ("Expected to find an attribute after rewinding the cursor")
+        return False
+
+    count = 0
+    while cursor.has_item ():
+        count += 1
+        cursor.next ()
+
+    if count != 3:
+        error ("Expected to walk 3 attributes after rewinding but walked: " + str (count))
+        return False
+
+    del cursor
+    del doc3
+
+    # set_empty discards the content configured at the node
+    node = axl.Node ("test")
+    node.content = "some content"
+    node.set_empty ()
+
+    # remove detaches the node from its parent, deallocating it
+    parent = axl.Node ("parent")
+    parent.set_child (axl.Node ("child1"))
+    parent.set_child (axl.Node ("child2"))
+
+    child = parent.child_called ("child1")
+    child.remove (True)
+
+    if parent.child_called ("child1") is not None:
+        error ("Expected to not find child1 after removing it")
+        return False
+
+    if parent.child_called ("child2") is None:
+        error ("Expected to still find child2 after removing child1")
+        return False
+
+    del node
+    del parent
+    del doc
+
+    return True
+
+
 ###########################
 # intraestructure support #
 ###########################
@@ -792,7 +949,8 @@ tests = [
     (py_test_02, "Check PyAxlNode replace, deattach, set_child_after method"),
     (py_test_03, "Check PyAxlNode and PyAxlDoc relation"),
     (py_test_04, "Check PyAxlNode reference after PyAxlDoc reference finish"),
-    (py_test_05, "Check PyAxlNode setting childs references crated")
+    (py_test_05, "Check PyAxlNode setting childs references crated"),
+    (py_test_06, "Check version, standalone, find_called, trans, file_dump, attr cursor rewind, set_empty and remove")
 ]
 
 info (" LibAxl: Another XML library (regression test).")
@@ -823,5 +981,9 @@ if __name__ == '__main__':
         # next iterator
         iterator += 1
 
-    # call to run all tests
-    run_all_tests ()
+    # call to run all tests, reporting the result through the exit
+    # status so automated runs (make check) detect a failure
+    if not run_all_tests ():
+        sys.exit (-1)
+
+    sys.exit (0)

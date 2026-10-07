@@ -122,8 +122,9 @@ static void py_axl_node_dealloc (PyAxlNode* self)
 PyObject * py_axl_node_get_attr (PyObject *o, PyObject *attr_name) {
 	const char      * attr = NULL;
 	PyObject        * result;
-	PyAxlNode       * self = (PyAxlNode *) o; 
+	PyAxlNode       * self = (PyAxlNode *) o;
 	PyObject        * tuple;
+	char            * content;
 	int               size = 0;
 
 	/* now implement other attributes */
@@ -178,12 +179,18 @@ PyObject * py_axl_node_get_attr (PyObject *o, PyObject *attr_name) {
 			
 		return tuple;
 	} else if (axl_cmp (attr, "trans")) {
-		/* return a tuple with content and size */
+		/* return a tuple with content and size. Note
+		 * axl_node_get_content_trans returns a newly
+		 * allocated copy, so it must be released once python
+		 * has built its own string from it */
+		content = axl_node_get_content_trans (self->node, &size);
+
 		tuple = PyTuple_New (2);
-		
-		PyTuple_SetItem (tuple, 0, Py_BuildValue ("z", axl_node_get_content_trans (self->node, &size)));
+		PyTuple_SetItem (tuple, 0, Py_BuildValue ("z", content));
 		PyTuple_SetItem (tuple, 1, Py_BuildValue ("i", size));
-			
+
+		axl_free (content);
+
 		return tuple;
 	} else if (axl_cmp (attr, "doc")) {
 		
@@ -714,8 +721,14 @@ PyObject   * py_axl_node_create   (axlNode  * node,
 		obj->py_doc = py_doc;
 	} /* end if */
 
-	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "Created axl.Node reference (%p, ref count: %d): %s (doc: %p, refcount: %d)", 
-		   obj, obj->ob_refcnt, axl_node_get_name (obj->node), obj->py_doc, obj->py_doc->ob_refcnt);
+	/* note py_doc may be NULL: a node created from python
+	 * (axl.Node) is not attached to any document, so its
+	 * reference count must not be dereferenced here. The
+	 * arguments of this call are evaluated even when the log is
+	 * disabled, so the check cannot be left to the log itself */
+	__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "Created axl.Node reference (%p, ref count: %d): %s (doc: %p, refcount: %d)",
+		   obj, obj->ob_refcnt, axl_node_get_name (obj->node), obj->py_doc,
+		   (obj->py_doc != NULL) ? obj->py_doc->ob_refcnt : 0);
 
 	return __PY_OBJECT (obj);
 }

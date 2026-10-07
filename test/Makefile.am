@@ -56,10 +56,25 @@ INCLUDES = -DTEST_DIR=$(top_srcdir)/test -I$(top_srcdir)/src/ -I$(top_srcdir)/ns
 
 # replace with bin_PROGRAMS to check performance
 noinst_PROGRAMS = test_01 test_01a test_02a test_03a
+
 TESTS = test_01
 
 if ENABLE_PY_AXL
 AXL_PY_PREPARE = prepare_files
+endif
+
+# The python regression test is run through check-local instead of
+# being added to TESTS. Automake derives the log name of a test by
+# stripping the extension declared at TEST_EXTENSIONS, so test_01.py
+# would write to test_01.log, the very same log used by the test_01
+# binary, and one result would silently overwrite the other.
+#
+# It is run with the interpreter detected by configure instead of
+# relying on the shebang, which points to /usr/bin/python and may well
+# be python3.
+if ENABLE_PY_AXL
+check-local:
+	cd $(builddir) && $(PYTHON) $(srcdir)/test_01.py
 endif
 
 bin_SCRIPTS = $(AXL_PY_PREPARE)

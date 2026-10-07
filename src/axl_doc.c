@@ -771,7 +771,101 @@ axl_bool __axl_doc_parse_xml_header (axlStream * stream, axlDoc * doc, axlError 
  * axl_false if not. If the function find something wrong the document
  * is unrefered.
  */
-axl_bool __axl_doc_parse_node (axlStream   * stream, 
+
+/**
+ * @internal Checks every ampersand found inside the content provided
+ * opens a well formed reference, that is, &name;, &#nnn; or &#xhhh;
+ * As stated by the XML 1.0 standard, a literal & is not allowed
+ * inside node content or attribute values: it must always be written
+ * as the &amp; entity reference.
+ *
+ * @param content The content to check.
+ *
+ * @param size The size of the content provided.
+ *
+ * @param stream The stream being parsed, used to report the position
+ * where the problem was found.
+ *
+ * @param error An optional error reporting variable.
+ *
+ * @return axl_true if every reference found is well formed.
+ */
+axl_bool __axl_doc_check_entity_refs (const char * content,
+				      int          size,
+				      axlStream  * stream,
+				      axlError  ** error)
+{
+	int  iterator = 0;
+	int  ref;
+	int  start;
+	int  hex;
+	char value;
+
+	while (iterator < size) {
+		/* skip everything that is not an ampersand */
+		if (content[iterator] != '&') {
+			iterator++;
+			continue;
+		} /* end if */
+
+		/* an ampersand must open a reference */
+		ref = iterator + 1;
+		hex = axl_false;
+
+		if (ref < size && content[ref] == '#') {
+			/* character reference: &#nnn; or &#xhhh; */
+			ref++;
+			if (ref < size && (content[ref] == 'x' || content[ref] == 'X')) {
+				hex = axl_true;
+				ref++;
+			} /* end if */
+
+			/* the digits required start here */
+			start = ref;
+			while (ref < size) {
+				value = content[ref];
+				if (value >= '0' && value <= '9') {
+					ref++;
+					continue;
+				} /* end if */
+				if (hex && ((value >= 'a' && value <= 'f') || (value >= 'A' && value <= 'F'))) {
+					ref++;
+					continue;
+				} /* end if */
+				break;
+			} /* end while */
+		} else {
+			/* entity reference: the name required starts
+			 * here */
+			start = ref;
+			while (ref < size) {
+				value = content[ref];
+				if ((value >= 'a' && value <= 'z') || (value >= 'A' && value <= 'Z') ||
+				    (value >= '0' && value <= '9') ||
+				    value == '.' || value == '-' || value == '_' || value == ':') {
+					ref++;
+					continue;
+				} /* end if */
+				break;
+			} /* end while */
+		} /* end if */
+
+		/* the reference must not be empty and must be closed
+		 * by a ; */
+		if (ref == start || ref >= size || content[ref] != ';') {
+			axl_error_new (-1, "Found a & character that doesn't open a well formed entity or character reference. Use &amp; to write a literal &",
+				       stream, error);
+			return axl_false;
+		} /* end if */
+
+		/* continue after the reference found */
+		iterator = ref + 1;
+	} /* end while */
+
+	return axl_true;
+}
+
+axl_bool __axl_doc_parse_node (axlStream   * stream,
 			       axlDoc      * doc, 
 			       axlNode    ** calling_node, 
 			       axl_bool    * is_empty, 
@@ -1283,6 +1377,16 @@ axlDoc * __axl_doc_parse_common (const char * entity, int entity_size,
 			/* nullify internal stream reference to have
 			 * the unique reference */
 			axl_stream_nullify (stream, LAST_CHUNK);
+
+			/* every & found must open a well formed
+			 * reference. The check is done once the stream
+			 * no longer holds the chunk: it was allocated
+			 * by the document content factory, which is
+			 * released along with the document */
+			if (! __axl_doc_check_entity_refs (string, strlen (string), stream, error)) {
+				axl_stream_free (stream);
+				return NULL;
+			} /* end if */
 
 			/* set current data */
 			/* axl_node_set_content_ref (node, string, -1); */

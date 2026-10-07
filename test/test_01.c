@@ -16,7 +16,10 @@
 
 #define test_41_iso_8859_5_value "#$%'()*+,-./0123456789:;=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~ЁЂЃЄЅІЇЈЉЊЋЌ­ЎЏАБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдежзийклмнопрстуфхцчшщъыьэюя№ёђѓєѕіїјљњћќ§ўџ"
 
-#define test_41_iso_8859_6_value "!\"#$%&'()*+,-./0123456789:;=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~¤،­؛؟ءآأؤإئابةتثجحخدذرزسشصضطظعغـفقكلمنهوىيًٌٍَُِّْ"
+/* note the & is written as the &amp; entity reference at the fixture,
+ * as the XML 1.0 standard requires, and axl reports node content raw,
+ * so the expected value carries the reference as is */
+#define test_41_iso_8859_6_value "!\"#$%&amp;'()*+,-./0123456789:;=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~¤،­؛؟ءآأؤإئابةتثجحخدذرزسشصضطظعغـفقكلمنهوىيًٌٍَُِّْ"
 
 #define test_41_iso_8859_7_value "!\"#$%'()*+,-./0123456789:;=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~‘’£€₯¦§¨©ͺ«¬­―°±²³΄΅Ά·ΈΉΊ»Ό½ΎΏΐΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩΪΫάέήίΰαβγδεζηθικλμνξοπρςστυφχψωϊϋόύώ"
 
@@ -11077,6 +11080,18 @@ axl_bool test_62 (axlError ** error)
 		{"node with an empty name", "<?xml version='1.0' ?><></>", NULL},
 		{"a second root node", "<?xml version='1.0' ?><a /><b />", NULL},
 		{"character data after the root node", "<?xml version='1.0' ?><a />trailing", NULL},
+		{"literal ampersand inside node content",
+		 "<?xml version='1.0' ?><doc>a & b</doc>", NULL},
+		{"entity reference without the closing ;",
+		 "<?xml version='1.0' ?><doc>&amp</doc>", NULL},
+		{"entity reference with an empty name",
+		 "<?xml version='1.0' ?><doc>&;</doc>", NULL},
+		{"character reference without digits",
+		 "<?xml version='1.0' ?><doc>&#;</doc>", NULL},
+		{"hexadecimal character reference without digits",
+		 "<?xml version='1.0' ?><doc>&#x;</doc>", NULL},
+		{"ampersand closing the node content",
+		 "<?xml version='1.0' ?><doc>text&</doc>", NULL},
 		{NULL, NULL, NULL}
 	};
 
@@ -11090,6 +11105,23 @@ axl_bool test_62 (axlError ** error)
 		 "<?xml version='1.0' ?><a /><?target content?>", NULL},
 		{"white spaces after the root node",
 		 "<?xml version='1.0' ?><a />   \n  ", NULL},
+		{"the five predefined entity references",
+		 "<?xml version='1.0' ?><doc>&amp;&lt;&gt;&quot;&apos;</doc>", NULL},
+		{"decimal character reference",
+		 "<?xml version='1.0' ?><doc>&#65;</doc>", NULL},
+		{"hexadecimal character reference",
+		 "<?xml version='1.0' ?><doc>&#x41;</doc>", NULL},
+		{"entity reference name holding . - _ and :",
+		 "<?xml version='1.0' ?><doc>&my-ent.1_x:y;</doc>", NULL},
+		{"several references in a row",
+		 "<?xml version='1.0' ?><doc>&amp;&amp;&#65;</doc>", NULL},
+		/* a literal ampersand is legal inside a CDATA section
+		 * and inside a comment: the reference checking must
+		 * not reach them */
+		{"literal ampersand inside a CDATA section",
+		 "<?xml version='1.0' ?><doc><![CDATA[a & b]]></doc>", NULL},
+		{"literal ampersand inside a comment",
+		 "<?xml version='1.0' ?><doc><!-- a & b --></doc>", NULL},
 		{NULL, NULL, NULL}
 	};
 
