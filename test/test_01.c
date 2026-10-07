@@ -11942,6 +11942,8 @@ int main (int argc, char ** argv)
 		return -1;
 	}
 
+	printf ("All tests ok\n");
+
 	/* cleanup axl library */
 	axl_end ();
 	return 0;
