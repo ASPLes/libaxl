@@ -214,16 +214,19 @@ PyMODINIT_FUNC  initlibpy_axl (void)
 	if (module == NULL) 
 		return;
 
-	/* call to register all axl modules and types */
+	/* call to register all axl modules and types.
+	 *
+	 * NOTE: axl.List, axl.Hash, axl.Stack and axl.Stream are not
+	 * registered. Their wrappers expose no method and no
+	 * attribute, so they were reaching python as types that
+	 * cannot do anything, only widening the surface published by
+	 * the module. Should any of them get a real API, register it
+	 * back here. */
 	init_axl_doc           (module);
 	init_axl_error         (module);
 	init_axl_node          (module);
 	init_axl_attr_cursor   (module);
 	init_axl_dtd           (module);
-	init_axl_list          (module);
-	init_axl_hash          (module);
-	init_axl_stack         (module);
-	init_axl_stream        (module);
 	return;
 }
 
