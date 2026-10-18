@@ -451,6 +451,8 @@ void       axl_hash_insert_full (axlHash        * hash,
 	axlHashNode  * node      = NULL;
 	axlHashNode  * aux       = NULL;
 	int            iterator  = 0;
+	int            previous_size;
+	int            grow;
 	axlHashNode ** temp;
 
 	/* check incoming data */
@@ -530,8 +532,27 @@ void       axl_hash_insert_full (axlHash        * hash,
 		}
 	
 		/* now we have in node a complete list of items
-		 * stored, allocate more memory and rehash */
-		hash->hash_size += hash->step;
+		 * stored, allocate more memory and rehash.
+		 *
+		 * The capacity is doubled instead of being enlarged by
+		 * a fixed amount of slots: every growth rehashes every
+		 * item stored, so adding a constant turns a sequence of
+		 * n insertions into O(n^2), which lets a document with
+		 * many attributes burn an arbitrary amount of cpu.
+		 * Doubling keeps the amortized cost of an insertion
+		 * constant.
+		 *
+		 * The step configured is kept as the minimum growth, so
+		 * a hash created with a large step still grows at least
+		 * that much, and it is used as the growth once the table
+		 * is already huge, to not double an allocation of
+		 * hundreds of megabytes. */
+		grow          = (hash->hash_size > hash->step) ? hash->hash_size : hash->step;
+		if (hash->hash_size > (1 << 28))
+			grow  = hash->step;
+
+		previous_size    = hash->hash_size;
+		hash->hash_size += grow;
 		temp             = hash->table;
 		hash->table      = realloc (hash->table, sizeof (axlHashNode *) * (hash->hash_size));
 
@@ -539,7 +560,7 @@ void       axl_hash_insert_full (axlHash        * hash,
 		if (hash->table == NULL) {
 			/* alloc failed, restore and cleanup */
 			hash->table = temp;
-			hash->hash_size -= hash->step;
+			hash->hash_size = previous_size;
 			return;
 		} /* end if */
 
