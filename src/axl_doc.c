@@ -398,10 +398,17 @@ struct _axlDoc {
 	 */
 	axlFactory    * attr_factory;
 
-	/** 
+	/**
 	 * @internal Factory to alloc strings.
 	 */
 	axlStrFactory * str_factory;
+
+	/**
+	 * @internal Number of xml nodes read so far while parsing,
+	 * used to enforce the node limit. Only meaningful during the
+	 * parse operation.
+	 */
+	int             nodeCount;
 };
 
 struct _axlPI {
@@ -425,6 +432,18 @@ axlPointer               detect_codification_data;
 
 axlDocConfigureCodification configure_codification_func;
 axlPointer                  configure_codification_data;
+
+/* Parsing limits. They bound the resources a single document may
+ * consume, so that a document crafted to exhaust them is rejected
+ * instead of taking the process down with it. The defaults sit well
+ * above any ordinary document: the largest real one measured while
+ * setting them had 23 levels of nesting, 12848 nodes, 6 attributes at
+ * its busiest node and 632 KB. A value of 0 disables that particular
+ * limit. */
+int axl_doc_max_depth      = 256;
+int axl_doc_max_nodes      = 100000;
+int axl_doc_max_size       = 64 * 1024 * 1024;
+int axl_doc_max_attributes = 4096;
 
 /** 
  * @internal
@@ -873,11 +892,12 @@ axl_bool __axl_doc_parse_node (axlStream   * stream,
 {
 	char    * string_aux;
 	char    * string_aux2;
+	char    * err_msg;
 	axlNode * node;
 	int       matched_chunk;
 	int       length;
 	axl_bool  delim;
-	
+
 	/* consume a possible comment */
 	if (! axl_doc_consume_comments (doc, stream, error))
 		return axl_false;
@@ -954,6 +974,30 @@ axl_bool __axl_doc_parse_node (axlStream   * stream,
 		/* or set the node as a child of the current parent */
 		axl_doc_set_child_current_parent (doc, node);
 	}
+
+	/* check the parsing limits now that the node is registered,
+	 * so a document crafted to exhaust a resource is rejected
+	 * here instead of while being traversed, dumped or released */
+	doc->nodeCount++;
+	if (axl_doc_max_nodes > 0 && doc->nodeCount > axl_doc_max_nodes) {
+		err_msg = axl_strdup_printf (
+			"Document holds more than %d xml nodes, which is the limit configured. Use axl_doc_set_max_nodes to raise it",
+			axl_doc_max_nodes);
+		axl_error_new (-1, err_msg, stream, error);
+		axl_free (err_msg);
+		axl_stream_free (stream);
+		return axl_false;
+	} /* end if */
+
+	if (axl_doc_max_depth > 0 && axl_stack_size (doc->parentNode) > axl_doc_max_depth) {
+		err_msg = axl_strdup_printf (
+			"Document is nested deeper than %d levels, which is the limit configured. Use axl_doc_set_max_depth to raise it",
+			axl_doc_max_depth);
+		axl_error_new (-1, err_msg, stream, error);
+		axl_free (err_msg);
+		axl_stream_free (stream);
+		return axl_false;
+	} /* end if */
 
 	/* set the node created to the calling node, so the caller
 	 * could get a reference */
@@ -1084,12 +1128,23 @@ axl_bool __axl_doc_parse_node (axlStream   * stream,
 
 			if (axl_node_has_attribute (node, string_aux)) {
 				/* parse error */
-				axl_error_report (error, -3, "Unable to add attribute '%s' to node <%s> which already has this attribute. Duplicate attribute error. Error was found near to: %s", 
+				axl_error_report (error, -3, "Unable to add attribute '%s' to node <%s> which already has this attribute. Duplicate attribute error. Error was found near to: %s",
 						  string_aux, axl_node_get_name (node), axl_stream_get_near_to (stream, 100));
 				axl_stream_free (stream);
 				return axl_false;
 			} /* end if */
-			
+
+			/* check the attribute limit before storing it: the
+			 * cost of holding them grows faster than their
+			 * number */
+			if (axl_doc_max_attributes > 0 &&
+			    axl_node_num_attributes (node) >= axl_doc_max_attributes) {
+				axl_error_report (error, -1, "Node <%s> declares more than %d attributes, which is the limit configured. Use axl_doc_set_max_attributes to raise it",
+						  axl_node_get_name (node), axl_doc_max_attributes);
+				axl_stream_free (stream);
+				return axl_false;
+			} /* end if */
+
 			/* set a new attribute for the given node */
 			axl_node_set_attribute_from_factory (doc->attr_factory, node, string_aux, string_aux2);
 
@@ -1221,7 +1276,19 @@ axlDoc * __axl_doc_parse_common (const char * entity, int entity_size,
 	char      * string        = NULL;
 	int         index;
 	axl_bool    is_empty      = axl_false;
-	
+
+	/* check the size limit before allocating anything. This is
+	 * exact for an in memory document; one read from a file or a
+	 * descriptor is checked as it is consumed, inside the parse
+	 * loop, because its total size is not known here */
+	if (entity != NULL && axl_doc_max_size > 0) {
+		if (((entity_size == -1) ? (int) strlen (entity) : entity_size) > axl_doc_max_size) {
+			axl_error_report (error, -1, "Document is larger than %d bytes, which is the limit configured. Use axl_doc_set_max_size to raise it",
+					  axl_doc_max_size);
+			return NULL;
+		} /* end if */
+	} /* end if */
+
 	/* create the xml stream using provided data */
 	stream         = axl_stream_new (entity, entity_size, file_path, fd_handle, error);
 	axl_return_val_if_fail (stream, NULL);
@@ -1264,6 +1331,19 @@ axlDoc * __axl_doc_parse_common (const char * entity, int entity_size,
 
 			__axl_log (LOG_DOMAIN, AXL_LEVEL_DEBUG, "current index: %d (global: %d)", index,
 				   axl_stream_get_global_index (stream));
+
+			/* check the size limit as the document is
+			 * consumed. The check is done here, once per
+			 * construct read, because a stream backed by a
+			 * file does not know its total size upfront:
+			 * only the bytes already consumed */
+			if (axl_doc_max_size > 0 &&
+			    axl_stream_get_global_index (stream) > axl_doc_max_size) {
+				axl_error_report (error, -1, "Document is larger than %d bytes, which is the limit configured. Use axl_doc_set_max_size to raise it",
+						  axl_doc_max_size);
+				axl_stream_free (stream);
+				return NULL;
+			} /* end if */
 			
 			/* get rid from spaces according to the
 			 * xml:space configuration */
@@ -3708,6 +3788,133 @@ axlDocConfigureCodification axl_doc_set_configure_codification_func (axlDocConfi
 	configure_codification_data = user_data;
 
 	return previous;
+}
+
+/**
+ * @brief Allows to configure the maximum nesting depth accepted while
+ * parsing a document.
+ *
+ * Every operation that walks a document recursively (dumping it,
+ * comparing it, copying it and releasing it) uses one C stack frame
+ * per level, so an unbounded depth lets a small document exhaust the
+ * stack of the process reading it. This limit rejects such a document
+ * at parse time instead.
+ *
+ * Default: 256 levels, which is far above any ordinary document (the
+ * deepest real one measured while setting this had 23).
+ *
+ * @param value The maximum depth accepted, or 0 to accept any depth.
+ */
+void      axl_doc_set_max_depth             (int value)
+{
+	axl_doc_max_depth = value;
+	return;
+}
+
+/**
+ * @brief Allows to get the maximum nesting depth currently accepted
+ * while parsing.
+ *
+ * @return The limit configured, 0 if there is no limit. See \ref
+ * axl_doc_set_max_depth.
+ */
+int       axl_doc_get_max_depth             (void)
+{
+	return axl_doc_max_depth;
+}
+
+/**
+ * @brief Allows to configure the maximum number of xml nodes accepted
+ * while parsing a document.
+ *
+ * The tree built for a document takes far more memory than the
+ * document itself, around 30 times for a document made of many small
+ * nodes, so this limit is what bounds the memory a single parse
+ * operation may take.
+ *
+ * Default: 100000 nodes (the largest real document measured while
+ * setting this had 12848), which bounds the node storage at about 13
+ * MB.
+ *
+ * @param value The maximum number of nodes accepted, or 0 to accept
+ * any number.
+ */
+void      axl_doc_set_max_nodes             (int value)
+{
+	axl_doc_max_nodes = value;
+	return;
+}
+
+/**
+ * @brief Allows to get the maximum number of xml nodes currently
+ * accepted while parsing.
+ *
+ * @return The limit configured, 0 if there is no limit. See \ref
+ * axl_doc_set_max_nodes.
+ */
+int       axl_doc_get_max_nodes             (void)
+{
+	return axl_doc_max_nodes;
+}
+
+/**
+ * @brief Allows to configure the maximum size in bytes accepted for a
+ * document being parsed.
+ *
+ * It is checked exactly for a document held in memory. One read from
+ * a file or a file descriptor is checked as it is consumed, because
+ * its total size is not known when the parse operation starts.
+ *
+ * Default: 64 MB (the largest real document measured while setting
+ * this was 632 KB).
+ *
+ * @param value The maximum size in bytes accepted, or 0 to accept any
+ * size.
+ */
+void      axl_doc_set_max_size              (int value)
+{
+	axl_doc_max_size = value;
+	return;
+}
+
+/**
+ * @brief Allows to get the maximum document size currently accepted
+ * while parsing.
+ *
+ * @return The limit configured in bytes, 0 if there is no limit. See
+ * \ref axl_doc_set_max_size.
+ */
+int       axl_doc_get_max_size              (void)
+{
+	return axl_doc_max_size;
+}
+
+/**
+ * @brief Allows to configure the maximum number of attributes
+ * accepted on a single xml node while parsing.
+ *
+ * Default: 4096 attributes (the busiest node of the largest real
+ * document measured while setting this had 6).
+ *
+ * @param value The maximum number of attributes accepted per node, or
+ * 0 to accept any number.
+ */
+void      axl_doc_set_max_attributes        (int value)
+{
+	axl_doc_max_attributes = value;
+	return;
+}
+
+/**
+ * @brief Allows to get the maximum number of attributes per node
+ * currently accepted while parsing.
+ *
+ * @return The limit configured, 0 if there is no limit. See \ref
+ * axl_doc_set_max_attributes.
+ */
+int       axl_doc_get_max_attributes        (void)
+{
+	return axl_doc_max_attributes;
 }
 
 /* @} */

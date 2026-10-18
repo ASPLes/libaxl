@@ -194,11 +194,30 @@ axl_bool  axl_doc_consume_pi                   (axlDoc     * doc,
 axlFactory * axl_doc_get_item_factory  (axlDoc * doc);
 
 /* configuration API */
-axlDocDetectCodification axl_doc_set_detect_codification_func (axlDocDetectCodification func, 
+axlDocDetectCodification axl_doc_set_detect_codification_func (axlDocDetectCodification func,
 							       axlPointer user_data);
 
-axlDocConfigureCodification axl_doc_set_configure_codification_func (axlDocConfigureCodification func, 
+axlDocConfigureCodification axl_doc_set_configure_codification_func (axlDocConfigureCodification func,
 								     axlPointer user_data);
+
+/* parsing limits: they bound the resources a single document may
+ * consume. All of them are enabled by default with values well above
+ * any ordinary document, and 0 disables the one it is passed to */
+void      axl_doc_set_max_depth             (int value);
+
+int       axl_doc_get_max_depth             (void);
+
+void      axl_doc_set_max_nodes             (int value);
+
+int       axl_doc_get_max_nodes             (void);
+
+void      axl_doc_set_max_size              (int value);
+
+int       axl_doc_get_max_size              (void);
+
+void      axl_doc_set_max_attributes        (int value);
+
+int       axl_doc_get_max_attributes        (void);
 
 /* @} */
 
